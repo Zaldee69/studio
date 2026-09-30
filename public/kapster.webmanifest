@@ -1,0 +1,17 @@
+{
+  "name": "G&B Kapster",
+  "short_name": "G&B Kapster",
+  "description": "Antrean, jadwal, komisi, dan izin untuk kapster & teknisi Groom & Bloom.",
+  "id": "/kapster",
+  "start_url": "/kapster",
+  "scope": "/kapster",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F4EF",
+  "theme_color": "#1C1B19",
+  "icons": [
+    { "src": "/icons/kapster-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/kapster-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/kapster-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

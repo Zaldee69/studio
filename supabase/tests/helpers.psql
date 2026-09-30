@@ -1,0 +1,32 @@
+-- Di-include oleh tiap *.test.sql (\ir). Tiap file test berjalan dalam transaksi yang di-rollback.
+create extension if not exists pgtap with schema extensions;
+create schema tests;
+grant usage on schema tests to anon, authenticated;
+
+-- Ganti identitas dalam transaksi: login(uid) = authenticated dengan auth.uid() = uid; anon(); su() = kembali ke postgres.
+create function tests.login(uid uuid) returns void language plpgsql as $$ begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claims', json_build_object('sub', uid, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+end $$;
+create function tests.anon() returns void language plpgsql as $$ begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+  perform set_config('role', 'anon', true);
+end $$;
+create function tests.su() returns void language plpgsql as $$ begin
+  perform set_config('role', 'postgres', true);
+  perform set_config('request.jwt.claims', '', true);
+end $$;
+create function tests.svc(n text) returns uuid language sql security definer as $$ select id from public.services where name = n $$;
+grant execute on all functions in schema tests to anon, authenticated;
+
+-- id seed
+create function tests.mgr()   returns uuid language sql immutable as $$ select '00000000-0000-0000-0002-000000000001'::uuid $$;
+create function tests.kasir() returns uuid language sql immutable as $$ select '00000000-0000-0000-0002-000000000002'::uuid $$;
+create function tests.andi()  returns uuid language sql immutable as $$ select '00000000-0000-0000-0002-000000000003'::uuid $$;
+create function tests.sari()  returns uuid language sql immutable as $$ select '00000000-0000-0000-0002-000000000004'::uuid $$;
+create function tests.rina()  returns uuid language sql immutable as $$ select '00000000-0000-0000-0002-000000000005'::uuid $$;
+create function tests.staff_andi() returns uuid language sql immutable as $$ select '00000000-0000-0000-0001-000000000001'::uuid $$;
+create function tests.staff_sari() returns uuid language sql immutable as $$ select '00000000-0000-0000-0001-000000000004'::uuid $$;
+grant execute on all functions in schema tests to anon, authenticated;

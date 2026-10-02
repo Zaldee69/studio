@@ -34,7 +34,7 @@ export async function loadAnalytics(p: { periode?: string; dari?: string; sampai
   const supabase = await createClient();
   const [dash, st, staffList] = await Promise.all([
     supabase.rpc("kpi_dashboard", args),
-    supabase.from("settings").select("aov_target_barbershop, aov_target_nail, retail_ratio_min, retail_ratio_max, utilization_target, insight_aov_gap_pct, insight_low_util_pct, kpi_min_tx_for_stable").single(),
+    supabase.from("settings").select("revenue_target_monthly, aov_target_barbershop, aov_target_nail, retail_ratio_min, retail_ratio_max, utilization_target, insight_aov_gap_pct, insight_low_util_pct, kpi_min_tx_for_stable").single(),
     supabase.from("staff").select("id, name").eq("active", true).order("sort"),
   ]);
   if (dash.error) throw new Error(dash.error.message);

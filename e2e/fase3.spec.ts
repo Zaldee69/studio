@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import ExcelJS from "exceljs";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { jktDate } from "../src/lib/domain/format";
 import { admin, apiAs, login, newSession, sql } from "./helpers";
@@ -56,6 +57,8 @@ async function tick(p: Page, group: string, stage: number) {
   await p.getByRole("button", { name: new RegExp(`^${stage + 1}\\. ${STAGES[stage]} ${group}:`) }).click();
   await p.getByRole("button", { name: `Tandai ${STAGES[stage]} selesai` }).click();
   await expect(toast(p, `${STAGES[stage]} · ${group} tercatat`)).toBeVisible();
+  // grid sudah memuat ulang (bukan hanya toast) → klik berikutnya melihat status terbaru
+  await expect(p.getByRole("button", { name: new RegExp(`^${stage + 1}\\. ${STAGES[stage]} ${group}: selesai`) })).toBeVisible();
 }
 
 test.describe.serial("Analitik", () => {
@@ -134,6 +137,45 @@ test.describe.serial("Analitik", () => {
     await row.getByRole("link", { name: "Lihat" }).click();
     await expect(page).toHaveURL(/#aov$/);
   });
+
+  test("E9 · laporan owner bulan data contoh: ringkasan, keuangan, target omzet, PDF & Excel dengan angka sama", async ({ page }, info) => {
+    const month = fixtureDay(info).slice(0, 7);
+    await login(page, "manager");
+    await page.goto("/manajer/analitik");
+    await page.fill("#tg-revenue_target_monthly", "1000000");
+    await page.getByRole("button", { name: "Simpan target" }).click();
+    await expect(toast(page, "Target KPI disimpan")).toBeVisible();
+    try {
+      await page.goto(`/manajer/analitik/laporan?periode=bulan&nilai=${month}`);
+      const rep = page.getByRole("article", { name: "Laporan owner" });
+      await expect(rep.getByRole("heading", { level: 1 })).toContainText("Laporan owner");
+      const net = rep.getByRole("row", { name: /^Omzet bersih/ }).first();
+      await expect(net).toContainText("Rp594.500");
+      await expect(net).toContainText("59,5%"); // 594.500 ÷ target 1.000.000
+      for (const v of ["Rp71.250", "Rp171.000", "22,7%", "= Omzet bersih", "= Margin kotor"]) await expect(rep).toContainText(v);
+      await expect(rep.getByRole("heading", { name: "3. Staf & layanan" })).toBeVisible();
+
+      const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: "Unduh Excel" }).click()]);
+      expect(dl.suggestedFilename()).toMatch(/^laporan-owner-\d{4}-\d{2}-01_\d{4}-\d{2}-\d{2}\.xlsx$/);
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.readFile((await dl.path())!);
+      expect(wb.worksheets.map((w) => w.name)).toEqual(["Ringkasan", "Keuangan", "Harian", "Staf", "Layanan & produk", "Pelanggan", "Operasional"]);
+      const find = (sheet: string, label: string) => {
+        let v: unknown; wb.getWorksheet(sheet)!.eachRow((r) => { if (r.getCell(1).value === label && v === undefined) v = r.getCell(2).value; });
+        return v;
+      };
+      expect(find("Ringkasan", "Omzet bersih")).toBe(594500);
+      expect(find("Keuangan", "Omzet bersih")).toBe(594500);
+      expect(find("Harian", "Total")).toBeGreaterThan(0);
+      let harian = 0; wb.getWorksheet("Harian")!.eachRow((r, i) => { if (i > 3 && r.getCell(1).value !== "Total" && typeof r.getCell(3).value === "number") harian += r.getCell(3).value as number; });
+      expect(harian).toBe(594500);
+
+      await page.emulateMedia({ media: "print" });
+      expect((await page.pdf({ format: "A4" })).length).toBeGreaterThan(40_000);
+    } finally {
+      sql("update settings set revenue_target_monthly = 0");
+    }
+  });
 });
 
 test("E4 · kapster mencentang 4 kelompok × 3 tahap di HP → progres manajer realtime → otorisasi → HP terkunci", async ({ page, browser }, info) => {
@@ -151,8 +193,8 @@ test("E4 · kapster mencentang 4 kelompok × 3 tahap di HP → progres manajer r
   for (const name of g.slice(1)) for (let s = 0; s < 3; s++) await tick(hp, name, s);
   await expect(page.getByText(`${g.length * 3} dari ${g.length * 3} tahap selesai`)).toBeVisible();
 
-  page.once("dialog", (d) => d.accept());
   await page.getByRole("button", { name: "Otorisasi shift" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Otorisasi" }).click();
   await expect(toast(page, "Checklist diotorisasi")).toBeVisible();
   await expect(hp.getByText(/^Sudah diotorisasi/)).toBeVisible();
   await hp.getByRole("button", { name: new RegExp(`^1\\. Cuci ${g[0]}:`) }).click();
@@ -202,7 +244,7 @@ test("E6 · jam 12:00 tanpa log → notifikasi ke kapster bertugas & manajer", a
   sql(`delete from appointments where staff_id = '${STAFF.andi}' and start_at = jkt(jkt_today(), '20:15')`);
 });
 
-test("E7 · tugas HVAC terlambat → Beranda & lonceng → kapster tandai selesai → 14 hari lagi → manajer tambah biaya", async ({ page, browser }, info) => {
+test("E7 · tugas HVAC terlambat → Beranda & lonceng → manajer tandai selesai → 14 hari lagi → tambah biaya; kapster tidak melihat perawatan", async ({ page, browser }, info) => {
   const name = `HVAC uji ${info.project.name}`;
   sql(`do $$ declare t uuid; begin
     insert into maintenance_tasks (name, interval_days, created_at) values ('${name}', 14, now() - interval '30 days') returning id into t;
@@ -216,19 +258,20 @@ test("E7 · tugas HVAC terlambat → Beranda & lonceng → kapster tandai selesa
     await page.getByRole("button", { name: /^Notifikasi, \d+ belum dibaca/ }).click();
     await expect(page.getByRole("dialog", { name: "Notifikasi" })).toContainText(`${name} terlambat 2 hari`);
 
+    // perawatan fasilitas khusus manajer: tab SOP kapster hanya checklist sterilisasi
     const hp = await newSession(browser, info, "andi", { width: 390, height: 844 });
     await hp.goto("/kapster/sop");
-    const card = hp.getByRole("article", { name });
-    await expect(card).toContainText("Terlambat 2 hari");
-    await card.getByRole("button", { name: "Tandai selesai" }).click();
-    await expect(hp.locator("#mt-cost")).toHaveCount(0); // kapster tanpa kolom biaya
-    await hp.fill("#mt-note", "filter dibersihkan");
-    await hp.getByRole("button", { name: "Simpan", exact: true }).click();
-    await expect(card).toContainText("14 hari lagi");
+    await expect(hp.getByRole("heading", { name: /SOP sterilisasi/ })).toBeVisible();
+    await expect(hp.getByRole("region", { name: "Perawatan fasilitas" })).toHaveCount(0);
     await hp.context().close();
 
     await page.goto("/manajer/sop");
     const mcard = page.getByRole("article", { name });
+    await expect(mcard).toContainText("Terlambat 2 hari");
+    await mcard.getByRole("button", { name: "Tandai selesai" }).click();
+    await page.fill("#mt-note", "filter dibersihkan");
+    await page.getByRole("button", { name: "Simpan", exact: true }).click();
+    await expect(mcard).toContainText("14 hari lagi");
     await mcard.getByText("Riwayat 3 terakhir").click();
     await mcard.getByRole("button", { name: "Tambah biaya" }).first().click();
     await mcard.getByLabel("Biaya servis").fill("350000");

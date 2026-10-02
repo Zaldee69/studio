@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
 import { deleteRow, resetPassword, saveRow, saveSettings, type SaveState } from "./actions";
 import { SETTINGS_GROUPS, TABLES, type Field, type TableName } from "./tables";
 
@@ -40,6 +41,7 @@ function RowForm({ table, row, options }: { table: TableName; row: Row; options:
   const id = row.id as string | undefined;
   const [state, action, pending] = useActionState(saveRow.bind(null, table), undefined);
   const [delState, delAction, deleting] = useActionState(deleteRow.bind(null, table, id ?? ""), undefined);
+  const confirm = useConfirm();
   const cols = def.fields.map((f) => f.w ?? "10rem").join(" ") + " auto";
   return (
     <form action={action} className="grid items-center gap-2 border-b border-line px-3 py-2 last:border-0"
@@ -50,7 +52,11 @@ function RowForm({ table, row, options }: { table: TableName; row: Row; options:
         <button disabled={pending} className={id ? "btn-ghost" : "btn-primary"}>{id ? "Simpan" : "Tambah"}</button>
         {id && def.remove && (
           <button formAction={delAction} disabled={deleting} className="btn-danger"
-            onClick={(e) => { if (!confirm("Hapus baris ini?")) e.preventDefault(); }}>Hapus</button>
+            onClick={async (e) => {
+              e.preventDefault();
+              const btn = e.currentTarget; // requestSubmit tidak memicu onClick lagi → tak perlu penanda "sudah dikonfirmasi"
+              if (await confirm({ title: "Hapus baris ini?", description: "Data yang dihapus tidak bisa dikembalikan.", confirmLabel: "Hapus", tone: "danger" })) btn.form?.requestSubmit(btn);
+            }}>Hapus</button>
         )}
         <Msg s={delState ?? state} />
       </div>

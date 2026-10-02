@@ -33,22 +33,25 @@ export function nextQuarter(nowMin: number, openMin: number, closeMin: number): 
 }
 
 const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && a1 > b0;
+/** Booking yang tidak lagi memakai kursi/staf: dibatalkan atau pelanggan tidak datang. */
+const freesSlot = (status: string) => status === "cancelled" || status === "no_show";
 
-/** Booking lain yang tumpang tindih di resource ATAU staf yang sama. */
+/** Booking lain yang tumpang tindih di resource ATAU staf yang sama (± jeda antar-booking, menit). Cermin booking_conflicts(). */
 export function findConflicts<T extends ApptLike>(
   appts: T[],
-  draft: { resourceId: string; staffId: string | null; start: string; end: string; excludeId?: string },
+  draft: { resourceId: string; staffId: string | null; start: string; end: string; excludeId?: string; bufferMin?: number },
 ): T[] {
+  const buf = (draft.bufferMin ?? 0) * 60_000;
   const s = Date.parse(draft.start), e = Date.parse(draft.end);
-  return appts.filter((a) => a.id !== draft.excludeId && a.status !== "cancelled"
+  return appts.filter((a) => a.id !== draft.excludeId && !freesSlot(a.status)
     && (a.resource_id === draft.resourceId || (!!draft.staffId && a.staff_id === draft.staffId))
-    && overlaps(Date.parse(a.start_at), Date.parse(a.end_at), s, e));
+    && overlaps(Date.parse(a.start_at) - buf, Date.parse(a.end_at) + buf, s, e));
 }
 
 /** Id booking yang bentrok di resource yang sama (untuk badge "Bentrok" di grid). */
 export function conflictingIds(appts: ApptLike[]): Set<string> {
   const out = new Set<string>();
-  const live = appts.filter((a) => a.status !== "cancelled");
+  const live = appts.filter((a) => !freesSlot(a.status));
   for (let i = 0; i < live.length; i++) {
     for (let j = i + 1; j < live.length; j++) {
       const a = live[i], b = live[j];

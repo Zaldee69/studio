@@ -88,7 +88,7 @@ test("3 · bentrok: booking tumpang tindih → peringatan → Tetap simpan → b
   await page.selectOption("#f-start", { label: "10:15" }); // Rina 10:00–10:45 (seed)
   await page.fill("#f-name", name);
   await page.getByRole("button", { name: /^Cukur Jenggot ·/ }).click();
-  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(/Jadwal bentrok:.*Rina/);
+  await expect(page.getByRole("dialog").getByRole("alert").filter({ hasText: "Jadwal bentrok" })).toContainText(/Jadwal bentrok:.*Rina/);
   await page.getByRole("button", { name: "Tetap simpan" }).click();
   await expect(card(page, name)).toHaveAccessibleName(/bentrok/);
   await expect(card(page, name)).toContainText("Bentrok");
@@ -118,19 +118,21 @@ test("4 · kasir: /manajer/sdm ditolak, tidak ada void; manajer bisa void", asyn
   await manager.getByRole("button", { name: "Batalkan transaksi (void)" }).click();
   await manager.fill("#void-reason", "Uji e2e");
   await manager.getByRole("button", { name: "Void transaksi" }).click();
-  await expect(manager.getByRole("dialog", { name: "Struk transaksi" })).toContainText("DIBATALKAN (void): Uji e2e");
+  await expect(manager.getByRole("dialog", { name: "Struk transaksi" })).toContainText("DIBATALKAN (void)");
+  await expect(manager.getByRole("dialog", { name: "Struk transaksi" })).toContainText("Alasan void: Uji e2e");
   await manager.context().close();
 });
 
 test("5 · tutup kasir: selisih dihitung benar & tersimpan", async ({ page }) => {
   await login(page, "cashier");
   await page.goto("/kasir/kasir?tab=tutup");
-  const expectedRow = page.getByText("Kas diharapkan (tunai jual + tunai top-up)").locator("..");
+  const main = page.getByRole("main"); // bukan salinan di lembar cetak
+  const expectedRow = main.getByText("Kas diharapkan (tunai jual + tunai top-up)").locator("..");
   await expect(expectedRow).toContainText("Rp");
   const expected = Number((await expectedRow.innerText()).split("Rp")[1].replace(/\D/g, ""));
   await page.fill("#cl-phys", String(expected - 5000));
-  await expect(page.getByText(/Selisih [-−]Rp5\.000 · kurang/)).toBeVisible();
+  await expect(main.getByText(/Selisih [-−]Rp5\.000 · kurang/)).toBeVisible();
   await page.getByRole("button", { name: "Simpan tutup kasir" }).click();
-  await expect(page.getByText(/Penutupan terakhir/)).toBeVisible();
-  await expect(page.getByText(/Penutupan terakhir/).locator("..")).toContainText(/Selisih[-−]Rp5\.000/);
+  await expect(main.getByText(/Penutupan terakhir/)).toBeVisible();
+  await expect(main.getByText(/Penutupan terakhir/).locator("..")).toContainText(/Selisih[-−]Rp5\.000/);
 });

@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHmac } from "node:crypto";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -67,4 +68,39 @@ export function sql<T = Record<string, unknown>>(q: string): T[] {
   const out = execFileSync("npx", ["supabase", "db", "query", "--local", "-f", f], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   const start = out.indexOf("{");
   return start < 0 ? [] : ((JSON.parse(out.slice(start)).rows ?? []) as T[]);
+}
+
+/** Tautan di email terakhir untuk `to` (Mailpit lokal Supabase, port 54324). */
+export async function mailLink(to: string) {
+  for (let i = 0; i < 40; i++) {
+    const r = await (await fetch(`http://127.0.0.1:54324/api/v1/search?query=${encodeURIComponent(`to:${to}`)}`)).json();
+    if (r.messages?.length) {
+      const m = await (await fetch(`http://127.0.0.1:54324/api/v1/message/${r.messages[0].ID}`)).json();
+      const link = (m.Text as string).match(/https?:\/\/\S+\/auth\/v1\/verify\S+/)?.[0];
+      if (link) return link.replace(/[)\]]+$/, "");
+    }
+    await new Promise((res) => setTimeout(res, 250));
+  }
+  throw new Error(`Email untuk ${to} tidak datang`);
+}
+
+/** Akun tim baru via Auth admin API (sudah terkonfirmasi & aktif) — untuk tes yang mengubah pengaturan akun. */
+export async function createTeamUser(email: string, role: "manager" | "cashier") {
+  const r = await fetch(`${SB}/auth/v1/admin/users`, { method: "POST", headers: { apikey: svcKey, Authorization: `Bearer ${svcKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: PW, email_confirm: true, user_metadata: { signup: "team", invite_code: "GB-2026", role: "cashier", full_name: "Tes MFA" } }) });
+  const u = await r.json();
+  if (!u.id) throw new Error(JSON.stringify(u));
+  await admin.from("profiles").update({ role, active: true }).eq("id", u.id);
+  return u.id as string;
+}
+
+/** Kode TOTP (RFC 6238, SHA-1, 30 dtk, 6 digit) dari kunci base32. */
+export function totp(secret: string, t = Date.now()) {
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  const bits = [...secret.replace(/=+$/, "").toUpperCase()].map((c) => A.indexOf(c).toString(2).padStart(5, "0")).join("");
+  const key = Buffer.from(bits.match(/.{8}/g)!.map((b) => parseInt(b, 2)));
+  const msg = Buffer.alloc(8); msg.writeBigUInt64BE(BigInt(Math.floor(t / 30_000)));
+  const h = createHmac("sha1", key).update(msg).digest();
+  const o = h[h.length - 1] & 15;
+  return String((h.readUInt32BE(o) & 0x7fffffff) % 1_000_000).padStart(6, "0");
 }

@@ -7,7 +7,7 @@ import { createPublicClient } from "./supabase/public";
 /** Semua konten landing dari database (Pengaturan → Halaman publik). */
 export const loadSite = cache(async () => {
   const db = createPublicClient();
-  const [s, services, staff, packs, hours, closures, photos, reviews] = await Promise.all([
+  const [s, services, staff, packs, hours, closures, photos, reviews, bookable] = await Promise.all([
     db.from("public_settings").select("*").single(),
     db.from("public_services").select("id, name, category, price, duration_min, public_description").neq("category", "retail").order("sort"),
     db.from("public_staff").select("id, name, category, photo_path").order("sort"),
@@ -16,10 +16,12 @@ export const loadSite = cache(async () => {
     db.from("special_closures").select("date, reason").gte("date", jktDate()).lte("date", addDays(jktDate(), 60)).order("date"),
     db.from("site_photos").select("id, kind, path, caption, sort").order("sort"),
     db.from("reviews").select("id, author, source, body").order("sort"),
+    db.rpc("bookable_categories"),
   ]);
   return {
     s: s.data!, services: services.data ?? [], staff: staff.data ?? [], packs: packs.data ?? [], hours: hours.data ?? [],
     closures: closures.data ?? [], photos: photos.data ?? [], reviews: reviews.data ?? [],
+    bookable: (bookable.data ?? []) as string[], // kategori yang punya kursi/meja & staf aktif
   };
 });
 

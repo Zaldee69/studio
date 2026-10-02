@@ -89,11 +89,15 @@ select:not([multiple]):not([size]) {
 
 .num, .tabular { font-variant-numeric: tabular-nums; }
 
-/* Cetak struk / rekap: hanya .print-area yang tercetak */
-/* Struk/tutup kasir: hanya .print-area yang dicetak. Halaman lain (slip, laporan) tercetak apa adanya dengan print:hidden. */
+/* Cetak struk / rekap tutup kasir: hanya <PrintSheet> (components/print-sheet.tsx, dirender langsung di <body>) yang
+   tercetak — elemen lain di-display:none (bukan visibility) agar tidak memakan tempat. Halaman lain (slip, laporan)
+   tercetak apa adanya dengan print:hidden. */
+.print-sheet { display: none; }
 @media print {
-  body:has(.print-area) * { visibility: hidden; }
-  .print-area, .print-area * { visibility: visible; }
-  .print-area { position: absolute; inset: 0 auto auto 0; width: 100%; padding: 0; color: #000; background: #fff; }
+  /* grafik batang, pita status & kartu diwarnai lewat background — tetap tercetak walau "Background graphics" mati */
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body:has(> .print-sheet) > :not(.print-sheet) { display: none !important; }
+  html:has(body > .print-sheet), body:has(> .print-sheet) { background: #fff; }
+  body > .print-sheet { display: block; color: #000; background: #fff; }
   .no-print { display: none !important; }
 }

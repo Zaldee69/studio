@@ -17,12 +17,13 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : u
 export default async function BookingPage({ searchParams }: PageProps<"/booking">) {
   const sp = await searchParams;
   const supabase = await createClient();
-  const [{ data: services }, { data: staff }, { data: shop }, { data: hours }, { data: closures }, profile] = await Promise.all([
+  const [{ data: services }, { data: staff }, { data: shop }, { data: hours }, { data: closures }, { data: bookable }, profile] = await Promise.all([
     supabase.from("public_services").select("id, name, category, price, duration_min, public_description, online_bookable").neq("category", "retail").order("sort"),
     supabase.from("public_staff").select("id, name, category, photo_path").order("sort"),
     supabase.from("public_settings").select("*").single(),
     supabase.from("opening_hours").select("weekday, open_time, close_time, closed"),
     supabase.from("special_closures").select("date").gte("date", jktDate()),
+    supabase.rpc("bookable_categories"), // kategori yang punya kursi/meja & staf aktif
     getProfile(),
   ]);
 
@@ -56,11 +57,14 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
     together: one(sp.mode) !== "berurutan", date: one(sp.tgl), time: one(sp.jam),
     cat: one(sp.kategori) === "nail" ? "nail" : "barbershop",
   };
+  const cats = (["barbershop", "nail"] as const).filter((c) => (bookable ?? []).includes(c));
+  if (cats.length && !cats.includes(init.cat)) init.cat = cats[0];
 
   return (
     <BookingFlow
       customer={customer} init={init} reschedule={reschedule}
-      services={(services ?? []).filter((s) => s.online_bookable).map((s) => ({
+      cats={cats}
+      services={(services ?? []).filter((s) => s.online_bookable && (cats as readonly string[]).includes(s.category!)).map((s) => ({
         id: s.id!, name: s.name!, category: s.category as "barbershop" | "nail", price: s.price!, duration: s.duration_min!, description: s.public_description ?? "",
       }))}
       staff={(staff ?? []).map((s) => ({ id: s.id!, name: s.name!, category: s.category!, photo: photoUrl(s.photo_path) }))}
@@ -68,7 +72,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
       shop={{
         name: shop?.shop_name ?? "Groom & Bloom", address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "",
         bundlePct: shop?.bundle_pct ?? 10, maxDays: shop?.booking_max_days_ahead ?? 14, cutoffHours: shop?.cancel_cutoff_hours ?? 2,
-        open: shop?.online_booking_open ?? true, review: shop?.online_booking_mode === "review",
+        open: (shop?.online_booking_open ?? true) && cats.length > 0, review: shop?.online_booking_mode === "review",
       }}
     />
   );

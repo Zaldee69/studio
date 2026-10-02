@@ -20,7 +20,7 @@ export function StationLogin({ staff }: { staff: S[] }) {
             <span className="flex size-14 items-center justify-center rounded-full text-xl font-bold"
               style={s.category === "nail" ? { background: "#F7E3EC", color: "#8A2352" } : { background: "#E6E3F7", color: "#3A2F8F" }}>{s.name.charAt(0)}</span>
             <b className="text-lg">{s.name}</b>
-            <span className="text-xs text-muted">{s.has_pin ? (s.category === "nail" ? "Teknisi nail" : "Kapster") : "PIN belum diatur"}</span>
+            <span className="text-xs text-muted">{s.has_pin ? (s.category === "nail" ? "Nail artist" : "Kapster") : "PIN belum diatur"}</span>
           </button>
         ))}
         {!staff.length && <p className="col-span-full text-[#D8D2C6]">Belum ada kapster dengan akun aktif.</p>}

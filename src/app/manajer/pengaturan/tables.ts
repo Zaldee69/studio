@@ -48,6 +48,7 @@ export const TABLES = {
     fields: [
       { name: "name", label: "Nama", type: "text", w: "12rem" },
       { name: "category", label: "Kategori", type: "select", options: CATEGORY, w: "10rem" },
+      { name: "home_resource_id", label: "Kursi/meja utama", type: "select", options: "resources", nullable: true, w: "11rem" },
       { name: "commission_pct_override", label: "Komisi khusus (%)", type: "int", nullable: true, min: 0, max: 100, w: "8rem" },
       { name: "sort", label: "Urut", type: "int", w: "4.5rem" },
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },

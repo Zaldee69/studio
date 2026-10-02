@@ -4,13 +4,14 @@ import { savePublicSettings, saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
 import { ClosuresForm, HoursForm, OutboundLog, PhotoManager } from "./public-page";
 import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
+import { MfaSettings } from "./mfa-settings";
 import { StationSettings } from "./station-settings";
 
 export const metadata = { title: "Pengaturan" };
 
 const TABS = [
   ["umum", "Umum"], ["layanan", "Layanan"], ["kursi", "Kursi & meja"],
-  ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"],
+  ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["keamanan", "Keamanan"],
 ] as const;
 
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
@@ -25,12 +26,26 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       supabase.from("inventory_items").select("id, name").eq("kind", "retail").order("name"),
     ]);
     body = <CrudTable table="services" rows={services ?? []} options={{ services: opt(services), retailItems: opt(items) }} />;
-  } else if (tab === "kursi") {
-    const { data } = await supabase.from("resources").select("*").order("sort");
-    body = <CrudTable table="resources" rows={data ?? []} />;
-  } else if (tab === "staf") {
-    const { data } = await supabase.from("staff").select("*").order("sort");
-    body = <CrudTable table="staff" rows={data ?? []} />;
+  } else if (tab === "kursi" || tab === "staf") {
+    const [{ data }, { data: open }, { data: res }] = await Promise.all([
+      tab === "kursi" ? supabase.from("resources").select("*").order("sort") : supabase.from("staff").select("*").order("sort"),
+      supabase.rpc("bookable_categories"),
+      supabase.from("resources").select("id, name, type").eq("active", true).order("sort"),
+    ]);
+    // kursi utama: diutamakan saat booking, harus sekategori (dijaga trigger DB)
+    const resources = (res ?? []).map((r) => [r.id, `${r.name} (${r.type === "nail" ? "nail" : "barber"})`] as [string, string]);
+    const hidden = (["barbershop", "nail"] as const).filter((c) => !(open ?? []).includes(c));
+    body = (
+      <div className="space-y-4">
+        {hidden.length > 0 && (
+          <p role="status" className="rounded-lg bg-st-booked p-4 text-sm">
+            Reservasi online <b>{hidden.map((c) => (c === "nail" ? "nail" : "barbershop")).join(" & ")}</b> sedang disembunyikan dari
+            halaman publik — butuh minimal satu kursi/meja <b>dan</b> satu staf aktif di kategori itu.
+          </p>
+        )}
+        <CrudTable table={tab === "kursi" ? "resources" : "staff"} rows={data ?? []} options={{ resources }} />
+      </div>
+    );
   } else if (tab === "publik") {
     const [{ data: st }, { data: hours }, { data: closures }, { data: photos }, { data: staff }, { data: reviews }, { data: msgs }] = await Promise.all([
       supabase.from("settings").select("*").single(),
@@ -81,6 +96,8 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
   } else if (tab === "stasiun") {
     const { data } = await supabase.from("staff").select("id, name").eq("active", true).order("sort");
     body = <StationSettings staff={data ?? []} />;
+  } else if (tab === "keamanan") {
+    body = <MfaSettings />;
   } else if (tab === "deposit") {
     const { data } = await supabase.from("deposit_packages").select("*").order("amount_paid");
     body = <CrudTable table="deposit_packages" rows={data ?? []} />;

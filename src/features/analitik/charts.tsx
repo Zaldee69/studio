@@ -86,13 +86,13 @@ export function HBars({ rows, target, max = 100, ariaLabel }: {
   return (
     <div role="img" aria-label={ariaLabel} className="relative flex flex-col gap-2">
       {rows.map((r) => (
-        <div key={r.label} className="grid grid-cols-[120px_1fr] items-center gap-2 text-sm min-[820px]:grid-cols-[150px_1fr_190px]" title={`${r.label}: ${r.caption}`}>
+        <div key={r.label} className="grid grid-cols-[120px_1fr] items-center gap-2 text-sm min-[820px]:grid-cols-[150px_1fr_190px] print:grid-cols-[130px_1fr_170px]" title={`${r.label}: ${r.caption}`}>
           <span className="truncate font-semibold">{r.label}</span>
           <span className="relative h-6 rounded-md bg-paper">
             <span className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${Math.min(100, (r.value / m) * 100)}%`, background: r.color }} />
             {target && <span aria-hidden="true" className="absolute inset-y-[-3px] w-0.5 bg-ink" style={{ left: `${(target.value / m) * 100}%` }} />}
           </span>
-          <span className="col-span-2 text-xs text-muted tabular min-[820px]:col-span-1 min-[820px]:text-right">{r.caption}</span>
+          <span className="col-span-2 text-xs text-muted tabular min-[820px]:col-span-1 min-[820px]:text-right print:col-span-1 print:text-right">{r.caption}</span>
         </div>
       ))}
       {target && <span className="text-xs text-muted"><span aria-hidden="true" className="mr-1 inline-block h-3 w-0.5 bg-ink align-middle" />{target.label}</span>}

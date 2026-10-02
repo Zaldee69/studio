@@ -4,6 +4,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getProfile } from "@/lib/auth";
+import { log } from "@/lib/log";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { STATION_ACTIVE, STATION_COOKIE, STATION_IDLE_S } from "./constants";
 
@@ -44,6 +45,7 @@ export async function stationLogin(_: StationState, fd: FormData): Promise<Stati
   if (error) return { error: "Gagal memeriksa PIN." };
   const r = data as { ok: boolean; reason?: string; email?: string; left?: number; locked_until?: string };
   if (!r.ok) {
+    log("warn", "station_login_denied", { staff: String(fd.get("staff_id")), reason: r.reason ?? "unknown" });
     return { error: r.reason === "locked" ? "Terlalu banyak PIN salah. Coba lagi 5 menit lagi."
       : r.reason === "wrong" ? `PIN salah. Sisa ${r.left} percobaan.`
       : r.reason === "no_pin" ? "PIN belum diatur. Minta manajer mengatur PIN di Pengaturan."
@@ -55,6 +57,7 @@ export async function stationLogin(_: StationState, fd: FormData): Promise<Stati
   const supabase = await createClient();
   const { error: otpErr } = await supabase.auth.verifyOtp({ type: "magiclink", token_hash: link.properties.hashed_token });
   if (otpErr) return { error: "Gagal membuat sesi." };
+  log("info", "station_login", { staff: String(fd.get("staff_id")) });
   store.set(STATION_ACTIVE, "1", { httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: IDLE_S });
   redirect("/kapster");
 }

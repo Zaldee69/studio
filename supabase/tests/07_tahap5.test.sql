@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(71);
+select plan(72);
 
 create table tests.v (k text primary key, v text);
 grant all on tests.v to anon, authenticated;
@@ -245,13 +245,17 @@ select results_eq($$ select next_due, days_left from maintenance_status('2027-01
 select tests.su();
 select ok(maintenance_reminders('2026-09-28') >= 1, 'pengingat perawatan terlambat → notifikasi manajer');
 select is(maintenance_reminders('2026-09-28'), 0, 'pengingat perawatan sekali per hari');
+-- Perawatan khusus manajer (kapster & nail artist tidak melihat / menandai tugas perawatan)
+create function tests.task(n text) returns uuid language sql security definer as $$ select id from public.maintenance_tasks where name = n $$;
+grant execute on function tests.task(text) to authenticated;
 select tests.login(tests.andi());
 select is((select count(*) from maintenance_logs), 0::bigint, 'R4 kapster tidak membaca tabel log (biaya)');
-select is((select history -> 0 ->> 'cost' from maintenance_status('2026-09-28') where name = 'HVAC uji'), null, 'R4 riwayat untuk kapster tanpa biaya');
-select throws_like(format($$ select maintenance_mark_done('%s', 'x', null, 1000) $$, (select task_id from maintenance_status() where name = 'HVAC uji')),
-                   '%Biaya hanya%', 'kapster tidak bisa mengisi biaya');
-select lives_ok(format($$ select maintenance_mark_done('%s', 'filter dibersihkan') $$, (select task_id from maintenance_status() where name = 'HVAC uji')),
-                'kapster menandai selesai');
+select is((select count(*) from maintenance_tasks), 0::bigint, 'kapster tidak membaca tugas perawatan');
+select throws_like($$ select * from maintenance_status() $$, '%Akses ditolak%', 'kapster tidak bisa melihat status perawatan');
+select throws_like(format($$ select maintenance_mark_done('%s', 'x') $$, tests.task('HVAC uji')), '%Akses ditolak%', 'kapster tidak bisa menandai perawatan');
+select tests.login(tests.mgr());
+select lives_ok(format($$ select maintenance_mark_done('%s', 'filter dibersihkan', null, 350000) $$, tests.task('HVAC uji')),
+                'manajer menandai selesai + biaya');
 select is((select status from maintenance_status() where name = 'HVAC uji'), 'ok', 'setelah ditandai → 14 hari lagi');
 
 select * from finish();

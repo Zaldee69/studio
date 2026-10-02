@@ -26,7 +26,7 @@ export type AnalyticsData = {
   online: { landing: number; booking_open: number; booked: number; share_online: number | null; cancel_rate: number | null; no_show_rate: number | null; online_appts: number; all_appts: number; no_show: number };
   insights: { code: string; message: string; href: string }[];
   staffList: { id: string; name: string }[];
-  settings: { aov_target_barbershop: number; aov_target_nail: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
+  settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
     insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number };
 };
 
@@ -87,7 +87,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Analitik KPI</h1>
-        <Link href={`/manajer/analitik/laporan?bulan=${d.monthForReport}`} className="btn-ghost h-11">Laporan bulanan (PDF)</Link>
+        <Link href={`/manajer/analitik/laporan?bulan=${d.monthForReport}`} className="btn-ghost h-11">Laporan owner (PDF/Excel)</Link>
       </div>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <div role="group" aria-label="Periode" className="flex flex-wrap gap-1.5">
@@ -260,6 +260,7 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
   const toast = useToast(); const online = useOnline();
   const [f, setF] = useState(Object.fromEntries(Object.entries(s).map(([k, v]) => [k, String(v)])) as Record<keyof typeof s, string>);
   const fields: [keyof typeof s, string][] = [
+    ["revenue_target_monthly", "Target omzet bersih per bulan (Rp)"],
     ["aov_target_barbershop", "Target AOV barbershop (Rp)"], ["aov_target_nail", "Target AOV nail (Rp)"],
     ["retail_ratio_min", "Rasio ritel minimum (%)"], ["retail_ratio_max", "Rasio ritel maksimum (%)"], ["utilization_target", "Target utilisasi (%)"],
     ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],

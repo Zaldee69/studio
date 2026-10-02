@@ -129,8 +129,12 @@ select ok(enqueue_reminders() >= 1, 'pengingat H-1 diantrekan untuk booking beso
 select is(enqueue_reminders(), 0, 'pengingat tidak dobel');
 insert into staff_time_off (staff_id, start_at, end_at, status) values (tests.staff_andi(), jkt(jkt_today() + 7, '00:00'), jkt(jkt_today() + 8, '00:00'), 'approved');
 select ok(tests.staff_andi() in (select public_staff_off(jkt_today() + 7)), 'staf izin sehari penuh disembunyikan di langkah Staf');
+-- kunjungan nyata (browser dev yang terbuka) ikut tercatat → bandingkan dengan jumlah event landing sesi lain
+create function tests.landing_lain() returns int language sql security definer as $$
+  select count(*)::int from public.funnel_events where step = 'landing' and session_id <> 'sesi-uji-1234' and created_at > now() - interval '1 day' $$;
+grant execute on function tests.landing_lain() to authenticated;
 select tests.login(tests.mgr());
-select is((funnel_summary(now() - interval '1 day') ->> 'landing')::int, 1, 'ringkasan funnel untuk manajer');
+select is((funnel_summary(now() - interval '1 day') ->> 'landing')::int - tests.landing_lain(), 1, 'ringkasan funnel untuk manajer');
 
 -- ---------- Hapus akun ----------
 select tests.login(tests.rina());

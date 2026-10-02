@@ -70,6 +70,14 @@ describe("jadwal", () => {
     expect(d("r1", "andi", "10:00", "10:45", "1")).toEqual(["3"]);   // edit: kecualikan diri
     expect([...conflictingIds(appts)].sort()).toEqual(["1", "3"]);
   });
+  it("tidak datang (no_show) membebaskan slot; jeda antar-booking memperlebar bentrok", () => {
+    const list = [a("5", "r4", "maya", "14:00", "14:45", "no_show"), a("6", "r5", "dewi", "15:00", "15:45")];
+    const at = (s: string) => `2026-09-30T${s}:00+07:00`;
+    expect(findConflicts(list, { resourceId: "r4", staffId: "maya", start: at("14:05"), end: at("14:50") })).toEqual([]);
+    expect(conflictingIds([...list, a("7", "r4", "maya", "14:05", "14:50")]).size).toBe(0);
+    expect(findConflicts(list, { resourceId: "r5", staffId: "x", start: at("15:45"), end: at("16:30") })).toEqual([]);
+    expect(findConflicts(list, { resourceId: "r5", staffId: "x", start: at("15:45"), end: at("16:30"), bufferMin: 15 }).map((x) => x.id)).toEqual(["6"]);
+  });
   it("menit Jakarta & pembulatan 15 menit", () => {
     expect(jktMinutes("2026-09-30T03:07:00Z")).toBe(10 * 60 + 7);
     expect(nextQuarter(607, 540, 1260)).toBe(615);

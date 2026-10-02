@@ -19,7 +19,7 @@ describe("notifikasi", () => {
     expect(r.subject).toBe("Pengingat: besok di Groom & Bloom");
     expect(r.text).toContain("Kode booking: GB-7K3Q");
     expect(r.text).toContain("pukul 10.30 WIB");
-    expect(r.text).toContain("Kapster/teknisi: Andi, Sari");
+    expect(r.text).toContain("Kapster/nail artist: Andi, Sari");
     expect(r.html).toContain("&lt;Rina&gt;");
     expect(render("booking_pending", g).text).toContain("sedang dikonfirmasi toko");
   });

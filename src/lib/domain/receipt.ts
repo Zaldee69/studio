@@ -6,7 +6,13 @@ export interface Receipt {
   shop: string;
   when: string;
   customer: string;
-  items: { name: string; price: number }[];
+  items: { name: string; price: number; staff?: string | null }[];
+  /** nomor struk (8 karakter awal id transaksi) & info toko di kepala struk */
+  no?: string;
+  shopAddress?: string;
+  shopWhatsapp?: string;
+  shopInstagram?: string;
+  cashier?: string | null;
   subtotal: number;
   discount: number;
   discountLabel: string;
@@ -24,7 +30,7 @@ export const cashChange = (paid: number, received: number | null) => (received =
 export function receiptText(r: Receipt): string {
   const change = cashChange(r.paid, r.cashReceived);
   return [
-    `*${r.shop}*`, r.when, r.customer, "",
+    `*${r.shop}*`, r.no ? `Struk #${r.no}` : "", r.when, r.customer, "",
     ...r.items.map((i) => `${i.name} — ${formatRupiah(i.price)}`), "",
     `Subtotal: ${formatRupiah(r.subtotal)}`,
     r.discount ? `${r.discountLabel}: −${formatRupiah(r.discount)}` : "",

@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
-import { admin, newSession, randomWa, uniq } from "./helpers";
+import { admin, mailLink, newSession, randomWa, uniq } from "./helpers";
 
 // Tahap 3 — wajah publik: landing → booking online → konter/HP kapster, bentrok slot, pelanggan lama, mode tinjau.
 // Semua di tanggal H+2/H+3 supaya tidak bergantung jam saat tes jalan.
@@ -46,7 +46,9 @@ async function register(p: Page, name: string, email: string) {
   await p.fill("#c-email", email);
   await p.fill("#c-pw1", "rahasia123");
   await p.fill("#c-pw2", "rahasia123");
-  await p.getByRole("button", { name: "Daftar & masuk" }).click();
+  await p.getByRole("button", { name: "Buat akun" }).click();
+  await expect(p.getByText(/Kami mengirim tautan konfirmasi/)).toBeVisible();
+  await p.goto(await mailLink(email)); // klik tautan konfirmasi → /auth/konfirmasi → /akun
   await expect(p.getByText("Saldo deposit", { exact: true })).toBeVisible();
 }
 
@@ -158,6 +160,15 @@ test("5 · mode tinjau → booking menunggu → kasir Terima → status pelangga
     const { data: grp } = await admin.from("booking_groups").select("id, customer:customers!inner(name)").eq("customer.name", name).single();
     const { data: msgs } = await admin.from("outbound_messages").select("template").eq("booking_group_id", grp!.id);
     expect(msgs?.map((m) => m.template)).toEqual(expect.arrayContaining(["booking_pending", "booking_confirmed"]));
+
+    // pelanggan membatalkan sendiri: "Tidak" di konfirmasi tidak membatalkan, "Batalkan booking" membatalkan
+    await p.getByRole("button", { name: "Batalkan", exact: true }).click();
+    await p.getByRole("alertdialog").getByRole("button", { name: "Tidak" }).click();
+    await expect(p.getByRole("alertdialog")).toBeHidden();
+    await p.getByRole("button", { name: "Batalkan", exact: true }).click();
+    await p.getByRole("alertdialog").getByRole("button", { name: "Batalkan booking" }).click();
+    await expect.poll(async () => (await admin.from("appointments").select("status").eq("booking_group_id", grp!.id).single()).data?.status).toBe("cancelled");
+    await expect(p.getByRole("button", { name: /^(Batalkan|Membatalkan…)$/ })).toHaveCount(0); // keluar dari daftar mendatang
   } finally {
     await admin.from("settings").update({ online_booking_mode: "auto" }).eq("id", true);
   }
@@ -179,4 +190,70 @@ test("konkurensi · 20 permintaan paralel ke slot yang sama → tepat 1 sukses; 
   expect(new Set(dup.map((r) => r.data.code)).size).toBe(1);
   const { count } = await admin.from("booking_groups").select("id", { count: "exact", head: true }).eq("client_request_id", req);
   expect(count).toBe(1);
+});
+
+test("6 · tautan/tab lama berisi layanan & staf yang sudah tidak ada → bukan \"semua tanggal penuh\"", async ({ page }) => {
+  const { potong } = await ids();
+  const ghost = crypto.randomUUID();
+  // tautan lama: langsung ke langkah waktu dengan id layanan terhapus → kembali ke pilih layanan + pemberitahuan
+  await page.goto(`/booking?langkah=waktu&layanan=${ghost}&tgl=${H3}`);
+  await expect(page.getByText(/sudah tidak tersedia, jadi kami kosongkan/)).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Potong Rambut Rp/ })).toBeVisible();
+  await expect(page.getByText(/sudah penuh/)).toHaveCount(0);
+
+  // staf lama dibuang (jadi "Siapa saja"), layanan valid tetap → jam tampil
+  await page.goto(`/booking?langkah=waktu&layanan=${potong}&staf=barbershop:${ghost}&tgl=${H3}`);
+  await expect(page.getByText(/sudah tidak tersedia, jadi kami kosongkan/)).toBeVisible();
+  await expect(page.locator("button[aria-pressed]:not([aria-label])", { hasText: /^\d\d:\d\d$/ }).first()).toBeVisible();
+
+  // tab terbuka lama: layanan dinonaktifkan setelah halaman dimuat → pesan yang tepat + tombol pilih ulang
+  const { data: svc } = await admin.from("services").insert({ name: `Sementara ${uniq()}`, category: "barbershop", price: 50_000, duration_min: 30, sort: 99 }).select("id, name").single();
+  try {
+    await page.goto(`/booking?langkah=waktu&layanan=${svc!.id}&tgl=${H3}`);
+    await expect(page.locator("button[aria-pressed]:not([aria-label])", { hasText: /^\d\d:\d\d$/ }).first()).toBeVisible();
+    await admin.from("services").update({ active: false }).eq("id", svc!.id);
+    await page.locator("button[aria-pressed][aria-label]").nth(4).click();
+    await expect(page.getByText(/Layanan yang dipilih sudah tidak tersedia untuk booking online/)).toBeVisible();
+    await expect(page.getByText(/sudah penuh/)).toHaveCount(0);
+    await page.getByRole("button", { name: "Pilih ulang layanan" }).click();
+    await expect(page).toHaveURL(/\/booking\?langkah=layanan/);
+    await expect(page.getByRole("button", { name: new RegExp(`^${svc!.name}`) })).toHaveCount(0);
+  } finally {
+    await admin.from("services").delete().eq("id", svc!.id);
+  }
+});
+
+test("7 · tidak ada meja nail aktif → reservasi nail tidak ditawarkan (landing, booking) & manajer diberi tahu", async ({ page, browser }, info) => {
+  const { data: nail } = await admin.from("resources").select("id, name").eq("type", "nail").order("sort");
+  const last = nail!.at(-1)!;
+  await admin.from("resources").update({ active: false }).eq("type", "nail").neq("id", last.id);
+  const m = await newSession(browser, info, "manager");
+  // meja terakhir dimatikan lewat Pengaturan (menyegarkan cache landing seperti pemakaian nyata)
+  const toggle = async (on: boolean) => {
+    await m.goto("/manajer/pengaturan?tab=kursi");
+    const row = m.locator("form", { has: m.locator(`input[value="${last.name}"]`) });
+    await row.getByLabel("Aktif").setChecked(on);
+    await row.getByRole("button", { name: "Simpan" }).click();
+    await expect(row.getByRole("status")).toBeVisible();
+  };
+  try {
+    await toggle(false);
+    await m.reload();
+    await expect(m.getByText(/Reservasi online nail sedang disembunyikan/)).toBeVisible();
+
+    await page.goto("/");
+    await expect(page.getByRole("link", { name: "Reservasi Bloom" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Reservasi Groom" })).toBeVisible();
+    await page.goto("/booking?kategori=nail");
+    await expect(page.getByRole("tab", { name: /Bloom/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Manicure Basic Rp/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /^Potong Rambut Rp/ })).toBeVisible();
+    await expect(page.getByText("Paket Groom & Bloom")).toHaveCount(0);
+  } finally {
+    await admin.from("resources").update({ active: true }).eq("type", "nail");
+    await toggle(true);
+    await m.context().close();
+  }
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Reservasi Bloom" })).toBeVisible();
 });

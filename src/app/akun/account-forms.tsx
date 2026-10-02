@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
+import { passwordError } from "@/lib/password";
 import { createClient } from "@/lib/supabase/client";
 import { cancelBooking, deleteAccount, updateName, type AkunState } from "./actions";
 
@@ -10,11 +12,15 @@ const Msg = ({ s }: { s: AkunState }) => s?.error ? <p role="alert" className={e
 
 export function CancelButton({ id }: { id: string }) {
   const [s, action, pending] = useActionState(cancelBooking, undefined);
+  const confirm = useConfirm();
   return (
-    <form action={action} className="flex flex-col items-end gap-1"
-      onSubmit={(e) => { if (!confirm("Batalkan booking ini?")) e.preventDefault(); }}>
+    <form action={action} className="flex flex-col items-end gap-1">
       <input type="hidden" name="id" value={id} />
-      <button disabled={pending} className="btn-line border-[#7A2E26] text-[#F2B8B0] hover:bg-[#2A1512]">{pending ? "Membatalkan…" : "Batalkan"}</button>
+      <button disabled={pending} onClick={async (e) => {
+        e.preventDefault();
+        const btn = e.currentTarget; // requestSubmit tidak memicu onClick lagi
+        if (await confirm({ title: "Batalkan booking ini?", description: "Jadwal akan dilepas dan tidak bisa dikembalikan.", confirmLabel: "Batalkan booking", cancelLabel: "Tidak", tone: "danger" })) btn.form?.requestSubmit(btn);
+      }} className="btn-line border-[#7A2E26] text-[#F2B8B0] hover:bg-[#2A1512]">{pending ? "Membatalkan…" : "Batalkan"}</button>
       <Msg s={s} />
     </form>
   );
@@ -26,12 +32,20 @@ export function ProfileForms({ name, email }: { name: string; email: string }) {
   const [em, setEm] = useState(email);
   const [pw, setPw] = useState("");
   const [authMsg, setAuthMsg] = useState<AkunState>(undefined);
+  const [nonce, setNonce] = useState<string | null>(null); // kode dari email bila sesi sudah lama (secure_password_change)
   async function saveAuth(kind: "email" | "password") {
     setAuthMsg(undefined);
-    if (kind === "password" && pw.length < 8) return setAuthMsg({ error: "Kata sandi minimal 8 karakter." });
-    const { error } = await createClient().auth.updateUser(kind === "email" ? { email: em.trim() } : { password: pw });
-    if (error) return setAuthMsg({ error: error.message });
-    setPw("");
+    const weak = kind === "password" ? passwordError(pw) : null;
+    if (weak) return setAuthMsg({ error: weak });
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser(kind === "email" ? { email: em.trim() } : { password: pw, ...(nonce ? { nonce: nonce.trim() } : {}) });
+    if (error?.code === "reauthentication_needed" || error?.code === "reauthentication_not_valid") {
+      if (error.code === "reauthentication_needed") await supabase.auth.reauthenticate();
+      setNonce("");
+      return setAuthMsg({ error: error.code === "reauthentication_needed" ? "Demi keamanan, masukkan kode yang kami kirim ke email Anda, lalu tekan Ganti sandi lagi." : "Kode verifikasi salah atau kedaluwarsa." });
+    }
+    if (error) return setAuthMsg({ error: error.code === "same_password" ? "Pakai kata sandi yang berbeda dari sebelumnya." : "Gagal menyimpan. Coba lagi." });
+    setPw(""); setNonce(null);
     setAuthMsg({ ok: kind === "email" ? "Cek email baru Anda untuk konfirmasi perubahan." : "Kata sandi diganti." });
   }
   const row = "flex flex-wrap items-end gap-2";
@@ -50,8 +64,12 @@ export function ProfileForms({ name, email }: { name: string; email: string }) {
       </div>
       <div className={row}>
         <label className="flex min-w-48 flex-1 flex-col gap-2"><span className="lux-label">Kata sandi baru</span>
-          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="lux-input" autoComplete="new-password" placeholder="Min. 8 karakter" /></label>
-        <button onClick={() => saveAuth("password")} disabled={!pw} className="btn-line h-12">Ganti sandi</button>
+          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="lux-input" autoComplete="new-password" placeholder="Min. 8, huruf & angka" /></label>
+        {nonce !== null && (
+          <label className="flex w-36 flex-col gap-2"><span className="lux-label">Kode email</span>
+            <input value={nonce} onChange={(e) => setNonce(e.target.value)} className="lux-input" inputMode="numeric" autoComplete="one-time-code" /></label>
+        )}
+        <button onClick={() => saveAuth("password")} disabled={!pw || nonce === ""} className="btn-line h-12">Ganti sandi</button>
       </div>
       <Msg s={authMsg} />
     </div>

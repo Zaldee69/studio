@@ -575,13 +575,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "active": boolean,"created_at": string,"customer_id": string | null,"email": string | null,"full_name": string,"id": string,"phone": string | null,"role": Database["public"]['Enums']["app_role"],"staff_id": string | null
+                    "active": boolean,"created_at": string,"customer_id": string | null,"email": string | null,"full_name": string,"id": string,"mfa_enabled": boolean,"phone": string | null,"role": Database["public"]['Enums']["app_role"],"staff_id": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
+                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id": string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
+                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id"?: string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -822,13 +822,13 @@ isOneToOne: false
                   ]
                 },"settings": {
                   Row: {
-                    "aov_target_barbershop": number,"aov_target_nail": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"churn_weeks": number,"close_time": string,"commission_pct": number,"followup_window_days": number,"founded_year": number | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"maps_embed_url": string,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"open_time": string,"privacy_policy": string,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
+                    "aov_target_barbershop": number,"aov_target_nail": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"churn_weeks": number,"close_time": string,"commission_pct": number,"followup_window_days": number,"founded_year": number | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"maps_embed_url": string,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"open_time": string,"privacy_policy": string,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
                   }
                   Insert: {
-                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_pct"?: number,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"open_time"?: string,"privacy_policy"?: string,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_pct"?: number,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"open_time"?: string,"privacy_policy"?: string,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Update: {
-                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_pct"?: number,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"open_time"?: string,"privacy_policy"?: string,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_pct"?: number,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"open_time"?: string,"privacy_policy"?: string,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Relationships: [
                     
@@ -918,16 +918,22 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"id": string,"name": string,"photo_path": string | null,"sort": number
+                    "active": boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"home_resource_id": string | null,"id": string,"name": string,"photo_path": string | null,"sort": number
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"id"?: string,"name": string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"home_resource_id"?: string | null,"id"?: string,"name": string,"photo_path"?: string | null,"sort"?: number
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"id"?: string,"name"?: string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"photo_path"?: string | null,"sort"?: number
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "staff_home_resource_id_fkey"
+      columns: ["home_resource_id"]
+isOneToOne: false
+      referencedRelation: "resources"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"staff_pins": {
                   Row: {
@@ -1391,13 +1397,13 @@ isOneToOne: false
                   ]
                 },"public_settings": {
                   Row: {
-                    "bloom_text": string | null,"booking_lead_minutes": number | null,"booking_max_days_ahead": number | null,"bundle_pct": number | null,"cancel_cutoff_hours": number | null,"churn_weeks": number | null,"close_time": string | null,"founded_year": number | null,"groom_text": string | null,"hero_text": string | null,"hero_title": string | null,"hero_title_accent": string | null,"maps_embed_url": string | null,"online_booking_mode": string | null,"online_booking_open": boolean | null,"open_time": string | null,"privacy_policy": string | null,"shop_address": string | null,"shop_instagram": string | null,"shop_name": string | null,"shop_whatsapp": string | null,"show_prices": boolean | null,"show_staff": boolean | null,"standards": Json | null,"tagline": string | null,"wa_followup_template": string | null
+                    "bloom_text": string | null,"booking_buffer_minutes": number | null,"booking_lead_minutes": number | null,"booking_max_days_ahead": number | null,"bundle_pct": number | null,"cancel_cutoff_hours": number | null,"churn_weeks": number | null,"close_time": string | null,"founded_year": number | null,"groom_text": string | null,"hero_text": string | null,"hero_title": string | null,"hero_title_accent": string | null,"maps_embed_url": string | null,"online_booking_mode": string | null,"online_booking_open": boolean | null,"open_time": string | null,"privacy_policy": string | null,"shop_address": string | null,"shop_instagram": string | null,"shop_name": string | null,"shop_whatsapp": string | null,"show_prices": boolean | null,"show_staff": boolean | null,"standards": Json | null,"tagline": string | null,"wa_followup_template": string | null
                   }
                   Insert: {
-                           "bloom_text"?: string | null,"booking_lead_minutes"?: number | null,"booking_max_days_ahead"?: number | null,"bundle_pct"?: number | null,"cancel_cutoff_hours"?: number | null,"churn_weeks"?: number | null,"close_time"?: string | null,"founded_year"?: number | null,"groom_text"?: string | null,"hero_text"?: string | null,"hero_title"?: string | null,"hero_title_accent"?: string | null,"maps_embed_url"?: string | null,"online_booking_mode"?: string | null,"online_booking_open"?: boolean | null,"open_time"?: string | null,"privacy_policy"?: string | null,"shop_address"?: string | null,"shop_instagram"?: string | null,"shop_name"?: string | null,"shop_whatsapp"?: string | null,"show_prices"?: boolean | null,"show_staff"?: boolean | null,"standards"?: Json | null,"tagline"?: string | null,"wa_followup_template"?: string | null
+                           "bloom_text"?: string | null,"booking_buffer_minutes"?: number | null,"booking_lead_minutes"?: number | null,"booking_max_days_ahead"?: number | null,"bundle_pct"?: number | null,"cancel_cutoff_hours"?: number | null,"churn_weeks"?: number | null,"close_time"?: string | null,"founded_year"?: number | null,"groom_text"?: string | null,"hero_text"?: string | null,"hero_title"?: string | null,"hero_title_accent"?: string | null,"maps_embed_url"?: string | null,"online_booking_mode"?: string | null,"online_booking_open"?: boolean | null,"open_time"?: string | null,"privacy_policy"?: string | null,"shop_address"?: string | null,"shop_instagram"?: string | null,"shop_name"?: string | null,"shop_whatsapp"?: string | null,"show_prices"?: boolean | null,"show_staff"?: boolean | null,"standards"?: Json | null,"tagline"?: string | null,"wa_followup_template"?: string | null
                          }
                         Update: {
-                           "bloom_text"?: string | null,"booking_lead_minutes"?: number | null,"booking_max_days_ahead"?: number | null,"bundle_pct"?: number | null,"cancel_cutoff_hours"?: number | null,"churn_weeks"?: number | null,"close_time"?: string | null,"founded_year"?: number | null,"groom_text"?: string | null,"hero_text"?: string | null,"hero_title"?: string | null,"hero_title_accent"?: string | null,"maps_embed_url"?: string | null,"online_booking_mode"?: string | null,"online_booking_open"?: boolean | null,"open_time"?: string | null,"privacy_policy"?: string | null,"shop_address"?: string | null,"shop_instagram"?: string | null,"shop_name"?: string | null,"shop_whatsapp"?: string | null,"show_prices"?: boolean | null,"show_staff"?: boolean | null,"standards"?: Json | null,"tagline"?: string | null,"wa_followup_template"?: string | null
+                           "bloom_text"?: string | null,"booking_buffer_minutes"?: number | null,"booking_lead_minutes"?: number | null,"booking_max_days_ahead"?: number | null,"bundle_pct"?: number | null,"cancel_cutoff_hours"?: number | null,"churn_weeks"?: number | null,"close_time"?: string | null,"founded_year"?: number | null,"groom_text"?: string | null,"hero_text"?: string | null,"hero_title"?: string | null,"hero_title_accent"?: string | null,"maps_embed_url"?: string | null,"online_booking_mode"?: string | null,"online_booking_open"?: boolean | null,"open_time"?: string | null,"privacy_policy"?: string | null,"shop_address"?: string | null,"shop_instagram"?: string | null,"shop_name"?: string | null,"shop_whatsapp"?: string | null,"show_prices"?: boolean | null,"show_staff"?: boolean | null,"standards"?: Json | null,"tagline"?: string | null,"wa_followup_template"?: string | null
                          }
                         Relationships: [
                     
@@ -1523,14 +1529,23 @@ isOneToOne: false
 "appt_minutes":
 { Args: { "a": Database["public"]['Tables']["appointments"]['Row'],"p_now": string }; Returns: number
                            },
+"assert_booking_category":
+{ Args: { "p_resource_id": string,"p_service_ids": (string)[],"p_staff_id": string }; Returns: undefined
+                           },
 "auth_role":
 { Args: Record<PropertyKey, never>; Returns: Database["public"]['Enums']["app_role"]
                            },
 "book_online":
 { Args: { "p": Json }; Returns: Json
                            },
+"bookable_categories":
+{ Args: Record<PropertyKey, never>; Returns: string[]
+                           },
 "booking_conflicts":
 { Args: { "p_end": string,"p_exclude"?: string,"p_resource_id": string,"p_staff_id": string,"p_start": string }; Returns: Json
+                           },
+"booking_unavailable_reason":
+{ Args: { "p_date": string,"p_service_ids": (string)[],"p_staff_pick"?: Json }; Returns: string
                            },
 "cancel_booking_admin":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
@@ -1702,6 +1717,9 @@ isOneToOne: false
               "available_minutes": number,"n_actual": number,"name": string,"pct": number,"pct_planned": number,"planned_minutes": number,"planned_vs_actual_avg": number,"resource_id": string,"sold_minutes": number,"type": Database["public"]['Enums']["staff_category"]
             }[]
                            },
+"link_customer_account":
+{ Args: { "p_email": string,"p_name": string,"p_uid": string,"p_verified": boolean }; Returns: string
+                           },
 "lock_booking_day":
 { Args: { "d": string }; Returns: undefined
                            },
@@ -1765,6 +1783,39 @@ isOneToOne: false
                            },
 "opname_start":
 { Args: { "p_scope": string }; Returns: string
+                           },
+"owner_daily":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_finance":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_inventory":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_operations":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_payroll":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_report":
+{ Args: { "p_from": string,"p_ly_from": string,"p_ly_to": string,"p_prev_from": string,"p_prev_to": string,"p_to": string }; Returns: Json
+                           },
+"owner_revenue_target":
+{ Args: { "p_from": string,"p_to": string }; Returns: number
+                           },
+"owner_services":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_staff":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_summary":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
+"owner_top_customers":
+{ Args: { "p_from": string,"p_limit"?: number,"p_to": string }; Returns: Json
                            },
 "payroll_add_adjustment":
 { Args: { "p_amount": number,"p_kind": string,"p_month": string,"p_reason": string,"p_staff_id": string }; Returns: string

@@ -20,6 +20,13 @@ insert into resources (name, type, is_pedicure, sort) values
   ('Meja Manicure 2', 'nail', false, 5), ('Meja Manicure 3', 'nail', false, 6),
   ('Kursi Pedicure', 'nail', true, 7);
 
+-- Kursi/meja utama staf contoh (diutamakan saat booking, tetap boleh pindah bila terpakai)
+update staff s set home_resource_id = r.id
+from (values ('Andi', 'Kursi Barber 1'), ('Rizky', 'Kursi Barber 2'), ('Dimas', 'Kursi Barber 3'),
+             ('Sari', 'Meja Manicure 1'), ('Maya', 'Meja Manicure 2'), ('Dewi', 'Meja Manicure 3')) m(staff, res)
+join resources r on r.name = m.res
+where s.name = m.staff;
+
 -- ---------- Inventaris ----------
 insert into inventory_items (name, kind, unit, unit_cost, reorder_at) values
   ('Shampoo salon', 'consumable', 'ml', 50, 1000),

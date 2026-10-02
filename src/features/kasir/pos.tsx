@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
 import { CatChip, Empty, useOnline, useToast } from "@/components/ui";
 import { bundleHint, calcCart, quickCash, upsellSuggestions, type CartLine } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
@@ -21,6 +22,7 @@ const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\D/g, "")
 /** Kasir: tagihan dari booking + katalog (kiri), keranjang (kanan). Angka final dihitung ulang server (checkout). */
 export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayAppt | null }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const online = useOnline();
   const today = jktDate();
   const svc = useMemo(() => new Map(master.services.map((s) => [s.id, s])), [master.services]);
@@ -61,10 +63,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     setItems([...items, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id }))]);
     if (!customer && a.customer) setCustomer(a.customer);
   }
-  function addService(id: string, fromUpsell = false) {
+  async function addService(id: string, fromUpsell = false) {
     const s = svc.get(id);
     if (!s) return;
-    if (s.category === "retail" && (stock?.get(id) ?? 1) <= 0 && !confirm(`Stok ${s.name} tercatat 0, tetap jual?`)) return;
+    if (s.category === "retail" && (stock?.get(id) ?? 1) <= 0 && !(await confirm({ title: `Stok ${s.name} tercatat 0`, description: "Tetap jual? Stok akan tercatat minus sampai opname berikutnya.", confirmLabel: "Tetap jual" }))) return;
     setDone(null);
     const sameCat = items.find((i) => svc.get(i.serviceId)?.category === s.category && i.staffId)?.staffId;
     const staffId = s.category === "retail" ? "" : lastStaff[s.category] ?? sameCat ?? "";
@@ -98,7 +100,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   async function pay() {
     setError("");
     if (!items.length) return;
-    if (missingStaff) return setError("Pilih kapster/teknisi untuk setiap layanan (dasar komisi).");
+    if (missingStaff) return setError("Pilih kapster/nail artist untuk setiap layanan (dasar komisi).");
     if (shortCash) return setError("Uang diterima kurang dari tagihan.");
     setPaying(true);
     const supabase = createClient();
@@ -113,7 +115,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       customer ? supabase.from("customer_stats").select("deposit_balance").eq("customer_id", customer.id).single() : Promise.resolve({ data: null }),
     ]);
     setPaying(false);
-    setDone(toReceipt(tx as unknown as TxRow, master.shop.name, st.data?.deposit_balance ?? null));
+    setDone(toReceipt(tx as unknown as TxRow, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, st.data?.deposit_balance ?? null, master.userName));
     toast(`Pembayaran ${formatRupiah((tx as unknown as TxRow).total)} tercatat`);
     reset();
   }
@@ -220,7 +222,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       ) : (
                         <select aria-label={`Kapster untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
                           className={`h-11 self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
-                          <option value="">Pilih kapster/teknisi</option>
+                          <option value="">Pilih kapster/nail artist</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       )}

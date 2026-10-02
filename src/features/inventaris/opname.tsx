@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
 import { Empty, Field, useOnline, useToast } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { opnameMoves } from "@/lib/domain/inventory";
@@ -85,7 +86,7 @@ type Line = { item_id: string; name: string; kind: string; unit: string; system_
  * dilanjutkan di perangkat lain. Manajer melihat nilai rupiah & bisa menyetujui; kasir hanya jumlah.
  */
 export function OpnameCount({ opname, manager, back }: { opname: { id: string; scope: string; status: string; started_at: string }; manager: boolean; back: string }) {
-  const toast = useToast(); const router = useRouter(); const online = useOnline();
+  const toast = useToast(); const router = useRouter(); const online = useOnline(); const confirm = useConfirm();
   const locked = opname.status !== "draft";
   const { data, refresh } = useRealtimeTable(["stock_opname_lines", "stock_opnames"], async () => {
     const supabase = createClient();
@@ -118,13 +119,13 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
   }
   async function approve() {
     if (dirty.length && !(await saveCounts())) return;
-    if (!confirm(`${summary.moves.length} penyesuaian senilai ${signed(summary.value)} akan dicatat. Setujui opname?`)) return;
+    if (!(await confirm({ title: "Setujui opname?", description: `${summary.moves.length} penyesuaian senilai ${signed(summary.value)} akan dicatat ke stok.`, confirmLabel: "Setujui" }))) return;
     const { error } = await createClient().rpc("opname_approve", { p_opname_id: opname.id });
     if (error) return toast(error.message, "error");
     toast("Opname disetujui — stok diperbarui"); router.push(back);
   }
   async function cancel() {
-    if (!confirm("Batalkan opname ini? Hitungan tidak dipakai.")) return;
+    if (!(await confirm({ title: "Batalkan opname ini?", description: "Hitungan yang sudah diisi tidak dipakai.", confirmLabel: "Batalkan opname", cancelLabel: "Tidak", tone: "danger" }))) return;
     const { error } = await createClient().rpc("opname_cancel", { p_opname_id: opname.id });
     if (error) return toast(error.message, "error");
     router.push(back);

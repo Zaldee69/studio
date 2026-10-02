@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { log } from "@/lib/log";
 import { areaRole, homeFor } from "@/lib/roles";
 import type { Database } from "@/lib/supabase/database.types";
 import { STATION_ACTIVE, STATION_COOKIE, STATION_IDLE_S } from "@/features/stasiun/constants";
@@ -22,8 +23,13 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getClaims(): refresh token bila perlu (cookie baru ditulis via setAll) lalu verifikasi JWT secara lokal (JWKS, ES256)
+  // — tanpa request ke server Auth di tiap navigasi seperti getUser().
+  const { data: jwt, error: authErr } = await supabase.auth.getClaims();
+  const user = jwt?.claims.sub ? { id: jwt.claims.sub } : null;
   const path = request.nextUrl.pathname;
+  // Sesi dicabut / refresh token ditolak = pengguna "logout sendiri" — catat agar bisa ditelusuri.
+  if (authErr && authErr.name !== "AuthSessionMissingError") log("warn", "session_invalid", { path, code: authErr.code ?? authErr.name, error: authErr.message });
   const area = areaRole(path);
   if (!area && path !== "/login") return response;
 
@@ -44,14 +50,20 @@ export async function proxy(request: NextRequest) {
     response.cookies.set(STATION_ACTIVE, "1", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: STATION_IDLE_S });
   }
 
-  const { data: p } = await supabase.from("profiles").select("role, active").eq("id", user.id).single();
+  const { data: p } = await supabase.from("profiles").select("role, active, mfa_enabled").eq("id", user.id).single();
   if (!p) return response;
   if (!p.active) return path === "/login" ? response : go("/login?status=pending");
+  // Punya verifikasi 2 langkah tapi baru masuk dengan sandi → RLS belum mengenali perannya; minta kode dulu.
+  // aal dari klaim JWT terverifikasi (getClaims), bukan getAuthenticatorAssuranceLevel() yang membaca cookie.
+  if (p.mfa_enabled && jwt?.claims.aal !== "aal2") return path === "/login" ? response : go("/login?mfa=1");
   if (path === "/login") return p.role === "customer" ? go("/akun") : go(homeFor(p.role));
   if (area !== p.role) return go(homeFor(p.role));
   return response;
 }
 
+// Semua halaman (bukan hanya area tim): token yang kedaluwarsa harus di-refresh DI SINI, karena hanya proxy yang bisa
+// menulis cookie. Bila halaman lain (mis. /booking) yang me-refresh dari Server Component, token baru hilang, token
+// lama terdeteksi dipakai ulang (refresh token rotation) → seluruh sesi dicabut = "logout sendiri".
 export const config = {
-  matcher: ["/login", "/manajer/:path*", "/kasir/:path*", "/kapster/:path*", "/akun/:path*"],
+  matcher: ["/((?!_next/static|_next/image|api/|icons/|sw\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest|txt|xml)$).*)"],
 };

@@ -1,5 +1,8 @@
 -- HANYA untuk lokal/dev: akun demo (sandi: password123) + jadwal contoh. Jangan jalankan di produksi.
 
+-- Kode undangan tetap untuk dev/tes (produksi: acak dari migrasi, lihat Pengaturan → Umum).
+update settings set invite_code = 'GB-2026';
+
 -- ---------- Akun demo (sandi semua: password123) ----------
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,

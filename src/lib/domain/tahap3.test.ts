@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { canCancel, dayWindow, openStatus, type DayHours } from "./hours";
 import { buildIcs } from "./ics";
-import { minToHHMM as minToTime, slotsForDay } from "./slots";
+import { minToHHMM as minToTime, planBooking, slotsForDay } from "./slots";
 import { verifyTurnstile } from "../turnstile";
 
 const week: DayHours[] = Array.from({ length: 7 }, (_, d) => ({ weekday: d, open_time: "09:00", close_time: "21:00", closed: false }));
@@ -47,6 +47,17 @@ describe("pembentukan slot (cermin get_available_slots)", () => {
     expect(buf).not.toContain("11:00");
     expect(buf).not.toContain("09:30"); // 09:30–10:15 + 30 menit menabrak 10:00
     expect(buf).toContain("11:30");
+  });
+  it("kursi utama diutamakan bila kosong, pindah bila terpakai; pedicure tetap nomor satu", () => {
+    const chairs = [{ id: "b1", type: "barbershop" as const, isPedicure: false }, { id: "b2", type: "barbershop" as const, isPedicure: false }];
+    const rizky = [{ id: "rizky", category: "barbershop" as const, homeResourceId: "b2" }];
+    const ctx = { ...base, resources: chairs, staff: rizky };
+    expect(planBooking(ctx, 600)![0]).toMatchObject({ staffId: "rizky", resourceId: "b2" });
+    const busy = [{ resourceId: "b2", staffId: null, startMin: 600, endMin: 660 }];
+    expect(planBooking({ ...ctx, busy }, 600)![0].resourceId).toBe("b1"); // lunak: tidak mengurangi slot
+    const pedi = { id: "pedi", category: "nail" as const, durationMin: 60, needsPedicure: true };
+    const sari = [{ id: "sari", category: "nail" as const, homeResourceId: "m1" }];
+    expect(planBooking({ ...base, services: [pedi], staff: sari }, 600)![0].resourceId).toBe("p1");
   });
   it("izin staf menutup slot di rentang itu", () => {
     const offs = [{ staffId: "andi", startMin: 540, endMin: 720 }];

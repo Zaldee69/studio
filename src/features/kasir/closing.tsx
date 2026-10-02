@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PrintSheet } from "@/components/print-sheet";
 import { Empty, Field, useOnline, useToast } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -50,9 +51,47 @@ export function Closing({ master }: { master: Master }) {
     <div className={`flex justify-between gap-3 py-1.5 tabular ${strong ? "text-base font-bold" : "text-sm"}`}><span>{k}</span><span>{typeof v === "number" ? formatRupiah(v) : v}</span></div>
   );
 
+  const body = !s ? <Empty>Memuat…</Empty> : (
+    <>
+      <div className="divide-y divide-[#F0EDE6]">
+        {row("Jumlah transaksi", String(s.tx_count))}
+        {row("Omzet (setelah diskon)", s.gross_total)}
+        {row("Total diskon", s.discount_total)}
+        {row("Penjualan Tunai", s.cash_sales)}
+        {row("Penjualan QRIS", s.qris_sales)}
+        {row("Deposit terpakai", s.deposit_used)}
+        {row(`Top-up deposit Tunai (${s.topup_count}×)`, s.topup_cash)}
+        {row("Top-up deposit QRIS", s.topup_qris)}
+        {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
+      </div>
+      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up)", s.expected_cash, true)}</div>
+      <div>
+        <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
+        {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (
+          <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm tabular"><span>{formatJam(v.created_at)} · {v.reason}</span><span>{formatRupiah(v.total)}</span></div>
+        ))}
+      </div>
+      {closings?.[0] && (
+        <div className="rounded-[10px] border border-line p-3 text-sm">
+          <b>Penutupan terakhir {formatJam(closings[0].created_at)}</b>
+          {row("Kas fisik", closings[0].physical_cash)}
+          {row("Selisih", closings[0].difference ?? 0, true)}
+          {closings[0].note && <p className="text-muted">{closings[0].note}</p>}
+        </div>
+      )}
+    </>
+  );
+
   return (
     <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto min-[1000px]:grid-cols-[1fr_380px]">
-      <section className="print-area flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
+      <PrintSheet page="size: A4; margin: 14mm">
+        <div className="flex flex-col gap-4 text-[#1c1b19]">
+          <div><h1 className="font-display text-2xl font-bold">Rekap kasir</h1>
+            <span className="text-[13px]">{master.shop.name}{master.shop.address ? ` · ${master.shop.address}` : ""} · {formatTanggal(`${date}T12:00:00+07:00`)} · dicetak {formatJam(new Date())}</span></div>
+          {body}
+        </div>
+      </PrintSheet>
+      <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1">
             <h2 className="font-display text-xl font-bold">Rekap kasir</h2>
@@ -62,36 +101,7 @@ export function Closing({ master }: { master: Master }) {
             <input id="cl-date" type="date" className="input" value={date} max={jktDate()} onChange={(e) => e.target.value && setDate(e.target.value)} />
           </Field></div>
         </div>
-        {!s ? <Empty>Memuat…</Empty> : (
-          <>
-            <div className="divide-y divide-[#F0EDE6]">
-              {row("Jumlah transaksi", String(s.tx_count))}
-              {row("Omzet (setelah diskon)", s.gross_total)}
-              {row("Total diskon", s.discount_total)}
-              {row("Penjualan Tunai", s.cash_sales)}
-              {row("Penjualan QRIS", s.qris_sales)}
-              {row("Deposit terpakai", s.deposit_used)}
-              {row(`Top-up deposit Tunai (${s.topup_count}×)`, s.topup_cash)}
-              {row("Top-up deposit QRIS", s.topup_qris)}
-              {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
-            </div>
-            <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up)", s.expected_cash, true)}</div>
-            <div>
-              <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
-              {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (
-                <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm tabular"><span>{formatJam(v.created_at)} · {v.reason}</span><span>{formatRupiah(v.total)}</span></div>
-              ))}
-            </div>
-            {closings?.[0] && (
-              <div className="rounded-[10px] border border-line p-3 text-sm">
-                <b>Penutupan terakhir {formatJam(closings[0].created_at)}</b>
-                {row("Kas fisik", closings[0].physical_cash)}
-                {row("Selisih", closings[0].difference ?? 0, true)}
-                {closings[0].note && <p className="text-muted">{closings[0].note}</p>}
-              </div>
-            )}
-          </>
-        )}
+        {body}
       </section>
 
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">

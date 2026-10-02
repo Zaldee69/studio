@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { createClient } from "@/lib/supabase/client";
 
 /** Tautan email "lupa kata sandi" → tukar kode (PKCE) jadi sesi → simpan kata sandi baru. */
@@ -22,12 +23,13 @@ export function NewPassword() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (pw.a.length < 8) return setErr("Kata sandi minimal 8 karakter.");
+    const weak = passwordError(pw.a);
+    if (weak) return setErr(weak);
     if (pw.a !== pw.b) return setErr("Kedua kata sandi tidak sama.");
     setBusy(true);
     const { error } = await createClient().auth.updateUser({ password: pw.a });
     setBusy(false);
-    if (error) return setErr(error.message);
+    if (error) return setErr(error.code === "same_password" ? "Pakai kata sandi yang berbeda dari sebelumnya." : error.code === "weak_password" ? `Kata sandi terlalu lemah. ${PASSWORD_HINT}` : "Gagal menyimpan. Minta tautan baru dari halaman Masuk.");
     router.replace("/akun");
   }
 
@@ -41,7 +43,7 @@ export function NewPassword() {
         <form onSubmit={save} className="flex flex-col gap-4">
           {(["a", "b"] as const).map((k) => (
             <div key={k} className="flex flex-col gap-2">
-              <label htmlFor={`np-${k}`} className="lux-label">{k === "a" ? "Kata sandi baru (min. 8)" : "Ulangi"}</label>
+              <label htmlFor={`np-${k}`} className="lux-label">{k === "a" ? "Kata sandi baru (min. 8, huruf & angka)" : "Ulangi"}</label>
               <input id={`np-${k}`} type="password" autoComplete="new-password" className="lux-input" value={pw[k]} onChange={(e) => { setPw({ ...pw, [k]: e.target.value }); setErr(""); }} />
             </div>
           ))}

@@ -55,7 +55,7 @@ const HeroArt = () => (
 );
 
 export default async function Landing() {
-  const { s, services, staff, packs, hours, closures, photos, reviews } = await loadSite();
+  const { s, services, staff, packs, hours, closures, photos, reviews, bookable } = await loadSite();
   const pct = s.bundle_pct ?? 10;
   const list = (c: string) => services.filter((x) => x.category === c);
   const photo = (k: string) => photos.find((p) => p.kind === k);
@@ -71,8 +71,10 @@ export default async function Landing() {
   const closureDates = closures.map((c) => c.date!);
   const ig = igUrl(s.shop_instagram ?? "");
   const wa = s.shop_whatsapp ? `https://wa.me/${s.shop_whatsapp}` : "";
-  const bookHref = (cat?: string) => (s.online_booking_open ? `/booking${cat ? `?kategori=${cat}` : ""}` : wa || "#kunjungi");
-  const bookLabel = s.online_booking_open ? "Reservasi" : "Reservasi via WhatsApp";
+  // Booking online hanya bila dibuka DAN ada kategori yang punya kursi/meja & staf aktif.
+  const online = !!s.online_booking_open && bookable.length > 0;
+  const bookHref = (cat?: string) => (online ? `/booking${cat ? `?kategori=${cat}` : ""}` : wa || "#kunjungi");
+  const bookLabel = online ? "Reservasi" : "Reservasi via WhatsApp";
   const prices = services.map((x) => x.price ?? 0).filter(Boolean);
   const px = "px-[22px] min-[900px]:px-11 min-[1200px]:px-[72px]";
   const sec = "py-[72px] min-[900px]:py-[120px]";
@@ -90,14 +92,14 @@ export default async function Landing() {
       "@type": "OpeningHoursSpecification", dayOfWeek: `https://schema.org/${DAY_URL[h.weekday]}`, opens: h.open_time.slice(0, 5), closes: h.close_time.slice(0, 5),
     })),
     ...(ig ? { sameAs: [ig] } : {}),
-    ...(s.online_booking_open ? { potentialAction: { "@type": "ReserveAction", target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/booking`, inLanguage: "id-ID" } } } : {}),
+    ...(online ? { potentialAction: { "@type": "ReserveAction", target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/booking`, inLanguage: "id-ID" } } } : {}),
   };
 
   return (
     <div className="min-h-screen scroll-smooth bg-lux font-jost text-cream">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <TrackView step="landing" />
-      <PublicHeader nav right={<Link href={bookHref()} className="btn-line max-[459px]:hidden">{s.online_booking_open ? "Reservasi" : "WhatsApp"}</Link>} />
+      <PublicHeader nav right={<Link href={bookHref()} className="btn-line max-[459px]:hidden">{online ? "Reservasi" : "WhatsApp"}</Link>} />
 
       <main>
         {/* HERO */}
@@ -114,7 +116,7 @@ export default async function Landing() {
               </h1>
               <p className="max-w-[460px] text-base font-light leading-[1.7] text-sand min-[900px]:text-lg">{s.hero_text}</p>
               <div className="flex flex-wrap items-center gap-5">
-                <Link href={bookHref()} className="btn-gold">{s.online_booking_open ? "Reservasi sekarang" : bookLabel}</Link>
+                <Link href={bookHref()} className="btn-gold">{online ? "Reservasi sekarang" : bookLabel}</Link>
                 <a href="#menu" className="flex min-h-11 items-center gap-2.5 text-[13px] font-medium uppercase tracking-[0.22em] text-cream">
                   Lihat menu <span className="h-px w-7 bg-cream" />
                 </a>
@@ -155,7 +157,10 @@ export default async function Landing() {
               <h2 className={h2}>{w.title}</h2>
               <span className="text-xs font-medium uppercase tracking-[0.32em] text-dust">{w.sub}</span>
               <p className="max-w-[360px] text-base font-light leading-[1.7] text-sand">{w.text}</p>
-              <Link href={bookHref(w.cat)} className="btn-line h-12 px-[26px]">{s.online_booking_open ? `Reservasi ${w.title}` : bookLabel}</Link>
+              {/* kategori tanpa kursi/meja atau staf aktif: tanpa tombol reservasi */}
+              {(!online || bookable.includes(w.cat)) && (
+                <Link href={bookHref(w.cat)} className="btn-line h-12 px-[26px]">{online ? `Reservasi ${w.title}` : bookLabel}</Link>
+              )}
             </article>
           ))}
         </section>
@@ -185,7 +190,7 @@ export default async function Landing() {
               </div>
             ))}
           </div>
-          <div className="flex justify-center"><Link href={bookHref()} className="btn-gold">{s.online_booking_open ? "Reservasi online" : bookLabel}</Link></div>
+          <div className="flex justify-center"><Link href={bookHref()} className="btn-gold">{online ? "Reservasi online" : bookLabel}</Link></div>
         </section>
 
         {/* RITUAL & DEPOSIT */}
@@ -327,7 +332,7 @@ export default async function Landing() {
               )}
             </div>
             <div className="flex flex-wrap gap-3">
-              {s.online_booking_open && <Link href="/booking" className="btn-gold">Reservasi sekarang</Link>}
+              {online && <Link href="/booking" className="btn-gold">Reservasi sekarang</Link>}
               {wa && <a href={wa} target="_blank" rel="noopener" className="btn-line h-14 px-8">Chat WhatsApp</a>}
             </div>
           </div>

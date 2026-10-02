@@ -1,10 +1,12 @@
 import { liveAdapters } from "@/lib/notifications/adapters";
 import { processQueue, type Queued } from "@/lib/notifications/dispatch";
+import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 
 // Dipanggil DB (pg_net) saat ada pesan baru dan oleh pg_cron tiap 5 menit untuk retry.
 export async function POST(req: Request) {
   if (!process.env.PUSH_SECRET || req.headers.get("x-push-secret") !== process.env.PUSH_SECRET) {
+    log("warn", "notify_dispatch_unauthorized");
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   const db = createAdminClient();
@@ -35,5 +37,8 @@ export async function POST(req: Request) {
       await db.from("outbound_messages").update({ ...patch, ...(patch.status === "sent" ? { sent_at: new Date().toISOString() } : {}) }).eq("id", id);
     },
   }, liveAdapters());
+  // Detail error per pesan tersimpan di outbound_messages.last_error (Pengaturan → Halaman publik).
+  if (result.failed || result.retry) log("warn", "notify_dispatch_errors", result);
+  else if (result.sent) log("info", "notify_dispatch", result);
   return Response.json(result);
 }

@@ -40,7 +40,7 @@ const PRIMARY: Record<(typeof FLOW)[number], [string, string]> = {
 };
 const CAT: Record<Cat, { label: string; world: string; staffTitle: string; staffSub: string }> = {
   barbershop: { label: "Barbershop", world: "Groom", staffTitle: "Kapster barbershop", staffSub: "Barber" },
-  nail: { label: "Nail & Spa", world: "Bloom", staffTitle: "Teknisi nail & spa", staffSub: "Nail artist" },
+  nail: { label: "Nail & Spa", world: "Bloom", staffTitle: "Nail artist", staffSub: "Nail artist" },
 };
 
 const fmtUtc = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("id-ID", { ...o, timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
@@ -53,9 +53,22 @@ const h2 = "font-serif text-[34px] font-normal leading-none min-[900px]:text-[42
 const opt = (on: boolean) => `border ${on ? "border-gold bg-lux-3" : "border-rule-2 hover:border-dust"}`;
 const chip = (on: boolean) => `border ${on ? "border-gold bg-gold text-lux" : "border-rule-2 text-cream hover:border-dust"}`;
 const errBox = "border border-[#7A2E26] bg-[#2A1512] px-3.5 py-3 text-sm text-[#F2B8B0]";
+// Kode dari booking_unavailable_reason(). "Keras" = tanggal lain pun tidak akan membantu.
+const HARD_REASONS = new Set(["closed", "services", "capacity", "staff"]);
+const REASON_MSG: Record<string, string> = {
+  closed: "Booking online sedang ditutup. Silakan hubungi kami via WhatsApp.",
+  services: "Layanan yang dipilih sudah tidak tersedia untuk booking online. Silakan pilih ulang layanan.",
+  capacity: "Layanan ini sedang tidak tersedia untuk reservasi online. Silakan pilih ulang layanan atau hubungi kami via WhatsApp.",
+  staff: "Staf yang dipilih sudah tidak tersedia. Pilih staf lain atau \"Siapa saja\".",
+  range: "Tanggal ini di luar jangka booking online.",
+  day_closed: "Toko tutup pada tanggal ini. Silakan pilih tanggal lain.",
+  staff_off: "Staf pilihan Anda sedang izin pada tanggal ini. Pilih tanggal lain atau \"Siapa saja\".",
+  today: "Jam tersisa hari ini sudah penuh atau sudah lewat. Silakan pilih tanggal lain.",
+};
 
-export default function BookingFlow({ services, staff, shop, hours, closures, customer, init, reschedule }: {
+export default function BookingFlow({ services, staff, shop, hours, closures, customer, init, reschedule, cats: openCats }: {
   services: Svc[]; staff: Staff[]; shop: Shop; hours: DayHours[]; closures: string[]; customer: Cust; init: Init; reschedule: Reschedule;
+  cats: readonly Cat[]; // kategori yang punya kursi/meja & staf aktif — yang lain tidak ditawarkan
 }) {
   const router = useRouter();
   const today = jktDate();
@@ -63,10 +76,20 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const isOpenDay = (d: string) => !!dayWindow(d, hours, closures);
   const known = new Set(services.map((s) => s.id));
 
-  const [view, setView] = useState<View>(() => reschedule ? "waktu" : isView(init.step) && init.services.length ? init.step : "layanan");
+  // Tautan/tab lama bisa berisi id layanan/staf yang sudah dihapus, dinonaktifkan, atau tak lagi bisa dibooking online.
+  // Buang yang tidak dikenal; jangan pernah lompat ke langkah waktu tanpa layanan (dulu: semua tanggal "penuh").
+  const initIds = reschedule?.serviceIds ?? init.services;
+  const validIds = initIds.filter((id) => known.has(id));
+  const rawPick: Record<string, string> = reschedule?.pick ?? init.pick;
+  const staffOk = (c: Cat) => (staff.some((s) => s.id === rawPick[c] && s.category === c) ? rawPick[c] : "");
+  const stalePick = (["barbershop", "nail"] as const).some((c) => rawPick[c] && !staffOk(c));
+  const rescheduleBlocked = !!reschedule && validIds.length < initIds.length;
+  const [view, setView] = useState<View>(() => reschedule ? "waktu" : isView(init.step) && validIds.length ? init.step : "layanan");
   const [cat, setCat] = useState<Cat>(init.cat);
-  const [sel, setSel] = useState<string[]>(() => (reschedule?.serviceIds ?? init.services).filter((id) => known.has(id)));
-  const [pick, setPick] = useState<Record<Cat, string>>(() => ({ barbershop: "", nail: "", ...(reschedule?.pick ?? init.pick) }));
+  const [sel, setSel] = useState<string[]>(validIds);
+  const [pick, setPick] = useState<Record<Cat, string>>(() => ({ barbershop: staffOk("barbershop"), nail: staffOk("nail") }));
+  const [notice] = useState(() => !reschedule && (validIds.length < initIds.length || stalePick)
+    ? "Sebagian pilihan dari tautan sebelumnya sudah tidak tersedia, jadi kami kosongkan. Silakan periksa pilihan Anda." : "");
   const [together, setTogether] = useState(reschedule?.together ?? init.together);
   const [date, setDate] = useState(() => init.date && days.includes(init.date) && isOpenDay(init.date) ? init.date : days.find(isOpenDay) ?? today);
   const [time, setTime] = useState(init.time ?? "");
@@ -80,7 +103,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const [done, setDone] = useState<Done | null>(null);
   const [toast, setToast] = useState("");
   const [sending, setSending] = useState(false);
-  const [slotRes, setSlotRes] = useState<{ key: string; list: string[]; next: string | null; error?: string }>({ key: "", list: [], next: null });
+  const [slotRes, setSlotRes] = useState<{ key: string; list: string[]; next: string | null; error?: string; reason?: string | null }>({ key: "", list: [], next: null });
   const [offRes, setOffRes] = useState<{ date: string; ids: string[] }>({ date: "", ids: [] });
   const [preview, setPreview] = useState<{ key: string; names: Partial<Record<Cat, string>> }>({ key: "", names: {} });
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -138,23 +161,26 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   }, [date]);
 
   // ---------- slot (RPC get_available_slots; dicek ulang server saat konfirmasi) ----------
-  const slotKey = view === "waktu" ? JSON.stringify([date, sel, staffPick, together]) : "";
+  const slotKey = view === "waktu" && sel.length && !rescheduleBlocked ? JSON.stringify([date, sel, staffPick, together]) : "";
   useEffect(() => {
     if (!slotKey) return;
     let alive = true;
     const [d, ids, sp, tg] = JSON.parse(slotKey);
     db().then(async (supabase) => {
         const { data, error } = await supabase.rpc("get_available_slots", { p_date: d, p_service_ids: ids, p_staff_pick: sp, p_together: tg, p_exclude_group: reschedule?.groupId });
-        let next: string | null = null;
+        let next: string | null = null, reason: string | null = null;
         if (!error && !data?.length) {
-          const r = await supabase.rpc("next_available_date", { p_from: addDays(d, 1), p_service_ids: ids, p_staff_pick: sp, p_together: tg });
-          next = r.data ?? null;
+          // Kosong ≠ selalu penuh: minta alasannya (booking ditutup, layanan/staf tak tersedia, toko tutup, staf izin…).
+          reason = (await supabase.rpc("booking_unavailable_reason", { p_date: d, p_service_ids: ids, p_staff_pick: sp })).data ?? null;
+          if (!reason || !HARD_REASONS.has(reason)) {
+            next = (await supabase.rpc("next_available_date", { p_from: addDays(d, 1), p_service_ids: ids, p_staff_pick: sp, p_together: tg })).data ?? null;
+          }
         }
-        if (alive) setSlotRes({ key: slotKey, list: data ?? [], next, error: error?.message });
+        if (alive) setSlotRes({ key: slotKey, list: data ?? [], next, reason, error: error ? "Gagal memuat jam tersedia. Periksa koneksi lalu coba lagi." : undefined });
       });
     return () => { alive = false; };
   }, [slotKey, reschedule]);
-  const slotsLoading = view === "waktu" && slotRes.key !== slotKey;
+  const slotsLoading = !!slotKey && slotRes.key !== slotKey;
   const slots = slotsLoading ? [] : slotRes.list;
   const toMin = (t: string) => +t.slice(0, 2) * 60 + +t.slice(3, 5);
   const slotGroups = [
@@ -300,6 +326,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           )}
 
           {/* STEP 1: LAYANAN */}
+          {notice && inFlow && <p role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{notice}</p>}
           {view === "layanan" && (
             <>
               <section className="relative flex flex-col gap-5 overflow-hidden border border-rule bg-lux-2 p-6 min-[900px]:p-10">
@@ -314,15 +341,15 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                   </span>
                   <span className="flex h-8 items-center border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">Bayar di tempat · Tunai / QRIS</span>
                 </div>
-                <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
+                {openCats.length > 1 && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
                   <span className="font-serif text-lg italic text-gold">Paket Groom &amp; Bloom</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
-                </div>
+                </div>}
               </section>
 
               <div className="flex flex-col gap-5">
                 <h2 className={h2}>Pilih <i className="text-gold">ritual</i> Anda</h2>
                 <div role="tablist" aria-label="Kategori" className="flex gap-2">
-                  {(["barbershop", "nail"] as const).map((c) => (
+                  {openCats.map((c) => (
                     <button key={c} role="tab" aria-selected={cat === c} onClick={() => setCat(c)}
                       className={`h-11 px-5 text-xs font-medium uppercase tracking-[0.22em] ${chip(cat === c)}`}>
                       {CAT[c].world} · {CAT[c].label}
@@ -361,7 +388,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           {/* STEP 2: STAF */}
           {view === "staf" && (
             <>
-              <h2 className={h2}>Pilih <i className="text-gold">kapster</i> &amp; teknisi</h2>
+              <h2 className={h2}>Pilih <i className="text-gold">kapster</i> &amp; nail artist</h2>
               {bothCats && (
                 <div className="flex flex-col gap-3">
                   <span className="lux-label">Layanan ini untuk…</span>
@@ -428,11 +455,21 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 })}
               </div>
               <div aria-live="polite" className="flex flex-col gap-7">
-                {slotsLoading ? <p className="text-sm font-light text-dust">Memuat jam tersedia…</p>
+                {rescheduleBlocked ? (
+                    <p role="alert" className={errBox}>Booking ini berisi layanan yang tidak bisa dijadwal ulang online. Silakan hubungi kami via WhatsApp.</p>
+                  ) : !sel.length ? (
+                    <div className="flex flex-col items-center gap-3 border border-rule bg-lux-2 p-6 text-center text-sm font-light text-sand">
+                      <span>Belum ada layanan dipilih.</span>
+                      <button onClick={() => go("layanan")} className="btn-line">Pilih layanan</button>
+                    </div>
+                  ) : slotsLoading ? <p className="text-sm font-light text-dust">Memuat jam tersedia…</p>
                   : slotRes.error ? <p role="alert" className={errBox}>{slotRes.error}</p>
                   : !slotGroups.length ? (
                     <div className="flex flex-col items-center gap-3 border border-rule bg-lux-2 p-6 text-center text-sm font-light text-sand">
-                      <span>Maaf, jam di tanggal ini sudah penuh untuk pilihan Anda. Coba tanggal lain atau pilih &quot;Siapa saja&quot;.</span>
+                      <span>{REASON_MSG[slotRes.reason ?? ""] ?? <>Maaf, jam di tanggal ini sudah penuh untuk pilihan Anda. Coba tanggal lain atau pilih &quot;Siapa saja&quot;.</>}</span>
+                      {/* data layanan di halaman ini sudah usang (tab lama) → muat ulang dari awal */}
+                      {(slotRes.reason === "services" || slotRes.reason === "capacity") && <button onClick={() => { window.history.replaceState(null, "", "/booking"); window.location.reload(); }} className="btn-line">Pilih ulang layanan</button>}
+                      {slotRes.reason === "staff" && <button onClick={() => { setPick({ barbershop: "", nail: "" }); go("staf"); }} className="btn-line">Pilih staf lain</button>}
                       {slotRes.next && (
                         <button onClick={() => { setDate(slotRes.next!); setTime(""); }} className="btn-line">
                           Tanggal terdekat: {longDate(slotRes.next)}
@@ -598,7 +635,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 <span>Estimasi diskon Groom &amp; Bloom {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
               </div>
             )}
-            {lines.length > 0 && discount === 0 && (
+            {lines.length > 0 && discount === 0 && openCats.length > 1 && (
               <div className="text-xs font-light italic leading-normal text-dust">
                 Tambah layanan {cats.includes("barbershop") ? "nail" : "barbershop"} untuk hemat {shop.bundlePct}%.
               </div>

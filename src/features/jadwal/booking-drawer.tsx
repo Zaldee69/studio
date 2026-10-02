@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
 import { CloseButton, StatusBadge, useOnline } from "@/components/ui";
 import { METHOD_LABEL } from "@/lib/domain/closing";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
@@ -18,6 +19,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
   onReview: (accept: boolean, reason?: string) => void; onNoShow: () => void;
 }) {
   const [rejecting, setRejecting] = useState(false);
+  const confirm = useConfirm();
   const [rejectReason, setRejectReason] = useState("");
   const online = useOnline();
   const [cancelling, setCancelling] = useState(false);
@@ -58,7 +60,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
 
       <dl className="grid grid-cols-2 gap-3 text-[13px] tabular">
         {[["Waktu", `${formatJam(appt.start_at)}–${formatJam(appt.end_at)} · ${appt.duration_min} mnt`], ["Tanggal", formatTanggal(appt.start_at)],
-          ["Kursi / meja", res?.name ?? "—"], ["Kapster / teknisi", staff?.name ?? "—"]].map(([k, v]) => (
+          ["Kursi / meja", res?.name ?? "—"], ["Kapster / nail artist", staff?.name ?? "—"]].map(([k, v]) => (
           <div key={k} className="flex flex-col gap-0.5"><dt className="text-muted">{k}</dt><dd className="font-bold">{v}</dd></div>
         ))}
       </dl>
@@ -155,7 +157,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
 
       <div className="flex-1" />
       {canNoShow && !cancelling && (
-        <button onClick={() => { if (confirm("Tandai pelanggan tidak datang?")) onNoShow(); }} disabled={!online} className="btn-ghost h-11 rounded-[10px]">Tidak datang</button>
+        <button onClick={async () => { if (await confirm({ title: "Tandai pelanggan tidak datang?", description: "Kursi & jadwal staf di jam ini dilepas.", confirmLabel: "Tidak datang", tone: "danger" })) onNoShow(); }} disabled={!online} className="btn-ghost h-11 rounded-[10px]">Tidak datang</button>
       )}
       {!closed && (cancelling ? (
         <form className="flex flex-col gap-2 rounded-[10px] border border-line p-3"

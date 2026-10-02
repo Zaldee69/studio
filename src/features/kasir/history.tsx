@@ -77,7 +77,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         {open && (
           <div className="flex flex-col gap-4 p-6">
             <div className="no-print flex justify-end"><CloseButton onClick={() => setOpenId(null)} /></div>
-            <ReceiptView r={toReceipt(open, master.shop.name, null)} title={`Transaksi ${formatTanggal(open.created_at)}`}>
+            <ReceiptView r={toReceipt(open, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, null)} title={`Transaksi ${formatTanggal(open.created_at)}`}>
               {master.role === "manager" && !open.voided_at && (voiding ? (
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#EFA3A3] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>

@@ -1,13 +1,16 @@
+import type { DayHours } from "@/lib/domain/hours";
 import type { ApptStatus } from "@/lib/domain/status";
 import type { PayMethod } from "@/lib/domain/cart";
 
 export type Cat = "barbershop" | "nail";
 export type SvcCat = Cat | "retail";
 export type Svc = { id: string; name: string; category: SvcCat; price: number; duration_min: number; upsell_service_id: string | null; stock_item_id: string | null; needs_pedicure: boolean; active: boolean; sort: number };
-export type Staff = { id: string; name: string; category: Cat; active: boolean; sort: number };
+export type Staff = { id: string; name: string; category: Cat; active: boolean; sort: number; home_resource_id: string | null };
 export type Resource = { id: string; name: string; type: Cat; is_pedicure: boolean; active: boolean; sort: number };
 export type Pack = { id: string; name: string; amount_paid: number; amount_credited: number };
-export type Shop = { name: string; open: string; close: string; bundlePct: number; churnWeeks: number; waTemplate: string };
+export type Shop = { name: string; open: string; close: string; bundlePct: number; churnWeeks: number; waTemplate: string;
+  address: string; whatsapp: string; instagram: string;
+  bufferMin: number; hours: DayHours[]; closures: string[] };
 
 export type Master = {
   role: "manager" | "cashier"; userId: string; userName: string; base: "/manajer" | "/kasir";

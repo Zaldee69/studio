@@ -21,7 +21,7 @@ export function render(t: Template, g: GroupInfo): Rendered {
   const lines = [
     head[1], "",
     `Kode booking: ${g.code}`, `Waktu: ${when}`, `Layanan: ${g.services.join(", ")}`,
-    ...(g.staff.length ? [`Kapster/teknisi: ${g.staff.join(", ")}`] : []),
+    ...(g.staff.length ? [`Kapster/nail artist: ${g.staff.join(", ")}`] : []),
     ...(g.shop.address ? [`Alamat: ${g.shop.address}`] : []),
     "", "Bayar di toko: tunai, QRIS, atau saldo deposit. Mohon datang 5 menit lebih awal.",
     ...(g.shop.whatsapp ? [`Perlu ubah jadwal? Balas / chat WhatsApp ${g.shop.whatsapp}.`] : []),

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
+import { bundleDiscount } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, normalizeWhatsApp } from "@/lib/domain/format";
+import { dayWindow } from "@/lib/domain/hours";
 import { findConflicts, jktIso, jktMinutes, minToTime, timeToMin } from "@/lib/domain/schedule";
 import { approvedOffFor, offLabel } from "@/lib/domain/staff";
 import { createClient } from "@/lib/supabase/client";
@@ -16,8 +18,17 @@ export type FormInit = {
 };
 type Source = "walk_in" | "whatsapp" | "admin";
 type Conflict = { id: string; start_at: string; end_at: string; customer_name: string; staff_name: string | null; resource_name: string };
+type Pair = { sel: string[]; resourceId: string | null; staffPick: string | null };
 
-/** Form booking cepat (baru & ubah). Bentrok = peringatan lunak → "Tetap simpan". */
+const CAT_NAME: Record<Cat, string> = { barbershop: "Barbershop", nail: "Nail & Spa" };
+const other = (c: Cat): Cat => (c === "barbershop" ? "nail" : "barbershop");
+const hhmm = (m: number) => minToTime(m).replace(":", ".");
+
+/**
+ * Form booking cepat (baru & ubah). Satu booking = satu kategori (layanan, kursi/meja & staf sekategori — dijaga juga
+ * di DB). Pasangan barber + nail = booking kedua di kategori lain, dibuat sekaligus pada jam yang sama.
+ * Bentrok / di luar jam buka / tanggal lewat = peringatan lunak → tetap bisa disimpan.
+ */
 export function BookingForm({ master, init, today, onClose, onSaved }: {
   master: Master; init: FormInit; today: string; onClose: () => void; onSaved: (date: string) => void;
 }) {
@@ -27,11 +38,13 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const svcById = useMemo(() => new Map(master.services.map((s) => [s.id, s])), [master.services]);
   const bookable = master.services.filter((s) => s.active && s.category !== "retail");
   const activeStaff = master.staff.filter((s) => s.active);
+  const bufferMin = master.shop.bufferMin;
 
   const [customer, setCustomer] = useState<Customer | null>(edit?.customer ?? init.customer ?? null);
   const [newName, setNewName] = useState("");
   const [newWa, setNewWa] = useState("");
   const [sel, setSel] = useState<string[]>(edit?.appointment_services.map((s) => s.service_id) ?? []);
+  const [pair, setPair] = useState<Pair>({ sel: [], resourceId: null, staffPick: null });
   // Ubah booking: pertahankan durasi lama bila sebelumnya di-override.
   const [durOverride, setDurOverride] = useState<number | null>(() => {
     if (!edit) return null;
@@ -43,37 +56,103 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const [date, setDate] = useState(init.date);
   const [start, setStart] = useState(edit ? jktMinutes(edit.start_at) : init.startMin);
   const [notes, setNotes] = useState(edit?.notes ?? "");
-  const [source, setSource] = useState<Source>(init.date === today ? "walk_in" : "admin");
+  const [sourcePick, setSourcePick] = useState<Source | null>(null);
   const [serverConflicts, setServerConflicts] = useState<Conflict[] | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [waOwner, setWaOwner] = useState<{ wa: string; name: string } | null>(null);
+  const [nowMin] = useState(() => jktMinutes(new Date())); // untuk peringatan "jam sudah lewat"
 
   const { data: dayAppts } = useDayAppointments(date);
   const { data: dayOffs } = useDayTimeOff(date);
-  const autoDur = sel.reduce((a, id) => a + (svcById.get(id)?.duration_min ?? 0), 0) || 30;
+  const durOf = (ids: string[]) => ids.reduce((a, id) => a + (svcById.get(id)?.duration_min ?? 0), 0) || 30;
+  const autoDur = durOf(sel);
   const duration = durOverride ?? autoDur;
   const resource = master.resources.find((r) => r.id === resourceId);
   const startIso = jktIso(date, start), endIso = jktIso(date, start + duration);
+  // sumber mengikuti tanggal sampai dipilih manual (walk-in hanya masuk akal untuk hari ini)
+  const source: Source = sourcePick ?? (date === today ? "walk_in" : "admin");
 
-  // Kapster default: staf aktif kategori sesuai yang kosong di jam itu (sampai dipilih manual).
-  const cat: Cat = (sel.map((id) => svcById.get(id)?.category).find((c) => c !== "retail") as Cat | undefined) ?? resource?.type ?? "barbershop";
-  const others = (dayAppts ?? []).filter((a) => a.id !== edit?.id);
-  // lewati staf yang izin; utamakan yang kosong di jam itu
-  const defaultStaff = useMemo(() => {
-    const pool = activeStaff.filter((s) => s.category === cat && !approvedOffFor(dayOffs ?? [], s.id, startIso, endIso));
-    return (pool.find((s) => !findConflicts(others, { resourceId: "-", staffId: s.id, start: startIso, end: endIso }).length) ?? pool[0])?.id ?? null;
-  }, [activeStaff, cat, others, startIso, endIso, dayOffs]);
-  const staffId = staffPick ?? defaultStaff;
+  // Kategori booking = kategori layanan terpilih; sebelum ada layanan = jenis kursi/meja yang diklik.
+  const cat: Cat = (sel.map((id) => svcById.get(id)?.category).find((c) => c && c !== "retail") as Cat | undefined) ?? resource?.type ?? "barbershop";
+  const others = useMemo(() => (dayAppts ?? []).filter((a) => a.id !== edit?.id), [dayAppts, edit?.id]);
+  const busy = (draft: { resourceId: string; staffId: string | null; s: string; e: string }) =>
+    findConflicts(others, { resourceId: draft.resourceId, staffId: draft.staffId, start: draft.s, end: draft.e, bufferMin });
 
-  const conflicts = findConflicts(others, { resourceId, staffId, start: startIso, end: endIso });
-  const staffOff = approvedOffFor(dayOffs ?? [], staffId, startIso, endIso);
-  const conflictText = (serverConflicts ?? conflicts.map((a) => ({
+  /** Kursi/meja kategori itu yang kosong di jam itu — kursi yang diklik di grid diutamakan bila sekategori. */
+  const freeResource = (c: Cat, s: string, e: string, exclude?: string) => {
+    const pool = master.resources.filter((r) => r.type === c && r.id !== exclude)
+      .sort((x, y) => Number(y.id === init.resourceId) - Number(x.id === init.resourceId));
+    return (pool.find((r) => !busy({ resourceId: r.id, staffId: null, s, e }).length) ?? pool[0])?.id ?? null;
+  };
+  /** Staf kategori itu: tidak izin, utamakan pemilik kursi ini, lalu yang kosong di jam itu. */
+  const defaultStaffFor = (c: Cat, resId: string | null, s: string, e: string, exclude?: string | null) => {
+    const pool = activeStaff.filter((x) => x.category === c && x.id !== exclude && !approvedOffFor(dayOffs ?? [], x.id, s, e));
+    const free = pool.filter((x) => !busy({ resourceId: "-", staffId: x.id, s, e }).length);
+    return (free.find((x) => x.home_resource_id === resId) ?? free[0] ?? pool[0])?.id ?? null;
+  };
+  const staffId = staffPick ?? defaultStaffFor(cat, resourceId, startIso, endIso);
+
+  // ---------- booking kedua (pasangan, kategori lain) ----------
+  const pairCat = other(cat);
+  const pairDur = durOf(pair.sel);
+  const pairEndIso = jktIso(date, start + pairDur);
+  const pairResource = pair.sel.length ? pair.resourceId ?? freeResource(pairCat, startIso, pairEndIso) : null;
+  const pairStaff = pair.sel.length ? pair.staffPick ?? defaultStaffFor(pairCat, pairResource, startIso, pairEndIso) : null;
+
+  function toggleService(id: string) {
+    const s = svcById.get(id)!;
+    const c = s.category as Cat;
+    setDurOverride(null); setServerConflicts(null); setError("");
+    if (!sel.length || c === cat) {
+      const next = sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id];
+      if (!next.length && pair.sel.length) {
+        // layanan utama habis → booking kedua naik jadi utama
+        setSel(pair.sel); setResourceId(pairResource ?? resourceId); setStaffPick(pair.staffPick);
+        setPair({ sel: [], resourceId: null, staffPick: null });
+        return;
+      }
+      setSel(next);
+      if (!sel.length && resource?.type !== c) {
+        // layanan pertama beda kategori dari kursi yang diklik → pindah ke kursi/meja kategori itu yang kosong
+        const r = freeResource(c, startIso, jktIso(date, start + durOf([id])));
+        if (r) setResourceId(r);
+        setStaffPick(null);
+      }
+      return;
+    }
+    if (edit) return setError(`Ubah booking hanya untuk layanan ${CAT_NAME[cat]}. Buat booking baru untuk ${CAT_NAME[c]}.`);
+    setPair((p) => ({ ...p, sel: p.sel.includes(id) ? p.sel.filter((x) => x !== id) : [...p.sel, id] }));
+  }
+
+  // ---------- peringatan ----------
+  const conflicts = staffId || resourceId ? busy({ resourceId, staffId, s: startIso, e: endIso }) : [];
+  const pairConflicts = pairResource ? busy({ resourceId: pairResource, staffId: pairStaff, s: startIso, e: pairEndIso }) : [];
+  const describe = (list: DayAppt[]) => list.map((a) => ({
     id: a.id, start_at: a.start_at, end_at: a.end_at, customer_name: a.customer?.name ?? "Walk-in",
     staff_name: master.staff.find((s) => s.id === a.staff_id)?.name ?? null,
     resource_name: master.resources.find((r) => r.id === a.resource_id)?.name ?? "",
-  }))).map((c) => `${c.customer_name} ${formatJam(c.start_at)}–${formatJam(c.end_at)} (${c.resource_name}${c.staff_name ? ` · ${c.staff_name}` : ""})`);
+  }));
+  const conflictText = (serverConflicts ?? describe([...conflicts, ...pairConflicts]))
+    .map((c) => `${c.customer_name} ${formatJam(c.start_at)}–${formatJam(c.end_at)} (${c.resource_name}${c.staff_name ? ` · ${c.staff_name}` : ""})`);
   const hasConflict = conflictText.length > 0;
+  const staffOff = approvedOffFor(dayOffs ?? [], staffId, startIso, endIso);
+  const pairStaffOff = pairStaff ? approvedOffFor(dayOffs ?? [], pairStaff, startIso, pairEndIso) : null;
+
+  const win = dayWindow(date, master.shop.hours, master.shop.closures);
+  const endMin = start + Math.max(duration, pair.sel.length ? pairDur : 0);
+  const notices = [
+    !win && "Toko tutup pada tanggal ini (libur mingguan / libur khusus).",
+    win && (start < win.open || endMin > win.close) && `Di luar jam buka hari itu (${hhmm(win.open)}–${hhmm(win.close)}): selesai ${hhmm(endMin)}.`,
+    !edit && date < today && "Tanggal sudah lewat.",
+    !edit && date === today && endMin <= nowMin && "Jam booking sudah lewat.",
+  ].filter(Boolean) as string[];
+
+  // ---------- tagihan perkiraan (diskon paket bila barber + nail) ----------
+  const lines = [...sel, ...pair.sel].map((id) => svcById.get(id)!).filter(Boolean)
+    .map((s) => ({ serviceId: s.id, name: s.name, category: s.category, price: s.price }));
+  const subtotal = lines.reduce((a, l) => a + l.price, 0);
+  const discount = bundleDiscount(lines, master.shop.bundlePct);
 
   // No. WA yang diketik ternyata milik pelanggan lama → beri tahu & pakai pelanggan itu.
   const waNorm = normalizeWhatsApp(newWa);
@@ -86,15 +165,19 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   }, [waNorm, customer]);
   const existingOwner = waOwner && waOwner.wa === waNorm && !customer ? waOwner.name : null;
 
+  // jam mulai: jendela buka hari itu (atau rentang terluas bila tutup)
+  const [t0, t1] = win ? [win.open, win.close] : [timeToMin(master.shop.open), timeToMin(master.shop.close)];
   const times: number[] = [];
-  for (let t = timeToMin(master.shop.open); t < timeToMin(master.shop.close); t += 15) times.push(t);
+  for (let t = t0; t < t1; t += 15) times.push(t);
   if (!times.includes(start)) { times.push(start); times.sort((a, b) => a - b); }
 
   async function save() {
     setError("");
     if (!sel.length) return setError("Pilih minimal satu layanan.");
-    if (!staffId) return setError("Pilih kapster/teknisi.");
+    if (!staffId) return setError(`Belum ada staf ${CAT_NAME[cat]} aktif.`);
+    if (pair.sel.length && (!pairResource || !pairStaff)) return setError(`Belum ada kursi/meja atau staf ${CAT_NAME[pairCat]} aktif untuk booking kedua.`);
     if (!customer && newWa.trim() && !waNorm) return setError("No. WhatsApp belum valid.");
+    if (!customer && waNorm && !newName.trim() && !existingOwner) return setError("Isi nama untuk pelanggan baru (atau kosongkan No. WhatsApp untuk walk-in).");
     setSaving(true);
     const supabase = createClient();
     const force = hasConflict;
@@ -109,16 +192,31 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         p_whatsapp: customer ? undefined : newWa.trim() || undefined, p_source: source, p_notes: notes,
         p_force: force, p_duration: duration !== autoDur ? duration : undefined,
       });
+    if (error) { setSaving(false); return setError(error.message); }
+    const r = data as { saved: boolean; conflicts: Conflict[]; customer_existing?: boolean; customer_id?: string | null };
+    if (!r.saved) { setSaving(false); setServerConflicts(r.conflicts); return; } // bentrok baru dari perangkat lain → minta konfirmasi
+
+    let pairMsg = "";
+    if (!edit && pair.sel.length && pairResource && pairStaff) {
+      const p2 = await supabase.rpc("create_booking_admin", {
+        p_resource_id: pairResource, p_staff_id: pairStaff, p_start_at: startIso, p_service_ids: pair.sel,
+        p_customer_id: r.customer_id ?? undefined, p_source: source, p_notes: notes, p_force: force,
+      });
+      const r2 = p2.data as { saved: boolean; conflicts: Conflict[] } | null;
+      pairMsg = p2.error ? ` · booking ${CAT_NAME[pairCat]} gagal: ${p2.error.message}`
+        : r2 && !r2.saved ? ` · booking ${CAT_NAME[pairCat]} belum disimpan (baru saja terisi) — buat dari grid` : ` + ${CAT_NAME[pairCat]}`;
+    }
     setSaving(false);
-    if (error) return setError(error.message);
-    const r = data as { saved: boolean; conflicts: Conflict[]; customer_existing?: boolean };
-    if (!r.saved) { setServerConflicts(r.conflicts); return; } // bentrok baru dari perangkat lain → minta konfirmasi
-    toast(r.customer_existing ? `Booking disimpan · pakai pelanggan lama ${existingOwner ?? ""}`.trim()
-      : force ? "Booking disimpan (dengan bentrok jadwal)" : edit ? "Booking diperbarui" : "Booking disimpan");
+    toast((r.customer_existing ? `Booking disimpan · pakai pelanggan lama ${existingOwner ?? ""}`.trim()
+      : force ? "Booking disimpan (dengan bentrok jadwal)" : edit ? "Booking diperbarui" : "Booking disimpan") + pairMsg);
     onSaved(date);
   }
 
-  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-semibold ${on ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`;
+  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`;
+  const resOptions = (c: Cat) => master.resources.filter((r) => r.type === c);
+  const staffOptions = (c: Cat, s: string, e: string) => activeStaff.filter((x) => x.category === c).map((x) => (
+    <option key={x.id} value={x.id}>{x.name}{approvedOffFor(dayOffs ?? [], x.id, s, e) ? " (izin)" : ""}</option>
+  ));
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4 p-6">
@@ -153,16 +251,20 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       )}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-xs font-bold text-muted">Layanan (boleh lebih dari satu)</legend>
+        <legend className="mb-1 text-xs font-bold text-muted">
+          Layanan {edit ? `(${CAT_NAME[cat]})` : "— pilih kategori lain untuk pasangan (booking kedua di jam yang sama)"}
+        </legend>
         {(["barbershop", "nail"] as const).map((c) => (
           <div key={c} className="flex flex-col gap-1.5">
-            <span className={`text-xs font-bold ${c === "barbershop" ? "text-[#3A2F8F]" : "text-[#8A2352]"}`}>{c === "barbershop" ? "Barbershop" : "Nail & Spa"}</span>
+            <span className={`text-xs font-bold ${c === "barbershop" ? "text-[#3A2F8F]" : "text-[#8A2352]"}`}>
+              {CAT_NAME[c]}{sel.length > 0 && c !== cat && !edit ? " · booking kedua" : ""}
+            </span>
             <div className="flex flex-wrap gap-1.5">
               {bookable.filter((s) => s.category === c).map((s) => {
-                const on = sel.includes(s.id);
+                const on = sel.includes(s.id) || pair.sel.includes(s.id);
                 return (
-                  <button type="button" key={s.id} aria-pressed={on} className={chip(on)}
-                    onClick={() => { setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id]); setDurOverride(null); setServerConflicts(null); }}>
+                  <button type="button" key={s.id} aria-pressed={on} className={chip(on)} disabled={!!edit && sel.length > 0 && c !== cat}
+                    onClick={() => toggleService(s.id)}>
                     {s.name} <span className={`tabular ${on ? "text-white/70" : "text-muted"}`}>· {formatRupiah(s.price)}</span>
                   </button>
                 );
@@ -173,24 +275,20 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </fieldset>
 
       <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
-        <Field label="Kursi / meja" htmlFor="f-res">
-          <select id="f-res" className="input" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setServerConflicts(null); }}>
-            {master.resources.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        <Field label={`Kursi / meja · ${CAT_NAME[cat]}`} htmlFor="f-res">
+          <select id="f-res" className="input" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setStaffPick(null); setServerConflicts(null); }}>
+            {resOptions(cat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </Field>
-        <Field label="Kapster / teknisi" htmlFor="f-staff">
+        <Field label={cat === "nail" ? "Nail artist" : "Kapster"} htmlFor="f-staff">
           <select id="f-staff" className="input" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
-            {(["barbershop", "nail"] as const).map((c) => (
-              <optgroup key={c} label={c === "barbershop" ? "Barbershop" : "Nail & Spa"}>
-                {activeStaff.filter((s) => s.category === c).map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}{approvedOffFor(dayOffs ?? [], s.id, startIso, endIso) ? " (izin)" : ""}</option>
-                ))}
-              </optgroup>
-            ))}
+            {!staffId && <option value="">— tidak ada staf aktif —</option>}
+            {staffOptions(cat, startIso, endIso)}
           </select>
         </Field>
         <Field label="Tanggal" htmlFor="f-date">
-          <input id="f-date" type="date" className="input" value={date} onChange={(e) => { if (e.target.value) setDate(e.target.value); setServerConflicts(null); }} />
+          <input id="f-date" type="date" className="input" value={date} min={edit ? undefined : today}
+            onChange={(e) => { if (e.target.value) setDate(e.target.value); setServerConflicts(null); }} />
         </Field>
         <Field label="Jam mulai" htmlFor="f-start">
           <select id="f-start" className="input tabular" value={start} onChange={(e) => { setStart(+e.target.value); setServerConflicts(null); }}>
@@ -206,7 +304,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
             <legend className="mb-1.5 text-xs font-bold text-muted">Sumber</legend>
             <div className="grid grid-cols-3 gap-1.5">
               {([["walk_in", "Walk-in"], ["whatsapp", "WhatsApp"], ["admin", "Admin"]] as const).map(([v, l]) => (
-                <button type="button" key={v} aria-pressed={source === v} onClick={() => setSource(v)}
+                <button type="button" key={v} aria-pressed={source === v} onClick={() => setSourcePick(v)}
                   className={`min-h-11 rounded-[10px] border-2 text-[13px] font-bold ${source === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
               ))}
             </div>
@@ -214,19 +312,51 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         )}
       </div>
 
+      {pair.sel.length > 0 && (
+        <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[12px] border border-dashed border-[#C9C2B3] p-3.5">
+          <b className="text-sm">Booking kedua · {CAT_NAME[pairCat]} <span className="font-normal text-muted">— jam sama ({minToTime(start)}, {pairDur} mnt), pelanggan sama</span></b>
+          <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
+            <Field label="Kursi / meja" htmlFor="f-res2">
+              <select id="f-res2" className="input" value={pairResource ?? ""} onChange={(e) => { setPair({ ...pair, resourceId: e.target.value, staffPick: null }); setServerConflicts(null); }}>
+                {resOptions(pairCat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+              </select>
+            </Field>
+            <Field label={pairCat === "nail" ? "Nail artist" : "Kapster"} htmlFor="f-staff2">
+              <select id="f-staff2" className="input" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value }); setServerConflicts(null); }}>
+                {!pairStaff && <option value="">— tidak ada staf aktif —</option>}
+                {staffOptions(pairCat, startIso, pairEndIso)}
+              </select>
+            </Field>
+          </div>
+        </section>
+      )}
+
       <Field label="Catatan" htmlFor="f-notes">
         <textarea id="f-notes" rows={2} className="input py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
 
-      {staffOff && (
+      {lines.length > 0 && (
+        <div className="flex items-baseline justify-between gap-3 rounded-[10px] bg-paper px-3.5 py-2.5 text-sm tabular">
+          <span className="text-muted">Perkiraan tagihan{discount > 0 ? ` · paket ${master.shop.bundlePct}% −${formatRupiah(discount)}` : ""}</span>
+          <b className="text-base">{formatRupiah(subtotal - discount)}</b>
+        </div>
+      )}
+
+      {(staffOff || pairStaffOff) && (
         <div role="alert" className="rounded-[10px] bg-[#EEEBE4] px-3.5 py-3 text-[13px] font-semibold text-[#4A463F]">
-          {activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti ({offLabel(staffOff)}). Pilih kapster lain.
+          {[staffOff && `${activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti (${offLabel(staffOff)})`,
+            pairStaffOff && `${activeStaff.find((s) => s.id === pairStaff)?.name} sedang izin/cuti (${offLabel(pairStaffOff)})`].filter(Boolean).join(" · ")}. Pilih staf lain.
+        </div>
+      )}
+      {notices.length > 0 && (
+        <div role="alert" className="rounded-[10px] bg-[#EEEBE4] px-3.5 py-3 text-[13px] leading-normal text-[#4A463F]">
+          <b>Perhatikan:</b> {notices.join(" ")} Anda tetap bisa menyimpan.
         </div>
       )}
       {hasConflict && (
         <div role="alert" className="flex gap-2.5 rounded-[10px] bg-[#FFF1C2] px-3.5 py-3 text-[13px] leading-normal text-[#5A4300]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px shrink-0"><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18h.01" /></svg>
-          <span><b>Jadwal bentrok:</b> {conflictText.join("; ")}. Anda tetap bisa menyimpan.</span>
+          <span><b>Jadwal bentrok:</b> {conflictText.join("; ")}{bufferMin ? ` (termasuk jeda ${bufferMin} mnt)` : ""}. Anda tetap bisa menyimpan.</span>
         </div>
       )}
       {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
@@ -235,9 +365,10 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         <button type="button" onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
         <button type="submit" disabled={saving || !online}
           className={`btn h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#33312D]"}`}>
-          {saving ? "Menyimpan…" : hasConflict ? "Tetap simpan" : edit ? "Simpan perubahan" : "Simpan booking"}
+          {saving ? "Menyimpan…" : hasConflict ? "Tetap simpan" : edit ? "Simpan perubahan" : pair.sel.length ? "Simpan 2 booking" : "Simpan booking"}
         </button>
       </div>
     </form>
   );
 }
+

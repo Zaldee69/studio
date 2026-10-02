@@ -19,7 +19,7 @@ export function Sheet({ open, onClose, label, variant = "modal", width = 600, ch
     ? "m-0 ml-auto h-dvh max-h-none w-full max-w-none border-l border-line bg-card p-0 shadow-[-12px_0_32px_rgba(28,27,25,0.10)] backdrop:bg-ink/30 min-[1000px]:w-[400px]"
     : "m-auto max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] rounded-2xl bg-card p-0 shadow-[0_24px_64px_rgba(28,27,25,0.25)] backdrop:bg-ink/45";
   return (
-    <dialog ref={ref} aria-label={label} onClose={onClose} onCancel={(e) => { e.preventDefault(); onClose(); }}
+    <dialog ref={ref} aria-label={label} onClose={onClose} onCancel={(e) => { e.preventDefault(); if (!document.querySelector("[role=alertdialog]")) onClose(); /* Esc menutup konfirmasi dulu */ }}
       onClick={(e) => { if (e.target === ref.current) onClose(); }}
       className={cls} style={variant === "modal" ? { maxWidth: width } : undefined}>
       {open && children}

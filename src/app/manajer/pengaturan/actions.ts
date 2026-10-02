@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { log } from "@/lib/log";
+import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { getProfile } from "@/lib/auth";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { parseFields, PUBLIC_GROUPS, SETTINGS_GROUPS, SOP_GROUPS, TABLES, type TableName } from "./tables";
@@ -34,7 +36,8 @@ export async function saveRow(table: TableName, _: SaveState, fd: FormData): Pro
   revalidatePath("/manajer/pengaturan");
   if (table === "suppliers") revalidatePath("/manajer/inventaris");
   if (table === "sop_tool_groups") revalidatePath("/manajer/sop");
-  if (table === "services" || table === "reviews" || table === "staff" || table === "deposit_packages") revalidatePublic();
+  // resources: kategori tanpa kursi/meja aktif disembunyikan dari reservasi online (landing & booking di-cache)
+  if (table === "services" || table === "reviews" || table === "staff" || table === "resources" || table === "deposit_packages") revalidatePublic();
   return { ok: "Tersimpan" };
 }
 
@@ -124,11 +127,16 @@ export async function saveSettings(_: SaveState, fd: FormData): Promise<SaveStat
 export async function resetPassword(_: SaveState, fd: FormData): Promise<SaveState> {
   const me = await getProfile();
   if (me?.role !== "manager" || !me.active) return { error: "Akses ditolak." };
-  const r = z.object({ user_id: z.guid("Pilih akun"), password: z.string().min(8, "Sandi minimal 8 karakter") })
+  const r = z.object({ user_id: z.guid("Pilih akun"), password: z.string().refine((pw) => !passwordError(pw), PASSWORD_HINT) })
     .safeParse(Object.fromEntries(fd));
   if (!r.success) return { error: r.error.issues[0].message };
   const { error } = await createAdminClient().auth.admin.updateUserById(r.data.user_id, { password: r.data.password });
-  return error ? { error: error.message } : { ok: "Sandi diganti. Sampaikan ke pemilik akun." };
+  if (error) {
+    log("error", "password_reset_failed", { by: me.id, target: r.data.user_id, error: error.message });
+    return { error: error.message };
+  }
+  log("info", "password_reset_by_manager", { by: me.id, target: r.data.user_id }); // jejak audit
+  return { ok: "Sandi diganti. Sampaikan ke pemilik akun." };
 }
 
 export async function saveSopSettings(_: SaveState, fd: FormData): Promise<SaveState> {

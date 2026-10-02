@@ -22,7 +22,8 @@ Aplikasi web untuk barbershop + nail salon dalam satu lokasi: jadwal, kasir, dep
 - **Tahap 5 — analitik & kepatuhan:** **Analitik KPI** (AOV per kategori vs target, utilisasi kursi/meja, rasio
   ritel, peta panas, selisih durasi, pelanggan & follow-up, booking online, insight otomatis, ekspor CSV, laporan
   bulanan PDF) dan **SOP & Kepatuhan** (checklist sterilisasi 3 tahap per shift, otorisasi, riwayat, pengingat,
-  perawatan fasilitas berkala, laporan kepatuhan siap cetak) + tab **SOP** di aplikasi kapster. Navbar atas
+  perawatan fasilitas berkala khusus manajer, laporan kepatuhan siap cetak) + tab **SOP** (checklist sterilisasi) di
+  aplikasi kapster. Navbar atas
   admin berisi lonceng notifikasi.
 
 **Stack:** Next.js 16 (App Router, TypeScript strict) · Tailwind CSS 4 · Supabase (Postgres, Auth, RLS, Realtime) · Zod · Vitest · pgTAP · Vercel.
@@ -51,7 +52,8 @@ Studio (lihat isi DB): http://127.0.0.1:54323 · Email lokal (Mailpit): http://1
 | Kapster (Andi, Sari) | andi@groombloom.test, sari@groombloom.test | `/login` → `/kapster` |
 | Pelanggan (Rina) | rina@groombloom.test | `/akun` |
 
-Kode undangan tim bawaan: `GB-2026`. Web Push lokal memakai kunci di `.env.local`; trigger DB memanggil
+Kode undangan tim lokal: `GB-2026` (diset `seed-demo.sql`; di produksi kode bawaan acak). Pendaftaran akun baru
+(pelanggan & tim) wajib konfirmasi email — di lokal emailnya masuk ke Mailpit: http://127.0.0.1:54324. Web Push lokal memakai kunci di `.env.local`; trigger DB memanggil
 `http://host.docker.internal:3000/api/push` (`npm run dev`).
 
 ## Perintah
@@ -131,7 +133,7 @@ hari ini, dan booking berikutnya.
 
 ![Beranda manajer](docs/panduan/09-beranda-manajer.png)
 
-## Panduan kapster & teknisi
+## Panduan kapster & nail artist
 
 **Pasang di HP (sekali saja).** Buka `https://<domain>/login` di HP, masuk dengan akun Anda → langsung ke
 **Hari ini**. Lalu:
@@ -248,10 +250,24 @@ hari kerja/izin, total dibayar, dan kolom catatan manajer untuk keputusan bonus 
    ramai · selisih durasi (≥ 5 catatan) · ritel & top produk · omzet per kategori & tren mingguan · pelanggan (baru,
    kembali, tingkat kembali 60 hari, churn, efektivitas follow-up) · booking online (funnel, porsi, batal, no-show).
    Setiap grafik punya **Lihat tabel** dan **Unduh CSV** (dibuka rapi di Excel).
-5. **Target KPI** di paling bawah: ubah target AOV, pita rasio ritel, target utilisasi, dan ambang insight — semua
-   angka & status langsung dihitung ulang.
-6. **Laporan bulanan (PDF)**: tombol di header → pilih bulan → **Cetak / PDF** (A4; di dialog cetak pilih *Simpan
-   sebagai PDF*).
+5. **Target KPI** di paling bawah: ubah target omzet bersih per bulan, target AOV, pita rasio ritel, target
+   utilisasi, dan ambang insight — semua angka & status langsung dihitung ulang.
+6. **Laporan owner (PDF/Excel)**: tombol di header → pilih **Bulan / Kuartal / Tahun / Rentang** → **Cetak / PDF**
+   (A4; di dialog cetak pilih *Simpan sebagai PDF*) atau **Unduh Excel** (.xlsx, 7 sheet: Ringkasan, Keuangan, Harian,
+   Staf, Layanan & produk, Pelanggan, Operasional). Isi:
+   - **Ringkasan**: 20 metrik dibanding periode sebelumnya & periode sama tahun lalu (persen, atau *poin* untuk metrik
+     persen) + capaian target (target omzet bulanan dibagi rata per hari bila periode tidak penuh sebulan).
+   - **Keuangan**: omzet kotor → diskon → omzet bersih → HPP → margin kotor → gaji & komisi → kontribusi; uang masuk
+     (tunai, QRIS, top-up deposit), pemakaian & saldo deposit pelanggan (kewajiban), void, per kategori, biaya perawatan.
+   - **Staf & layanan**: per kapster/nail artist (omzet, AOV, upsell, utilisasi, no-show, gaji & komisi); layanan &
+     produk terlaris dengan margin.
+   - **Pelanggan & booking**: baru/kembali, tingkat kembali, churn, follow-up, booking online & no-show, pelanggan teratas.
+   - **Operasional & kepatuhan**: utilisasi per kursi/meja, jam tersibuk, kepatuhan SOP, perawatan, nilai & mutasi stok,
+     selisih pemakaian bahan (bila ada ≥ 2 opname di periode).
+
+   Periode yang masih berjalan dipotong sampai hari ini dan pembandingnya sepanjang hari yang sama (1–15 Sep vs 1–15
+   Agu). Gaji & komisi dihitung per bulan kalender, jadi baris kontribusi setelah gaji hanya muncul untuk periode bulan
+   penuh. Kontribusi belum dikurangi biaya tetap yang tidak dicatat aplikasi (sewa, listrik, dll.).
 
 Definisi singkat: **AOV kategori** = pendapatan jasa bersih kategori ÷ transaksi yang memuat kategori itu (bundle
 dihitung di keduanya) · **Omzet** = total transaksi non-void · **Rasio ritel** = ritel ÷ jasa bersih ·
@@ -267,7 +283,7 @@ ikut memberi data untuk no-show & efektivitas follow-up.
 **2. Rendam disinfektan** → **3. Autoclave**. Tahap berikutnya baru bisa dicentang setelah tahap sebelumnya.
 
 1. **Kapster** di HP: tab **SOP** → ketuk tahap → (opsional) catatan/foto → **Tandai … selesai**. Nama & jam
-   tercatat otomatis. Badge tab SOP menyala selama checklist hari ini belum lengkap atau ada perawatan terlambat.
+   tercatat otomatis. Badge tab SOP menyala selama checklist hari ini belum lengkap.
 2. Salah centang? Ketuk tahap itu → **Batalkan** (hanya pengisi atau manajer, dan hanya bila tahap sesudahnya belum
    dicentang). Pembatalan tercatat — log tidak pernah dihapus.
 3. **Manajer** di **SOP & Kepatuhan** melihat progres realtime ("9 dari 12 tahap selesai"), bisa mengisi atas nama
@@ -275,7 +291,7 @@ ikut memberi data untuk no-show & efektivitas follow-up.
 4. Pukul 12.00 (bisa diubah), bila checklist hari ini belum dimulai, kapster yang bertugas & manajer mendapat
    notifikasi. **Riwayat 14 hari** menampilkan status tiap tanggal (hijau diotorisasi, kuning lengkap belum
    diotorisasi, merah belum lengkap, abu kosong).
-5. **Perawatan fasilitas** (AC/HVAC, exhaust, dll.): kartu per tugas dengan status (terlambat / jatuh tempo hari
+5. **Perawatan fasilitas** (AC/HVAC, exhaust, dll.) — **khusus manajer** (tidak tampil di aplikasi kapster): kartu per tugas dengan status (terlambat / jatuh tempo hari
    ini / n hari lagi). **Tandai selesai** mengisi catatan, foto, vendor; biaya hanya diisi manajer (atau
    **Tambah biaya** belakangan di riwayat). Tugas terlambat muncul di Beranda & lonceng.
 
@@ -315,9 +331,17 @@ Bagian **Pesan keluar ke pelanggan** di bawah tab ini menampilkan 20 email/WA te
 ## Membuat proyek Supabase (produksi)
 
 1. Buat proyek di https://supabase.com/dashboard (region Singapore paling dekat).
-2. **Authentication → Sign In / Providers → Email**: aktifkan *Confirm email* (agar email pendaftar terverifikasi).
-   Minimal panjang sandi: 8.
-3. **Authentication → URL Configuration**: isi *Site URL* dengan domain Vercel Anda.
+2. **Authentication → Sign In / Providers → Email** (samakan dengan `supabase/config.toml`):
+   - *Confirm email*: **aktif**. Akun pelanggan baru baru tersambung ke riwayat & saldo pelanggan lama (email sama)
+     setelah emailnya dikonfirmasi — database menolak menyambung tanpa bukti ini, jadi lupa mencentang tidak membuka
+     celah, tetapi pelanggan lama tidak akan tersambung otomatis.
+   - *Secure password change*: **aktif** (ganti sandi dari sesi lama perlu kode dari email).
+   - *Minimum password length* 8, *Password requirements*: **Letters and digits**.
+   - **Attack Protection → Prevent use of leaked passwords**: aktifkan bila paket Pro.
+   - **Multi-Factor → TOTP**: *Enabled* (default) — dipakai verifikasi 2 langkah manajer.
+3. **Authentication → URL Configuration**: isi *Site URL* dengan domain Vercel Anda dan tambahkan
+   `https://<domain>/**` ke *Redirect URLs* (tautan konfirmasi email kembali ke `/auth/konfirmasi`).
+   Pasang juga **SMTP** sendiri (lihat Resend di bawah) — email bawaan Supabase dibatasi beberapa email per jam.
 4. Terapkan migrasi dari laptop:
    ```bash
    npx supabase login
@@ -374,7 +398,8 @@ Bagian **Pesan keluar ke pelanggan** di bawah tab ini menampilkan 20 email/WA te
 
 Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
 
-- **Captcha (Cloudflare Turnstile)** melindungi booking tamu serta daftar/masuk pelanggan.
+- **Captcha (Cloudflare Turnstile)** melindungi booking tamu serta daftar/masuk pelanggan **dan tim** (semua masuk/daftar
+  berjalan dari browser langsung ke Supabase Auth, jadi captcha & batas percobaan per IP berlaku untuk semuanya).
   1. Cloudflare Dashboard → Turnstile → *Add site* (domain Anda), mode *Managed*.
   2. Vercel: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` → Redeploy. Booking tamu kini ditolak
      server tanpa token valid.
@@ -393,16 +418,46 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
 
 Pesan gagal dicoba ulang maksimal 3× (jeda 5, 10 menit). Status tiap pesan: Pengaturan → Halaman publik → Pesan keluar ke pelanggan.
 
+## Log & pemantauan
+
+Aplikasi menulis **log terstruktur** (satu baris JSON: `ts`, `level`, `event`, + field) lewat `src/lib/log.ts`.
+Di Vercel semuanya muncul di **Project → Logs** — filter dengan teks event, mis. `booking_rpc_failed`. Log hanya
+berisi id & kode, tanpa nama/no. WA/email pelanggan.
+
+| Event | Level | Arti |
+|---|---|---|
+| `request_error` | error | Error server apa pun yang tertangkap Next (`src/instrumentation.ts`): rute, jenis (render/action/route/proxy), pesan, stack |
+| `booking_rpc_failed` | error | Booking online gagal disimpan karena error database |
+| `booking_created` / `booking_blocked` | info / warn | Booking online berhasil / ditolak batas percobaan atau batas 2 booking aktif |
+| `booking_captcha_failed`, `booking_invalid_input` | warn | Captcha gagal / data tidak valid (bisa tanda bot) |
+| `session_invalid` | warn | Refresh token ditolak / sesi dicabut — pengguna "logout sendiri" |
+| `email_confirm_failed` | warn | Tautan konfirmasi email kedaluwarsa / dibuka di perangkat lain |
+| `notify_dispatch_errors` | warn | Email/WA gagal (detail per pesan: Pengaturan → Halaman publik → Pesan keluar) |
+| `push_send_failed`, `push_unauthorized` | warn | Web Push ke HP kapster gagal / panggilan tanpa rahasia |
+| `password_reset_by_manager`, `account_deleted` | info | Jejak audit: siapa mereset sandi siapa; akun pelanggan dihapus |
+| `station_login` / `station_login_denied` | info / warn | Masuk dengan PIN di tablet stasiun / PIN salah atau terkunci |
+
+Sumber log lain (tanpa kode tambahan):
+- **Supabase → Logs**: API (PostgREST), Postgres (error RPC), Auth (login gagal, reset sandi, sesi dicabut).
+- **Vercel → Observability**: latensi & error rate per rute.
+
+Masa simpan log di paket gratis Vercel/Supabase pendek (hitungan jam–1 hari). Untuk riwayat lebih lama / notifikasi
+error: paket Pro + *Log Drain* (Vercel → Settings → Log Drains) ke layanan log, atau pasang Sentry.
+Error di browser (JavaScript klien) belum dikirim ke mana pun.
+
 ## Membuat akun manajer pertama
 
-1. **Ganti kode undangan dulu** (default `GB-2026` ada di repo): SQL Editor →
-   `update settings set invite_code = '<kode-baru-rahasia>';`
-2. Buka `https://<domain>/login?daftar=1`, daftar sebagai **Kasir** dengan kode undangan itu.
+1. **Ambil kode undangan** (dibuat acak saat migrasi): SQL Editor → `select invite_code from settings;`
+   (atau ganti: `update settings set invite_code = '<kode-baru-rahasia>';`).
+2. Buka `https://<domain>/login?daftar=1`, daftar sebagai **Kasir** dengan kode undangan itu, lalu klik tautan
+   konfirmasi di email.
 3. SQL Editor:
    ```sql
    update profiles set role = 'manager', active = true where email = 'email-anda@contoh.com';
    ```
 4. Login di `/login` → masuk ke `/manajer`. Selanjutnya kode undangan diganti dari **Pengaturan → Umum**.
+5. **Aktifkan verifikasi 2 langkah**: **Pengaturan → Keamanan** → pindai QR dengan Google Authenticator /
+   1Password → masukkan kode. Setelah itu login manajer butuh sandi + kode 6 digit.
 
 Anggota tim berikutnya mendaftar sendiri dengan kode undangan. Akun mereka **nonaktif** sampai manajer
 mengaktifkannya di **Pengaturan → Akun & peran** (kapster wajib ditautkan ke baris staf). Tidak ada yang bisa
@@ -418,6 +473,12 @@ mendaftar langsung sebagai manajer.
 | `customer` | `/akun`, `/booking` | Hanya datanya sendiri. Login email + sandi |
 | anon | `/`, `/booking` | View `public_*` + RPC slot. Booking tamu (nama + WhatsApp) lewat server action |
 
+- **Login**: sandi min. 8 karakter berisi huruf & angka; pendaftaran wajib konfirmasi email; pesan gagal tidak
+  membocorkan email mana yang terdaftar. Akun pelanggan hanya tersambung ke data pelanggan lama (email sama)
+  setelah email dikonfirmasi (`link_customer_account`, trigger konfirmasi di `auth.users`) — mencegah orang lain
+  mendaftar memakai email pelanggan untuk membaca riwayat, no. WA & saldo depositnya.
+- **Verifikasi 2 langkah (TOTP)**: akun yang sudah mengaktifkannya tidak dikenali perannya oleh RLS (`auth_role()`
+  → `mfa_ok()`) sampai sesi naik ke `aal2` — sandi yang bocor saja tidak membuka data, termasuk lewat API langsung.
 - Hak akses dijaga **RLS di database** (`supabase/migrations/*_rls.sql`), bukan hanya di UI. `proxy.ts` hanya
   melakukan redirect; layout area memanggil `requireRole()`.
 - Transaksi, item, stok, dan top-up **immutable** (trigger). Pembatalan lewat `void_transaction` (manajer).
@@ -436,7 +497,7 @@ mendaftar langsung sebagai manajer.
 - Analitik corong tanpa cookie: id sesi acak di `sessionStorage`, tanpa IP/identitas.
 - Analitik: fungsi `kpi_*` & ringkasan (materialized view) hanya untuk manajer. SOP: kapster hanya bisa menulis
   lewat RPC untuk **hari ini** dan membaca hari ini; tidak bisa mengotorisasi; log tidak bisa diubah/dihapus
-  (trigger), hanya dibatalkan sebelum otorisasi. Biaya perawatan tidak terbaca kapster. Foto SOP di bucket privat `sop`.
+  (trigger), hanya dibatalkan sebelum otorisasi. Perawatan fasilitas khusus manajer (RLS & RPC menolak kapster). Foto SOP di bucket privat `sop`.
 - Inventaris & gaji: kasir membaca stok lewat view `inventory_public` / `opname_sheet` (tanpa harga pokok) dan
   tidak bisa menyetujui opname; harga pokok tidak bisa di-update langsung (trigger) — hanya lewat `receive_stock` /
   `set_unit_cost`. Komisi hanya dari `commission_for_period` / `commission_items` (kapster: dirinya, kolom HPP
@@ -489,7 +550,12 @@ src/
 - Katalog seed tidak disamakan dengan contoh angka spesifikasi Tahap 4 (mis. HPP Potong Rambut Rp1.300, bukan
   Rp1.200); contoh angka spesifikasi diuji di unit test, e2e memakai angka seed. Ekspor berupa CSV (tanpa .xlsx).
 - Pelanggan login dengan email + sandi. No. WhatsApp dipakai untuk booking tamu. Akun pelanggan baru ditautkan
-  otomatis ke data pelanggan dengan **email** yang sama (bukan no. WA — nomor WA tidak terverifikasi, jadi
-  menautkan lewat WA bisa membuka saldo deposit orang lain).
+  ke data pelanggan dengan **email** yang sama **setelah email dikonfirmasi** (bukan no. WA — nomor WA tidak
+  terverifikasi, jadi menautkan lewat WA bisa membuka saldo deposit orang lain).
+- Booking online: bila tidak ada jam, layar menyebut alasannya (`booking_unavailable_reason`: booking ditutup,
+  layanan/staf tidak tersedia, toko tutup, staf izin, di luar jangka, sisa jam hari ini) — "penuh" hanya bila memang
+  penuh. Tautan/tab lama berisi layanan atau staf yang sudah dihapus/nonaktif tidak lagi membuat semua tanggal
+  tampak penuh: pilihan yang tidak dikenal dibuang dengan pemberitahuan. (Di lokal, id layanan berubah tiap
+  `db reset` — muat ulang halaman booking setelah reset.)
 # studio
 # studio

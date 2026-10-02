@@ -14,7 +14,7 @@ export default defineConfig({
   use: { baseURL: "http://127.0.0.1:3100", locale: "id-ID", timezoneId: "Asia/Jakarta", trace: "retain-on-failure" },
   // konter.spec: layar konter (laptop/tablet). kapster.spec: HP kapster + tablet. publik.spec: HP pelanggan. fase2.spec: inventaris & SDM, fase3.spec: analitik & SOP (1366/1024/820). perf.spec: 12 bulan data (390, terakhir).
   projects: [
-    { name: "laptop-1366", testMatch: /konter|fase2|fase3/, use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } } },
+    { name: "laptop-1366", testMatch: /konter|fase2|fase3|keamanan/, use: { ...devices["Desktop Chrome"], viewport: { width: 1366, height: 768 } } },
     { name: "tablet-1024", testMatch: /konter|kapster|fase2|fase3/, use: { ...devices["Desktop Chrome"], viewport: { width: 1024, height: 768 }, hasTouch: true } },
     { name: "portrait-820", testMatch: /konter|kapster|fase2|fase3/, use: { ...devices["Desktop Chrome"], viewport: { width: 820, height: 1180 }, hasTouch: true } },
     { name: "hp-390", testMatch: /kapster|perf|publik/, use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 }, hasTouch: true } },

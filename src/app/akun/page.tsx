@@ -18,7 +18,8 @@ const STATUS_L: Record<string, string> = {
 };
 
 // Akun pelanggan — isi mengikuti desain (Booking.dc.html, view "akun"), tampilan gaya Landing.
-export default async function AkunPage() {
+export default async function AkunPage({ searchParams }: PageProps<"/akun">) {
+  const { konfirmasi } = await searchParams;
   const profile = await getProfile();
   if (profile && profile.role !== "customer") redirect(homeFor(profile.role));
 
@@ -26,7 +27,10 @@ export default async function AkunPage() {
     return (
       <div className="min-h-screen bg-lux font-jost text-cream">
         <PublicHeader right={<Link href="/booking" className="btn-line">Reservasi</Link>} />
-        <main className="mx-auto flex max-w-[1180px] justify-center px-[22px] py-14 min-[900px]:py-24"><LoginPanel /></main>
+        <main className="mx-auto flex max-w-[1180px] flex-col items-center gap-6 px-[22px] py-14 min-[900px]:py-24">
+          {konfirmasi && <p role="status" className="w-full max-w-[460px] border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">Jika tautan masih berlaku, email Anda sudah terkonfirmasi. Silakan masuk.</p>}
+          <LoginPanel />
+        </main>
         <PublicFooter />
       </div>
     );

@@ -82,8 +82,8 @@ test("E2 · checkout 3× Potong → neck strip lewat ambang → banner & lonceng
     await expect(page.getByRole("button", { name: `Neck strip · ${neck.qty - 3} / ${neck.qty - 3} pcs` })).toBeVisible(); // banner, tanpa reload
     await page.getByRole("button", { name: /^Notifikasi, \d+ belum dibaca/ }).click();
     await expect(page.getByRole("dialog", { name: "Notifikasi" })).toContainText("Stok Neck strip tinggal");
-    await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: /^Notifikasi/ }).click();
+    await page.keyboard.press("Escape"); // Esc menutup panel notifikasi
+    await expect(page.getByRole("dialog", { name: "Notifikasi" })).toBeHidden();
 
     await page.getByRole("button", { name: "Daftar belanja" }).click();
     const list = page.getByRole("dialog", { name: "Daftar belanja" });
@@ -122,8 +122,8 @@ test("E3 · opname HPP: kasir mengisi separuh di tablet → manajer melanjutkan 
   await mgr.getByRole("link", { name: /Lanjutkan/ }).click();
   await expect(mgr.getByLabel("Hitungan fisik Neck strip")).toHaveValue(String(sys["Neck strip"] - 3)); // hitungan kasir terlihat di perangkat lain
   await mgr.getByLabel("Hitungan fisik Remover").fill(String(sys["Remover"]));
-  mgr.once("dialog", (d) => d.accept());
   await mgr.getByRole("button", { name: "Setujui opname" }).click();
+  await mgr.getByRole("alertdialog").getByRole("button", { name: "Setujui" }).click();
   await mgr.waitForURL(/tab=opname/);
 
   const neck = await item("Neck strip");

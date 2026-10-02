@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { log } from "@/lib/log";
 import { verifyTurnstile } from "@/lib/turnstile";
 
 // z.guid(): format uuid saja — id seed (0000…-0001-…) bukan RFC v4 tapi sah di Postgres
@@ -32,16 +33,30 @@ export type BookResult =
  */
 export async function bookOnline(raw: unknown): Promise<BookResult> {
   const r = Input.safeParse(raw);
-  if (!r.success) return { ok: false, code: "invalid", message: "Data booking tidak valid." };
+  if (!r.success) {
+    log("warn", "booking_invalid_input", { issue: r.error.issues[0]?.path.join(".") });
+    return { ok: false, code: "invalid", message: "Data booking tidak valid." };
+  }
   const { captcha_token, consent, ...v } = r.data;
   const h = await headers();
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "";
-  const { data: { user } } = await (await createClient()).auth.getUser();
+  const { data: jwt } = await (await createClient()).auth.getClaims();
+  const user = jwt?.claims.sub ? { id: jwt.claims.sub } : null;
   if (!user) {
     if (!consent) return { ok: false, code: "consent", message: "Setujui kebijakan privasi untuk lanjut sebagai tamu." };
-    if (!(await verifyTurnstile(captcha_token, ip))) return { ok: false, code: "captcha", message: "Verifikasi keamanan gagal. Muat ulang lalu coba lagi." };
+    if (!(await verifyTurnstile(captcha_token, ip))) {
+      log("warn", "booking_captcha_failed", { ip });
+      return { ok: false, code: "captcha", message: "Verifikasi keamanan gagal. Muat ulang lalu coba lagi." };
+    }
   }
   const { data, error } = await createAdminClient().rpc("book_online", { p: { ...v, actor: user?.id ?? null, ip } });
-  if (error) return { ok: false, code: "error", message: "Gagal menyimpan booking. Coba lagi." };
-  return data as unknown as BookResult;
+  if (error) {
+    log("error", "booking_rpc_failed", { db_code: error.code, error: error.message, user: user?.id ?? null });
+    return { ok: false, code: "error", message: "Gagal menyimpan booking. Coba lagi." };
+  }
+  const res = data as unknown as BookResult;
+  // slot_taken / penuh = wajar; batas percobaan & batas booking aktif = sinyal penyalahgunaan
+  if (!res.ok && (res.code === "rate" || res.code === "limit")) log("warn", "booking_blocked", { reason: res.code, ip, user: user?.id ?? null });
+  else if (res.ok && !res.duplicate) log("info", "booking_created", { group: res.group_id, status: res.status, guest: !user, reschedule: !!v.reschedule_group });
+  return res;
 }

@@ -46,15 +46,14 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
   const queue = (appts ?? []).filter((a) => jktDate(new Date(a.start_at)) === today)
     .filter((a) => ["booked", "arrived", "in_service"].includes(a.status)).length;
   const pending = (offs ?? []).filter((o) => o.status === "pending").length;
-  // SOP: 1 bila checklist hari ini belum lengkap + jumlah tugas perawatan terlambat.
-  const { data: sop } = useRealtimeTable(["sop_logs", "sop_approvals", "maintenance_logs"], async () => {
-    const supabase = createClient();
-    const [{ data: day }, { data: tasks }] = await Promise.all([supabase.rpc("sop_day", { p_date: today, p_shift: 1 }), supabase.rpc("maintenance_status", {})]);
+  // SOP: 1 bila checklist sterilisasi hari ini belum lengkap (perawatan fasilitas khusus manajer).
+  const { data: sop } = useRealtimeTable(["sop_logs", "sop_approvals"], async () => {
+    const { data: day } = await createClient().rpc("sop_day", { p_date: today, p_shift: 1 });
     const d = day as { done: number; total: number; closed: boolean } | null;
-    return (d && !d.closed && d.done < d.total ? 1 : 0) + ((tasks ?? []) as { status: string }[]).filter((t) => t.status === "overdue").length;
+    return d && !d.closed && d.done < d.total ? 1 : 0;
   });
   const badge = (href: string) => (href === "/kapster" ? queue : href === "/kapster/sop" ? sop ?? 0 : 0);
-  const role = me.category === "nail" ? "Teknisi nail" : "Kapster barbershop";
+  const role = me.category === "nail" ? "Nail artist" : "Kapster barbershop";
 
   async function togglePush() {
     if (push) { await disablePush(); setPush(false); toast("Notifikasi push dimatikan"); return; }

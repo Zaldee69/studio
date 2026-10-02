@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ConfirmProvider } from "@/components/alert-dialog";
 import { Bricolage_Grotesque, Cormorant_Garamond, Jost, Plus_Jakarta_Sans } from "next/font/google";
 import { SITE_URL } from "@/lib/supabase/public";
 import "./globals.css";
@@ -22,7 +23,7 @@ export const viewport: Viewport = { themeColor: "#0E0D0C" };
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${bricolage.variable} ${jakarta.variable} ${cormorant.variable} ${jost.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full"><ConfirmProvider>{children}</ConfirmProvider></body>
     </html>
   );
 }

@@ -4,7 +4,7 @@
 type Cat = "barbershop" | "nail";
 export interface SlotService { id: string; category: Cat | "retail"; durationMin: number; needsPedicure: boolean }
 export interface SlotResource { id: string; type: Cat; isPedicure: boolean }
-export interface SlotStaff { id: string; category: Cat }
+export interface SlotStaff { id: string; category: Cat; homeResourceId?: string | null } // kursi/meja utama (diutamakan)
 export interface Busy { resourceId: string; staffId: string | null; startMin: number; endMin: number }
 export interface PlanGroup { category: Cat; serviceIds: string[]; resourceId: string; staffId: string; startMin: number; durationMin: number }
 
@@ -35,17 +35,17 @@ export function planBooking(ctx: Ctx, startMin: number): PlanGroup[] | null {
   let t = startMin;
   for (const g of groups(ctx.services)) {
     const a0 = t, b0 = t + g.dur;
-    // prioritaskan resource yang is_pedicure-nya sesuai kebutuhan (stable sort menjaga urutan asli)
-    const pool = ctx.resources.filter((r) => r.type === g.cat)
-      .sort((x, y) => Number(y.isPedicure === g.pedi) - Number(x.isPedicure === g.pedi));
     const buf = ctx.buffer ?? 0;
-    const res = pool.find((r) => !ctx.busy.some((b) => b.resourceId === r.id && overlaps(b, a0, b0, buf)));
-    if (!res) return null;
+    // staf dulu, lalu kursinya: pedicure yang sesuai > kursi utama staf itu > urutan asli (sort stabil)
     const pick = ctx.staffPick?.[g.cat];
     const stf = ctx.staff.find((s) => s.category === g.cat && (!pick || s.id === pick)
       && !ctx.busy.some((b) => b.staffId === s.id && overlaps(b, a0, b0, buf))
       && !(ctx.offs ?? []).some((o) => o.staffId === s.id && o.startMin < b0 && o.endMin > a0));
     if (!stf) return null;
+    const rank = (r: SlotResource) => Number(r.isPedicure === g.pedi) * 2 + Number(r.id === stf.homeResourceId);
+    const pool = ctx.resources.filter((r) => r.type === g.cat).sort((x, y) => rank(y) - rank(x));
+    const res = pool.find((r) => !ctx.busy.some((b) => b.resourceId === r.id && overlaps(b, a0, b0, buf)));
+    if (!res) return null;
     out.push({ category: g.cat, serviceIds: g.ids, resourceId: res.id, staffId: stf.id, startMin: a0, durationMin: g.dur });
     if (!ctx.together) t = b0;
   }

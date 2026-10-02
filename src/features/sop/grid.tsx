@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useConfirm } from "@/components/alert-dialog";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { canRecord, canUndo, SOP_STATUS, STAGE_LABEL, STAGES, type SopStatus, type Stage } from "@/lib/domain/kpi";
@@ -37,7 +38,7 @@ export function useSopDay(date: string, shift: number) {
 export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, big = false }: {
   date: string; shift: number; me: string; manager: boolean; staff?: { id: string; name: string }[]; requirePhoto: boolean; big?: boolean;
 }) {
-  const toast = useToast(); const online = useOnline();
+  const toast = useToast(); const online = useOnline(); const confirm = useConfirm();
   const { data, refresh } = useSopDay(date, shift);
   const [pick, setPick] = useState<{ group: Group; stage: Stage } | null>(null);
   const [view, setView] = useState<{ group: Group; stage: Stage; log: Log } | null>(null);
@@ -67,7 +68,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
     toast("Tahap dibatalkan (tercatat)"); setView(null); refresh();
   }
   async function approve() {
-    if (!confirm(`Otorisasi checklist ${formatTanggal(`${date}T12:00:00+07:00`)}? Setelah ini checklist terkunci.`)) return;
+    if (!(await confirm({ title: `Otorisasi checklist ${formatTanggal(`${date}T12:00:00+07:00`)}?`, description: "Setelah diotorisasi, checklist terkunci dan tidak bisa diubah.", confirmLabel: "Otorisasi" }))) return;
     const { error } = await createClient().rpc("approve_sop_day", { p_date: date, p_shift: shift });
     if (error) return toast(error.message, "error");
     toast("Checklist diotorisasi"); refresh();

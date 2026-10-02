@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
+import { errInfo, log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 
 // Dipanggil trigger DB (pg_net) saat booking kapster dibuat / dipindah / dibatalkan → kirim Web Push ke perangkatnya.
@@ -7,6 +8,7 @@ const TITLE = { new: "Booking baru", changed: "Booking diubah", cancelled: "Book
 
 export async function POST(req: Request) {
   if (!process.env.PUSH_SECRET || req.headers.get("x-push-secret") !== process.env.PUSH_SECRET) {
+    log("warn", "push_unauthorized");
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   if (!process.env.VAPID_PRIVATE_KEY || !process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY) return Response.json({ sent: 0, skipped: "vapid" });
@@ -35,7 +37,9 @@ export async function POST(req: Request) {
     } catch (e) {
       const code = (e as { statusCode?: number }).statusCode;
       if (code === 404 || code === 410) await admin.from("push_subscriptions").delete().eq("id", s.id); // langganan kedaluwarsa
+      else log("warn", "push_send_failed", { appointment: appointment_id, subscription: s.id, status: code ?? null, ...errInfo(e) });
     }
   }));
+  log("info", "push_sent", { appointment: appointment_id, kind, sent, devices: subs?.length ?? 0 });
   return Response.json({ sent });
 }

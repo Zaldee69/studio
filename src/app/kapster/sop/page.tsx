@@ -1,6 +1,5 @@
 import { HistoryStrip } from "@/features/sop/history-strip";
 import { SopGrid } from "@/features/sop/grid";
-import { Maintenance } from "@/features/sop/maintenance";
 import { getProfile } from "@/lib/auth";
 import { jktDate } from "@/lib/domain/format";
 import type { SopStatus } from "@/lib/domain/kpi";
@@ -11,7 +10,6 @@ import { ShiftPicker } from "./shift-picker";
 export const metadata = { title: "SOP" };
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
-// Tab SOP kapster: checklist hari ini saja (pengisi = kapster login), perawatan tanpa biaya. Tidak bisa otorisasi.
 export default async function KapsterSop({ searchParams }: PageProps<"/kapster/sop">) {
   const sp = await searchParams;
   const today = jktDate();
@@ -32,7 +30,6 @@ export default async function KapsterSop({ searchParams }: PageProps<"/kapster/s
       <p className="text-sm text-muted">Cuci → Rendam → Autoclave untuk tiap kelompok alat. Centang mencatat nama Anda &amp; jam.</p>
       <SopGrid key={shift} date={today} shift={shift} me={me?.id ?? ""} manager={false} requirePhoto={c.require_photo} big />
       <HistoryStrip rows={strip} current={today} href={null} />
-      <Maintenance manager={false} />
     </>
   );
 }

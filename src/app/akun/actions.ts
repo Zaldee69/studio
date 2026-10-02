@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { log } from "@/lib/log";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 
 export type AkunState = { error?: string; ok?: string } | undefined;
@@ -29,6 +30,9 @@ export async function deleteAccount(_: AkunState, fd: FormData): Promise<AkunSta
   const { error } = await supabase.rpc("delete_my_account");
   if (error) return { error: error.message };
   await supabase.auth.signOut();
-  await createAdminClient().auth.admin.deleteUser(user.id);
+  const { error: delErr } = await createAdminClient().auth.admin.deleteUser(user.id);
+  // data pribadi sudah dianonimkan; user login yang tersisa perlu dihapus manual di dashboard Auth
+  if (delErr) log("error", "account_delete_auth_failed", { user: user.id, error: delErr.message });
+  else log("info", "account_deleted", { user: user.id });
   redirect("/?akun=dihapus");
 }

@@ -1,14 +1,14 @@
--- HANYA untuk lokal/dev: akun demo (sandi: password123) + jadwal contoh. Jangan jalankan di produksi.
+-- HANYA untuk lokal/dev: akun demo (sandi: kOVAJu-ppxv7d-xpOT5w-qVBV1S) + jadwal contoh. Jangan jalankan di produksi.
 
 -- Kode undangan tetap untuk dev/tes (produksi: acak dari migrasi, lihat Pengaturan → Umum).
 update settings set invite_code = 'GB-2026';
 
--- ---------- Akun demo (sandi semua: password123) ----------
+-- ---------- Akun demo (sandi semua: kOVAJu-ppxv7d-xpOT5w-qVBV1S) ----------
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
   confirmation_token, recovery_token, email_change_token_new, email_change)
 select '00000000-0000-0000-0000-000000000000', u.id::uuid, 'authenticated', 'authenticated', u.email,
-  crypt('password123', gen_salt('bf')), now(),
+  crypt('kOVAJu-ppxv7d-xpOT5w-qVBV1S', gen_salt('bf')), now(),
   '{"provider":"email","providers":["email"]}', u.meta::jsonb, now(), now(), '', '', '', ''
 from (values
   ('00000000-0000-0000-0002-000000000001', 'manajer@groombloom.test', '{"signup":"team","invite_code":"GB-2026","role":"cashier","full_name":"Budi (Manajer)"}'),

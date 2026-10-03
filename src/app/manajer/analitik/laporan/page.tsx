@@ -61,7 +61,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
         <a href={`/manajer/analitik/laporan/excel?${qs}`} className="btn-ghost h-11" download>Unduh Excel</a>
       </div>
 
-      <article aria-label="Laporan owner" className="mx-auto flex w-full max-w-[210mm] flex-col gap-5 rounded-[14px] border border-line bg-card p-6 text-[13px] print:max-w-none print:border-0 print:p-0">
+      <article aria-label="Laporan owner" className="mx-auto flex w-full max-w-[210mm] flex-col gap-5 rounded-[14px] border border-line bg-card p-6 text-[13px] max-sm:p-3 max-sm:[&_table]:block max-sm:[&_table]:overflow-x-auto print:max-w-none print:border-0 print:p-0">
         <header className="flex flex-col border-b-2 border-ink pb-2">
           <b className="font-display text-xl">{shop.name}</b><span className="text-xs text-muted">{shop.address}</span>
           <h1 className="mt-2 font-display text-2xl font-bold">Laporan owner · {p.label}</h1>

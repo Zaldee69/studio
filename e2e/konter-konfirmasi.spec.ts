@@ -13,12 +13,13 @@ test("konfirmasi: Esc & batal, juga di atas Sheet modal", async ({ page }) => {
 
   const [a] = sql<{ id: string; cid: string }>(`with c as (insert into customers (name) values ('Uji Alert') returning id),
     ap as (insert into appointments (customer_id, resource_id, staff_id, start_at, duration_min, source)
-      select c.id, r.id, st.id, date_trunc('hour', now()) - interval '1 hour', 30, 'admin' from c,
+      select c.id, r.id, st.id, jkt(jkt_today() - 1, '10:00'), 30, 'admin' from c,
         (select id from resources where type='barbershop' and active order by sort limit 1) r,
         (select id from staff where category='barbershop' and active order by sort limit 1) st returning id, customer_id)
     select id, customer_id cid from ap`);
   try {
   await page.goto("/manajer/jadwal");
+  await page.getByRole("button", { name: "Hari sebelumnya" }).click(); // kemarin 10.00: sudah lewat (boleh "Tidak datang") & di jam buka, tak bergantung jam tes
   await card(page, "Uji Alert").first().click();
   await page.getByRole("button", { name: "Tidak datang" }).click();
   const nd = page.getByRole("alertdialog", { name: "Tandai pelanggan tidak datang?" });

@@ -43,7 +43,7 @@ npm run dev                        # http://localhost:3000
 
 Studio (lihat isi DB): http://127.0.0.1:54323 · Email lokal (Mailpit): http://127.0.0.1:54324
 
-### Akun demo (hanya lokal, sandi `password123`)
+### Akun demo (hanya lokal, sandi `kOVAJu-ppxv7d-xpOT5w-qVBV1S`)
 
 | Peran | Email | Masuk ke |
 |---|---|---|
@@ -446,6 +446,13 @@ error: paket Pro + *Log Drain* (Vercel → Settings → Log Drains) ke layanan l
 Error di browser (JavaScript klien) belum dikirim ke mana pun.
 
 ## Membuat akun manajer pertama
+
+**Cara cepat** — skrip membuat 1 manajer + 1 kasir (aktif, email terkonfirmasi) dengan sandi acak yang hanya tampil
+sekali di terminal. `.env.local` harus berisi URL & `SUPABASE_SECRET_KEY` proyek produksi:
+```bash
+npm run akun:awal -- manajer@domain-anda.com kasir@domain-anda.com
+```
+Email yang sudah terdaftar dilewati. Lanjut ke langkah 5 (verifikasi 2 langkah). Atau manual:
 
 1. **Ambil kode undangan** (dibuat acak saat migrasi): SQL Editor → `select invite_code from settings;`
    (atau ganti: `update settings set invite_code = '<kode-baru-rahasia>';`).

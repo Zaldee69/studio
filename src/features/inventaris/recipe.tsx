@@ -47,7 +47,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid gap-4 min-[1000px]:grid-cols-[280px_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 min-[1000px]:grid-cols-[280px_minmax(0,1fr)]">
         <nav aria-label="Layanan" className="flex max-h-[520px] flex-col gap-1 overflow-y-auto rounded-[14px] border border-line bg-card p-2">
           {services.map((s) => {
             const mg = margin(s.id);
@@ -64,7 +64,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
         </nav>
 
         {svc && (
-          <div className="grid min-w-0 gap-4 min-[1500px]:grid-cols-[1fr_300px]">
+          <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 min-[1500px]:grid-cols-[1fr_300px]">
             <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="flex-1 font-display text-xl font-bold">{svc.name}</h2>

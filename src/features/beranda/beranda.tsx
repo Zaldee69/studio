@@ -84,7 +84,7 @@ export function Beranda({ master }: { master: Master }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex min-h-12 flex-wrap items-center gap-3">
-        <div className="flex flex-1 flex-col gap-0.5">
+        <div className="flex flex-1 flex-col gap-0.5 max-sm:basis-full">
           <h1 className="font-display text-[28px] font-bold tracking-tight">Selamat datang, {master.userName.split(" ")[0]}</h1>
           <span className="text-[13px] text-muted">{formatTanggal(new Date())} · Ringkasan manajemen</span>
         </div>
@@ -116,13 +116,13 @@ export function Beranda({ master }: { master: Master }) {
         </section>
       )}
 
-      <div className="grid gap-4 min-[1000px]:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 min-[1000px]:grid-cols-2">
         <section className="flex flex-col gap-2.5 rounded-[14px] border border-line bg-card p-4">
           <h2 className="text-base font-bold">Perlu perhatian</h2>
           {!alerts.length ? <span className="text-sm font-semibold text-[#1F7A45]">Semua aman hari ini.</span> : alerts.map((a, i) => (
             <Link key={i} href={a.href} className="flex min-h-[52px] items-center gap-3 rounded-[10px] border px-3 py-2.5" style={{ background: a.bg, borderColor: a.border }}>
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: a.dot }} />
-              <span className="flex-1 text-sm font-semibold">{a.text}</span>
+              <span className="min-w-0 flex-1 text-sm font-semibold">{a.text}</span>
               <span className="text-xs font-bold text-[#4A463F]">{a.cta} →</span>
             </Link>
           ))}
@@ -146,12 +146,12 @@ export function Beranda({ master }: { master: Master }) {
         <div className="flex items-center"><h2 className="flex-1 text-base font-bold">Berikutnya hari ini</h2>
           <Link href={`${b}/jadwal`} className="flex h-11 items-center rounded-lg border border-[#D9D4C8] px-3 text-xs font-bold">Lihat jadwal</Link></div>
         {!upcoming.length ? <span className="text-sm text-muted">Tidak ada booking lagi hari ini.</span> : upcoming.slice(0, 6).map((a) => (
-          <div key={a.id} className="grid min-h-11 grid-cols-[70px_1.2fr_1.6fr_1fr] items-center gap-2.5 border-b border-[#F0EDE6] text-sm tabular">
+          <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#F0EDE6] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
             <b>{formatJam(a.start_at)}</b>
             <span className="flex min-w-0 items-center gap-1.5"><b className="truncate">{a.customer?.name ?? "Walk-in"}</b>
               {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[10px] font-bold text-white">Online</span>}</span>
-            <span className="truncate text-[#4A463F]">{a.appointment_services.map((s) => svcName(s.service_id)).join(", ")}</span>
-            <span className="flex items-center gap-1.5 text-xs font-semibold"><span className="size-2 rounded-full" style={{ background: STATUS[a.status].dot }} />
+            <span className="truncate text-[#4A463F] max-sm:col-start-2 max-sm:col-end-4 max-sm:row-start-2 max-sm:text-xs">{a.appointment_services.map((s) => svcName(s.service_id)).join(", ")}</span>
+            <span className="flex items-center gap-1.5 text-xs font-semibold max-sm:col-start-3 max-sm:row-start-1"><span className="size-2 rounded-full" style={{ background: STATUS[a.status].dot }} />
               {master.staff.find((s) => s.id === a.staff_id)?.name}</span>
           </div>
         ))}

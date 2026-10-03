@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CatChip, Empty, useOnline, useToast } from "@/components/ui";
 import { bundleHint, calcCart, quickCash, upsellSuggestions, type CartLine } from "@/lib/domain/cart";
@@ -83,6 +83,16 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     return { serviceId: s.id, name: s.name, category: s.category, price: s.price, staffId: i.staffId || null, appointmentId: i.appointmentId };
   });
   const k = calcCart(lines, { bundlePct: master.shop.bundlePct, method, useDeposit: useDeposit && bal > 0, depositBalance: bal });
+  // <1000px keranjang ada di bawah katalog → bar ringkas melayang selama keranjang belum terlihat
+  const cartRef = useRef<HTMLElement>(null);
+  const [cartSeen, setCartSeen] = useState(true);
+  useEffect(() => {
+    const el = cartRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setCartSeen(e.isIntersecting), { rootMargin: "0px 0px -120px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const hint = bundleHint(lines.filter((l) => l.category !== "retail"));
   const ups = upsellSuggestions(items.map((i) => i.serviceId), master.services.filter((s) => s.active), dismissed)
     .map((id) => ({ id, s: svc.get(id)!, from: master.services.find((x) => x.upsell_service_id === id && items.some((i) => i.serviceId === x.id))! }))
@@ -123,9 +133,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const catalog = master.services.filter((s) => s.active && s.category === tab);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4 min-[1000px]:flex-row xl:gap-6">
+    <div className="flex flex-col gap-4 min-[1000px]:min-h-0 min-[1000px]:flex-1 min-[1000px]:flex-row xl:gap-6">
       {/* KIRI */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3 min-[1000px]:min-h-0 min-[1000px]:flex-1">
         <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Tagihan dari booking hari ini">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-bold">Tagihan dari booking hari ini</h2>
@@ -153,11 +163,11 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           )}
         </section>
 
-        <section className="flex min-h-[260px] flex-1 flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4" aria-label="Katalog">
-          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5">
+        <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4 min-[1000px]:min-h-[260px] min-[1000px]:flex-1" aria-label="Katalog">
+          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5 overflow-x-auto">
             {(["barbershop", "nail", "retail"] as const).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
-                className={`h-11 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>
+                className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>
                 {c === "barbershop" ? "Barbershop" : c === "nail" ? "Nail & Spa" : "Ritel"}
               </button>
             ))}
@@ -184,7 +194,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       </div>
 
       {/* KERANJANG */}
-      <section aria-label="Keranjang" className="flex shrink-0 flex-col overflow-y-auto overscroll-contain rounded-[14px] border border-line bg-card min-[1000px]:w-[360px] xl:w-[420px]">
+      <section ref={cartRef} aria-label="Keranjang" className="flex shrink-0 scroll-mt-16 flex-col rounded-[14px] border border-line bg-card min-[1000px]:w-[360px] min-[1000px]:overflow-y-auto min-[1000px]:overscroll-contain xl:w-[420px]">
         {done ? (
           <div className="flex-1 overflow-y-auto px-6 py-7">
             <ReceiptView r={done}>
@@ -210,24 +220,24 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 const s = svc.get(i.serviceId)!;
                 return (
                   <div key={i.key} className="flex min-h-11 items-center gap-2.5">
-                    <CatChip cat={s.category} />
+                    <span className="max-sm:hidden"><CatChip cat={s.category} /></span>
                     <span className="flex min-w-0 flex-1 flex-col gap-1 py-1">
                       <span className="text-sm font-semibold">{s.name}</span>
                       {s.category === "retail" ? (
                         <select aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
-                          className="h-11 self-start rounded-lg border border-[#D9D4C8] bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px]">
+                          className="h-11 max-w-full self-start rounded-lg border border-[#D9D4C8] bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px]">
                           <option value="">Dijual oleh — (opsional)</option>
                           {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       ) : (
                         <select aria-label={`Kapster untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
-                          className={`h-11 self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
-                          <option value="">Pilih kapster/nail artist</option>
+                          className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
+                          <option value="">{s.category === "nail" ? "Pilih nail artist" : "Pilih kapster"}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       )}
                     </span>
-                    <span className="text-sm tabular">{formatRupiah(s.price)}</span>
+                    <span className="shrink-0 text-sm tabular">{formatRupiah(s.price)}</span>
                     <button onClick={() => setItems(items.filter((x) => x.key !== i.key))} aria-label={`Hapus ${s.name}`}
                       className="flex size-11 items-center justify-center rounded-lg text-muted hover:bg-paper">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -300,6 +310,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           </>
         )}
       </section>
+
+      {!done && items.length > 0 && !cartSeen && (
+        <button onClick={() => cartRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          className="fixed inset-x-3 bottom-[calc(72px+env(safe-area-inset-bottom))] z-20 flex h-14 items-center gap-3 rounded-xl bg-ink px-4 text-left text-white shadow-[0_8px_24px_rgba(28,27,25,0.3)] md:bottom-4 min-[1000px]:hidden">
+          <span className="flex-1 text-sm"><b>{items.length} item</b> · {formatRupiah(k.total)}</span>
+          <span className="text-sm font-bold">Bayar ↓</span>
+        </button>
+      )}
 
       {customer && (
         <TopupModal customer={customer} balance={bal} packs={master.packs} open={topup} onClose={() => setTopup(false)}

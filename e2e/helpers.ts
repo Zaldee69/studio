@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { PostgrestClient } from "@supabase/postgrest-js";
 import { expect, type Browser, type Page, type TestInfo } from "@playwright/test";
 
-export const PW = "password123";
+export const PW = "kOVAJu-ppxv7d-xpOT5w-qVBV1S";
 export const USERS = {
   manager: "manajer@groombloom.test", cashier: "kasir@groombloom.test", andi: "andi@groombloom.test", sari: "sari@groombloom.test",
 } as const;

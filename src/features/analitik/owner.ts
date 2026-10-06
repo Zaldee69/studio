@@ -2,6 +2,7 @@ import "server-only";
 import { jktDate } from "@/lib/domain/format";
 import { ownerPeriod, type OwnerPeriod } from "@/lib/domain/owner";
 import { createClient } from "@/lib/supabase/server";
+import { BRAND } from "@/lib/brand";
 
 type N = number | null;
 export type OwnerSummary = {
@@ -56,5 +57,5 @@ export async function loadOwnerReport(q: OwnerQuery): Promise<{ p: OwnerPeriod; 
     supabase.from("settings").select("shop_name, shop_address").single(),
   ]);
   if (error) throw new Error(error.message);
-  return { p, r: data as unknown as OwnerReport, shop: { name: shop?.shop_name ?? "Groom & Bloom", address: shop?.shop_address ?? "" } };
+  return { p, r: data as unknown as OwnerReport, shop: { name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "" } };
 }

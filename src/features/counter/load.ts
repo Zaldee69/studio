@@ -2,6 +2,7 @@ import "server-only";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Master } from "./types";
+import { BRAND } from "@/lib/brand";
 
 /** Data master untuk layar konter (jadwal, kasir, pelanggan). Hak akses tetap dijaga RLS. */
 export async function loadMaster(role: "manager" | "cashier"): Promise<Master> {
@@ -21,7 +22,7 @@ export async function loadMaster(role: "manager" | "cashier"): Promise<Master> {
     base: role === "manager" ? "/manajer" : "/kasir",
     services: services ?? [], staff: staff ?? [], resources: resources ?? [], packs: packs ?? [],
     shop: {
-      name: shop?.shop_name ?? "Groom & Bloom",
+      name: shop?.shop_name ?? BRAND,
       open: (shop?.open_time ?? "09:00").slice(0, 5), close: (shop?.close_time ?? "21:00").slice(0, 5),
       bundlePct: shop?.bundle_pct ?? 10, churnWeeks: shop?.churn_weeks ?? 4,
       waTemplate: shop?.wa_followup_template ?? "",

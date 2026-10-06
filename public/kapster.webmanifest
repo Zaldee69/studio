@@ -1,7 +1,7 @@
 {
-  "name": "G&B Kapster",
-  "short_name": "G&B Kapster",
-  "description": "Antrean, jadwal, komisi, dan izin untuk kapster & teknisi Groom & Bloom.",
+  "name": "DP Kapster",
+  "short_name": "DP Kapster",
+  "description": "Antrean, jadwal, komisi, dan izin untuk kapster & nail artist D'Pras Barbershop.",
   "id": "/kapster",
   "start_url": "/kapster",
   "scope": "/kapster",

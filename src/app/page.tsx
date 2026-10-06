@@ -144,10 +144,10 @@ export default async function Landing() {
         </div>
 
         {/* DUA DUNIA */}
-        <section id="dunia" aria-label="Groom dan Bloom" className="grid min-[900px]:grid-cols-2">
+        <section id="dunia" aria-label="Barbershop dan Nail & Spa" className="grid min-[900px]:grid-cols-2">
           {[
-            { numeral: "I", title: "Groom", sub: "Barbershop", cat: "barbershop", bg: "bg-[#121110]", icon: <Scissors />, text: s.groom_text, p: photo("groom") },
-            { numeral: "II", title: "Bloom", sub: "Nail & Spa", cat: "nail", bg: "bg-[#161312]", icon: <Polish />, text: s.bloom_text, p: photo("bloom") },
+            { numeral: "I", title: "Barbershop", sub: "Rambut & jenggot", cat: "barbershop", bg: "bg-[#121110]", icon: <Scissors />, text: s.groom_text, p: photo("groom") },
+            { numeral: "II", title: "Nail & Spa", sub: "Kuku & perawatan", cat: "nail", bg: "bg-[#161312]", icon: <Polish />, text: s.bloom_text, p: photo("bloom") },
           ].map((w) => (
             <article key={w.title} className={`flex flex-col items-center gap-[22px] border-r border-rule text-center ${sec} ${px} ${w.bg}`}>
               <span className="font-serif text-lg tracking-[0.2em] text-gold">{w.numeral}</span>
@@ -173,7 +173,7 @@ export default async function Landing() {
             <svg width="120" height="12" viewBox="0 0 120 12" aria-hidden="true" fill="none" stroke="#C9A45C" strokeWidth="1"><path d="M0 6 H50 M70 6 H120" /><path d="M60 1 l3 5 l-3 5 l-3 -5 z" fill="#C9A45C" /></svg>
           </div>
           <div className="grid gap-10 min-[900px]:grid-cols-2 min-[900px]:gap-20">
-            {[["Groom", "barbershop"], ["Bloom", "nail"]].map(([title, c]) => (
+            {[["Barbershop", "barbershop"], ["Nail & Spa", "nail"]].map(([title, c]) => (
               <div key={c} className="flex flex-col gap-1.5">
                 <h3 className="mb-3 font-serif text-[34px] font-normal italic text-gold">{title}</h3>
                 {list(c).map((x) => (
@@ -198,7 +198,7 @@ export default async function Landing() {
           <div className={`mx-auto flex max-w-[1180px] flex-col items-center gap-7 text-center ${sec} ${px}`}>
             <span className="eyebrow">Ritual berdua</span>
             <h2 className={`max-w-[820px] ${h2} leading-[1.05]`}>
-              Groom <i className="text-gold">&amp;</i> Bloom — hemat <span className="tabular-nums text-gold">{pct}%</span>
+              Barbershop <i className="text-gold">&amp;</i> Nail — hemat <span className="tabular-nums text-gold">{pct}%</span>
             </h2>
             <p className="max-w-[520px] text-base font-light leading-[1.7] text-sand">
               Satu layanan barbershop dan satu layanan nail dalam satu kunjungan. Dimulai bersamaan, selesai bersamaan.

@@ -39,8 +39,8 @@ const PRIMARY: Record<(typeof FLOW)[number], [string, string]> = {
   waktu: ["Lanjut konfirmasi", "Lanjut"], konfirmasi: ["Konfirmasi booking", "Konfirmasi"],
 };
 const CAT: Record<Cat, { label: string; world: string; staffTitle: string; staffSub: string }> = {
-  barbershop: { label: "Barbershop", world: "Groom", staffTitle: "Kapster barbershop", staffSub: "Barber" },
-  nail: { label: "Nail & Spa", world: "Bloom", staffTitle: "Nail artist", staffSub: "Nail artist" },
+  barbershop: { label: "Barbershop", world: "Barbershop", staffTitle: "Kapster barbershop", staffSub: "Barber" },
+  nail: { label: "Nail & Spa", world: "Nail & Spa", staffTitle: "Nail artist", staffSub: "Nail artist" },
 };
 
 const fmtUtc = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("id-ID", { ...o, timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
@@ -260,7 +260,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
     const starts = d.appts.map((a) => Date.parse(a.start_at));
     const ends = d.appts.map((a) => Date.parse(a.start_at) + (d.durs[a.category] || 30) * 60000);
     const ics = buildIcs({
-      uid: `${d.code}@groombloom`, start: new Date(Math.min(...starts)).toISOString(), end: new Date(Math.max(...ends)).toISOString(),
+      uid: `${d.code}@dpras`, start: new Date(Math.min(...starts)).toISOString(), end: new Date(Math.max(...ends)).toISOString(),
       title: `${shop.name} · ${d.lines.map((l) => l.name).join(", ")}`, location: shop.address,
       description: `Kode booking ${d.code}. Bayar di toko (tunai, QRIS, atau saldo deposit).`,
     });
@@ -342,7 +342,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                   <span className="flex h-8 items-center border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">Bayar di tempat · Tunai / QRIS</span>
                 </div>
                 {openCats.length > 1 && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
-                  <span className="font-serif text-lg italic text-gold">Paket Groom &amp; Bloom</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
+                  <span className="font-serif text-lg italic text-gold">Paket barbershop + nail</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
                 </div>}
               </section>
 
@@ -352,7 +352,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                   {openCats.map((c) => (
                     <button key={c} role="tab" aria-selected={cat === c} onClick={() => setCat(c)}
                       className={`h-11 px-5 text-xs font-medium uppercase tracking-[0.22em] ${chip(cat === c)}`}>
-                      {CAT[c].world} · {CAT[c].label}
+                      {CAT[c].label}
                     </button>
                   ))}
                 </div>
@@ -502,7 +502,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 {summaryLines(false)}
                 {discount > 0 && (
                   <div className="flex justify-between text-sm tabular-nums text-gold">
-                    <span>Estimasi diskon Groom &amp; Bloom {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
+                    <span>Estimasi diskon paket {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
                   </div>
                 )}
                 <div className="flex items-baseline justify-between border-t border-rule pt-3 tabular-nums">
@@ -632,7 +632,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             <div className="flex flex-col gap-3">{summaryLines(true)}</div>
             {discount > 0 && (
               <div className="flex justify-between text-sm tabular-nums text-gold">
-                <span>Estimasi diskon Groom &amp; Bloom {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
+                <span>Estimasi diskon paket {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
               </div>
             )}
             {lines.length > 0 && discount === 0 && openCats.length > 1 && (

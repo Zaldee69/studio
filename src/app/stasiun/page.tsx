@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { stationStaff } from "@/features/stasiun/actions";
 import { StationLogin } from "@/features/stasiun/station-login";
+import { BRAND_INITIALS } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Stasiun kapster", manifest: "/kapster.webmanifest" };
 
@@ -10,7 +11,7 @@ export default async function StasiunPage() {
     <main className="flex min-h-dvh flex-col bg-ink px-4 py-8 text-paper">
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6">
         <div className="flex items-center gap-3">
-          <span className="flex size-12 items-center justify-center rounded-xl bg-paper font-display text-base font-bold text-ink">G&amp;B</span>
+          <span className="flex size-12 items-center justify-center rounded-xl bg-paper font-display text-base font-bold text-ink">{BRAND_INITIALS}</span>
           <div className="flex flex-col"><h1 className="font-display text-2xl font-bold">Stasiun kapster</h1>
             <span className="text-sm text-[#B9B3A7]">Ketuk nama Anda, lalu masukkan PIN</span></div>
         </div>

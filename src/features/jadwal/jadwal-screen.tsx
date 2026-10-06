@@ -89,7 +89,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
     }
   }
   async function dismissRequest(a: DayAppt) {
-    const { error } = await createClient().from("appointments").update({ change_request: null, change_requested_at: null }).eq("id", a.id);
+    const { error } = await createClient().rpc("dismiss_change_request", { p_id: a.id });
     if (error) toast(error.message, "error"); else { toast("Permintaan ditandai selesai"); refresh(); }
   }
   const quick = (a: DayAppt) => { const n = nextStatus(a.status); if (n) setStatus(a, n); };

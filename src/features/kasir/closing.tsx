@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { closingEscpos, type ClosingSummary } from "@/lib/domain/escpos";
+import { printBytes, printerSettings, usePrinter } from "@/lib/printer";
 import { PrintSheet } from "@/components/print-sheet";
 import { Empty, Field, useOnline, useToast } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -8,11 +10,10 @@ import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import type { Master } from "../counter/types";
 
-type Summary = {
-  tx_count: number; gross_total: number; discount_total: number; cash_sales: number; qris_sales: number; deposit_used: number;
-  topup_cash: number; topup_qris: number; topup_credited: number; topup_count: number; expected_cash: number;
-  voided: { id: string; created_at: string; total: number; reason: string }[];
-};
+type Full = Omit<ClosingSummary, "voided"> & { voided: (ClosingSummary["voided"][number] & { id: string })[]; blind: false };
+// Kasir sebelum menutup tanggal itu: server hanya mengirim jumlah transaksi & void (tutup kasir buta)
+type Blind = { blind: true; tx_count: number; voided: Full["voided"] };
+type Summary = Full | Blind;
 
 /** Tutup kasir harian: rekap dari server (cash_summary), input kas fisik → selisih, simpan & cetak. */
 export function Closing({ master }: { master: Master }) {
@@ -22,6 +23,7 @@ export function Closing({ master }: { master: Master }) {
   const [physical, setPhysical] = useState("");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
+  const printer = usePrinter();
 
   const { data: s, refresh } = useRealtimeTable(["transactions", "deposit_topups"], async () => {
     const { data, error } = await createClient().rpc("cash_summary", { p_date: date });
@@ -35,7 +37,8 @@ export function Closing({ master }: { master: Master }) {
   }, date);
 
   const phys = physical === "" ? null : Number(physical);
-  const diff = s && phys != null ? phys - s.expected_cash : null;
+  const diff = s && !s.blind && phys != null ? phys - s.expected_cash : null;
+  const lockedForCashier = master.role === "cashier" && !!closings?.length; // kasir hanya menutup sekali per tanggal
 
   async function save() {
     if (phys == null) return;
@@ -47,11 +50,31 @@ export function Closing({ master }: { master: Master }) {
     setPhysical(""); setNote(""); refresh();
   }
 
+  async function printSlip() {
+    if (!s || s.blind) return;
+    const c = closings?.[0];
+    try {
+      await printBytes(closingEscpos(s, {
+        paper: printerSettings().paper, shop: master.shop.name, date: formatTanggal(`${date}T12:00:00+07:00`), printedAt: formatJam(new Date()),
+        cashier: master.userName, time: (iso) => formatJam(iso),
+        last: c ? { at: c.created_at, physical_cash: c.physical_cash, difference: c.difference, note: c.note } : null,
+      }));
+      toast("Rekap dicetak");
+    } catch (e) { toast(e instanceof Error ? e.message : String(e), "error"); }
+  }
+
   const row = (k: string, v: number | string, strong = false) => (
     <div className={`flex justify-between gap-3 py-1.5 tabular ${strong ? "text-base font-bold" : "text-sm"}`}><span>{k}</span><span>{typeof v === "number" ? formatRupiah(v) : v}</span></div>
   );
 
-  const body = !s ? <Empty>Memuat…</Empty> : (
+  const body = !s ? <Empty>Memuat…</Empty> : s.blind ? (
+    <>
+      <div className="divide-y divide-[#F0EDE6]">{row("Jumlah transaksi", String(s.tx_count))}</div>
+      <p className="rounded-[10px] bg-paper px-3.5 py-3 text-sm">
+        Hitung uang di laci lalu isi <b>Kas fisik</b>. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
+      </p>
+    </>
+  ) : (
     <>
       <div className="divide-y divide-[#F0EDE6]">
         {row("Jumlah transaksi", String(s.tx_count))}
@@ -118,8 +141,10 @@ export function Closing({ master }: { master: Master }) {
         <Field label="Catatan (opsional)" htmlFor="cl-note">
           <textarea id="cl-note" rows={2} className="input py-2.5" value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
-        <button onClick={save} disabled={phys == null || saving || !online} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
-        <button onClick={() => window.print()} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>
+        <button onClick={save} disabled={phys == null || saving || !online || lockedForCashier} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
+        {lockedForCashier && <p className="text-xs text-muted">Tanggal ini sudah ditutup. Koreksi hitungan dilakukan manajer.</p>}
+        {printer.status === "on" && <button onClick={printSlip} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak ke printer struk</button>}
+        <button onClick={() => window.print()} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>
         {!!closings?.length && <p className="text-xs text-muted">{closings.length}× ditutup pada tanggal ini.</p>}
       </section>
     </div>

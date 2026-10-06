@@ -4,6 +4,7 @@ import { jktDate } from "@/lib/domain/format";
 import { photoUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import BookingFlow, { type Cust, type Init, type Reschedule } from "./booking-flow";
+import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Reservasi online",
@@ -70,7 +71,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
       staff={(staff ?? []).map((s) => ({ id: s.id!, name: s.name!, category: s.category!, photo: photoUrl(s.photo_path) }))}
       hours={hours ?? []} closures={(closures ?? []).map((c) => c.date)}
       shop={{
-        name: shop?.shop_name ?? "Groom & Bloom", address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "",
+        name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "",
         bundlePct: shop?.bundle_pct ?? 10, maxDays: shop?.booking_max_days_ahead ?? 14, cutoffHours: shop?.cancel_cutoff_hours ?? 2,
         open: (shop?.online_booking_open ?? true) && cats.length > 0, review: shop?.online_booking_mode === "review",
       }}

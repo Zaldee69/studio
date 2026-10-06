@@ -68,11 +68,11 @@ describe("pembentukan slot (cermin get_available_slots)", () => {
 
 describe(".ics", () => {
   it("zona Asia/Jakarta, escape, CRLF", () => {
-    const ics = buildIcs({ uid: "GB-7K3Q@groombloom", start: "2026-10-03T03:30:00Z", end: "2026-10-03T04:15:00Z",
-      title: "Groom & Bloom · Potong Rambut, Hair Spa", location: "Jl. Contoh 1; Jakarta", now: new Date("2026-10-01T00:00:00Z") });
+    const ics = buildIcs({ uid: "GB-7K3Q@dpras", start: "2026-10-03T03:30:00Z", end: "2026-10-03T04:15:00Z",
+      title: "D'Pras Barbershop · Potong Rambut, Hair Spa", location: "Jl. Contoh 1; Jakarta", now: new Date("2026-10-01T00:00:00Z") });
     expect(ics).toContain("DTSTART;TZID=Asia/Jakarta:20261003T103000\r\n");
     expect(ics).toContain("DTEND;TZID=Asia/Jakarta:20261003T111500\r\n");
-    expect(ics).toContain("SUMMARY:Groom & Bloom · Potong Rambut\\, Hair Spa");
+    expect(ics).toContain("SUMMARY:D'Pras Barbershop · Potong Rambut\\, Hair Spa");
     expect(ics).toContain("LOCATION:Jl. Contoh 1\; Jakarta");
     expect(ics).toContain("TZOFFSETTO:+0700");
     expect(ics.startsWith("BEGIN:VCALENDAR\r\n") && ics.endsWith("END:VCALENDAR\r\n")).toBe(true);

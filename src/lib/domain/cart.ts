@@ -22,7 +22,7 @@ export interface CartResult {
   paymentMethod: PayMethod;
 }
 
-/** Diskon Groom & Bloom: ≥1 barbershop + ≥1 nail → bundlePct% × subtotal jasa, dibulatkan ke Rp100. */
+/** Diskon paket: ≥1 barbershop + ≥1 nail → bundlePct% × subtotal jasa, dibulatkan ke Rp100. */
 export function bundleDiscount(lines: CartLine[], bundlePct: number): number {
   const has = (c: Category) => lines.some((l) => l.category === c);
   if (!has("barbershop") || !has("nail")) return 0;
@@ -56,7 +56,7 @@ export function calcCart(
     depositUsed > 0 && depositUsed < total ? `deposit_${opts.method}` : depositUsed > 0 ? "deposit" : opts.method;
   return {
     subtotal, discount, total, depositUsed, paymentMethod,
-    discountLabel: discount ? `Groom & Bloom ${opts.bundlePct}%` : "",
+    discountLabel: discount ? `Diskon paket ${opts.bundlePct}%` : "",
     shares: allocateDiscount(lines, discount),
     paid: total - depositUsed,
   };

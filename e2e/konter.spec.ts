@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { card, login, newSession, randomWa, slotHour, uniq } from "./helpers";
+import { formatRupiah } from "../src/lib/domain/format";
+import { card, login, newSession, randomWa, resetTodayClosings, slotHour, uniq } from "./helpers";
 
 test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + kembalian → Lunas di tab lain", async ({ page, browser }, info) => {
   const h = slotHour(info);
@@ -64,7 +65,7 @@ test("2 · pasangan: barber + nail → satu tagihan, diskon, deposit + QRIS, sal
   await mine.nth(0).click(); await mine.nth(1).click();
   const cart = page.getByRole("region", { name: "Keranjang" });
   await expect(cart).toContainText(name);
-  await expect(cart).toContainText("Diskon Groom & Bloom 10%−Rp16.500");
+  await expect(cart).toContainText("Diskon paket 10%−Rp16.500");
 
   await cart.getByRole("button", { name: "Top-up" }).click();
   await page.fill("#tp-paid", "100000");
@@ -72,6 +73,7 @@ test("2 · pasangan: barber + nail → satu tagihan, diskon, deposit + QRIS, sal
   await expect(cart).toContainText("Saldo deposit: Rp100.000");
   await cart.getByRole("button", { name: /Pakai saldo deposit/ }).click();
   await cart.getByRole("radio", { name: "QRIS" }).click();
+  await cart.getByLabel("No. referensi QRIS").fill(`E2E${uniq()}`);
   await expect(cart).toContainText("Sisa dibayarRp48.500");
   await page.getByRole("button", { name: /Catat pembayaran · Rp48\.500/ }).click();
   await expect(cart).toContainText("Dibayar (Deposit + QRIS)Rp48.500");
@@ -123,16 +125,20 @@ test("4 · kasir: /manajer/sdm ditolak, tidak ada void; manajer bisa void", asyn
   await manager.context().close();
 });
 
-test("5 · tutup kasir: selisih dihitung benar & tersimpan", async ({ page }) => {
+test("5 · tutup kasir buta: kasir hitung dulu → angka sistem & selisih muncul setelah simpan → tidak bisa ulang", async ({ page }) => {
+  resetTodayClosings();
   await login(page, "cashier");
   await page.goto("/kasir/kasir?tab=tutup");
   const main = page.getByRole("main"); // bukan salinan di lembar cetak
+  await expect(main.getByText(/Hitung uang di laci/)).toBeVisible();
+  await expect(main.getByText("Kas diharapkan (tunai jual + tunai top-up)")).toHaveCount(0);
+  await page.fill("#cl-phys", "100000");
+  await page.getByRole("button", { name: "Simpan tutup kasir" }).click();
   const expectedRow = main.getByText("Kas diharapkan (tunai jual + tunai top-up)").locator("..");
   await expect(expectedRow).toContainText("Rp");
   const expected = Number((await expectedRow.innerText()).split("Rp")[1].replace(/\D/g, ""));
-  await page.fill("#cl-phys", String(expected - 5000));
-  await expect(main.getByText(/Selisih [-−]Rp5\.000 · kurang/)).toBeVisible();
-  await page.getByRole("button", { name: "Simpan tutup kasir" }).click();
-  await expect(main.getByText(/Penutupan terakhir/)).toBeVisible();
-  await expect(main.getByText(/Penutupan terakhir/).locator("..")).toContainText(/Selisih[-−]Rp5\.000/);
+  const diff = 100000 - expected;
+  await expect(main.getByText(/Penutupan terakhir/).locator("..")).toContainText(`Selisih${formatRupiah(diff)}`);
+  await expect(page.getByRole("button", { name: "Simpan tutup kasir" })).toBeDisabled();
+  await expect(main.getByText(/Koreksi hitungan dilakukan manajer/)).toBeVisible();
 });

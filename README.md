@@ -1,4 +1,4 @@
-# Groom & Bloom — aplikasi operasional
+# D'Pras Barbershop — aplikasi operasional
 
 Aplikasi web untuk barbershop + nail salon dalam satu lokasi: jadwal, kasir, deposit, inventaris, komisi, SOP.
 
@@ -96,7 +96,7 @@ Preferensi pelanggan (ukuran clipper, warna gel, alergi) tampil di panel ini. Di
 
 **3. Bayar.** Ketuk **Proses bayar di Kasir** (atau buka Kasir dan ketuk kartu di *Tagihan dari booking hari
 ini* — pasangan yang datang bareng: ketuk kedua kartunya). Pastikan tiap layanan punya kapster (dasar komisi).
-Diskon Groom & Bloom muncul otomatis bila ada layanan barbershop **dan** nail. Tawarkan saran upsell (bintang ★).
+Diskon paket muncul otomatis bila ada layanan barbershop **dan** nail. Tawarkan saran upsell (bintang ★).
 Pilih **Pakai saldo deposit** bila pelanggan punya saldo. Tunai: ketuk nominal cepat untuk melihat kembalian.
 Ketuk **Catat pembayaran**.
 
@@ -311,9 +311,9 @@ Semua teks, foto, dan aturan di situs publik diatur manajer di **Pengaturan → 
 perlu diubah di kode. Setiap kali menyimpan, halaman publik langsung diperbarui (selebihnya landing juga
 disegarkan otomatis tiap jam).
 
-1. **Teks utama** — tagline, judul hero (+ kata beraksen emas), paragraf hero, teks Groom & Bloom, 4 standar
+1. **Teks utama** — tagline, judul hero (+ kata beraksen emas), paragraf hero, teks Barbershop & Nail & Spa, 4 standar
    layanan, tahun berdiri.
-2. **Foto** — hero, Groom, Bloom, galeri (keterangan & urutan ↑/↓), dan foto staf. Foto dikecilkan otomatis
+2. **Foto** — hero, Barbershop, Nail & Spa, galeri (keterangan & urutan ↑/↓), dan foto staf. Foto dikecilkan otomatis
    di browser (WebP, sisi terpanjang 1600 px, maks 2 MB) sebelum diunggah ke Storage `site`.
 3. **Jam buka per hari** & **hari libur khusus** (tanggal + alasan). Booking online otomatis menutup hari itu.
 4. **Tampilan** — tampilkan harga, tampilkan tim, embed Google Maps (Google Maps → Bagikan → *Sematkan peta* →
@@ -407,7 +407,7 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
      sama (melindungi daftar/masuk/lupa sandi).
 - **Email (Resend)** — konfirmasi booking, "menunggu konfirmasi", dan pengingat H-1 ke pelanggan yang punya email.
   1. https://resend.com → *Domains* → tambahkan domain & pasang record DNS (SPF/DKIM) sampai *Verified*.
-  2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `Groom & Bloom <booking@domainanda.com>`).
+  2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `D'Pras Barbershop <booking@domainanda.com>`).
   3. Supabase → Authentication → **SMTP Settings** juga bisa diarahkan ke Resend (`smtp.resend.com`, port 465,
      user `resend`, sandi = API key) agar email konfirmasi akun & lupa sandi tidak kena batas email bawaan.
 - **WhatsApp otomatis** — adapter bawaan mengirim `POST WHATSAPP_API_URL` dengan header

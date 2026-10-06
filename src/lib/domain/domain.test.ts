@@ -29,7 +29,7 @@ describe("keranjang (cermin checkout SQL)", () => {
     const r = calcCart([potong, mani, pomade], { bundlePct: 10, method: "cash" });
     expect(r).toMatchObject({ subtotal: 275000, discount: 16500, total: 258500, paid: 258500, paymentMethod: "cash" });
     expect(r.shares).toEqual([7500, 9000, 0]);
-    expect(r.discountLabel).toBe("Groom & Bloom 10%");
+    expect(r.discountLabel).toBe("Diskon paket 10%");
   });
   it("pembulatan ke Rp100 dan porsi selalu berjumlah = diskon", () => {
     const a = { ...potong, price: 33333 }, b = { ...mani, price: 44444 };

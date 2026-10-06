@@ -70,6 +70,12 @@ export function sql<T = Record<string, unknown>>(q: string): T[] {
   return start < 0 ? [] : ((JSON.parse(out.slice(start)).rows ?? []) as T[]);
 }
 
+/** Hapus tutup kasir hari ini (dikunci trigger) — kasir hanya boleh menutup sekali per tanggal. */
+export function resetTodayClosings() {
+  sql(`do $$ begin alter table cash_closings disable trigger cash_closings_immutable;
+    delete from cash_closings where date = jkt_today(); alter table cash_closings enable trigger cash_closings_immutable; end $$`);
+}
+
 /** Tautan di email terakhir untuk `to` (Mailpit lokal Supabase, port 54324). */
 export async function mailLink(to: string) {
   for (let i = 0; i < 40; i++) {

@@ -101,7 +101,7 @@ function Pick({ id, busy, onFile, multiple, label }: { id: string; busy: string 
   );
 }
 
-/** Foto hero/Groom/Bloom (satu per jenis), galeri (urut & keterangan), dan foto staf. */
+/** Foto hero/Barbershop/Nail (satu per jenis), galeri (urut & keterangan), dan foto staf. */
 export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: string; name: string; photo_path: string | null }[] }) {
   const toast = useToast();
   const [list, setList] = useState(photos);
@@ -188,7 +188,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
       <h2 className="font-display text-lg font-semibold">Foto</h2>
       <p className="-mt-2 text-xs text-muted">Dikompres otomatis ke WebP (maks. 2 MB, sisi terpanjang 1600 px). Tanpa foto, landing memakai ilustrasi garis emas.</p>
       <div className="grid gap-4 min-[1000px]:grid-cols-3">
-        {[["hero", "Hero (bingkai lengkung)"], ["groom", "Sisi Groom"], ["bloom", "Sisi Bloom"]].map(([k, l]) => (
+        {[["hero", "Hero (bingkai lengkung)"], ["groom", "Sisi Barbershop"], ["bloom", "Sisi Nail & Spa"]].map(([k, l]) => (
           <div key={k} className="flex items-center gap-3">
             <Thumb path={list.find((p) => p.kind === k)?.path ?? null} alt={l} />
             <div className="flex flex-col gap-2"><b className="text-sm">{l}</b><Pick id={k} busy={busy} label="Ganti foto" onFile={(f) => setSingle(k, f?.[0])} /></div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { useToast } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
+import { BRAND } from "@/lib/brand";
 
 type Enroll = { id: string; qr: string; secret: string };
 const factorId = async () => (await createClient().auth.mfa.listFactors()).data?.totp[0]?.id ?? null;
@@ -26,7 +27,7 @@ export function MfaSettings() {
     // Sisa pendaftaran yang tidak selesai menghalangi pendaftaran baru → hapus dulu.
     const { data: all } = await mfa.listFactors();
     for (const f of all?.all ?? []) if (f.status !== "verified") await mfa.unenroll({ factorId: f.id });
-    const { data, error } = await mfa.enroll({ factorType: "totp", friendlyName: `Groom & Bloom ${Date.now()}` });
+    const { data, error } = await mfa.enroll({ factorType: "totp", friendlyName: `${BRAND} ${Date.now()}` });
     setBusy(false);
     if (error) return toast(error.message, "error");
     setEnroll({ id: data.id, qr: data.totp.qr_code, secret: data.totp.secret });

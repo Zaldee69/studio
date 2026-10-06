@@ -6,11 +6,12 @@ import { KapsterShell } from "@/features/kapster/shell";
 import { STATION_ACTIVE, STATION_COOKIE } from "@/features/stasiun/constants";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { BRAND_INITIALS } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: { default: "G&B Kapster", template: "%s · G&B Kapster" },
+  title: { default: `${BRAND_INITIALS} Kapster`, template: `%s · ${BRAND_INITIALS} Kapster` },
   manifest: "/kapster.webmanifest",
-  appleWebApp: { capable: true, title: "G&B Kapster", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: `${BRAND_INITIALS} Kapster`, statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/kapster-192.png" },
 };
 export const viewport: Viewport = { themeColor: "#1C1B19" };

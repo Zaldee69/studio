@@ -9,6 +9,7 @@ import { Icon } from "./icons";
 import { useCounterAlerts } from "./counter-alerts";
 import { NotificationBell, useStockAlerts } from "./notification-bell";
 import { OfflineBanner, Sheet, ToastProvider } from "./ui";
+import { BRAND, BRAND_INITIALS } from "@/lib/brand";
 
 function useActive(menu: MenuItem[]) {
   const path = usePathname();
@@ -41,9 +42,9 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
       <div className="flex min-h-dvh">
         <nav aria-label="Menu utama"
           className="sticky top-0 hidden h-dvh w-[84px] shrink-0 flex-col gap-1 bg-ink px-2 py-4 text-paper print:hidden md:flex xl:w-56 xl:px-4 xl:py-6">
-          <div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-paper font-display text-[17px] font-bold tracking-tight text-ink xl:hidden" aria-label="Groom & Bloom">G&amp;B</div>
+          <div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-paper font-display text-[17px] font-bold tracking-tight text-ink xl:hidden" aria-label={BRAND}>{BRAND_INITIALS}</div>
           <div className="hidden flex-col gap-1 px-2 pb-6 xl:flex">
-            <span className="font-display text-2xl font-bold tracking-tight">Groom &amp; Bloom</span>
+            <span className="font-display text-2xl font-bold tracking-tight">{BRAND}</span>
             <span className="text-xs text-[#B9B3A7]">Barbershop · Nail Spa — {area}</span>
           </div>
           <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">

@@ -1,8 +1,8 @@
 -- Data awal katalog (placeholder — ganti dari Pengaturan). Aman untuk produksi.
 -- Akun demo & jadwal contoh ada di seed-demo.sql (HANYA lokal).
 
-update settings set shop_address = 'Jl. Contoh No. 1, Jakarta', shop_whatsapp = '6281200000000',
-  shop_instagram = '@groomandbloom';
+update settings set shop_address = 'Cimanggis Golf Estate (Ruko Emerald), Cimanggis, Kota Depok, Jawa Barat', shop_whatsapp = '6281200000000',
+  shop_instagram = '';
 
 -- ---------- Staf ----------
 insert into staff (id, name, category, sort) values

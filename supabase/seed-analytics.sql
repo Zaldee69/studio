@@ -49,7 +49,7 @@ begin
       select sum((x ->> 'p')::bigint), coalesce(sum((x ->> 'p')::bigint) filter (where x ->> 'c' <> 'retail'), 0) into sub, base from jsonb_array_elements(lines) x;
       disc := case when bundle then round(base * 10 / 10000.0) * 100 else 0 end;
       insert into transactions (customer_id, subtotal, discount_amount, discount_label, total, paid_amount, payment_method, created_at)
-      values (cid, sub, disc, case when disc > 0 then 'Groom & Bloom 10%' else '' end, sub - disc, sub - disc,
+      values (cid, sub, disc, case when disc > 0 then 'Diskon paket 10%' else '' end, sub - disc, sub - disc,
               (array['cash', 'qris'])[1 + floor(random() * 2)::int]::pay_method, t0 + interval '70 minutes')
       returning id into tx;
       alloc := 0;

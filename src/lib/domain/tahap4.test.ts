@@ -118,8 +118,8 @@ describe("daftar belanja", () => {
     expect(suggestOrder(250, 100, 2)).toBe(0);
   });
   it("pesan WhatsApp pemasok", () => {
-    expect(supplierMessage("Pak Budi", "Groom & Bloom", [{ name: "Neck strip", qty: 200, unit: "pcs" }, { name: "Krim hair spa", qty: 1000, unit: "ml" }]))
-      .toBe("Halo Pak Budi, kami dari Groom & Bloom mau pesan:\n- Neck strip 200 pcs\n- Krim hair spa 1.000 ml\n\nTerima kasih.");
+    expect(supplierMessage("Pak Budi", "D'Pras Barbershop", [{ name: "Neck strip", qty: 200, unit: "pcs" }, { name: "Krim hair spa", qty: 1000, unit: "ml" }]))
+      .toBe("Halo Pak Budi, kami dari D'Pras Barbershop mau pesan:\n- Neck strip 200 pcs\n- Krim hair spa 1.000 ml\n\nTerima kasih.");
   });
 });
 

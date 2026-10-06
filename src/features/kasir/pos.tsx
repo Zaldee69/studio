@@ -12,10 +12,12 @@ import { createClient } from "@/lib/supabase/client";
 import { CustomerCombobox } from "../counter/customer-combobox";
 import { TX_SELECT, useDayAppointments } from "../counter/hooks";
 import type { Customer, DayAppt, Master, SvcCat, TxRow } from "../counter/types";
-import { ReceiptView, toReceipt } from "./receipt-view";
+import { printerReady, printerSettings } from "@/lib/printer";
+import { printReceipt, ReceiptView, toReceipt } from "./receipt-view";
 import { TopupModal } from "./topup-modal";
 
-type Item = { key: string; serviceId: string; staffId: string; appointmentId: string | null; fromUpsell?: boolean };
+// staffLocked: item dari booking yang sudah ada kapsternya — komisi mengikuti booking (dicek juga di server)
+type Item = { key: string; serviceId: string; staffId: string; appointmentId: string | null; fromUpsell?: boolean; staffLocked?: boolean };
 const uid = () => Math.random().toString(36).slice(2, 10);
 const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\D/g, "")) || 0);
 
@@ -33,6 +35,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
   const [useDeposit, setUseDeposit] = useState(false);
   const [method, setMethod] = useState<"cash" | "qris">("cash");
+  const [qrisRef, setQrisRef] = useState(""); // bukti bayar QRIS (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [lastStaff, setLastStaff] = useState<Partial<Record<SvcCat, string>>>({});
@@ -60,7 +63,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   function toggleAppt(a: DayAppt) {
     setDone(null);
     if (inCart.has(a.id)) { setItems(items.filter((i) => i.appointmentId !== a.id)); return; }
-    setItems([...items, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id }))]);
+    setItems([...items, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id }))]);
     if (!customer && a.customer) setCustomer(a.customer);
   }
   async function addService(id: string, fromUpsell = false) {
@@ -104,7 +107,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const shortCash = cashDue > 0 && recv != null && recv < cashDue;
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setReceived(""); setDismissed([]); setError("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setDismissed([]); setError("");
   }
 
   async function pay() {
@@ -112,11 +115,12 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     if (!items.length) return;
     if (missingStaff) return setError("Pilih kapster/nail artist untuk setiap layanan (dasar komisi).");
     if (shortCash) return setError("Uang diterima kurang dari tagihan.");
+    if (method === "qris" && k.paid > 0 && qrisRef.replace(/[\s-]/g, "").length < 4) return setError("Isi No. referensi QRIS dari bukti bayar.");
     setPaying(true);
     const supabase = createClient();
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
-      cash_received: cashDue > 0 ? recv ?? cashDue : null,
+      cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method === "qris" ? qrisRef : null,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
     if (error) { setPaying(false); return setError(error.message); }
@@ -125,9 +129,15 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       customer ? supabase.from("customer_stats").select("deposit_balance").eq("customer_id", customer.id).single() : Promise.resolve({ data: null }),
     ]);
     setPaying(false);
-    setDone(toReceipt(tx as unknown as TxRow, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, st.data?.deposit_balance ?? null, master.userName));
+    const receipt = toReceipt(tx as unknown as TxRow, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, st.data?.deposit_balance ?? null, master.userName);
+    setDone(receipt);
     toast(`Pembayaran ${formatRupiah((tx as unknown as TxRow).total)} tercatat`);
     reset();
+    // struk langsung tercetak (+ laci terbuka untuk tunai) bila printer Bluetooth tersambung
+    if (printerReady() && printerSettings().autoPrint) {
+      printReceipt(receipt, receipt.method === "cash" && receipt.paid > 0)
+        .catch((e) => toast(`Struk belum tercetak: ${e instanceof Error ? e.message : e}. Coba tombol Cetak struk.`, "error"));
+    }
   }
 
   const catalog = master.services.filter((s) => s.active && s.category === tab);
@@ -230,7 +240,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                           {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       ) : (
-                        <select aria-label={`Kapster untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
+                        <select aria-label={`Kapster untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
+                          title={i.staffLocked ? "Sesuai booking. Bila kapster diganti, ubah booking di Jadwal." : undefined}
                           className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
                           <option value="">{s.category === "nail" ? "Pilih nail artist" : "Pilih kapster"}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -258,9 +269,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             <div className="flex flex-col gap-2 border-t border-[#EFECE5] px-5 py-4 text-sm tabular">
               <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(k.subtotal)}</span></div>
               {k.discount > 0 && (
-                <div className="flex justify-between font-semibold text-accent-ink"><span>Diskon Groom &amp; Bloom {master.shop.bundlePct}%</span><span>−{formatRupiah(k.discount)}</span></div>
+                <div className="flex justify-between font-semibold text-accent-ink"><span>Diskon paket {master.shop.bundlePct}%</span><span>−{formatRupiah(k.discount)}</span></div>
               )}
-              {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon Groom &amp; Bloom {master.shop.bundlePct}%</div>}
+              {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon paket {master.shop.bundlePct}%</div>}
               {customer && (
                 <button onClick={() => setUseDeposit(!useDeposit)} aria-pressed={useDeposit && bal > 0} disabled={bal <= 0}
                   className={`flex min-h-11 items-center gap-2.5 rounded-[10px] border px-3 text-left text-[13px] font-semibold disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#EEEBFA]" : "border-line bg-card"}`}>
@@ -279,6 +290,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     className={`h-11 rounded-[10px] border-2 text-sm font-bold disabled:opacity-40 ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
                 ))}
               </div>
+              {method === "qris" && k.paid > 0 && (
+                <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
+                  <label htmlFor="qris-ref" className="text-[13px] font-bold">No. referensi QRIS</label>
+                  <input id="qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
+                    value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
+                  <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
+                </div>
+              )}
               {cashDue > 0 && (
                 <div className="flex flex-col gap-2 rounded-[10px] bg-paper p-3">
                   <div className="flex items-center gap-2">
@@ -320,7 +339,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       )}
 
       {customer && (
-        <TopupModal customer={customer} balance={bal} packs={master.packs} open={topup} onClose={() => setTopup(false)}
+        <TopupModal customer={customer} balance={bal} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)}
           onDone={(nb) => { setBalance(nb); setTopup(false); }} />
       )}
     </div>

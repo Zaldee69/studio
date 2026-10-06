@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { signOut } from "@/lib/auth-actions";
 import { TeamAuth } from "./team-auth";
+import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = { title: "Login tim" };
 
@@ -11,7 +12,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <div className="w-full max-w-sm">
-        <p className="font-display text-sm font-semibold text-accent">Groom &amp; Bloom</p>
+        <p className="font-display text-sm font-semibold text-accent">{BRAND}</p>
         <h1 className="mt-1 font-display text-3xl font-bold">{mfa === "1" ? "Verifikasi 2 langkah" : register ? "Daftar akun tim" : "Login tim"}</h1>
         <p className="mt-1 text-sm text-muted">Manajer, kasir, dan kapster — halaman menyesuaikan peran.</p>
 

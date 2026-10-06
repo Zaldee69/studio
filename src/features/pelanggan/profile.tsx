@@ -156,7 +156,7 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
         ))}
       </div>
 
-      <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />
+      <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />
     </div>
   );
 }

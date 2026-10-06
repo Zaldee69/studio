@@ -49,10 +49,13 @@ export function History({ master, txParam }: { master: Master; txParam: string |
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap gap-4 text-[13px] text-muted tabular">
         <span><b className="text-ink">{sum.txCount}</b> transaksi</span>
-        <span>Omzet <b className="text-ink">{formatRupiah(sum.grossTotal)}</b></span>
-        <span>Tunai <b className="text-ink">{formatRupiah(sum.cashSales)}</b></span>
-        <span>QRIS <b className="text-ink">{formatRupiah(sum.qrisSales)}</b></span>
-        <span>Deposit <b className="text-ink">{formatRupiah(sum.depositUsed)}</b></span>
+        {/* total uang hanya untuk manajer: kasir menutup kas tanpa tahu angka sistem (tutup kasir buta) */}
+        {master.role === "manager" && <>
+          <span>Omzet <b className="text-ink">{formatRupiah(sum.grossTotal)}</b></span>
+          <span>Tunai <b className="text-ink">{formatRupiah(sum.cashSales)}</b></span>
+          <span>QRIS <b className="text-ink">{formatRupiah(sum.qrisSales)}</b></span>
+          <span>Deposit <b className="text-ink">{formatRupiah(sum.depositUsed)}</b></span>
+        </>}
         {sum.voidedCount > 0 && <span className="text-[#A12A2A]">{sum.voidedCount} void</span>}
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-[14px] border border-line bg-card">

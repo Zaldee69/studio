@@ -12,6 +12,7 @@ const qty = (v: unknown) => new Intl.NumberFormat("id-ID", { maximumFractionDigi
 
 function describe(n: N, base: string): { text: string; href: string } {
   const p = n.payload;
+  if (n.kind === "unpaid_completed") return { text: `${p.customer} (${p.staff ?? "—"}) selesai dilayani sejak ${formatJam(String(p.since))} tapi belum dibayar`, href: `${base}/audit` };
   if (n.kind === "low_stock") return { text: `Stok ${p.name} tinggal ${qty(p.qty)} ${p.unit} (ambang ${qty(p.reorder_at)})`, href: `${base}/inventaris` };
   if (n.kind === "opname_pending") return { text: `Opname ${SCOPE[String(p.scope)] ?? ""} menunggu hitungan & persetujuan`, href: base === "/kasir" ? `/kasir/opname/${p.opname_id}` : `${base}/inventaris/opname/${p.opname_id}` };
   if (n.kind === "payroll_ready") return { text: "Slip gaji sudah final", href: "/kapster/komisi" };

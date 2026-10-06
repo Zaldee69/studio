@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { PrinterButton } from "@/components/printer-button";
 import type { DayAppt, Master } from "../counter/types";
 import { Closing } from "./closing";
 import { History } from "./history";
@@ -25,6 +26,7 @@ export function KasirScreen({ master, initialAppt }: { master: Master; initialAp
           ))}
         </div>
         <span className="hidden text-[13px] text-muted xl:inline">Gabungkan layanan barbershop &amp; nail dalam satu tagihan</span>
+        <span className="ml-auto"><PrinterButton /></span>
       </div>
       {tab === "kasir" && <Pos master={master} initialAppt={initialAppt} />}
       {tab === "riwayat" && <History master={master} txParam={params.get("tx")} />}

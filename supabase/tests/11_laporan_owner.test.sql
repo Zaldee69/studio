@@ -11,7 +11,7 @@ select checkout(jsonb_build_object('customer_id', (select customer_id from profi
   'items', jsonb_build_array(jsonb_build_object('service_id', tests.svc('Potong Rambut'), 'staff_id', tests.staff_andi()),
                              jsonb_build_object('service_id', tests.svc('Manicure Basic'), 'staff_id', tests.staff_sari())),
   'method', 'cash', 'use_deposit', true));
-select checkout(jsonb_build_object('items', jsonb_build_array(jsonb_build_object('service_id', tests.svc('Hair Spa'), 'staff_id', tests.staff_andi())), 'method', 'qris'));
+select checkout(jsonb_build_object('items', jsonb_build_array(jsonb_build_object('service_id', tests.svc('Hair Spa'), 'staff_id', tests.staff_andi())), 'method', 'qris', 'qris_ref', 'T1114'));
 select void_transaction(checkout(jsonb_build_object('items', jsonb_build_array(jsonb_build_object('service_id', tests.svc('Cukur Jenggot'), 'staff_id', tests.staff_andi())), 'method', 'cash')), 'salah input');
 
 select tests.login(tests.mgr());

@@ -10,6 +10,7 @@ import { SCOPE_LABEL, type InvSettings, type StockRow, type Supplier } from "@/f
 import { formatTanggal } from "@/lib/domain/format";
 import type { CostMethod } from "@/lib/domain/inventory";
 import { createClient } from "@/lib/supabase/server";
+import { BRAND } from "@/lib/brand";
 
 export const metadata = { title: "Inventaris" };
 
@@ -32,7 +33,7 @@ export default async function Inventaris({ searchParams }: PageProps<"/manajer/i
   const suppliers = (sups ?? []) as Supplier[];
   const settings: InvSettings = {
     method: (st?.inventory_cost_method ?? "weighted_avg") as CostMethod, marginWarn: Number(st?.margin_warning_pct ?? 60),
-    multiplier: Number(st?.reorder_suggest_multiplier ?? 2), shop: st?.shop_name ?? "Groom & Bloom", ratio: st?.commission_pct ?? 40,
+    multiplier: Number(st?.reorder_suggest_multiplier ?? 2), shop: st?.shop_name ?? BRAND, ratio: st?.commission_pct ?? 40,
     variancePct: Number(st?.usage_variance_threshold_pct ?? 10),
   };
 

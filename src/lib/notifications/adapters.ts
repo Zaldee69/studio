@@ -1,3 +1,4 @@
+import { BRAND } from "../brand";
 // Adapter pengirim. Masing-masing "null" (nonaktif) sampai kredensial diisi di environment.
 export type EmailMsg = { subject: string; text: string; html: string };
 export type Adapters = {
@@ -9,7 +10,7 @@ async function ok(r: Response) {
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
 }
 
-/** Email via Resend (https://resend.com): RESEND_API_KEY + EMAIL_FROM ("Groom & Bloom <booking@domainanda.com>"). */
+/** Email via Resend (https://resend.com): RESEND_API_KEY + EMAIL_FROM ("D'Pras Barbershop <booking@domainanda.com>"). */
 export function sendEmailAdapter(): Adapters["email"] {
   const key = process.env.RESEND_API_KEY, from = process.env.EMAIL_FROM;
   if (!key || !from) return null;
@@ -36,7 +37,7 @@ export function sendWhatsAppAdapter(): Adapters["whatsapp"] {
 export async function sendWhatsAppOtp(to: string, code: string) {
   const wa = sendWhatsAppAdapter();
   if (!wa) throw new Error("WhatsApp belum dikonfigurasi");
-  await wa(to, `Kode verifikasi Groom & Bloom: ${code}. Berlaku 10 menit. Jangan bagikan kode ini.`);
+  await wa(to, `Kode verifikasi ${BRAND}: ${code}. Berlaku 10 menit. Jangan bagikan kode ini.`);
 }
 
 export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter() });

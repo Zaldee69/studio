@@ -18,7 +18,7 @@ select tests.put('shampoo0', (select qty::text from stock_levels where item_id =
 
 -- ---------- Checkout: bundle + deposit + stok ----------
 select tests.login(tests.kasir());
-select topup_deposit(tests.get('rina_cid')::uuid, 'qris', (select id from deposit_packages where name = 'Prestige'));
+select topup_deposit(tests.get('rina_cid')::uuid, 'qris', (select id from deposit_packages where name = 'Prestige'), p_qris_ref => 'T0221');
 select is((select deposit_balance from customer_stats where customer_id = tests.get('rina_cid')::uuid), 1750000::bigint,
           'top-up Prestige: bayar 1.500.000 → saldo 1.750.000');
 
@@ -54,7 +54,7 @@ select throws_like(format($$ select checkout('{"items":[{"service_id":"%s"}],"me
                    '%butuh data pelanggan%', 'checkout: deposit tanpa pelanggan ditolak');
 
 -- deposit sebagian + QRIS
-select tests.put('tx2', checkout(jsonb_build_object('customer_id', tests.get('rina_cid'), 'use_deposit', true, 'method', 'qris',
+select tests.put('tx2', checkout(jsonb_build_object('customer_id', tests.get('rina_cid'), 'use_deposit', true, 'method', 'qris', 'qris_ref', 'T0257',
   'items', jsonb_build_array(jsonb_build_object('service_id', tests.svc('Hair Coloring'), 'staff_id', tests.staff_andi()),
                              jsonb_build_object('service_id', tests.svc('Hair Coloring'), 'staff_id', tests.staff_andi()),
                              jsonb_build_object('service_id', tests.svc('Hair Coloring'), 'staff_id', tests.staff_andi()),
@@ -150,7 +150,7 @@ select throws_like(format($$ select advance_appointment_status('%s') $$,
 select tests.login(tests.andi());
 select is(advance_appointment_status(tests.get('walk')::uuid)::text, 'arrived',
           'kapster: maju satu langkah');
-select tests.login(tests.kasir());
+select tests.su();  -- kasir tak punya akses update langsung; trigger tetap menjaga jalur lain
 select throws_like(format($$ update appointments set status = 'paid' where id = '%s' $$,
                           tests.get('walk')),
                    '%hanya lewat checkout%', 'paid hanya lewat checkout');

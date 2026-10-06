@@ -57,18 +57,22 @@ select tests.put('tx', checkout(jsonb_build_object('method', 'cash', 'cash_recei
   jsonb_build_array(jsonb_build_object('service_id', tests.svc('Potong + Cuci + Styling'), 'appointment_id', tests.get('joko')))))::text);
 select results_eq(format($$ select paid_amount, cash_received from transactions where id = '%s' $$, tests.get('tx')),
                   $$ values (95000::bigint, 100000::bigint) $$, 'kembalian bisa dihitung ulang dari struk (100.000 − 95.000)');
+select tests.su();  -- kasir tak punya akses update langsung; trigger tetap menjaga jalur lain
 select throws_like(format($$ update appointments set status = 'booked' where id = '%s' $$, tests.get('joko')),
                    '%lewat void%', 'booking lunas tidak bisa dimundurkan langsung');
-select tests.put('tx2', checkout(jsonb_build_object('method', 'qris', 'cash_received', 999999, 'items',
+select tests.login(tests.kasir());
+select tests.put('tx2', checkout(jsonb_build_object('method', 'qris', 'qris_ref', 'T0364', 'cash_received', 999999, 'items',
   jsonb_build_array(jsonb_build_object('service_id', tests.svc('Pomade Matte')))))::text);
 select is((select cash_received from transactions where id = tests.get('tx2')::uuid), null::bigint, 'QRIS: uang diterima diabaikan');
 select topup_deposit(tests.get('rina_cid')::uuid, 'cash', (select id from deposit_packages where name = 'Classic'));
 
 -- ---------- Tutup kasir ----------
+select tests.login(tests.mgr());  -- kasir tidak melihat rekap uang sebelum menutup (tutup kasir buta, 13_anti_fraud)
 select results_eq($$ select (s ->> 'cash_sales')::bigint, (s ->> 'qris_sales')::bigint, (s ->> 'topup_cash')::bigint,
                             (s ->> 'expected_cash')::bigint, (s ->> 'tx_count')::int from cash_summary(jkt_today()) s $$,
                   $$ values (95000::bigint, 110000::bigint, 500000::bigint, 595000::bigint, 2) $$,
                   'rekap: kas diharapkan = tunai penjualan + tunai top-up');
+select tests.login(tests.kasir());
 select tests.put('cl', save_cash_closing(jkt_today(), 590000, 'Kurang 5rb')::text);
 select results_eq(format($$ select expected_cash, physical_cash, difference from cash_closings where id = '%s' $$, tests.get('cl')),
                   $$ values (595000::bigint, 590000::bigint, -5000::bigint) $$, 'selisih kas tersimpan');

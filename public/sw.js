@@ -2,7 +2,7 @@
 self.addEventListener("push", (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch { d = { body: event.data && event.data.text() }; }
-  event.waitUntil(self.registration.showNotification(d.title || "G&B Kapster", {
+  event.waitUntil(self.registration.showNotification(d.title || "DP Kapster", {
     body: d.body || "", tag: d.tag, renotify: true,
     icon: "/icons/kapster-192.png", badge: "/icons/kapster-192.png",
     data: { url: d.url || "/kapster" },

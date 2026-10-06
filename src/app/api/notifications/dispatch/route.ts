@@ -2,6 +2,7 @@ import { liveAdapters } from "@/lib/notifications/adapters";
 import { processQueue, type Queued } from "@/lib/notifications/dispatch";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
+import { BRAND } from "@/lib/brand";
 
 // Dipanggil DB (pg_net) saat ada pesan baru dan oleh pg_cron tiap 5 menit untuk retry.
 export async function POST(req: Request) {
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
         code: g.code, customerName: g.customer?.name ?? "", startAt: appts.map((a) => a.start_at).sort()[0],
         services: appts.flatMap((a) => a.appointment_services.map((x) => x.service?.name ?? "")).filter(Boolean),
         staff: appts.map((a) => a.staff?.name ?? "").filter(Boolean),
-        shop: { name: s?.shop_name ?? "Groom & Bloom", address: s?.shop_address ?? "", whatsapp: s?.shop_whatsapp ?? "" },
+        shop: { name: s?.shop_name ?? BRAND, address: s?.shop_address ?? "", whatsapp: s?.shop_whatsapp ?? "" },
       };
     },
     async finish(id, patch) {

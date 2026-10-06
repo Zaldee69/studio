@@ -52,7 +52,7 @@ async function register(p: Page, name: string, email: string) {
   await expect(p.getByText("Saldo deposit", { exact: true })).toBeVisible();
 }
 
-test("1 · landing → Reservasi Bloom → Gel Polish + Potong Rambut bersamaan → tamu → sukses; muncul di konter (Online) & HP Andi", async ({ browser }, info) => {
+test("1 · landing → Reservasi Nail & Spa → Gel Polish + Potong Rambut bersamaan → tamu → sukses; muncul di konter (Online) & HP Andi", async ({ browser }, info) => {
   const kasir = await counterOn(browser, info, 2);
   const andi = await newSession(browser, info, "andi", { width: 390, height: 844 });
   await andi.goto("/kapster/jadwal");
@@ -60,10 +60,10 @@ test("1 · landing → Reservasi Bloom → Gel Polish + Potong Rambut bersamaan 
   const name = `Tamu ${uniq()}`;
   const p = await visitor(browser, info);
   await p.goto("/");
-  await p.getByRole("link", { name: "Reservasi Bloom" }).click();
+  await p.getByRole("link", { name: "Reservasi Nail & Spa" }).click();
   await p.waitForURL(/kategori=nail/);
   await p.getByRole("button", { name: /Gel Polish Tangan/ }).click();
-  await p.getByRole("tab", { name: /Groom/ }).click();
+  await p.getByRole("tab", { name: /Barbershop/ }).click();
   await p.getByRole("button", { name: /Potong Rambut/ }).first().click();
   await lanjut(p);
   await p.getByRole("button", { name: /^A\s*Andi/ }).click();
@@ -242,18 +242,18 @@ test("7 · tidak ada meja nail aktif → reservasi nail tidak ditawarkan (landin
     await expect(m.getByText(/Reservasi online nail sedang disembunyikan/)).toBeVisible();
 
     await page.goto("/");
-    await expect(page.getByRole("link", { name: "Reservasi Bloom" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Reservasi Groom" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Reservasi Nail & Spa" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Reservasi Barbershop" })).toBeVisible();
     await page.goto("/booking?kategori=nail");
-    await expect(page.getByRole("tab", { name: /Bloom/ })).toHaveCount(0);
+    await expect(page.getByRole("tab", { name: /Nail & Spa/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Manicure Basic Rp/ })).toHaveCount(0);
     await expect(page.getByRole("button", { name: /^Potong Rambut Rp/ })).toBeVisible();
-    await expect(page.getByText("Paket Groom & Bloom")).toHaveCount(0);
+    await expect(page.getByText("Paket barbershop + nail")).toHaveCount(0);
   } finally {
     await admin.from("resources").update({ active: true }).eq("type", "nail");
     await toggle(true);
     await m.context().close();
   }
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Reservasi Bloom" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Reservasi Nail & Spa" })).toBeVisible();
 });

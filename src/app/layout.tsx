@@ -3,6 +3,7 @@ import { ConfirmProvider } from "@/components/alert-dialog";
 import { Bricolage_Grotesque, Cormorant_Garamond, Jost, Plus_Jakarta_Sans } from "next/font/google";
 import { SITE_URL } from "@/lib/supabase/public";
 import "./globals.css";
+import { BRAND } from "@/lib/brand";
 
 // ponytail: font aplikasi tim tidak di-preload — halaman publik (Cormorant + Jost) tidak ikut mengunduhnya lebih dulu
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], preload: false });
@@ -12,10 +13,10 @@ const jost = Jost({ variable: "--font-jost-v", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Groom & Bloom", template: "%s · Groom & Bloom" },
+  title: { default: BRAND, template: `%s · ${BRAND}` },
   description: "Barbershop & nail spa dalam satu atap — reservasi online, datang berdua dilayani bersamaan.",
-  openGraph: { siteName: "Groom & Bloom", locale: "id_ID", type: "website" },
-  appleWebApp: { capable: true, title: "Groom & Bloom" },
+  openGraph: { siteName: BRAND, locale: "id_ID", type: "website" },
+  appleWebApp: { capable: true, title: BRAND },
 };
 
 export const viewport: Viewport = { themeColor: "#0E0D0C" };

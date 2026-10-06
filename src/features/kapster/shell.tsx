@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { stationLogout, stationPing } from "../stasiun/actions";
 import { useKapster } from "./provider";
 import { disablePush, enablePush, pushEnabled, pushSupported } from "./push";
+import { BRAND_INITIALS } from "@/lib/brand";
 
 const TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
 const IDLE_MS = 5 * 60 * 1000;
@@ -64,7 +65,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 bg-ink px-4 text-paper">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-paper font-display text-sm font-bold text-ink">G&amp;B</span>
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-paper font-display text-sm font-bold text-ink">{BRAND_INITIALS}</span>
         <span className="flex min-w-0 flex-1 flex-col">
           <b className="truncate text-base">Halo, {me.name.split(" ")[0]}</b>
           <span className="truncate text-xs text-[#B9B3A7]">{role} · {formatTanggal(new Date())}</span>

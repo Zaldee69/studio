@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { PrintSheet } from "@/components/print-sheet";
+import { useToast } from "@/components/ui";
+import { receiptEscpos } from "@/lib/domain/escpos";
+import { printBytes, printerSettings, setPrinterSettings, usePrinter } from "@/lib/printer";
 import { METHOD_LABEL } from "@/lib/domain/closing";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { cashChange, receiptText, waLink, type Receipt } from "@/lib/domain/receipt";
@@ -24,6 +26,10 @@ export function toReceipt(tx: TxRow, shop: Shop, staffName: (id: string | null) 
 
 const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/^https?:\/\//, "").replace(/\/$/, "");
 const waDisplay = (wa: string) => (wa.startsWith("62") ? `0${wa.slice(2)}` : wa);
+
+/** Cetak ke printer struk Bluetooth; `drawer` = buka laci (transaksi tunai & diaktifkan di pengaturan printer). */
+export const printReceipt = (r: ReceiptData, drawer = false) =>
+  printBytes(receiptEscpos(r, { paper: printerSettings().paper, voided: r.voided, site, drawer: drawer && printerSettings().drawer }));
 
 /** Struk modern — satu tampilan untuk pratinjau di layar dan lembar cetak (58/80 mm). */
 function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
@@ -101,7 +107,10 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
 
 /** Struk: layar sukses & cetak ulang. Kirim via WhatsApp, cetak 58/80 mm. */
 export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r: ReceiptData; title?: string; children?: React.ReactNode }) {
-  const [paper, setPaper] = useState<58 | 80>(80);
+  const printer = usePrinter();
+  const paper = printer.settings.paper; // satu pengaturan ukuran kertas: dialog print & printer Bluetooth
+  const toast = useToast();
+  const on = printer.status === "on";
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -123,10 +132,12 @@ export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r:
         </a>
         <div className="flex gap-2">
           <label htmlFor="paper" className="sr-only">Ukuran kertas</label>
-          <select id="paper" className="input w-28" value={paper} onChange={(e) => setPaper(+e.target.value as 58 | 80)}>
+          <select id="paper" className="input w-28" value={paper} onChange={(e) => setPrinterSettings({ paper: +e.target.value as 58 | 80 })}>
             <option value={80}>80 mm</option><option value={58}>58 mm</option>
           </select>
-          <button onClick={() => window.print()} className="btn-ghost h-11 flex-1 rounded-[10px]">Cetak</button>
+          {/* printer Bluetooth tersambung → langsung cetak; selain itu dialog print browser */}
+          <button onClick={() => on ? printReceipt(r).then(() => toast("Struk dicetak"), (e) => toast(e instanceof Error ? e.message : String(e), "error")) : window.print()}
+            className="btn-ghost h-11 flex-1 rounded-[10px]">{on ? "Cetak struk" : "Cetak"}</button>
         </div>
         {children}
       </div>

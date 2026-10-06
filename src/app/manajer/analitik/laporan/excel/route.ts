@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
   ws = sheet(wb, "Keuangan", "Keuangan", sub);
   const payroll = r.payroll.complete ? r.payroll.total_pay : null;
   const k0 = table(ws, ["Laba kotor", "Rp"], [
-    ["Omzet kotor (harga normal)", f.gross], ["Diskon (paket Groom & Bloom)", -f.discount], ["Omzet bersih", f.net],
+    ["Omzet kotor (harga normal)", f.gross], ["Diskon (paket barbershop + nail)", -f.discount], ["Omzet bersih", f.net],
     ["HPP bahan & barang", -f.hpp], ["Margin kotor", f.net - f.hpp], ["Margin kotor %", marginPct(f.net, f.hpp)],
     ["Gaji & komisi staf", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : -payroll],
     ["Kontribusi setelah gaji", payroll == null ? null : f.net - f.hpp - payroll],

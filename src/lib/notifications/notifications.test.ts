@@ -3,7 +3,7 @@ import { processQueue, type Queued, type Store } from "./dispatch";
 import { render } from "./templates";
 
 const g = { code: "GB-7K3Q", customerName: "Rina Wati", startAt: "2026-10-03T03:30:00Z", services: ["Potong Rambut", "Gel Polish"], staff: ["Andi", "Sari"],
-  shop: { name: "Groom & Bloom", address: "Jl. Contoh 1", whatsapp: "6281200000000" } };
+  shop: { name: "D'Pras Barbershop", address: "Jl. Contoh 1", whatsapp: "6281200000000" } };
 
 function store(rows: Queued[]) {
   const finished: Record<string, Parameters<Store["finish"]>[1]> = {};
@@ -16,7 +16,7 @@ const q = (id: string, channel: "email" | "whatsapp", attempts = 0, group = "g1"
 describe("notifikasi", () => {
   it("template memuat kode, waktu WIB, layanan, staf; HTML di-escape", () => {
     const r = render("reminder_h1", { ...g, customerName: "<Rina>" });
-    expect(r.subject).toBe("Pengingat: besok di Groom & Bloom");
+    expect(r.subject).toBe("Pengingat: besok di D'Pras Barbershop");
     expect(r.text).toContain("Kode booking: GB-7K3Q");
     expect(r.text).toContain("pukul 10.30 WIB");
     expect(r.text).toContain("Kapster/nail artist: Andi, Sari");

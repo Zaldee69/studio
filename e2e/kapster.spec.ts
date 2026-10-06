@@ -34,7 +34,7 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
   // toast "siap bayar" di layar kasir → buka di kasir → bayar
   const toast = kasir.getByRole("status").filter({ hasText: `${name} — siap bayar (Sari)` });
   await expect(toast).toBeVisible({ timeout: 15_000 });
-  await expect(kasir.getByLabel(/siap bayar/)).toBeVisible(); // badge menu Kasir
+  await expect(kasir.getByLabel(/siap bayar/).filter({ visible: true })).toBeVisible(); // badge menu Kasir (sidebar atau tab bar HP)
   await toast.getByRole("link", { name: "Buka di kasir" }).click();
   await expect(kasir.getByRole("region", { name: "Keranjang" })).toContainText("Manicure Basic");
   await kasir.getByRole("button", { name: /Catat pembayaran/ }).click();
@@ -117,7 +117,9 @@ test("5 · mode stasiun: manajer atur PIN & daftarkan tablet → Sari masuk deng
   await page.getByPlaceholder("Mis. Tablet meja kuku").fill(`Tablet uji ${info.project.name}`);
   await page.getByRole("button", { name: "Daftarkan perangkat ini" }).click();
   await expect(page.getByText(/terdaftar sebagai stasiun/)).toBeVisible();
-  await page.getByRole("button", { name: /Keluar/ }).first().click();
+  const more = page.getByRole("button", { name: "Lainnya" }); // HP: Keluar ada di menu Lainnya
+  if (await more.isVisible()) await more.click();
+  await page.getByRole("button", { name: /Keluar/ }).filter({ visible: true }).first().click();
   await page.waitForURL((u) => u.pathname === "/");
 
   await page.goto("/stasiun");

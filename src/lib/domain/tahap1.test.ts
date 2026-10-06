@@ -47,7 +47,7 @@ describe("kasir (cermin checkout SQL)", () => {
       topupQris: 1000000, expectedCash: 670500, discountTotal: 19500, voidedCount: 1 });
   });
   it("struk WA memuat diskon, deposit, kembalian", () => {
-    const t = receiptText({ shop: "Groom & Bloom", when: "Rabu, 30 Sep 2026 10.00", customer: "Rina",
+    const t = receiptText({ shop: "D'Pras Barbershop", when: "Rabu, 30 Sep 2026 10.00", customer: "Rina",
       items: [{ name: "Potong Rambut", price: 75000 }], subtotal: 75000, discount: 0, discountLabel: "", depositUsed: 25000,
       paid: 50000, method: "deposit_cash", cashReceived: 100000, balanceAfter: 0 });
     expect(t).toContain("Dibayar (Deposit + Tunai): Rp50.000");

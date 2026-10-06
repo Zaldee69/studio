@@ -159,6 +159,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"audit_log": {
+                  Row: {
+                    "action": string,"actor": string | null,"at": string,"changes": NonNullable<Json>,"entity": string,"entity_id": string | null,"id": number
+                  }
+                  Insert: {
+                    "action": string,"actor"?: string | null,"at"?: string,"changes"?: NonNullable<Json>,"entity": string,"entity_id"?: string | null,"id"?: never
+                  }
+                  Update: {
+                    "action"?: string,"actor"?: string | null,"at"?: string,"changes"?: NonNullable<Json>,"entity"?: string,"entity_id"?: string | null,"id"?: never
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"booking_attempts": {
                   Row: {
                     "created_at": string,"id": number,"key": string
@@ -299,13 +312,13 @@ isOneToOne: false
                   ]
                 },"deposit_topups": {
                   Row: {
-                    "amount_credited": number,"amount_paid": number,"created_at": string,"created_by": string | null,"customer_id": string,"id": string,"method": Database["public"]['Enums']["pay_method"],"package_id": string | null
+                    "amount_credited": number,"amount_paid": number,"created_at": string,"created_by": string | null,"customer_id": string,"id": string,"method": Database["public"]['Enums']["pay_method"],"package_id": string | null,"qris_ref": string | null
                   }
                   Insert: {
-                    "amount_credited": number,"amount_paid": number,"created_at"?: string,"created_by"?: string | null,"customer_id": string,"id"?: string,"method": Database["public"]['Enums']["pay_method"],"package_id"?: string | null
+                    "amount_credited": number,"amount_paid": number,"created_at"?: string,"created_by"?: string | null,"customer_id": string,"id"?: string,"method": Database["public"]['Enums']["pay_method"],"package_id"?: string | null,"qris_ref"?: string | null
                   }
                   Update: {
-                    "amount_credited"?: number,"amount_paid"?: number,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string,"id"?: string,"method"?: Database["public"]['Enums']["pay_method"],"package_id"?: string | null
+                    "amount_credited"?: number,"amount_paid"?: number,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string,"id"?: string,"method"?: Database["public"]['Enums']["pay_method"],"package_id"?: string | null,"qris_ref"?: string | null
                   }
                   Relationships: [
                     {
@@ -1223,13 +1236,13 @@ isOneToOne: false
                   ]
                 },"transactions": {
                   Row: {
-                    "cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"subtotal": number,"total": number,"void_reason": string | null,"voided_at": string | null
+                    "cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"subtotal": number,"total": number,"void_reason": string | null,"voided_at": string | null
                   }
                   Insert: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"subtotal": number,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"subtotal": number,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Update: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"subtotal"?: number,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"subtotal"?: number,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Relationships: [
                     {
@@ -1273,7 +1286,14 @@ isOneToOne: false
                 }
           }
           Views: {
-            "customer_stats": {
+            "audit_feed": {
+                  Row: {
+                    "action": string | null,"actor": string | null,"actor_name": string | null,"actor_role": string | null,"at": string | null,"changes": Json | null,"entity": string | null,"entity_id": string | null,"id": number | null
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"customer_stats": {
                   Row: {
                     "customer_id": string | null,"deposit_balance": number | null,"is_churn": boolean | null,"last_visit_at": string | null,"lifetime_value": number | null,"visit_count": number | null
                   }
@@ -1559,6 +1579,9 @@ isOneToOne: false
 "cash_summary":
 { Args: { "p_date": string }; Returns: Json
                            },
+"cash_summary_full":
+{ Args: { "p_date": string }; Returns: Json
+                           },
 "checkout":
 { Args: { "p": Json }; Returns: string
                            },
@@ -1639,11 +1662,17 @@ isOneToOne: false
 "deposit_balance_of":
 { Args: { "cid": string }; Returns: number
                            },
+"dismiss_change_request":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "enqueue_group_messages":
 { Args: { "p_group": string,"p_template": string }; Returns: undefined
                            },
 "enqueue_reminders":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"fraud_overview":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
 "funnel_summary":
 { Args: { "p_from"?: string }; Returns: Json
@@ -1962,13 +1991,16 @@ isOneToOne: false
 { Args: { "p_id": string }; Returns: Json
                            },
 "topup_deposit":
-{ Args: { "p_amount_credited"?: number,"p_amount_paid"?: number,"p_customer_id": string,"p_method": string,"p_package_id"?: string }; Returns: string
+{ Args: { "p_amount_credited"?: number,"p_amount_paid"?: number,"p_customer_id": string,"p_method": string,"p_package_id"?: string,"p_qris_ref"?: string }; Returns: string
                            },
 "track_funnel":
 { Args: { "p_session": string,"p_step": string }; Returns: undefined
                            },
 "undo_sop_stage":
 { Args: { "p_log_id": string }; Returns: undefined
+                           },
+"unpaid_completed_alerts":
+{ Args: Record<PropertyKey, never>; Returns: number
                            },
 "update_booking_admin":
 { Args: { "p_duration"?: number,"p_force"?: boolean,"p_id": string,"p_notes"?: string,"p_resource_id": string,"p_service_ids": (string)[],"p_staff_id": string,"p_start_at": string }; Returns: Json

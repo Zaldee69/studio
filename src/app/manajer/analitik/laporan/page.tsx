@@ -108,7 +108,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           <h2 id="h-keu" className="mb-1 font-display text-lg font-bold">2. Keuangan</h2>
           <div className="grid gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
             <table className="w-full border-collapse text-[12px]"><tbody>
-              {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon (paket Groom & Bloom)", -f.discount, false], ["= Omzet bersih", f.net, true],
+              {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon (paket barbershop + nail)", -f.discount, false], ["= Omzet bersih", f.net, true],
                  [`− HPP bahan & barang (${pc(hppPct)})`, -f.hpp, false], [`= Margin kotor (${pc(marginPct(f.net, f.hpp))})`, f.net - f.hpp, true],
                  ...(payroll == null ? [] : [["− Gaji & komisi staf", -payroll, false], ["= Kontribusi setelah gaji", afterPay, true]]),
                  ["Biaya perawatan fasilitas (dicatat)", f.maintenance_cost, false]] as [string, number, boolean][]).map(([k, v, b]) => (

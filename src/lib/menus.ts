@@ -11,6 +11,7 @@ export const MANAGER_MENU: MenuItem[] = [
   { href: "/manajer/sdm", label: "SDM & Komisi", short: "SDM", icon: "badge", ready: true },
   { href: "/manajer/inventaris", label: "Inventaris", short: "Stok", icon: "box", ready: true, badge: "stock" },
   { href: "/manajer/analitik", label: "Analitik KPI", short: "KPI", icon: "chart", ready: true },
+  { href: "/manajer/audit", label: "Audit & kecurigaan", short: "Audit", icon: "pulse", ready: true },
   { href: "/manajer/sop", label: "SOP & Kepatuhan", short: "SOP", icon: "shield", ready: true },
   { href: "/manajer/pengaturan", label: "Pengaturan", short: "Atur", icon: "gear", ready: true },
 ];

@@ -56,17 +56,39 @@ export function useCounterAlerts(base: string) {
     const first = setTimeout(count, 0);
     const label = (d: { start_at: string; customer: { name: string } | null }) =>
       `${d.customer?.name ?? "Tamu"} · ${formatTanggal(d.start_at)} ${formatJam(d.start_at)}`;
+    const notifyOnline = async (id: string, group: string | null) => {
+      const key = `new:${group ?? id}`; // satu toast per booking (grup), bukan per layanan
+      if (seen.current.has(key)) return;
+      seen.current.add(key);
+      count();
+      const d = await describe(id);
+      if (!alive || !d) return;
+      toast(`Booking online baru: ${label(d)}`, "info", { label: "Buka jadwal", href: `${base}/jadwal` });
+      beep();
+    };
+    const notifyDone = async (id: string) => {
+      if (seen.current.has(`done:${id}`)) return;
+      seen.current.add(`done:${id}`);
+      const d = await describe(id);
+      if (alive && d) toast(`${d.customer?.name ?? "Walk-in"} — siap bayar${d.staff ? ` (${d.staff.name})` : ""}`, "info", { label: "Buka di kasir", href: `${base}/kasir?booking=${id}` });
+    };
+    // Event realtime bisa terlewat (booking masuk sebelum langganan aktif, koneksi tablet putus-sambung):
+    // kejar ketinggalan saat (ulang) tersambung + cadangan tiap 30 dtk. Duplikat dicegah `seen`.
+    const opened = new Date().toISOString();
+    const catchUp = async () => {
+      const [{ data: online }, { data: done }] = await Promise.all([
+        supabase.from("appointments").select("id, booking_group_id").eq("source", "online").neq("status", "cancelled").gt("created_at", opened),
+        supabase.from("appointments").select("id").eq("status", "completed").gt("status_changed_at", opened),
+      ]);
+      if (!alive) return;
+      for (const r of online ?? []) void notifyOnline(r.id, r.booking_group_id);
+      for (const r of done ?? []) void notifyDone(r.id);
+    };
+    const poll = setInterval(catchUp, 30_000);
     const channel = supabase.channel(`counter-alerts:${crypto.randomUUID()}`).on("postgres_changes",
       { event: "INSERT", schema: "public", table: "appointments" }, async (p) => {
         const r = p.new as Row;
-        const key = `new:${r.booking_group_id ?? r.id}`; // satu toast per booking (grup), bukan per layanan
-        if (r.source !== "online" || seen.current.has(key)) return;
-        seen.current.add(key);
-        count();
-        const d = await describe(r.id);
-        if (!alive || !d) return;
-        toast(`Booking online baru: ${label(d)}`, "info", { label: "Buka jadwal", href: `${base}/jadwal` });
-        beep();
+        if (r.source === "online") await notifyOnline(r.id, r.booking_group_id);
       }).on("postgres_changes",
       { event: "UPDATE", schema: "public", table: "appointments" }, async (p) => {
         const r = p.new as Row;
@@ -82,11 +104,7 @@ export function useCounterAlerts(base: string) {
             beep(660);
           }
         }
-        if (r.status === "completed" && fresh(r.status_changed_at) && !seen.current.has(`done:${r.id}`)) {
-          seen.current.add(`done:${r.id}`);
-          const d = await describe(r.id);
-          if (alive && d) toast(`${d.customer?.name ?? "Walk-in"} — siap bayar${d.staff ? ` (${d.staff.name})` : ""}`, "info", { label: "Buka di kasir", href: `${base}/kasir?booking=${r.id}` });
-        }
+        if (r.status === "completed" && fresh(r.status_changed_at)) await notifyDone(r.id);
         const key = `req:${r.id}:${r.change_requested_at}`;
         if (r.change_request && fresh(r.change_requested_at) && !seen.current.has(key)) {
           seen.current.add(key);
@@ -94,8 +112,8 @@ export function useCounterAlerts(base: string) {
           if (alive && d) toast(`${d.staff?.name ?? "Kapster"} minta ubah jadwal: ${d.customer?.name ?? "Walk-in"} ${formatJam(d.start_at)} — “${r.change_request}”`, "ok", { label: "Buka jadwal", href: `${base}/jadwal` });
         }
       });
-    supabase.realtime.setAuth().then(() => { if (alive) channel.subscribe(); });
-    return () => { alive = false; clearTimeout(first); supabase.removeChannel(channel); };
+    supabase.realtime.setAuth().then(() => { if (alive) channel.subscribe((status) => { if (status === "SUBSCRIBED") void catchUp(); }); });
+    return () => { alive = false; clearTimeout(first); clearInterval(poll); supabase.removeChannel(channel); };
   }, [base, toast]);
 
   return { ready, onlineNew };

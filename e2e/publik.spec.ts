@@ -86,6 +86,19 @@ test("1 · landing → Reservasi Nail & Spa → Gel Polish + Potong Rambut bersa
   await expect(andi.getByText(name, { exact: true })).toBeVisible();
 });
 
+test("1b · koneksi realtime kasir putus → booking online tetap diberitahukan (cek cadangan)", async ({ browser }, info) => {
+  test.setTimeout(90_000);
+  const k = await newSession(browser, info, "cashier");
+  await k.routeWebSocket(/realtime/, () => {}); // realtime "tersambung" tapi tak pernah menerima event
+  await k.goto("/kasir/jadwal");
+  const { potong, st } = await ids();
+  const name = `Tanpa RT ${uniq()}`;
+  const r = await admin.rpc("book_online", { p: { date: H3, time: "19:00", service_ids: [potong], staff_pick: { barbershop: st.Dimas },
+    together: true, name, whatsapp: randomWa(), client_request_id: crypto.randomUUID() } });
+  expect(r.data?.ok).toBe(true);
+  await expect(k.getByRole("status").filter({ hasText: `Booking online baru: ${name}` })).toBeVisible({ timeout: 45_000 });
+});
+
 test("2 · dua pengunjung memilih jam yang sama → yang kedua diberi tahu 'baru saja terisi'", async ({ browser }, info) => {
   const { potong, st } = await ids();
   const url = `/booking?langkah=konfirmasi&layanan=${potong}&staf=barbershop:${st.Dimas}&tgl=${H2}&jam=11:00`;

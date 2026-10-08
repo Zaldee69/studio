@@ -44,3 +44,6 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# gambar antara pratinjau gaya (HAIR_DEBUG_DIR) — berisi foto pelanggan, jangan di-commit
+.debug-gaya/

@@ -23,6 +23,8 @@ export default defineConfig({
     command: "npm run build && npx next start -p 3100",
     url: "http://127.0.0.1:3100/login",
     reuseExistingServer: true,
+    // konsultasi gaya: OpenAI tiruan (e2e/fake-openai.ts), bukan API sungguhan
+    env: { OPENAI_BASE_URL: "http://127.0.0.1:3199/v1", OPENAI_API_KEY: "e2e-palsu" },
     timeout: 240_000,
   },
 });

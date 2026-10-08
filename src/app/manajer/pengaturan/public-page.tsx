@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { compressImage, IMAGE_ACCEPT } from "@/lib/image";
 import { useToast } from "@/components/ui";
 import { HARI } from "@/lib/domain/hours";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
@@ -12,24 +13,8 @@ type Hours = { weekday: number; open_time: string; close_time: string; closed: b
 type Photo = { id: string; kind: string; path: string; caption: string; sort: number };
 type Msg = { id: string; channel: string; to_address: string; template: string; status: string; attempts: number; last_error: string | null; created_at: string };
 
-const MAX_BYTES = 2 * 1024 * 1024;
-
-/** Kompres di browser: sisi terpanjang ≤1600px, WebP; turunkan kualitas sampai ≤2 MB. */
-async function compress(file: File): Promise<Blob> {
-  const bmp = await createImageBitmap(file);
-  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
-  const c = document.createElement("canvas");
-  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
-  c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
-  for (const q of [0.82, 0.7, 0.55, 0.4]) {
-    const b = await new Promise<Blob | null>((r) => c.toBlob(r, "image/webp", q));
-    if (b && b.size <= MAX_BYTES) return b;
-  }
-  throw new Error("Foto terlalu besar meski sudah dikompres.");
-}
-
 async function upload(file: File, folder: string) {
-  const blob = await compress(file);
+  const blob = await compressImage(file);
   const path = `${folder}/${crypto.randomUUID()}.webp`;
   const { error } = await createClient().storage.from("site").upload(path, blob, { contentType: "image/webp", upsert: false });
   if (error) throw error;
@@ -96,7 +81,7 @@ function Pick({ id, busy, onFile, multiple, label }: { id: string; busy: string 
   return (
     <label className={`btn-ghost h-11 cursor-pointer rounded-[10px] ${busy === id ? "opacity-50" : ""}`}>
       {busy === id ? "Mengunggah…" : label}
-      <input type="file" accept="image/jpeg,image/png,image/webp" multiple={multiple} className="sr-only" disabled={!!busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
+      <input type="file" accept={IMAGE_ACCEPT} multiple={multiple} className="sr-only" disabled={!!busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
     </label>
   );
 }

@@ -13,7 +13,10 @@ import { useKapster } from "./provider";
 import { disablePush, enablePush, pushEnabled, pushSupported } from "./push";
 import { BRAND_INITIALS } from "@/lib/brand";
 
-const TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
+const BASE_TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
+// Konsultasi gaya rambut hanya untuk kapster barbershop
+const tabsFor = (cat: "barbershop" | "nail"): readonly (readonly [string, string])[] =>
+  cat === "barbershop" ? [...BASE_TABS.slice(0, 2), ["/kapster/gaya", "Gaya"], ...BASE_TABS.slice(2)] : BASE_TABS;
 const IDLE_MS = 5 * 60 * 1000;
 
 /** Mode stasiun: keluar otomatis setelah 5 menit tanpa aktivitas; aktivitas memperpanjang sesi di server. */
@@ -36,6 +39,7 @@ function useStationIdle(enabled: boolean) {
 
 export function KapsterShell({ children }: { children: React.ReactNode }) {
   const { me, appts, offs, muted, setMuted } = useKapster();
+  const TABS = tabsFor(me.category);
   const path = usePathname();
   const toast = useToast();
   const [menu, setMenu] = useState(false);
@@ -109,7 +113,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
       </header>
       <OfflineBanner />
       <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-4 px-4 pb-28 pt-4 min-[900px]:pb-8">{children}</main>
-      <nav aria-label="Menu kapster" className="fixed inset-x-0 bottom-0 z-20 grid h-[72px] grid-cols-4 border-t border-line bg-card min-[900px]:hidden">
+      <nav aria-label="Menu kapster" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-20 grid h-[72px] border-t border-line bg-card min-[900px]:hidden">
         {TABS.map(([href, label]) => (
           <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
             className={`relative flex flex-col items-center justify-center gap-1 text-xs font-bold ${path === href ? "text-ink" : "text-muted"}`}>

@@ -409,6 +409,184 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"hair_consults": {
+                  Row: {
+                    "actor": string,"appointment_id": string | null,"created_at": string,"customer_id": string | null,"id": string,"previews_used": number,"result": NonNullable<Json>,"status": string
+                  }
+                  Insert: {
+                    "actor": string,"appointment_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"id"?: string,"previews_used"?: number,"result"?: NonNullable<Json>,"status": string
+                  }
+                  Update: {
+                    "actor"?: string,"appointment_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"id"?: string,"previews_used"?: number,"result"?: NonNullable<Json>,"status"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hair_consults_actor_fkey"
+      columns: ["actor"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_actor_fkey"
+      columns: ["actor"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_appointment_id_fkey"
+      columns: ["appointment_id"]
+isOneToOne: false
+      referencedRelation: "appointments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_appointment_id_fkey"
+      columns: ["appointment_id"]
+isOneToOne: false
+      referencedRelation: "staff_my_appointments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customer_stats"
+      referencedColumns: ["customer_id"]
+    },{
+      foreignKeyName: "hair_consults_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "my_customer"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_consults_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "staff_customer_card"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"hair_cut_records": {
+                  Row: {
+                    "appointment_id": string | null,"consult_id": string | null,"created_at": string,"created_by": string | null,"customer_id": string,"hairstyle_id": string | null,"id": string,"notes": string,"preview_expires_at": string | null,"preview_path": string | null,"reaction": string,"staff_id": string | null,"style_name": string
+                  }
+                  Insert: {
+                    "appointment_id"?: string | null,"consult_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id": string,"hairstyle_id"?: string | null,"id"?: string,"notes"?: string,"preview_expires_at"?: string | null,"preview_path"?: string | null,"reaction"?: string,"staff_id"?: string | null,"style_name": string
+                  }
+                  Update: {
+                    "appointment_id"?: string | null,"consult_id"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string,"hairstyle_id"?: string | null,"id"?: string,"notes"?: string,"preview_expires_at"?: string | null,"preview_path"?: string | null,"reaction"?: string,"staff_id"?: string | null,"style_name"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hair_cut_records_appointment_id_fkey"
+      columns: ["appointment_id"]
+isOneToOne: false
+      referencedRelation: "appointments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_appointment_id_fkey"
+      columns: ["appointment_id"]
+isOneToOne: false
+      referencedRelation: "staff_my_appointments"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_consult_id_fkey"
+      columns: ["consult_id"]
+isOneToOne: false
+      referencedRelation: "hair_consults"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customer_stats"
+      referencedColumns: ["customer_id"]
+    },{
+      foreignKeyName: "hair_cut_records_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "my_customer"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "staff_customer_card"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_hairstyle_id_fkey"
+      columns: ["hairstyle_id"]
+isOneToOne: false
+      referencedRelation: "hairstyles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "public_staff"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "hair_cut_records_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "staff"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"hairstyle_images": {
+                  Row: {
+                    "created_at": string,"hairstyle_id": string,"id": string,"path": string,"sort": number,"view": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"hairstyle_id": string,"id"?: string,"path": string,"sort"?: number,"view"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"hairstyle_id"?: string,"id"?: string,"path"?: string,"sort"?: number,"view"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "hairstyle_images_hairstyle_id_fkey"
+      columns: ["hairstyle_id"]
+isOneToOne: false
+      referencedRelation: "hairstyles"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"hairstyles": {
+                  Row: {
+                    "active": boolean,"category": string,"code": string,"created_at": string,"cut_notes": string,"description": string,"face_shapes": (string)[],"hair_density": (string)[],"hair_types": (string)[],"highlights": (string)[],"id": string,"maintenance_level": string,"name": string,"sort": number,"style_character": (string)[],"suitable_lengths": (string)[]
+                  }
+                  Insert: {
+                    "active"?: boolean,"category"?: string,"code": string,"created_at"?: string,"cut_notes"?: string,"description"?: string,"face_shapes"?: (string)[],"hair_density"?: (string)[],"hair_types"?: (string)[],"highlights"?: (string)[],"id"?: string,"maintenance_level"?: string,"name": string,"sort"?: number,"style_character"?: (string)[],"suitable_lengths"?: (string)[]
+                  }
+                  Update: {
+                    "active"?: boolean,"category"?: string,"code"?: string,"created_at"?: string,"cut_notes"?: string,"description"?: string,"face_shapes"?: (string)[],"hair_density"?: (string)[],"hair_types"?: (string)[],"highlights"?: (string)[],"id"?: string,"maintenance_level"?: string,"name"?: string,"sort"?: number,"style_character"?: (string)[],"suitable_lengths"?: (string)[]
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"inventory_items": {
                   Row: {
                     "active": boolean,"created_at": string,"id": string,"kind": Database["public"]['Enums']["item_kind"],"min_order_qty": number | null,"name": string,"reorder_at": number,"sku": string | null,"supplier_id": string | null,"unit": string,"unit_cost": number
@@ -1584,6 +1762,9 @@ isOneToOne: false
                            },
 "checkout":
 { Args: { "p": Json }; Returns: string
+                           },
+"claim_hair_preview":
+{ Args: { "p_id": string,"p_max": number }; Returns: boolean
                            },
 "clear_staff_pin":
 { Args: { "p_staff_id": string }; Returns: undefined

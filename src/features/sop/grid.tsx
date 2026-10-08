@@ -7,6 +7,7 @@ import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { canRecord, canUndo, SOP_STATUS, STAGE_LABEL, STAGES, type SopStatus, type Stage } from "@/lib/domain/kpi";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
+import { toUploadable } from "@/lib/image";
 
 type Log = { log_id: string; by: string | null; by_id: string; on_behalf: string | null; at: string; note: string; photo: string | null };
 type Group = { id: string; name: string; description: string; stages: Partial<Record<Stage, Log>> };
@@ -17,8 +18,9 @@ export type SopDay = { date: string; shift: number; done: number; total: number;
 export async function uploadSopPhoto(file: File, date: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const path = `${date}/${user!.id}/${crypto.randomUUID()}.${file.name.split(".").pop()?.toLowerCase() || "jpg"}`;
-  const { error } = await supabase.storage.from("sop").upload(path, file, { contentType: file.type });
+  const up = await toUploadable(file); // HEIC & foto besar → WebP terkompres
+  const path = `${date}/${user!.id}/${crypto.randomUUID()}.${up.ext}`;
+  const { error } = await supabase.storage.from("sop").upload(path, up.blob, { contentType: up.type });
   if (error) throw new Error(`Foto gagal diunggah: ${error.message}`);
   return path;
 }

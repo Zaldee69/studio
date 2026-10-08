@@ -6,11 +6,12 @@ import { ClosuresForm, HoursForm, OutboundLog, PhotoManager } from "./public-pag
 import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
 import { MfaSettings } from "./mfa-settings";
 import { StationSettings } from "./station-settings";
+import { HairstyleCatalog } from "./hairstyle-catalog";
 
 export const metadata = { title: "Pengaturan" };
 
 const TABS = [
-  ["umum", "Umum"], ["layanan", "Layanan"], ["kursi", "Kursi & meja"],
+  ["umum", "Umum"], ["layanan", "Layanan"], ["gaya", "Katalog gaya"], ["kursi", "Kursi & meja"],
   ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["keamanan", "Keamanan"],
 ] as const;
 
@@ -98,6 +99,8 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = <StationSettings staff={data ?? []} />;
   } else if (tab === "keamanan") {
     body = <MfaSettings />;
+  } else if (tab === "gaya") {
+    body = <HairstyleCatalog />;
   } else if (tab === "deposit") {
     const { data } = await supabase.from("deposit_packages").select("*").order("amount_paid");
     body = <CrudTable table="deposit_packages" rows={data ?? []} />;

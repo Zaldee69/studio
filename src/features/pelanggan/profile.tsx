@@ -11,6 +11,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Master, TxRow } from "../counter/types";
 import { TX_SELECT } from "../counter/types";
 import { TopupModal } from "../kasir/topup-modal";
+import { CutList, daysAgo, useCatalog, useStyleHistory } from "@/features/gaya/parts";
+import { HAIR_LABEL, normalizeConsult } from "@/lib/domain/hair";
 
 export type CustRow = {
   id: string; name: string; whatsapp: string | null; notes: string;
@@ -132,6 +134,8 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
         </div>
       )}
 
+      <StyleHistory customerId={c.id} head={head} />
+
       <div className="flex flex-col gap-2">
         <span className={head}>Riwayat transaksi</span>
         {!extra ? <span className="text-[13px] text-muted">Memuat…</span> : !extra.txs.length ? <span className="text-[13px] text-muted">Belum ada transaksi.</span>
@@ -157,6 +161,27 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
       </div>
 
       <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />
+    </div>
+  );
+}
+
+/** Riwayat gaya (dari menu Gaya kapster): potongan terakhir + rekomendasi tersimpan. Hanya baca. */
+function StyleHistory({ customerId, head }: { customerId: string; head: string }) {
+  const { data } = useStyleHistory(customerId);
+  const catalog = useCatalog();
+  if (!data || (!data.cuts.length && !data.consult)) return null;
+  const stored = data.consult && catalog ? normalizeConsult(data.consult.result, catalog) : null;
+  return (
+    <div className="flex flex-col gap-2">
+      <span className={head}>Riwayat gaya</span>
+      <CutList cuts={data.cuts} />
+      {stored?.status === "success" && (
+        <p className="text-sm">
+          <span className="text-muted">Rekomendasi ({daysAgo(data.consult!.created_at)}): </span>
+          {[...stored.primary_recommendations, ...stored.alternatives].map((x) => x.hair_style_name).join(", ")}
+          <span className="block text-xs text-muted">Wajah {HAIR_LABEL[stored.analysis.face_shape] ?? stored.analysis.face_shape} · rambut {HAIR_LABEL[stored.analysis.hair_type] ?? stored.analysis.hair_type}, {HAIR_LABEL[stored.analysis.hair_density] ?? stored.analysis.hair_density}</span>
+        </p>
+      )}
     </div>
   );
 }

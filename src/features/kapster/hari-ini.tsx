@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useOnline, useToast } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -151,6 +152,9 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
       {a.notes && <div className="rounded-xl bg-paper px-3.5 py-3 text-sm leading-normal"><b>Catatan booking:</b> {a.notes}</div>}
       {a.customer_id && <History customerId={a.customer_id} />}
       {a.customer_id && <PrefEditor customerId={a.customer_id} initial={a.customer_notes ?? ""} category={category} />}
+      {category === "barbershop" && (
+        <Link href={`/kapster/gaya?booking=${a.id}`} className="btn-ghost h-11 rounded-xl">Konsultasi gaya & riwayat potongan</Link>
+      )}
 
       {action && (
         <button onClick={onAct} disabled={busy} className="h-[60px] rounded-[14px] text-[17px] font-bold text-white disabled:opacity-60" style={{ background: action.bg }}>

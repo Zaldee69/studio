@@ -7,6 +7,7 @@ import { formatRupiah } from "@/lib/domain/format";
 import { formatUnitCost, newUnitCost, suggestOrder, supplierMessage } from "@/lib/domain/inventory";
 import { createClient } from "@/lib/supabase/client";
 import { ADJUST_REASONS, qtyFmt, type InvSettings, type StockRow, type Supplier } from "./types";
+import { IMAGE_ACCEPT, toUploadable } from "@/lib/image";
 
 type Modal = { kind: "in" | "adjust" | "cost"; itemId?: string } | { kind: "shopping" } | null;
 type Ctx = { open: (m: Modal) => void; items: StockRow[]; suppliers: Supplier[]; settings: InvSettings };
@@ -87,8 +88,10 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
     const supabase = createClient();
     let path: string | null = null;
     if (file) {
-      path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${file.name.split(".").pop()?.toLowerCase() ?? "jpg"}`;
-      const up = await supabase.storage.from("receipts").upload(path, file, { contentType: file.type });
+      let ready;
+      try { ready = await toUploadable(file); } catch (e) { setBusy(false); return toast(e instanceof Error ? e.message : String(e), "error"); }
+      path = `${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ready.ext}`;
+      const up = await supabase.storage.from("receipts").upload(path, ready.blob, { contentType: ready.type });
       if (up.error) { setBusy(false); return toast(`Foto nota gagal diunggah: ${up.error.message}`, "error"); }
     }
     const { error } = await supabase.rpc("receive_stock", {
@@ -129,7 +132,7 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
           <Field label="No. nota" htmlFor="si-inv"><input id="si-inv" className="input" value={f.invoice} onChange={(e) => setF({ ...f, invoice: e.target.value })} /></Field>
         </div>
         <Field label="Foto nota (opsional)" htmlFor="si-file">
-          <input id="si-file" type="file" accept="image/*,application/pdf" className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <input id="si-file" type="file" accept={`${IMAGE_ACCEPT},application/pdf`} className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </Field>
         <Field label="Catatan" htmlFor="si-note"><input id="si-note" className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
         {valid && next !== null && (

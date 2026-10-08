@@ -102,5 +102,34 @@ insert into sop_tool_groups (name, sort) values
   ('Gunting & clipper blade', 1), ('Alat cukur', 2), ('Pusher & nipper', 3), ('Alat pedicure', 4);
 
 insert into maintenance_tasks (name, interval_days) values
-  ('Inspeksi HVAC/AC', 14), ('Bersihkan exhaust & filter', 14);
+  ('Cuci filter AC', 14);
 
+
+-- ---------- Katalog gaya rambut (contoh; unggah foto referensi di Pengaturan → Katalog gaya) ----------
+insert into hairstyles (code, name, category, description, face_shapes, hair_types, hair_density, suitable_lengths, maintenance_level, style_character, sort) values
+  ('HS001', 'Textured Crop', 'Short', 'Atas pendek bertekstur dengan poni pendek ke depan, sisi taper/fade.',
+   '{oval,round,square,oblong}', '{straight,slightly_wavy,wavy}', '{medium,thick}', '{very_short,short,medium}', 'low', '{modern,clean}', 1),
+  ('HS002', 'French Crop', 'Short', 'Poni lurus pendek, atas rata, sisi rapi — tegas & mudah dirawat.',
+   '{oval,square,oblong,diamond}', '{straight,slightly_wavy}', '{medium,thick}', '{very_short,short}', 'low', '{clean,classic}', 2),
+  ('HS003', 'Low Taper Fade', 'Short', 'Atas sedang dirapikan natural, sisi menipis bertahap rendah di dekat telinga & tengkuk.',
+   '{oval,round,square,heart,diamond,oblong}', '{straight,slightly_wavy,wavy,curly}', '{thin,medium,thick}', '{short,medium}', 'low', '{natural,clean}', 3),
+  ('HS004', 'Side Part Classic', 'Medium', 'Belahan samping rapi dengan sisi pendek; tampilan profesional.',
+   '{oval,square,round,oblong}', '{straight,slightly_wavy}', '{medium,thick}', '{short,medium}', 'medium', '{classic,formal}', 4),
+  ('HS005', 'Pompadour Mid Fade', 'Medium', 'Atas panjang disisir ke belakang bervolume, sisi mid fade.',
+   '{oval,round,square,heart}', '{straight,slightly_wavy,wavy}', '{medium,thick}', '{medium,long}', 'high', '{bold,classic}', 5),
+  ('HS006', 'Two Block / Comma', 'Medium', 'Atas panjang jatuh menutup sebagian dahi, sisi pendek terpisah (gaya Korea).',
+   '{oval,oblong,heart,diamond}', '{straight,slightly_wavy}', '{medium,thick}', '{medium,long}', 'medium', '{modern,soft}', 6),
+  ('HS007', 'Buzz Cut', 'Short', 'Sangat pendek merata — paling praktis, menonjolkan bentuk kepala.',
+   '{oval,square,diamond}', '{straight,slightly_wavy,wavy,curly}', '{thin,medium,thick}', '{very_short,short,medium,long}', 'low', '{minimal,clean}', 7),
+  ('HS008', 'Curly Top Fade', 'Short', 'Ikal alami di atas dibiarkan bertekstur, sisi fade rapi.',
+   '{oval,round,square,oblong,heart}', '{wavy,curly}', '{medium,thick}', '{short,medium}', 'medium', '{natural,modern}', 8);
+update hairstyles h set highlights = v.p from (values
+  ('HS001', '{"Modern & rapi","Atas bertekstur","Samping tipis (low taper)","Cocok untuk semua acara"}'::text[]),
+  ('HS002', '{"Poni lurus pendek","Tegas & bersih","Sangat mudah dirawat"}'::text[]),
+  ('HS003', '{"Natural & rapi","Transisi samping halus","Cocok hampir semua bentuk wajah"}'::text[]),
+  ('HS004', '{"Klasik & profesional","Belah samping rapi","Cocok untuk kerja/formal"}'::text[]),
+  ('HS005', '{"Bervolume & tegas","Disisir ke belakang","Butuh styling harian"}'::text[]),
+  ('HS006', '{"Gaya ala Korea","Atas lebih panjang","Terlihat lebih muda"}'::text[]),
+  ('HS007', '{"Paling praktis","Tanpa styling","Menonjolkan bentuk kepala"}'::text[]),
+  ('HS008', '{"Ikal alami ditonjolkan","Samping fade rapi","Perlu produk ringan"}'::text[])
+) as v(code, p) where h.code = v.code;

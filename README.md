@@ -470,6 +470,32 @@ Anggota tim berikutnya mendaftar sendiri dengan kode undangan. Akun mereka **non
 mengaktifkannya di **Pengaturan → Akun & peran** (kapster wajib ditautkan ke baris staf). Tidak ada yang bisa
 mendaftar langsung sebagai manajer.
 
+## Konsultasi gaya rambut (menu **Gaya** di aplikasi kapster barbershop)
+
+Kapster memilih pelanggan dari booking hari ini (atau tombol di kartu "pelanggan saat ini") →
+**riwayat gaya langsung tampil tanpa AI**: potongan terakhir (gaya, detail guard/fade, reaksi pelanggan, pratinjau
+tersimpan) + rekomendasi tersimpan dari analisis terakhir. Bila perlu, **analisis ulang** dari foto → hasilnya langsung
+berupa **katalog ala poster** untuk ≤5 model teratas dari katalog toko: judul, **poin singkat**, tips kapster, rekomendasi
+pribadi tampil seketika; foto **depan & samping** wajah pelanggan menyusul dari **satu** gambar grid (± 1,5 menit,
+`gpt-image-2` — paling menjaga wajah pada uji banding). Semua teks dari aplikasi, bukan AI. **Pilih gaya ini** per kolom →
+catat potongan (detail teknis + reaksi; potongan kolom grid disimpan hanya dengan persetujuan, terhapus otomatis
+6 bulan). **Bagikan / simpan gambar** → menu bagikan HP (WhatsApp) atau unduh. Grid tidak disimpan.
+Riwayat juga tampil di profil pelanggan (manajer/kasir).
+
+1. **Aktifkan**: isi `OPENAI_API_KEY` di Vercel (opsional: `OPENAI_VISION_MODEL`, `OPENAI_IMAGE_MODEL`,
+   `OPENAI_IMAGE_QUALITY`, `HAIR_CONSULT_DAILY_LIMIT` — lihat `.env.example`) → Redeploy. Tanpa kunci, menu Gaya
+   menampilkan pesan "belum diaktifkan".
+2. **Isi katalog**: Pengaturan → **Katalog gaya** → ubah/tambah model, pilih bentuk wajah/jenis/ketebalan/panjang yang
+   cocok, unggah foto referensi (depan + samping). **Model tanpa foto tidak pernah direkomendasikan.**
+3. **Privasi**: kapster wajib mencentang persetujuan pelanggan. Foto dikirim ke OpenAI untuk diproses dan **tidak
+   disimpan** di aplikasi; yang dicatat hanya hasil (analisis & id model) untuk batas pemakaian. Tambahkan kalimat
+   tentang ini di Pengaturan → Halaman publik → Kebijakan privasi.
+4. **Batas biaya**: 30 konsultasi/pengguna/24 jam (atur `HAIR_CONSULT_DAILY_LIMIT`), 1 katalog per foto (+2× coba
+   lagi bila gagal), hanya dalam 30 menit setelah analisis. Pratinjau (edit gambar) adalah bagian termahal —
+   bawaan `OPENAI_IMAGE_QUALITY=high` (paling menjaga wajah); turunkan bila biaya terlalu besar.
+5. Prompt ada di `src/lib/hair/prompts.ts`; hasil model selalu divalidasi terhadap katalog (`normalizeConsult`) —
+   id karangan dibuang dan foto referensi diambil dari katalog, bukan dari model.
+
 ## Peran & keamanan
 
 | Peran | Area | Catatan |

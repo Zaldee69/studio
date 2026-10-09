@@ -328,6 +328,23 @@ disegarkan otomatis tiap jam).
 
 Bagian **Pesan keluar ke pelanggan** di bawah tab ini menampilkan 20 email/WA terakhir beserta status & error.
 
+## Lokal ↔ produksi & rahasia produksi
+
+| | Lokal (Docker) | Produksi (Supabase cloud) |
+|---|---|---|
+| Aplikasi | `npm run dev` (:3000) | `npm run dev:prod` (:3001, label merah "DATABASE PRODUKSI") |
+| Status migrasi | `npm run db:status:local` | `npm run db:status:prod` |
+| Jalankan migrasi | `npm run db:migrate:local` | `npm run db:migrate:prod` (dry run → konfirmasi `Y`) |
+| Reset | `npm run db:reset` | tidak tersedia |
+
+`.env.local` = lokal. Rahasia produksi **tidak disimpan di file proyek**: perintah `:prod` membacanya dari **Keychain macOS**
+(layanan `dpras-prod`, satu item per variabel; terlihat di aplikasi Keychain Access).
+1. Sekali saja: isi sementara `.env.prod` (variabel: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
+   `SUPABASE_SECRET_KEY`, `SUPABASE_JWKS_URL`, `SUPABASE_DB_PASSWORD`, `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`,
+   `VAPID_SUBJECT`, `PUSH_SECRET`) → `npm run env:keychain` → cek di Keychain Access → **hapus `.env.prod`**.
+2. Ganti satu nilai: `security add-generic-password -U -s dpras-prod -a NAMA_VARIABEL -w`  (nilai diketik saat diminta).
+3. Salinan resmi tetap di **Vercel → Environment Variables**; cadangan di aplikasi Passwords (catatan aman) bila perlu.
+
 ## Membuat proyek Supabase (produksi)
 
 1. Buat proyek di https://supabase.com/dashboard (region Singapore paling dekat).

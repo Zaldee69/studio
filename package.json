@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:prod": "node scripts/env.mjs prod next dev -p 3001",
+    "env:keychain": "node scripts/env.mjs simpan-keychain",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

@@ -64,7 +64,7 @@ export function NotificationBell({ base }: { base: string }) {
               return (
                 <li key={n.id}>
                   <Link href={d.href} onClick={() => { setOpen(false); if (!n.read_at) read([n.id]); }}
-                    className={`flex flex-col gap-0.5 border-b border-[#F0EDE6] px-4 py-3 text-sm hover:bg-paper ${n.read_at ? "text-muted" : "font-semibold"}`}>
+                    className={`flex flex-col gap-0.5 border-b border-[#EEEEEA] px-4 py-3 text-sm hover:bg-paper ${n.read_at ? "text-muted" : "font-semibold"}`}>
                     <span>{!n.read_at && <span aria-hidden="true" className="mr-1.5 inline-block size-2 rounded-full bg-[#D23B3B]" />}{d.text}</span>
                     <span className="text-xs font-normal text-muted tabular">{formatTanggal(n.created_at)} {formatJam(n.created_at)}</span>
                   </Link>

@@ -57,7 +57,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                 className={`flex min-h-12 items-center gap-2 rounded-[10px] px-3 text-left text-sm ${s.id === sel ? "bg-ink text-white" : "hover:bg-paper"} ${s.active ? "" : "opacity-55"}`}>
                 <span className="flex-1 font-semibold">{s.name}</span>
                 {mg && <span className="tabular text-xs">{mg.margin_pct}%</span>}
-                {warn && <span className="rounded-full bg-[#FFDADA] px-2 text-[11px] font-bold text-[#6E1616]">Margin rendah</span>}
+                {warn && <span className="rounded-full bg-[#F9E6E6] px-2 text-[11px] font-bold text-[#6E1616]">Margin rendah</span>}
               </button>
             );
           })}
@@ -77,7 +77,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                     {rows.map((r, i) => {
                       const it = items.find((x) => x.item_id === r.item_id);
                       return (
-                        <tr key={i} className="border-t border-[#F0EDE6]">
+                        <tr key={i} className="border-t border-[#EEEEEA]">
                           <td className="py-1.5 pr-2">
                             <select aria-label={`Bahan baris ${i + 1}`} className="input" value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
                               <option value="">Pilih bahan…</option>
@@ -107,13 +107,13 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
               <aside aria-label="Ringkasan margin" className="flex flex-col gap-2 self-start rounded-[14px] bg-ink p-5 text-paper tabular">
                 {[["Harga layanan", formatRupiah(svc.price)], ["HPP bahan", formatRupiah(hpp)],
                   ["Margin kotor", `${formatRupiah(m.margin)} (${m.marginPct.toLocaleString("id-ID")}%)`], [`Komisi staf ${settings.ratio}%`, formatRupiah(m.commission)]].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 text-sm"><span className="text-[#B9B3A7]">{k}</span><b>{v}</b></div>
+                  <div key={k} className="flex justify-between gap-3 text-sm"><span className="text-[#9A9C95]">{k}</span><b>{v}</b></div>
                 ))}
                 <div className="mt-1 flex flex-col border-t border-[#3A3934] pt-2">
-                  <span className="text-[13px] text-[#B9B3A7]">Laba kontribusi toko</span>
+                  <span className="text-[13px] text-[#9A9C95]">Laba kontribusi toko</span>
                   <b className="font-display text-[32px]">{formatRupiah(m.contribution)}</b>
                 </div>
-                {m.marginPct < settings.marginWarn && <span className="rounded-lg bg-[#FFDADA] px-2.5 py-1.5 text-xs font-bold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
+                {m.marginPct < settings.marginWarn && <span className="rounded-lg bg-[#F9E6E6] px-2.5 py-1.5 text-xs font-bold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
               </aside>
             )}
           </div>
@@ -127,7 +127,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Harga", "HPP", "Margin", "Komisi", "Laba kontribusi"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {[...margins].sort((a, b) => a.margin_pct - b.margin_pct).map((r) => (
-                <tr key={r.id} className="border-t border-[#F0EDE6]">
+                <tr key={r.id} className="border-t border-[#EEEEEA]">
                   <td className="py-2 font-semibold">{r.name}</td>
                   <td className="text-right">{formatRupiah(r.price)}</td>
                   <td className="text-right">{formatRupiah(r.hpp)}</td>

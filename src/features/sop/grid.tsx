@@ -89,7 +89,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         </div>
         <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: st.bg, color: st.fg }}><span aria-hidden="true">{st.icon} </span>{st.label}</span>
         {data.approval ? (
-          <span className="rounded-full bg-[#D9F2E1] px-3 py-1 text-xs font-bold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
+          <span className="rounded-full bg-[#E6F1E4] px-3 py-1 text-xs font-bold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
         ) : manager && (
           <button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="btn-ink h-11">Otorisasi shift</button>
         )}
@@ -110,7 +110,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
                     aria-label={`${i + 1}. ${STAGE_LABEL[stage]} ${g.name}: ${log ? `selesai oleh ${log.by ?? "—"} ${formatJam(log.at)}` : reason}`}
                     className={`flex ${big ? "min-h-[72px]" : "min-h-16"} items-center gap-2.5 rounded-xl border-2 px-3 text-left transition disabled:cursor-not-allowed disabled:opacity-50
                       ${log ? "border-[#9ED7B2] bg-[#EFF9F2]" : can ? "border-ink bg-card hover:bg-paper" : "border-dashed border-line bg-paper"}`}>
-                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-bold ${log ? "border-[#1F7A45] bg-[#1F7A45] text-white" : "border-[#B9B3A7]"}`}>{log ? "✓" : ""}</span>
+                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-bold ${log ? "border-[#1F7A45] bg-[#1F7A45] text-white" : "border-[#9A9C95]"}`}>{log ? "✓" : ""}</span>
                     <span className="flex min-w-0 flex-col">
                       <b className="text-sm">{i + 1}. {STAGE_LABEL[stage]}</b>
                       <span className="truncate text-xs text-muted tabular">

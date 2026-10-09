@@ -28,9 +28,9 @@ export function PrinterButton() {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} aria-label={`Printer struk: ${on ? `tersambung (${p.name})` : p.status === "connecting" ? "menyambung" : "belum tersambung"}`}
-        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[13px] font-bold ${on ? "border-[#BFE5CC] bg-[#EAF7EF] text-[#144D2A]" : "border-[#D9D4C8] bg-card text-muted"}`}>
+        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[13px] font-bold ${on ? "border-[#BFE5CC] bg-[#EAF7EF] text-[#144D2A]" : "border-[#DCDCD6] bg-card text-muted"}`}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z" /></svg>
-        <span className={`size-2 rounded-full ${on ? "bg-[#1F7A45]" : p.status === "connecting" ? "bg-[#C9A45C]" : "bg-[#B9B3A7]"}`} />
+        <span className={`size-2 rounded-full ${on ? "bg-[#1F7A45]" : p.status === "connecting" ? "bg-[#B08A2E]" : "bg-[#9A9C95]"}`} />
         <span className="max-[480px]:hidden">{p.status === "connecting" ? "Menyambung…" : "Printer"}</span>
       </button>
       <Sheet open={open} onClose={() => setOpen(false)} label="Printer struk" width={460}>
@@ -40,12 +40,12 @@ export function PrinterButton() {
             <CloseButton onClick={() => setOpen(false)} />
           </div>
           {p.status === "unsupported" ? (
-            <p role="alert" className="rounded-[10px] bg-[#FFF1C2] px-3.5 py-3 text-sm text-[#5A4300]">
+            <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">
               Browser ini tidak mendukung printer Bluetooth. Pakai <b>Chrome</b> di Android atau laptop, dan buka aplikasi lewat <b>https</b>.
             </p>
           ) : (
             <div className="flex items-center gap-3 rounded-[10px] border border-line p-3">
-              <span className={`size-2.5 shrink-0 rounded-full ${on ? "bg-[#1F7A45]" : "bg-[#B9B3A7]"}`} />
+              <span className={`size-2.5 shrink-0 rounded-full ${on ? "bg-[#1F7A45]" : "bg-[#9A9C95]"}`} />
               <span className="flex min-w-0 flex-1 flex-col text-sm">
                 <b className="truncate">{on ? p.name : p.status === "connecting" ? `Menyambung ke ${p.name}…` : "Belum tersambung"}</b>
                 <span className="text-xs text-muted">Bluetooth · tersimpan di perangkat ini</span>
@@ -67,11 +67,11 @@ export function PrinterButton() {
             </div>
           </fieldset>
           <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 accent-[#1c1b19]" checked={p.settings.autoPrint} onChange={(e) => setPrinterSettings({ autoPrint: e.target.checked })} />
+            <input type="checkbox" className="mt-0.5 size-5 accent-[#1f2320]" checked={p.settings.autoPrint} onChange={(e) => setPrinterSettings({ autoPrint: e.target.checked })} />
             <span><b>Cetak struk otomatis</b><span className="block text-xs text-muted">Langsung tercetak setelah pembayaran dicatat.</span></span>
           </label>
           <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 accent-[#1c1b19]" checked={p.settings.drawer} onChange={(e) => setPrinterSettings({ drawer: e.target.checked })} />
+            <input type="checkbox" className="mt-0.5 size-5 accent-[#1f2320]" checked={p.settings.drawer} onChange={(e) => setPrinterSettings({ drawer: e.target.checked })} />
             <span><b>Buka laci uang saat bayar tunai</b><span className="block text-xs text-muted">Laci harus tersambung ke port laci (RJ11) printer. Kebanyakan printer Bluetooth 58 mm tidak punya port ini.</span></span>
           </label>
 

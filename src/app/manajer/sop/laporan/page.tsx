@@ -54,7 +54,7 @@ export default async function Laporan({ searchParams }: PageProps<"/manajer/sop/
           <thead><tr className="border-b border-ink text-left">{["Tanggal", "Status", "Pengisi tiap tahap", "Penyetuju"].map((h) => <th key={h} className="py-1.5 pr-2 font-semibold">{h}</th>)}</tr></thead>
           <tbody>
             {r.days.map((x) => (
-              <tr key={`${x.date}-${x.shift}`} className="break-inside-avoid border-b border-[#E4E0D6] align-top">
+              <tr key={`${x.date}-${x.shift}`} className="break-inside-avoid border-b border-[#E5E5E0] align-top">
                 <td className="whitespace-nowrap py-1.5 pr-2">{d(x.date)}{(shop?.sop_shifts ?? 1) > 1 && <span className="block text-muted">{shop?.sop_shift_names?.[x.shift - 1]}</span>}</td>
                 <td className="whitespace-nowrap pr-2"><span aria-hidden="true">{SOP_STATUS[x.status].icon} </span>{SOP_STATUS[x.status].label}{x.status !== "closed" && ` (${x.done}/${x.total})`}</td>
                 <td className="pr-2">{x.logs.length ? x.logs.map((l, i) => (
@@ -70,7 +70,7 @@ export default async function Laporan({ searchParams }: PageProps<"/manajer/sop/
           {!r.maintenance.length ? <p className="text-muted">Tidak ada perawatan pada periode ini.</p> : (
             <table className="w-full text-xs tabular">
               <tbody>{r.maintenance.map((m, i) => (
-                <tr key={i} className="border-b border-[#E4E0D6]"><td className="py-1 pr-2">{formatTanggal(m.at)}</td><td className="pr-2">{m.task}</td>
+                <tr key={i} className="border-b border-[#E5E5E0]"><td className="py-1 pr-2">{formatTanggal(m.at)}</td><td className="pr-2">{m.task}</td>
                   <td className="pr-2">{m.vendor || m.by}{m.note ? ` — ${m.note}` : ""}</td><td className="text-right">{m.cost ? formatRupiah(m.cost) : ""}</td></tr>
               ))}</tbody>
             </table>

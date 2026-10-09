@@ -18,7 +18,7 @@ function useActive(menu: MenuItem[]) {
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 }
 
-/** Manajer & kasir (desain Main.dc.html): sidebar gelap 224px ≥1280px, rail ikon 84px 768–1279px,
+/** Manajer & kasir: sidebar putih 224px ≥1280px, rail ikon 84px 768–1279px,
  *  tab bar bawah di HP (<768px): 4 menu pertama + "Lainnya" (sisa menu & keluar). */
 type ShellProps = { menu: MenuItem[]; area: string; user: string; followCount?: number; children: React.ReactNode };
 
@@ -41,11 +41,11 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
   return (
       <div className="flex min-h-dvh">
         <nav aria-label="Menu utama"
-          className="sticky top-0 hidden h-dvh w-[84px] shrink-0 flex-col gap-1 bg-ink px-2 py-4 text-paper print:hidden md:flex xl:w-56 xl:px-4 xl:py-6">
-          <div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-paper font-display text-[17px] font-bold tracking-tight text-ink xl:hidden" aria-label={BRAND}>{BRAND_INITIALS}</div>
+          className="sticky top-0 hidden h-dvh w-[84px] shrink-0 flex-col gap-1 border-r border-line bg-card px-2 py-4 text-ink print:hidden md:flex xl:w-56 xl:px-4 xl:py-6">
+          <div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-accent font-display text-[17px] font-bold tracking-tight text-white xl:hidden" aria-label={BRAND}>{BRAND_INITIALS}</div>
           <div className="hidden flex-col gap-1 px-2 pb-6 xl:flex">
             <span className="font-display text-2xl font-bold tracking-tight">{BRAND}</span>
-            <span className="text-xs text-[#B9B3A7]">Barbershop · Nail Art · Lashes — {area}</span>
+            <span className="text-xs text-muted">Barbershop · Nail Art · Lashes — {area}</span>
           </div>
           <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">
             {menu.map((m) => {
@@ -54,13 +54,13 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
               return (
                 <li key={m.href}>
                   <Link href={m.href} aria-current={cur ? "page" : undefined}
-                    className={`relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-[10px] px-3 text-[11px] font-semibold xl:min-h-11 xl:flex-row xl:justify-start xl:gap-3 xl:text-sm ${cur ? "bg-paper text-ink" : "text-[#D8D2C6] hover:bg-[#2A2926]"}`}>
+                    className={`relative flex min-h-16 flex-col items-center justify-center gap-1 rounded-[10px] px-3 text-[11px] font-semibold xl:min-h-11 xl:flex-row xl:justify-start xl:gap-3 xl:text-sm ${cur ? "bg-[#ECEEE8] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
                     <Icon name={m.icon} className="size-[18px]" />
                     <span className="xl:hidden">{m.short ?? m.label}</span>
                     <span className="hidden flex-1 xl:inline">{m.label}</span>
                     {badge > 0 && (
                       <span aria-label={badgeLabel(m, badge)}
-                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#1C1B19] tabular xl:static xl:shadow-none ${m.badge === "ready" ? "bg-[#D9F2E1] text-[#144D2A]" : m.badge === "online" ? "bg-[#C9A45C] text-[#1C1B19]" : "bg-[#FFDADA] text-[#6E1616]"}`}>
+                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#FFFFFF] tabular xl:static xl:shadow-none ${m.badge === "ready" ? "bg-st-paid text-[#2C4A2A]" : m.badge === "online" ? "bg-[#F3E9CF] text-[#5C4A1A]" : "bg-st-completed text-[#6B2427]"}`}>
                         {badge}
                       </span>
                     )}
@@ -70,15 +70,15 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
             })}
           </ul>
           <div className="hidden items-center gap-2.5 px-1 pt-2.5 xl:flex">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper text-sm font-bold text-ink">{initial}</span>
-            <span className="flex min-w-0 flex-1 flex-col text-xs"><b className="truncate text-[13px] text-paper">{user}</b><span className="text-[#B9B3A7]">{area}</span></span>
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">{initial}</span>
+            <span className="flex min-w-0 flex-1 flex-col text-xs"><b className="truncate text-[13px] text-ink">{user}</b><span className="text-muted">{area}</span></span>
             <form action={signOut}>
-              <button aria-label="Keluar" className="flex size-10 items-center justify-center rounded-[10px] border border-[#3A3934] text-[#D8D2C6]"><Icon name="logout" className="size-4" /></button>
+              <button aria-label="Keluar" className="flex size-10 items-center justify-center rounded-[10px] border border-line text-muted hover:text-ink"><Icon name="logout" className="size-4" /></button>
             </form>
           </div>
           <form action={signOut} className="xl:hidden">
-            <button aria-label={`Keluar (${user})`} className="flex min-h-[60px] w-full flex-col items-center justify-center gap-1 rounded-[10px] text-[11px] font-semibold text-[#D8D2C6]">
-              <span className="flex size-[30px] items-center justify-center rounded-full bg-paper text-[13px] font-bold text-ink">{initial}</span>Keluar
+            <button aria-label={`Keluar (${user})`} className="flex min-h-[60px] w-full flex-col items-center justify-center gap-1 rounded-[10px] text-[11px] font-semibold text-muted">
+              <span className="flex size-[30px] items-center justify-center rounded-full bg-accent text-[13px] font-bold text-white">{initial}</span>Keluar
             </button>
           </form>
         </nav>
@@ -87,7 +87,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
             <span className="flex-1 truncate text-sm font-semibold text-muted">{menu.find((m) => m.href === active)?.label ?? area}</span>
             <NotificationBell base={base} />
             <span className="flex items-center gap-2 text-sm">
-              <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-ink text-xs font-bold text-paper">{initial}</span>
+              <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">{initial}</span>
               <span className="hidden flex-col leading-tight min-[820px]:flex"><b className="max-w-40 truncate text-[13px]">{user}</b><span className="text-[11px] text-muted">{area}</span></span>
             </span>
           </header>
@@ -102,7 +102,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
             return (
               <Link key={m.href} href={m.href} aria-current={cur ? "page" : undefined}
                 className={`relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${cur ? "text-ink" : "text-muted"}`}>
-                <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${cur ? "bg-ink" : ""}`} />
+                <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${cur ? "bg-accent" : ""}`} />
                 <Icon name={m.icon} className="size-5" />
                 {m.short ?? m.label}
                 {n > 0 && <span aria-label={badgeLabel(m, n)} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{n}</span>}
@@ -111,7 +111,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
           })}
           <button type="button" onClick={() => setMore(true)} aria-haspopup="dialog" aria-expanded={more}
             className={`relative flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-semibold ${restActive ? "text-ink" : "text-muted"}`}>
-            <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${restActive ? "bg-ink" : ""}`} />
+            <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${restActive ? "bg-accent" : ""}`} />
             <Icon name="more" className="size-5" />
             Lainnya
             {restBadge > 0 && <span aria-label={`${restBadge} perlu perhatian`} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{restBadge}</span>}
@@ -120,17 +120,17 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
         <Sheet open={more} onClose={() => setMore(false)} label="Menu lainnya">
           <div className="flex flex-col gap-1 p-4">
             <div className="flex items-center gap-3 px-2 pb-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-paper">{initial}</span>
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white">{initial}</span>
               <span className="flex min-w-0 flex-1 flex-col"><b className="truncate">{user}</b><span className="text-xs text-muted">{area}</span></span>
             </div>
             {rest.map((m) => {
               const cur = active === m.href, n = count(m);
               return (
                 <Link key={m.href} href={m.href} onClick={() => setMore(false)} aria-current={cur ? "page" : undefined}
-                  className={`flex min-h-12 items-center gap-3 rounded-[10px] px-3 text-sm font-semibold ${cur ? "bg-ink text-paper" : "hover:bg-paper"}`}>
+                  className={`flex min-h-12 items-center gap-3 rounded-[10px] px-3 text-sm font-semibold ${cur ? "bg-[#ECEEE8] text-accent-ink" : "hover:bg-paper"}`}>
                   <Icon name={m.icon} className="size-[18px]" />
                   <span className="flex-1">{m.label}</span>
-                  {n > 0 && <span aria-label={badgeLabel(m, n)} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FFDADA] px-1.5 text-xs text-[#6E1616] tabular">{n}</span>}
+                  {n > 0 && <span aria-label={badgeLabel(m, n)} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F9E6E6] px-1.5 text-xs text-[#6E1616] tabular">{n}</span>}
                 </Link>
               );
             })}

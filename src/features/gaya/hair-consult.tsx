@@ -122,7 +122,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
         <span className="min-w-0 flex-1"><span className="text-xs text-muted">Konsultasi gaya untuk</span><b className="block truncate text-lg">{customerName}</b></span>
         <button onClick={onChange} className="btn-ghost h-10 rounded-[10px] px-3 text-sm">Ganti</button>
       </section>
-      {!canSave && <p className="rounded-[10px] bg-[#FFF1C2] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
+      {!canSave && <p className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
 
       {/* RIWAYAT: pelanggan yang kembali tidak perlu ditanya / dianalisis ulang */}
       {customerId && (
@@ -132,7 +132,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
           {stored?.status === "success" && !live && (
             <div className="flex flex-col gap-3 border-t border-line pt-3">
               <p className="text-sm"><b>Rekomendasi tersimpan</b> <span className="text-muted">· dianalisis {daysAgo(history!.consult!.created_at)}</span></p>
-              {stored.overall_insight && <p className="text-sm text-[#4A463F]">{stored.overall_insight}</p>}
+              {stored.overall_insight && <p className="text-sm text-[#4A4C46]">{stored.overall_insight}</p>}
               <div className="grid grid-cols-2 gap-3 min-[700px]:grid-cols-3">
                 {[...stored.primary_recommendations, ...stored.alternatives].map((x) => (
                   <StyleCard key={x.hair_style_id} rec={x} onUse={canSave ? () => use(x, null) : undefined} />
@@ -153,12 +153,12 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
         <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
           <h2 className="text-base font-bold">{stored?.status === "success" ? "Analisis ulang dari foto" : "Konsultasi dari foto"}</h2>
           {result && result.status !== "success" && (
-            <p role="alert" className="rounded-[10px] bg-[#FFF1C2] px-3.5 py-3 text-sm text-[#5A4300]">{result.reason} {result.suggestion}</p>
+            <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">{result.reason} {result.suggestion}</p>
           )}
           {/* kualitas foto paling menentukan apakah wajah di pratinjau tetap mirip */}
           <details className="rounded-[10px] border border-line p-3 text-sm" open={!stored}>
             <summary className="cursor-pointer font-semibold">Tips foto agar wajah di pratinjau tetap mirip</summary>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4A463F]">
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4A4C46]">
               <li>Kapster yang memotret dengan <b>kamera belakang</b>, jarak ±1 meter — bukan selfie dekat.</li>
               <li>Kepala & bahu terlihat, <b>ada ruang di atas kepala</b>; rambut tidak terpotong bingkai.</li>
               <li>Cahaya terang & merata dari depan; hindari ruangan gelap dan kilau minyak di wajah.</li>
@@ -166,10 +166,10 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
             </ul>
           </details>
           <label className="flex items-start gap-3 rounded-[10px] bg-paper p-3.5 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-[#1c1b19]" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-[#1f2320]" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
             <span>Pelanggan setuju fotonya dipakai untuk rekomendasi gaya. <span className="text-muted">Foto tidak disimpan.</span></span>
           </label>
-          {error && <p role="alert" className="rounded-[10px] bg-[#FFDADA] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
+          {error && <p role="alert" className="rounded-[10px] bg-[#F9E6E6] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
           <input ref={camera} type="file" accept="image/*" capture="environment" className="sr-only" aria-label="Ambil foto pelanggan" onChange={(e) => analyze(e.target.files?.[0])} />
           <input ref={gallery} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Pilih foto dari galeri" onChange={(e) => analyze(e.target.files?.[0])} />
           <div className="grid grid-cols-2 gap-2">

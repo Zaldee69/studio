@@ -410,7 +410,14 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
   2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `D'Pras Studio <booking@domainanda.com>`).
   3. Supabase → Authentication → **SMTP Settings** juga bisa diarahkan ke Resend (`smtp.resend.com`, port 465,
      user `resend`, sandi = API key) agar email konfirmasi akun & lupa sandi tidak kena batas email bawaan.
-- **WhatsApp otomatis (Wablas)** — pengingat booking & kode verifikasi nomor WA akun pelanggan.
+- **Login pelanggan dengan WhatsApp** (tanpa email & kata sandi; kode dikirim lewat Wablas). Di dashboard Supabase:
+  1. *Authentication → Sign In / Providers → Phone*: aktifkan, **Enable phone confirmations** ON, **SMS OTP Expiry** `600`
+     (detik). Pilih penyedia SMS mana pun (mis. Twilio) dengan nilai sembarang — tidak dipakai selama hook aktif.
+  2. *Authentication → Auth Hooks → Send SMS hook*: tipe **Postgres**, schema `public`, function `kirim_kode_wa` (dibuat
+     migration `20261009000008_login_wa`).
+  3. Pastikan `app_config.notify_url` & `push_secret` terisi (lihat bagian notifikasi) dan variabel Wablas di bawah —
+     kode masuk dikirim lewat antrean pesan yang sama. Login tim tetap email + sandi.
+- **WhatsApp otomatis (Wablas)** — pengingat booking, kode masuk pelanggan, dan blast promosi (CRM).
   1. Dashboard Wablas → hubungkan perangkat (scan QR) → *Device → Settings*: salin **token** dan buat **secret key**
      (dikirim ke WA admin). Catat domain server API yang tertera di dashboard.
   2. Vercel: `WABLAS_TOKEN`, `WABLAS_SECRET_KEY`, dan `WABLAS_URL` (default `https://wablas.com`) → Redeploy.

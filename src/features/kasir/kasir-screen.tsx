@@ -22,7 +22,7 @@ export function KasirScreen({ master, initialAppt }: { master: Master; initialAp
         <div role="tablist" aria-label="Bagian kasir" className="flex max-w-full gap-1.5 overflow-x-auto">
           {TABS.map(([k, l]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-              className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === k ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>{l}</button>
+              className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l}</button>
           ))}
         </div>
         <span className="hidden text-[13px] text-muted xl:inline">Gabungkan layanan barbershop &amp; nail dalam satu tagihan</span>

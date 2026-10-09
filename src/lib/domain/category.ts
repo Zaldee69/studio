@@ -13,7 +13,7 @@ export const CAT_NAME: Record<Cat, string> = { barbershop: "Barbershop", nail: "
 export const STAFF_TITLE: Record<Cat, string> = { barbershop: "Kapster", nail: "Nail artist", massage: "Terapis pijat" };
 /** Warna chip kategori (latar, teks). */
 export const CAT_TONE: Record<Cat, { bg: string; fg: string }> = {
-  barbershop: { bg: "#E6E3F7", fg: "#3A2F8F" },
-  nail: { bg: "#F7E3EC", fg: "#8A2352" },
-  massage: { bg: "#E2F1EA", fg: "#1F5E44" },
+  barbershop: { bg: "#E9ECE3", fg: "#3F4A33" },
+  nail: { bg: "#F4E6E7", fg: "#7A3A40" },
+  massage: { bg: "#F1E8DC", fg: "#6A4826" },
 };

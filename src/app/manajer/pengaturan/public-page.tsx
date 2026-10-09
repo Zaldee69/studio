@@ -34,7 +34,7 @@ export function HoursForm({ hours }: { hours: Hours[] }) {
             <b className="text-sm">{HARI[d]}</b>
             <input aria-label={`Buka ${HARI[d]}`} type="time" name={`open_${d}`} defaultValue={h?.open_time.slice(0, 5)} className="input" />
             <input aria-label={`Tutup ${HARI[d]}`} type="time" name={`close_${d}`} defaultValue={h?.close_time.slice(0, 5)} className="input" />
-            <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name={`closed_${d}`} defaultChecked={h?.closed} className="size-5 accent-[#5646C8]" />Libur</label>
+            <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name={`closed_${d}`} defaultChecked={h?.closed} className="size-5 accent-accent" />Libur</label>
           </div>
         );
       })}
@@ -60,7 +60,7 @@ export function ClosuresForm({ closures }: { closures: { date: string; reason: s
       </form>
       {s?.error && <p role="alert" className="text-xs text-danger">{s.error}</p>}
       {closures.map((c) => (
-        <div key={c.date} className="flex items-center gap-2 border-t border-[#F0EDE6] pt-2 text-sm">
+        <div key={c.date} className="flex items-center gap-2 border-t border-[#EEEEEA] pt-2 text-sm">
           <span className="flex-1 tabular">{formatTanggal(`${c.date}T12:00:00+07:00`)}{c.reason && ` · ${c.reason}`}</span>
           <button onClick={async () => { const r = await removeClosure(c.date); toast(r?.error ?? "Dihapus", r?.error ? "error" : "ok"); }} className="btn-danger h-10 px-3">Hapus</button>
         </div>
@@ -180,7 +180,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#F0EDE6] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-4">
         <div className="flex items-center gap-3"><b className="flex-1 text-sm">Galeri hasil kerja</b><Pick id="gallery" busy={busy} multiple label="Tambah foto" onFile={addGallery} /></div>
         {gallery.map((p, i) => (
           <div key={p.id} className="flex flex-wrap items-center gap-2">
@@ -193,7 +193,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
         ))}
         {!gallery.length && <p className="text-sm text-muted">Belum ada foto galeri.</p>}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#F0EDE6] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-4">
         <b className="text-sm">Foto staf</b>
         <div className="grid gap-3 min-[1000px]:grid-cols-3">
           {people.map((s) => (
@@ -207,14 +207,14 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
 }
 
 export function OutboundLog({ rows }: { rows: Msg[] }) {
-  const tone: Record<string, string> = { sent: "bg-[#D9F2E1] text-[#144D2A]", queued: "bg-[#FFF1C2] text-[#5A4300]", sending: "bg-[#DCEBFF] text-[#163D78]", failed: "bg-[#FFDADA] text-[#6E1616]", skipped: "bg-[#EEEBE4] text-[#4A463F]" };
+  const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEFEB] text-[#4A4C46]" };
   const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1" };
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">Pesan keluar ke pelanggan</h2>
       <p className="-mt-1 text-xs text-muted">Email terkirim bila RESEND_API_KEY diisi; WhatsApp otomatis bila kredensial penyedia diisi (lihat README). &quot;Dilewati&quot; = kanal belum aktif.</p>
       {rows.map((m) => (
-        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#F0EDE6] pt-2 text-[13px] tabular">
+        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-2 text-[13px] tabular">
           <span className="w-32 text-muted">{formatTanggal(m.created_at).split(",")[1]} {formatJam(m.created_at)}</span>
           <span className="w-28">{T[m.template] ?? m.template}</span>
           <span className="w-20 uppercase text-muted">{m.channel === "email" ? "Email" : "WA"}</span>

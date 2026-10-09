@@ -119,12 +119,12 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
 
   const step = "flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4";
   const num = (v: string) => (v ? Math.max(0, Math.floor(+v)) || undefined : undefined);
-  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-semibold ${on ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`;
+  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-semibold ${on ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`;
 
   return (
     <div className="flex flex-col gap-4">
       {!waReady && (
-        <p role="alert" className="rounded-[10px] bg-[#FFF1C2] px-3 py-2 text-sm text-[#5A4300]">
+        <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-sm text-[#5A4300]">
           WhatsApp (Wablas) belum dikonfigurasi di server — pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.
         </p>
       )}
@@ -151,7 +151,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                 <button onClick={() => open(c)} className="text-left">
                   <b className="block text-sm">{c.name}</b>
                   <span className="block text-xs text-muted">{describeSegment(c.segment)}</span>
-                  <span className="mt-1 block text-xs text-[#4A463F]">
+                  <span className="mt-1 block text-xs text-[#4A4C46]">
                     {last ? `Terakhir dikirim ${ago(last.created_at)} · ${last.recipient_count} penerima · ${sendsOf(c.id).length}× dikirim` : "Belum pernah dikirim"}
                   </span>
                 </button>
@@ -191,7 +191,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                 <div className="flex flex-wrap items-center gap-3">Pernah memakai:
                   {CATS.map((c) => (
                     <label key={c} className="flex items-center gap-1.5">
-                      <input type="checkbox" className="size-5 accent-[#5646C8]" checked={!!seg.categories?.includes(c)}
+                      <input type="checkbox" className="size-5 accent-accent" checked={!!seg.categories?.includes(c)}
                         onChange={(e) => setSeg({ categories: e.target.checked ? [...(seg.categories ?? []), c] : (seg.categories ?? []).filter((x) => x !== c) })} />
                       {CAT_NAME[c]}
                     </label>
@@ -250,7 +250,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               </button>
             </div>
             {draft.id && (
-              <div className="flex flex-col gap-2 border-t border-[#F0EDE6] pt-3">
+              <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-3">
                 <span className="text-xs font-bold text-muted">Riwayat pengiriman campaign ini</span>
                 {!sendsOf(draft.id).length ? <span className="text-sm text-muted">Belum pernah dikirim.</span> : sendsOf(draft.id).map((s) => (
                   <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular">

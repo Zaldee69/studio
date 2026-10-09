@@ -73,7 +73,7 @@ export function IzinKapster() {
         {offs?.map((o) => {
           const [l, bg, fg] = OFF_STATUS[o.status];
           return (
-            <div key={o.id} className="flex min-h-[60px] flex-wrap items-center gap-3 border-t border-[#F0EDE6] py-2">
+            <div key={o.id} className="flex min-h-[60px] flex-wrap items-center gap-3 border-t border-[#EEEEEA] py-2">
               <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm tabular">{offLabel(o)}</b><span className="text-xs text-muted">{o.reason}</span></span>
               <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
               {o.status === "pending" && <button onClick={() => cancel(o.id)} className="min-h-11 rounded-[10px] border border-line px-3 text-[13px] font-bold text-[#A12A2A]">Batalkan</button>}

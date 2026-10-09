@@ -10,7 +10,6 @@ import { homeFor } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { CancelButton, DeleteAccount, ProfileForms } from "./account-forms";
 import { LoginPanel } from "./login-panel";
-import { WaVerify } from "@/components/wa-verify";
 
 export const metadata: Metadata = { title: "Akun saya", robots: { index: false } };
 
@@ -50,9 +49,6 @@ export default async function AkunPage({ searchParams }: PageProps<"/akun">) {
     supabase.from("public_settings").select("cancel_cutoff_hours").single(),
   ]);
   const cutoff = rules?.cancel_cutoff_hours ?? 2;
-  // nomor yang diisi saat daftar (belum terverifikasi) → isi awal form verifikasi
-  const { data: { user } } = await supabase.auth.getUser();
-  const signupWa = String(user?.user_metadata?.whatsapp ?? "");
   const now = Date.now(); // eslint-disable-line react-hooks/purity -- Server Component, dirender per permintaan
   const name = profile.full_name;
 
@@ -71,8 +67,6 @@ export default async function AkunPage({ searchParams }: PageProps<"/akun">) {
           </div>
           <form action={signOut}><button className="btn-line border-rule-2 text-dust hover:text-cream">Keluar</button></form>
         </div>
-
-        {!cust?.whatsapp && <WaVerify initial={signupWa ? `0${signupWa.replace(/^62/, "")}` : ""} />}
 
         <div className="grid gap-4 min-[520px]:grid-cols-2">
           <div className="flex flex-col gap-2 border border-gold bg-lux-3 px-6 py-7">
@@ -132,7 +126,7 @@ export default async function AkunPage({ searchParams }: PageProps<"/akun">) {
 
         <section className="flex flex-col gap-4">
           <h2 className="font-serif text-[32px] font-normal leading-none">Profil</h2>
-          <ProfileForms name={name} email={cust?.email ?? profile.email ?? ""} />
+          <ProfileForms name={name} />
           <div className="h-px bg-rule" />
           <DeleteAccount />
         </section>

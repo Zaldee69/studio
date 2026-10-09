@@ -39,7 +39,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
         <div role="group" aria-label="Periode" className="flex gap-1.5">
           {[["", "Bulan ini"], ["tahun", `Tahun ${year}`]].map(([v, l]) => (
             <Link key={v} href={`?tab=peringkat${v ? "&periode=tahun" : ""}`} aria-current={(byYear ? "tahun" : "") === v ? "true" : undefined}
-              className="inline-flex h-11 items-center rounded-full border border-[#D9D4C8] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
+              className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
           ))}
         </div>
         <Leaderboard rows={(data ?? []) as LeaderRow[]} />

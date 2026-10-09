@@ -16,8 +16,8 @@ export function pickCurrent<T extends QAppt>(today: T[], selectedId: string | nu
 }
 
 export const ACTION: Partial<Record<ApptStatus, { label: string; bg: string }>> = {
-  booked: { label: "Pelanggan datang", bg: "#2F6FD6" },
-  arrived: { label: "Mulai layanan", bg: "#1C1B19" },
+  booked: { label: "Pelanggan datang", bg: "#3F6A88" },
+  arrived: { label: "Mulai layanan", bg: "#1F2320" },
   in_service: { label: "Selesai → ke kasir", bg: "#1F7A45" },
 };
 
@@ -58,7 +58,7 @@ export function approvedOffFor<T extends Off>(offs: T[], staffId: string | null,
 
 export const OFF_STATUS = {
   pending: ["Menunggu", "#FFF1C2", "#5A4300"], approved: ["Disetujui", "#D9F2E1", "#144D2A"],
-  rejected: ["Ditolak", "#FFDADA", "#6E1616"], cancelled: ["Dibatalkan", "#EEEBE4", "#4A463F"],
+  rejected: ["Ditolak", "#FFDADA", "#6E1616"], cancelled: ["Dibatalkan", "#EFEFEB", "#4A4C46"],
 } as const;
 
 /** "Rabu, 30 Sep 2026 · sehari penuh" / rentang tanggal / rentang jam. */

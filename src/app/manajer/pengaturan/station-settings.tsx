@@ -47,7 +47,7 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
           const st = data?.status.get(s.id);
           const locked = st?.locked;
           return (
-            <form key={s.id} onSubmit={(e) => { e.preventDefault(); savePin(s.id); }} className="flex flex-wrap items-center gap-2 border-t border-[#F0EDE6] pt-3">
+            <form key={s.id} onSubmit={(e) => { e.preventDefault(); savePin(s.id); }} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-3">
               <span className="flex min-w-32 flex-1 flex-col"><b className="text-sm">{s.name}</b>
                 <span className="text-xs text-muted">{locked ? "Terkunci sementara" : st?.has_pin ? `PIN diatur ${st.updated_at ? formatTanggal(st.updated_at) : ""}` : "Belum ada PIN"}</span></span>
               <label htmlFor={`pin-${s.id}`} className="sr-only">PIN baru {s.name}</label>
@@ -71,10 +71,10 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
         </form>
         <p className="text-xs text-muted">Buka halaman ini di tablet yang akan dipakai bersama, daftarkan, lalu keluar dan buka <b>/stasiun</b>. Sesi kapster di stasiun keluar otomatis setelah 5 menit tanpa aktivitas.</p>
         {data?.devices.map((d) => (
-          <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-[#F0EDE6] pt-3">
+          <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-3">
             <span className="flex flex-1 flex-col"><b className="text-sm">{d.name}</b>
               <span className="text-xs text-muted tabular">Terakhir dipakai {d.last_seen_at ? `${formatTanggal(d.last_seen_at)} ${formatJam(d.last_seen_at)}` : "—"}</span></span>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${d.active ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#EEEBE4] text-[#4A463F]"}`}>{d.active ? "Aktif" : "Dicabut"}</span>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${d.active ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EFEFEB] text-[#4A4C46]"}`}>{d.active ? "Aktif" : "Dicabut"}</span>
             <button onClick={() => setActive(d.id, !d.active)} className="btn-ghost h-11 rounded-[10px]">{d.active ? "Cabut" : "Aktifkan"}</button>
           </div>
         ))}

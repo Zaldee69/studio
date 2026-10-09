@@ -46,6 +46,12 @@ describe("blast promosi (CRM)", () => {
     expect(wa).toHaveBeenCalledWith("6281300000001", "Hai Dodi, diskon 10%!");
     expect(finished.p).toMatchObject({ status: "sent" });
   });
+  it("kode masuk (otp) dikirim segera (flag instant)", async () => {
+    const wa = vi.fn(async () => {});
+    const { s } = store([{ id: "o", channel: "whatsapp", to_address: "6281300000002", template: "otp", booking_group_id: null, attempts: 0, body: "Kode masuk: 123456" }]);
+    await processQueue(s, { email: null, whatsapp: wa });
+    expect(wa).toHaveBeenCalledWith("6281300000002", "Kode masuk: 123456", { instant: true });
+  });
 });
 
 describe("adapter WhatsApp (Wablas)", () => {

@@ -59,7 +59,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
             <div className="flex flex-col-reverse gap-2 min-[420px]:flex-row min-[420px]:justify-end">
               <AD.Cancel className="btn-ghost h-11 rounded-[10px] px-4">{opts?.cancelLabel ?? "Batal"}</AD.Cancel>
               <AD.Action onClick={() => done(true)}
-                className={`btn h-11 rounded-[10px] px-5 text-white ${opts?.tone === "danger" ? "bg-[#A12A2A] hover:bg-[#861F1F]" : "bg-ink hover:bg-[#33312D]"}`}>
+                className={`btn h-11 rounded-[10px] px-5 text-white ${opts?.tone === "danger" ? "bg-[#A12A2A] hover:bg-[#861F1F]" : "bg-ink hover:bg-[#353A33]"}`}>
                 {opts?.confirmLabel ?? "Lanjutkan"}
               </AD.Action>
             </div>

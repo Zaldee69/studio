@@ -2,133 +2,121 @@
 
 import { useState } from "react";
 import { normalizeWhatsApp } from "@/lib/domain/format";
-import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { createClient } from "@/lib/supabase/client";
 import { captchaOn, Turnstile } from "./turnstile";
 
 export type Cust = { name: string; wa: string | null } | null;
 
-/** Masuk / daftar pelanggan (email + sandi) di sisi klien — dipakai di alur booking & /akun. */
+/**
+ * Masuk / daftar pelanggan dengan nomor WhatsApp + kode 6 digit (Supabase Auth phone OTP; kode dikirim lewat WhatsApp).
+ * Tanpa email & kata sandi. Nomor yang pernah dipakai booking sebagai tamu → riwayat & saldo langsung tersambung (DB).
+ * Dipakai di alur booking & /akun.
+ */
 export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => void }) {
-  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+  const [step, setStep] = useState<"wa" | "code" | "name">("wa");
+  const [wa, setWa] = useState("");
+  const [code, setCode] = useState("");
+  const [name, setName] = useState("");
   const [captcha, setCaptcha] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0); // token captcha sekali pakai → render ulang widget tiap percobaan
-  const [f, setF] = useState({ name: "", wa: "", email: "", pw: "", pw2: "" });
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
-  const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => { setF({ ...f, [k]: e.target.value }); setErr(""); };
+  const phone = normalizeWhatsApp(wa);
 
-  async function finish() {
+  async function send(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!phone) return setErr("Nomor WhatsApp belum valid (mis. 0812… atau +62812…).");
+    if (captchaOn() && !captcha) return setErr("Selesaikan verifikasi keamanan dulu.");
+    setBusy(true); setErr(""); setInfo("");
+    const { error } = await createClient().auth.signInWithOtp({ phone: `+${phone}`, options: { captchaToken: captcha ?? undefined } });
+    setCaptcha(null); setAttempt((a) => a + 1); setBusy(false);
+    if (error) return setErr(error.status === 429 ? "Terlalu sering meminta kode. Tunggu sebentar lalu coba lagi." : "Gagal mengirim kode. Periksa nomor lalu coba lagi.");
+    setStep("code"); setCode("");
+    setInfo(`Kode 6 digit dikirim ke WhatsApp +${phone}.`);
+  }
+
+  async function verify(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true); setErr("");
     const supabase = createClient();
+    // type "sms" = nama jenis kode login nomor HP di Supabase; kodenya dikirim lewat WhatsApp, bukan SMS
+    const { error } = await supabase.auth.verifyOtp({ phone: `+${phone}`, token: code, type: "sms" });
+    if (error) { setBusy(false); return setErr("Kode salah atau kedaluwarsa. Minta kode baru bila perlu."); }
     const { data: { user } } = await supabase.auth.getUser();
-    const { data: p } = user ? await supabase.from("profiles").select("role, full_name, customer_id").eq("id", user.id).single() : { data: null };
+    const { data: p } = user ? await supabase.from("profiles").select("role, full_name").eq("id", user.id).single() : { data: null };
+    setBusy(false);
     if (p?.role !== "customer") {
       await supabase.auth.signOut();
       return setErr("Ini akun tim — silakan masuk lewat halaman login tim.");
     }
-    const { data: c } = await supabase.from("my_customer").select("whatsapp").maybeSingle();
-    onDone({ name: p.full_name, wa: c?.whatsapp ?? null });
+    // akun baru tanpa nama (nama = nomor) → tanya nama sekali
+    if (!p.full_name || p.full_name === phone) return setStep("name");
+    onDone({ name: p.full_name, wa: phone });
   }
 
-  async function submit(e: React.FormEvent) {
+  async function saveName(e: React.FormEvent) {
     e.preventDefault();
-    const email = f.email.trim().toLowerCase();
-    if (mode === "register") {
-      if (!f.name.trim()) return setErr("Isi nama lengkap.");
-      if (!normalizeWhatsApp(f.wa)) return setErr("No. WhatsApp belum valid (mis. 0812… atau +62812…).");
-      if (!/^\S+@\S+\.\S+$/.test(email)) return setErr("Email belum valid.");
-      const weak = passwordError(f.pw);
-      if (weak) return setErr(weak);
-      if (f.pw !== f.pw2) return setErr("Kedua kata sandi tidak sama.");
-    }
-    if (captchaOn() && !captcha) return setErr("Selesaikan verifikasi keamanan dulu.");
-    setBusy(true);
-    const supabase = createClient();
-    const captchaToken = captcha ?? undefined; // divalidasi Supabase Auth bila captcha diaktifkan di proyek
-    setCaptcha(null); setAttempt((a) => a + 1);
-    if (mode === "forgot") {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/akun/sandi-baru`, captchaToken });
-      setBusy(false);
-      if (error) return setErr("Gagal mengirim email. Coba lagi sebentar lagi.");
-      return setInfo("Jika email terdaftar, tautan untuk membuat kata sandi baru sudah kami kirim. Cek kotak masuk / spam.");
-    }
-    const res = mode === "login"
-      ? await supabase.auth.signInWithPassword({ email, password: f.pw, options: { captchaToken } })
-      : await supabase.auth.signUp({ email, password: f.pw, options: {
-        data: { full_name: f.name.trim(), whatsapp: normalizeWhatsApp(f.wa) }, captchaToken, emailRedirectTo: `${location.origin}/auth/konfirmasi` } });
-    if (res.error) {
-      setBusy(false);
-      const e = res.error;
-      return setErr(e.status === 429 ? "Terlalu banyak percobaan. Coba lagi beberapa menit lagi."
-        : mode === "login" ? (e.code === "email_not_confirmed" ? "Email belum dikonfirmasi — klik tautan di email pendaftaran Anda." : "Email atau kata sandi salah.")
-        : e.code === "weak_password" ? `Kata sandi terlalu lemah. ${PASSWORD_HINT}`
-        : "Pendaftaran gagal. Jika email ini sudah terdaftar, silakan masuk atau pakai Lupa kata sandi.");
-    }
-    if (!res.data.session) {
-      setBusy(false);
-      return setInfo(`Kami mengirim tautan konfirmasi ke ${email}. Klik tautannya untuk mengaktifkan akun.`);
-    }
-    await finish();
+    if (!name.trim()) return setErr("Isi nama Anda.");
+    setBusy(true); setErr("");
+    const { error } = await createClient().rpc("update_my_profile", { p_name: name.trim() });
     setBusy(false);
+    if (error) return setErr(error.message);
+    onDone({ name: name.trim(), wa: phone });
   }
-
-  const field = (id: string, label: string, props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <div className="flex min-w-0 flex-col gap-2">
-      <label htmlFor={id} className="lux-label">{label}</label>
-      <input id={id} className="lux-input" {...props} />
-    </div>
-  );
 
   return (
     <div className="flex w-full max-w-[460px] flex-col gap-5 pt-2">
       <span className="eyebrow">Akun pelanggan</span>
       <h1 className="-mt-2 font-serif text-[44px] font-normal leading-none">
-        {mode === "login" ? <>Selamat <i className="text-gold">datang.</i></> : mode === "forgot" ? <>Lupa <i className="text-gold">kata sandi.</i></> : <>Buat <i className="text-gold">akun.</i></>}
+        {step === "name" ? <>Satu langkah <i className="text-gold">lagi.</i></> : <>Masuk dengan <i className="text-gold">WhatsApp.</i></>}
       </h1>
-      <span className="text-[15px] font-light leading-relaxed text-sand">
-        Booking lebih cepat, lihat riwayat kunjungan, dan saldo deposit Anda.
+      <span className="text-[15px] leading-relaxed text-sand">
+        {step === "name" ? "Bagaimana kami memanggil Anda?"
+          : "Tanpa email & kata sandi — cukup nomor WhatsApp. Lihat riwayat kunjungan, saldo deposit, dan jadwal ulang booking Anda."}
       </span>
-      <div role="tablist" aria-label="Masuk atau daftar" className="grid grid-cols-2 border border-rule-2">
-        {(["login", "register"] as const).map((m) => (
-          <button key={m} role="tab" aria-selected={mode === m || (m === "login" && mode === "forgot")} onClick={() => { setMode(m); setErr(""); setInfo(""); }}
-            className={`h-11 text-xs font-medium uppercase tracking-[0.22em] ${mode === m ? "bg-gold text-lux" : "text-dust hover:text-cream"}`}>
-            {m === "login" ? "Masuk" : "Daftar"}
-          </button>
-        ))}
-      </div>
-      <form onSubmit={submit} className="flex flex-col gap-4">
-        {mode === "register" && field("c-name", "Nama lengkap", { autoComplete: "name", value: f.name, onChange: set("name") })}
-        {mode === "register" && field("c-wa", "No. WhatsApp", { type: "tel", inputMode: "tel", autoComplete: "tel", placeholder: "0812…", value: f.wa, onChange: set("wa") })}
-        {field("c-email", "Email", { type: "email", autoComplete: mode === "login" ? "username" : "email", value: f.email, onChange: set("email") })}
-        {mode === "forgot" ? null : mode === "login"
-          ? field("c-pw", "Kata sandi", { type: "password", autoComplete: "current-password", value: f.pw, onChange: set("pw") })
-          : (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-                {field("c-pw1", "Kata sandi", { type: "password", autoComplete: "new-password", value: f.pw, onChange: set("pw") })}
-                {field("c-pw2", "Ulangi", { type: "password", autoComplete: "new-password", value: f.pw2, onChange: set("pw2") })}
-              </div>
-              <span className="text-[13px] font-light text-stone">
-                {PASSWORD_HINT} Setelah email dikonfirmasi, verifikasi nomor WhatsApp dengan kode — riwayat booking &amp; saldo deposit dengan nomor itu ikut tersambung.
-              </span>
-            </>
-          )}
-        {err && <div role="alert" className="border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]">{err}</div>}
-        {info && <div role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{info}</div>}
-        <Turnstile key={attempt} onToken={setCaptcha} />
-        <button disabled={busy} className="btn-gold w-full">
-          {busy ? "Memproses…" : mode === "login" ? "Masuk" : mode === "forgot" ? "Kirim tautan" : "Buat akun"}
-        </button>
-        {mode === "login" && (
-          <button type="button" onClick={() => { setMode("forgot"); setErr(""); setInfo(""); }} className="self-start py-2 text-[13px] font-light text-gold underline">
-            Lupa kata sandi?
-          </button>
-        )}
-        {mode === "forgot" && (
-          <button type="button" onClick={() => { setMode("login"); setErr(""); setInfo(""); }} className="self-start py-2 text-[13px] font-light text-dust underline">Kembali ke masuk</button>
-        )}
-      </form>
+
+      {step === "wa" && (
+        <form onSubmit={send} className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor="c-wa" className="lux-label">No. WhatsApp</label>
+            <input id="c-wa" className="lux-input" type="tel" inputMode="tel" autoComplete="tel" placeholder="0812…" value={wa}
+              onChange={(e) => { setWa(e.target.value); setErr(""); }} />
+          </div>
+          <span className="text-[13px] text-stone">Pernah booking tanpa akun dengan nomor ini? Riwayat &amp; saldo deposit Anda langsung tersambung.</span>
+          <Turnstile key={attempt} onToken={setCaptcha} />
+          <button disabled={busy} className="btn-gold w-full">{busy ? "Mengirim…" : "Kirim kode ke WhatsApp"}</button>
+        </form>
+      )}
+
+      {step === "code" && (
+        <form onSubmit={verify} className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor="c-code" className="lux-label">Kode verifikasi</label>
+            <input id="c-code" className="lux-input tracking-[0.4em]" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="••••••"
+              value={code} onChange={(e) => { setCode(e.target.value.replace(/\D/g, "")); setErr(""); }} autoFocus />
+          </div>
+          <button disabled={busy || code.length !== 6} className="btn-gold w-full">{busy ? "Memeriksa…" : "Masuk"}</button>
+          <div className="flex flex-wrap gap-x-5">
+            <button type="button" onClick={() => send()} disabled={busy} className="py-2 text-[13px] text-gold underline">Kirim ulang kode</button>
+            <button type="button" onClick={() => { setStep("wa"); setInfo(""); setErr(""); }} className="py-2 text-[13px] text-dust underline">Ganti nomor</button>
+          </div>
+          <Turnstile key={attempt} onToken={setCaptcha} />
+        </form>
+      )}
+
+      {step === "name" && (
+        <form onSubmit={saveName} className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <label htmlFor="c-name" className="lux-label">Nama</label>
+            <input id="c-name" className="lux-input" autoComplete="name" value={name} onChange={(e) => { setName(e.target.value); setErr(""); }} autoFocus />
+          </div>
+          <button disabled={busy} className="btn-gold w-full">{busy ? "Menyimpan…" : "Simpan & lanjut"}</button>
+        </form>
+      )}
+
+      {err && <div role="alert" className="border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]">{err}</div>}
+      {info && !err && <div role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{info}</div>}
     </div>
   );
 }

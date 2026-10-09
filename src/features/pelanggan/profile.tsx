@@ -68,9 +68,9 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
   }
 
   const card = (k: string, v: string, accent = false) => (
-    <div className={`flex flex-col gap-0.5 rounded-[10px] p-3 ${accent ? "bg-[#EEEBFA]" : "bg-paper"}`}>
-      <span className={`text-xs ${accent ? "text-[#3A2F8F]" : "text-muted"}`}>{k}</span>
-      <b className={`text-[17px] tabular ${accent ? "text-[#2E2670]" : ""}`}>{v}</b>
+    <div className={`flex flex-col gap-0.5 rounded-[10px] p-3 ${accent ? "bg-[#ECEEE8]" : "bg-paper"}`}>
+      <span className={`text-xs ${accent ? "text-[#262B24]" : "text-muted"}`}>{k}</span>
+      <b className={`text-[17px] tabular ${accent ? "text-[#262B24]" : ""}`}>{v}</b>
     </div>
   );
   const head = "text-xs font-bold uppercase tracking-[0.06em] text-muted";
@@ -92,7 +92,7 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
       </div>
 
       {s?.is_churn ? (
-        <div className="flex flex-col gap-2.5 rounded-[10px] bg-[#FFDADA] p-3 text-[#6E1616]">
+        <div className="flex flex-col gap-2.5 rounded-[10px] bg-[#F9E6E6] p-3 text-[#6E1616]">
           <span className="text-[13px] font-semibold">Belum bertransaksi {weeks} minggu — saatnya follow-up.</span>
           {c.whatsapp && (
             <a href={followupLink(c.whatsapp, master.shop.waTemplate, c.name)} target="_blank" rel="noopener"
@@ -118,7 +118,7 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
       </div>
 
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" className="size-5 accent-[#5646C8]" checked={optOut} onChange={async (e) => {
+        <input type="checkbox" className="size-5 accent-accent" checked={optOut} onChange={async (e) => {
           const v = e.target.checked; setOptOut(v);
           const { error } = await createClient().from("customers").update({ promo_opt_out: v }).eq("id", c.id);
           if (error) { setOptOut(!v); toast(error.message, "error"); } else toast(v ? "Tidak akan dikirimi promo" : "Akan menerima promo lagi");
@@ -150,9 +150,9 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
         <span className={head}>Riwayat transaksi</span>
         {!extra ? <span className="text-[13px] text-muted">Memuat…</span> : !extra.txs.length ? <span className="text-[13px] text-muted">Belum ada transaksi.</span>
           : extra.txs.map((t) => (
-            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#F0EDE6] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
+            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#EEEEEA] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
               <div className="flex justify-between text-[13px] tabular"><b>{formatTanggal(t.created_at)}</b><b className={t.voided_at ? "line-through" : ""}>{formatRupiah(t.total)}</b></div>
-              <span className="text-xs text-[#4A463F]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
+              <span className="text-xs text-[#4A4C46]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
               <span className="text-xs text-muted">
                 {t.voided_at ? `Void · ${t.void_reason}` : [METHOD_LABEL[t.payment_method], t.discount_amount ? `diskon ${formatRupiah(t.discount_amount)}` : "", t.deposit_used ? `deposit ${formatRupiah(t.deposit_used)}` : ""].filter(Boolean).join(" · ")}
               </span>

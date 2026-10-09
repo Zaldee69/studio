@@ -2,14 +2,14 @@ export type ApptStatus = "pending_review" | "booked" | "arrived" | "in_service" 
 
 /** Warna status kunjungan: latar / titik / teks. Selalu tampilkan bersama label. */
 export const STATUS: Record<ApptStatus, { label: string; short: string; bg: string; dot: string; fg: string; bd: string }> = {
-  pending_review: { label: "Menunggu konfirmasi", short: "Menunggu", bg: "#FFFFFF", dot: "#8F897D", fg: "#4A463F", bd: "#8F897D" },
-  booked: { label: "Booked", short: "Booked", bg: "#FFF1C2", dot: "#C99500", fg: "#5A4300", bd: "#EBCB67" },
-  arrived: { label: "Datang/Menunggu", short: "Datang", bg: "#DCEBFF", dot: "#2F6FD6", fg: "#163D78", bd: "#A9C9F5" },
-  in_service: { label: "Sedang Dilayani", short: "Mulai", bg: "#FFE2CC", dot: "#E06C1A", fg: "#6B3000", bd: "#F2B488" },
-  completed: { label: "Selesai/Belum Bayar", short: "Selesai", bg: "#FFDADA", dot: "#D23B3B", fg: "#6E1616", bd: "#EFA3A3" },
-  paid: { label: "Lunas", short: "Lunas", bg: "#D9F2E1", dot: "#2E9657", fg: "#144D2A", bd: "#9ED7B2" },
-  no_show: { label: "Tidak datang", short: "Tak datang", bg: "#F3E8E8", dot: "#8A3B3B", fg: "#5A1F1F", bd: "#D8B4B4" },
-  cancelled: { label: "Batal", short: "Batal", bg: "#EEEBE4", dot: "#8F897D", fg: "#4A463F", bd: "#D9D4C8" },
+  pending_review: { label: "Menunggu konfirmasi", short: "Menunggu", bg: "#FFFFFF", dot: "#8E908A", fg: "#4A4C46", bd: "#8E908A" },
+  booked: { label: "Booked", short: "Booked", bg: "#FBF6E8", dot: "#B08A2E", fg: "#5C4A1A", bd: "#E8DDC0" },
+  arrived: { label: "Datang/Menunggu", short: "Datang", bg: "#EEF3F7", dot: "#4F7A9A", fg: "#24435A", bd: "#C9D7E2" },
+  in_service: { label: "Sedang Dilayani", short: "Mulai", bg: "#FBEFE8", dot: "#C0683A", fg: "#6B3416", bd: "#EBCDBB" },
+  completed: { label: "Selesai/Belum Bayar", short: "Selesai", bg: "#FAEEEE", dot: "#B5474A", fg: "#6B2427", bd: "#E8C3C4" },
+  paid: { label: "Lunas", short: "Lunas", bg: "#EEF4ED", dot: "#5E8A5A", fg: "#2C4A2A", bd: "#C9DBC6" },
+  no_show: { label: "Tidak datang", short: "Tak datang", bg: "#F6F1F1", dot: "#8A5A5A", fg: "#4F2E2E", bd: "#DCCACA" },
+  cancelled: { label: "Batal", short: "Batal", bg: "#F3F3F1", dot: "#9A9C95", fg: "#55574F", bd: "#DEDED9" },
 };
 
 /** Urutan alur layanan (tanpa paid/cancelled) — dipakai tombol status satu langkah. */

@@ -62,9 +62,9 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       className="flex w-[min(calc(100vw-1.5rem),1480px)] flex-col gap-3 self-center rounded-[14px] border border-line bg-[#F3F2EF] p-3 min-[700px]:p-5">
       <div className="text-center">
         <h2 className="font-display text-2xl font-extrabold uppercase tracking-tight min-[700px]:text-3xl">{n} model rambut</h2>
-        <p className="text-sm uppercase tracking-[0.08em] text-[#4A463F]">Cocok untuk wajah & gaya {first}</p>
+        <p className="text-sm uppercase tracking-[0.08em] text-[#4A4C46]">Cocok untuk wajah & gaya {first}</p>
       </div>
-      {insight && <p className="text-center text-sm text-[#4A463F]">{insight}</p>}
+      {insight && <p className="text-center text-sm text-[#4A4C46]">{insight}</p>}
       {!image && !error && (
         <p aria-busy="true" className="flex items-center justify-center gap-2 text-sm font-semibold">
           <span className="size-4 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden="true" />
@@ -97,12 +97,12 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       <div className="grid gap-3 rounded-[12px] bg-[#1E2230] p-4 text-white min-[700px]:grid-cols-2">
         {!!tips.length && (
           <div>
-            <h3 className="mb-1.5 text-sm font-bold uppercase tracking-[0.06em] text-[#C9A45C]">Tips tambahan</h3>
+            <h3 className="mb-1.5 text-sm font-bold uppercase tracking-[0.06em] text-[#B08A2E]">Tips tambahan</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm">{tips.map((t) => <li key={t}>{t}</li>)}</ul>
           </div>
         )}
         <div className="rounded-[10px] border border-white/25 p-3">
-          <h3 className="text-sm font-bold uppercase tracking-[0.06em] text-[#C9A45C]">Rekomendasi pribadi</h3>
+          <h3 className="text-sm font-bold uppercase tracking-[0.06em] text-[#B08A2E]">Rekomendasi pribadi</h3>
           <p className="mt-1 font-display text-lg font-bold text-[#E8CF8E]">★ {top.rec.hair_style_name}</p>
           <p className="text-sm">{summary || top.rec.insight}</p>
         </div>
@@ -160,7 +160,7 @@ async function renderSheetImage(grid: string, cols: Col[], name: string, tips: s
   });
   const fy = 140 + colH + G;
   x.fillStyle = "#1E2230"; x.fillRect(P, fy, W - P * 2, footH);
-  x.textAlign = "left"; x.fillStyle = "#C9A45C"; x.font = `700 22px ${font}`;
+  x.textAlign = "left"; x.fillStyle = "#B08A2E"; x.font = `700 22px ${font}`;
   if (tips.length) x.fillText("TIPS TAMBAHAN", P + 24, fy + 40);
   x.fillText("REKOMENDASI PRIBADI", W / 2 + 12, fy + 40);
   x.fillStyle = "#fff"; x.font = `400 18px ${font}`;

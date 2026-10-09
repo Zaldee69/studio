@@ -173,7 +173,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       <span className="flex-1 truncate">{a.customer?.name ?? "Walk-in"}</span>
                       <span className="text-xs font-semibold text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
-                    <span className="w-full truncate text-xs text-[#4A463F]">
+                    <span className="w-full truncate text-xs text-[#4A4C46]">
                       {S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
                     </span>
                   </button>
@@ -187,7 +187,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5 overflow-x-auto">
             {(["barbershop", "nail", "massage", "retail"] as const).filter((c) => master.services.some((s) => s.active && s.category === c)).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
-                className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>
+                className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>
                 {CAT_STYLE[c].label}
               </button>
             ))}
@@ -223,7 +223,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-2 border-b border-[#EFECE5] px-5 py-4">
+            <div className="flex flex-col gap-2 border-b border-[#EDEDE9] px-5 py-4">
               <label htmlFor="cart-cust" className="text-xs font-bold text-muted">Pelanggan</label>
               <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
@@ -245,14 +245,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       <span className="text-sm font-semibold">{s.name}</span>
                       {s.category === "retail" ? (
                         <select aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
-                          className="h-11 max-w-full self-start rounded-lg border border-[#D9D4C8] bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px]">
+                          className="h-11 max-w-full self-start rounded-lg border border-[#DCDCD6] bg-card px-2 text-base text-[#4A4C46] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px]">
                           <option value="">Dijual oleh — (opsional)</option>
                           {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       ) : (
                         <select aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
                           title={i.staffLocked ? "Sesuai booking. Bila kapster diganti, ubah booking di Jadwal." : undefined}
-                          className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
+                          className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A4C46] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#DCDCD6]" : "border-[#D23B3B]"}`}>
                           <option value="">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
@@ -268,7 +268,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               })}
               {ups.map((u) => (
                 <div key={u.id} className="flex items-center gap-2.5 rounded-[10px] border border-dashed border-[#CFC8B8] bg-paper px-3 py-2.5">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5646C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0"><path d="M12 3l2.4 5 5.6.8-4 3.9 1 5.5L12 15.6 7 18.2l1-5.5-4-3.9 5.6-.8z" /></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4137" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0"><path d="M12 3l2.4 5 5.6.8-4 3.9 1 5.5L12 15.6 7 18.2l1-5.5-4-3.9 5.6-.8z" /></svg>
                   <span className="flex-1 text-[13px] leading-snug">Setelah {u.from?.name}, tawarkan {u.s.name}? <b className="tabular">{formatRupiah(u.s.price)}</b></span>
                   <button onClick={() => addService(u.id, true)} className="h-11 rounded-lg bg-accent px-3 text-xs font-bold text-white">Tambah</button>
                   <button onClick={() => setDismissed([...dismissed, u.id])} className="h-11 px-2 text-xs font-semibold text-muted">Abaikan</button>
@@ -276,7 +276,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               ))}
             </div>
 
-            <div className="flex flex-col gap-2 border-t border-[#EFECE5] px-5 py-4 text-sm tabular">
+            <div className="flex flex-col gap-2 border-t border-[#EDEDE9] px-5 py-4 text-sm tabular">
               <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(k.subtotal)}</span></div>
               {k.discount > 0 && (
                 <div className="flex justify-between font-semibold text-accent-ink"><span>{k.discountLabel}</span><span>−{formatRupiah(k.discount)}</span></div>
@@ -284,8 +284,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon paket {master.shop.bundlePct}%</div>}
               {customer && (
                 <button onClick={() => setUseDeposit(!useDeposit)} aria-pressed={useDeposit && bal > 0} disabled={bal <= 0}
-                  className={`flex min-h-11 items-center gap-2.5 rounded-[10px] border px-3 text-left text-[13px] font-semibold disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#EEEBFA]" : "border-line bg-card"}`}>
-                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#D9D4C8]"}`}>
+                  className={`flex min-h-11 items-center gap-2.5 rounded-[10px] border px-3 text-left text-[13px] font-semibold disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#ECEEE8]" : "border-line bg-card"}`}>
+                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#DCDCD6]"}`}>
                     <span className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${useDeposit && bal > 0 ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                   <span className="flex-1">Pakai saldo deposit{bal <= 0 && " (saldo 0)"}</span>
@@ -318,7 +318,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   <div className="flex flex-wrap gap-1.5">
                     {quickCash(cashDue).map((q) => (
                       <button key={q.label} onClick={() => setReceived(String(q.value))} aria-pressed={recv === q.value}
-                        className={`h-11 flex-1 rounded-lg border px-2 text-[13px] font-bold ${recv === q.value ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>{q.label}</button>
+                        className={`h-11 flex-1 rounded-lg border px-2 text-[13px] font-bold ${recv === q.value ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{q.label}</button>
                     ))}
                   </div>
                   <div className={`flex justify-between text-[15px] font-bold ${shortCash ? "text-[#A12A2A]" : ""}`}>
@@ -328,7 +328,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 </div>
               )}
             </div>
-            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EFECE5] bg-card px-5 pb-4 pt-3 tabular">
+            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDEDE9] bg-card px-5 pb-4 pt-3 tabular">
               {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
               <div className="flex items-baseline justify-between"><span className="font-bold">Total</span><span className="font-display text-[28px] font-bold">{formatRupiah(k.total)}</span></div>
               <button onClick={pay} disabled={!items.length || paying || !online || shortCash}

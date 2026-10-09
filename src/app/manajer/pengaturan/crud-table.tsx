@@ -11,7 +11,7 @@ export type Options = Record<string, [string, string][]>;
 function FieldInput({ f, value, options, id }: { f: Field; value: unknown; options: Options; id: string }) {
   const common = { id, name: f.name, "aria-label": f.label, disabled: f.readonly };
   if (f.type === "bool")
-    return <input type="checkbox" {...common} defaultChecked={Boolean(value)} className="size-5 accent-[#5646C8]" />;
+    return <input type="checkbox" {...common} defaultChecked={Boolean(value)} className="size-5 accent-accent" />;
   if (f.type === "select") {
     const opts = Array.isArray(f.options) ? f.options : options[f.options ?? ""] ?? [];
     return (

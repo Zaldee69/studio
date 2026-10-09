@@ -40,7 +40,7 @@ export function CommissionRules({ ratio, retailPct, minPay, staff }: { ratio: nu
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
         <div className="flex flex-col gap-2">
           <label htmlFor="cr-ratio" className="label">Rasio komisi global: <b className="text-lg text-ink">{f.ratio}%</b> dari margin (harga bersih − HPP)</label>
-          <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-[#5646C8]" />
+          <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-accent" />
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -58,7 +58,7 @@ export function CommissionRules({ ratio, retailPct, minPay, staff }: { ratio: nu
         <b>Rasio khusus per staf</b>
         <span className="text-xs text-muted">Kosongkan untuk memakai rasio global.</span>
         {staff.filter((s) => s.active).map((s) => (
-          <div key={s.id} className="flex items-center gap-3 border-t border-[#F0EDE6] py-1.5">
+          <div key={s.id} className="flex items-center gap-3 border-t border-[#EEEEEA] py-1.5">
             <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
             <label htmlFor={`ov-${s.id}`} className="flex-1 text-sm font-semibold">{s.name}</label>
             <input id={`ov-${s.id}`} inputMode="numeric" placeholder={`${f.ratio}`} className="input w-24" value={ov[s.id]} onChange={(e) => setOv({ ...ov, [s.id]: e.target.value })} />
@@ -100,7 +100,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         <table className="w-full text-sm tabular">
           <thead><tr className="text-left text-xs text-muted">{["#", "Staf", "Pendapatan", "Layanan", "Rata-rata"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.staff_id} className="border-t border-[#F0EDE6]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
+            <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
               <td className="text-right">{formatRupiah(r.revenue_net)}</td><td className="text-right">{r.service_count}</td><td className="text-right">{formatRupiah(r.avg_per_service)}</td></tr>
           ))}</tbody>
         </table>
@@ -138,7 +138,7 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
           <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < 9 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} className="border-t border-[#F0EDE6] align-top">
+              <tr key={r.staff_id} className="border-t border-[#EEEEEA] align-top">
                 <td className="py-2 pr-2"><b>{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></td>
                 <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td><td className="pr-2 text-right">{r.service_count}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.avg_per_service)}</td>

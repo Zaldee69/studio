@@ -84,22 +84,22 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
         </p>
       )}
       {appt.change_request && !closed && (
-        <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#FFF1C2] p-3 text-[13px] text-[#5A4300]">
+        <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#FBF3DE] p-3 text-[13px] text-[#5A4300]">
           <span><b>{staff?.name ?? "Kapster"} minta ubah jadwal:</b> “{appt.change_request}”</span>
           <span className="text-xs">Pindahkan lewat <b>Ubah booking</b> — permintaan otomatis selesai.</span>
-          <button onClick={onDismissRequest} className="self-start rounded-lg border border-[#EBCB67] bg-white/60 px-3 py-2 text-xs font-bold">Tandai sudah ditangani</button>
+          <button onClick={onDismissRequest} className="self-start rounded-lg border border-[#E8D6A6] bg-white/60 px-3 py-2 text-xs font-bold">Tandai sudah ditangani</button>
         </div>
       )}
       {appt.customer?.notes && (
-        <div className="rounded-[10px] bg-[#EEEBFA] p-3 text-[13px] leading-normal text-[#2E2670]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
+        <div className="rounded-[10px] bg-[#ECEEE8] p-3 text-[13px] leading-normal text-[#262B24]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
       )}
       {appt.notes && <div className="rounded-[10px] bg-paper p-3 text-[13px] leading-normal"><b>Catatan:</b> {appt.notes}</div>}
       {appt.source === "online" && <p className="text-xs font-semibold text-muted">Masuk lewat booking online.</p>}
       {offLabel && !closed && (
-        <div role="alert" className="rounded-[10px] bg-[#EEEBE4] p-3 text-[13px] font-semibold text-[#4A463F]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
+        <div role="alert" className="rounded-[10px] bg-[#EFEFEB] p-3 text-[13px] font-semibold text-[#4A4C46]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
       )}
       {conflict && !closed && (
-        <div role="alert" className="rounded-[10px] bg-[#FFDADA] p-3 text-[13px] text-[#6E1616]">Bentrok dengan booking lain di kursi/meja yang sama.</div>
+        <div role="alert" className="rounded-[10px] bg-[#F9E6E6] p-3 text-[13px] text-[#6E1616]">Bentrok dengan booking lain di kursi/meja yang sama.</div>
       )}
 
       {!closed && (
@@ -112,7 +112,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
                 return (
                   <button key={st} aria-pressed={on} disabled={!online} onClick={() => !on && onStatus(st)}
                     className="flex h-11 items-center justify-center gap-1.5 rounded-[10px] border-2 text-[13px] font-bold disabled:opacity-50"
-                    style={{ borderColor: on ? S.dot : "#E4E0D6", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#1C1B19" }}>
+                    style={{ borderColor: on ? S.dot : "#E5E5E0", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#1F2320" }}>
                     <span className="size-2 rounded-full" style={{ background: S.dot }} />{st === "booked" ? "Booked" : S.short}
                   </button>
                 );
@@ -125,13 +125,13 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       )}
 
       {appt.status === "paid" && (
-        <div className="flex flex-col gap-2 rounded-[10px] bg-[#D9F2E1] p-3.5 text-sm font-semibold text-[#144D2A] tabular">
+        <div className="flex flex-col gap-2 rounded-[10px] bg-[#E6F1E4] p-3.5 text-sm font-semibold text-[#144D2A] tabular">
           <span>Lunas{paid && ` · ${formatRupiah(paid.total)} · ${METHOD_LABEL[paid.method]}`}</span>
           {paid && <Link href={`${master.base}/kasir?tab=riwayat&tx=${paid.id}`} className="text-[13px] underline">Lihat transaksi →</Link>}
         </div>
       )}
       {pending && (
-        <div className="flex flex-col gap-2 rounded-[10px] border-2 border-dashed border-[#8F897D] p-3.5">
+        <div className="flex flex-col gap-2 rounded-[10px] border-2 border-dashed border-[#8E908A] p-3.5">
           <b className="text-sm">Booking online menunggu konfirmasi</b>
           <span className="text-xs text-muted">Terima atau tolak — pesan WhatsApp ke pelanggan disiapkan otomatis.</span>
           {rejecting ? (

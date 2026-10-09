@@ -2,8 +2,6 @@
 
 import { useActionState, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
-import { passwordError } from "@/lib/password";
-import { createClient } from "@/lib/supabase/client";
 import { cancelBooking, deleteAccount, updateName, type AkunState } from "./actions";
 
 const err = "border border-[#E3B4AE] bg-[#FBEDEB] px-3 py-2 text-[13px] text-[#9B2C22]";
@@ -27,51 +25,17 @@ export function CancelButton({ id }: { id: string }) {
 }
 
 /** Profil: nama (RPC), email & kata sandi (Supabase Auth; ganti email perlu konfirmasi via email baru). */
-export function ProfileForms({ name, email }: { name: string; email: string }) {
+/** Pelanggan masuk dengan WhatsApp (tanpa email & kata sandi) — yang bisa diubah hanya nama. */
+export function ProfileForms({ name }: { name: string }) {
   const [ns, nameAction, np] = useActionState(updateName, undefined);
-  const [em, setEm] = useState(email);
-  const [pw, setPw] = useState("");
-  const [authMsg, setAuthMsg] = useState<AkunState>(undefined);
-  const [nonce, setNonce] = useState<string | null>(null); // kode dari email bila sesi sudah lama (secure_password_change)
-  async function saveAuth(kind: "email" | "password") {
-    setAuthMsg(undefined);
-    const weak = kind === "password" ? passwordError(pw) : null;
-    if (weak) return setAuthMsg({ error: weak });
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser(kind === "email" ? { email: em.trim() } : { password: pw, ...(nonce ? { nonce: nonce.trim() } : {}) });
-    if (error?.code === "reauthentication_needed" || error?.code === "reauthentication_not_valid") {
-      if (error.code === "reauthentication_needed") await supabase.auth.reauthenticate();
-      setNonce("");
-      return setAuthMsg({ error: error.code === "reauthentication_needed" ? "Demi keamanan, masukkan kode yang kami kirim ke email Anda, lalu tekan Ganti sandi lagi." : "Kode verifikasi salah atau kedaluwarsa." });
-    }
-    if (error) return setAuthMsg({ error: error.code === "same_password" ? "Pakai kata sandi yang berbeda dari sebelumnya." : "Gagal menyimpan. Coba lagi." });
-    setPw(""); setNonce(null);
-    setAuthMsg({ ok: kind === "email" ? "Cek email baru Anda untuk konfirmasi perubahan." : "Kata sandi diganti." });
-  }
-  const row = "flex flex-wrap items-end gap-2";
   return (
     <div className="flex flex-col gap-4">
-      <form action={nameAction} className={row}>
+      <form action={nameAction} className="flex flex-wrap items-end gap-2">
         <label className="flex min-w-48 flex-1 flex-col gap-2"><span className="lux-label">Nama</span>
           <input name="name" defaultValue={name} required className="lux-input" autoComplete="name" /></label>
         <button disabled={np} className="btn-line h-12">Simpan</button>
       </form>
       <Msg s={ns} />
-      <div className={row}>
-        <label className="flex min-w-48 flex-1 flex-col gap-2"><span className="lux-label">Email</span>
-          <input type="email" value={em} onChange={(e) => setEm(e.target.value)} className="lux-input" autoComplete="email" /></label>
-        <button onClick={() => saveAuth("email")} disabled={em.trim() === email} className="btn-line h-12">Ganti email</button>
-      </div>
-      <div className={row}>
-        <label className="flex min-w-48 flex-1 flex-col gap-2"><span className="lux-label">Kata sandi baru</span>
-          <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} className="lux-input" autoComplete="new-password" placeholder="Min. 8, huruf & angka" /></label>
-        {nonce !== null && (
-          <label className="flex w-36 flex-col gap-2"><span className="lux-label">Kode email</span>
-            <input value={nonce} onChange={(e) => setNonce(e.target.value)} className="lux-input" inputMode="numeric" autoComplete="one-time-code" /></label>
-        )}
-        <button onClick={() => saveAuth("password")} disabled={!pw || nonce === ""} className="btn-line h-12">Ganti sandi</button>
-      </div>
-      <Msg s={authMsg} />
     </div>
   );
 }

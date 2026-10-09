@@ -27,11 +27,11 @@ export function ReorderBanner() {
   });
   if (!data?.length) return null;
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-2 rounded-[14px] border border-[#EFA3A3] bg-[#FFF4F4] px-4 py-3">
+    <div role="alert" className="flex flex-wrap items-center gap-2 rounded-[14px] border border-[#E8C3C4] bg-[#FFF4F4] px-4 py-3">
       <b className="mr-1 text-sm text-[#6E1616]">{data.length} item perlu dibeli:</b>
       {data.map((r) => (
         <button key={r.item_id} onClick={() => open({ kind: "in", itemId: r.item_id! })}
-          className="min-h-11 rounded-full border border-[#EFA3A3] bg-card px-3.5 text-[13px] font-semibold text-[#6E1616] tabular hover:bg-[#FFDADA]">
+          className="min-h-11 rounded-full border border-[#E8C3C4] bg-card px-3.5 text-[13px] font-semibold text-[#6E1616] tabular hover:bg-[#F9E6E6]">
           {r.name} · {qtyFmt(Number(r.qty))} / {qtyFmt(Number(r.reorder_at))} {r.unit}
         </button>
       ))}
@@ -98,7 +98,7 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
   const save = useRowSave(r);
   const form = `it-${r.item_id}`;
   return (
-    <tr className={`border-t border-[#F0EDE6] ${r.active ? "" : "opacity-55"}`}>
+    <tr className={`border-t border-[#EEEEEA] ${r.active ? "" : "opacity-55"}`}>
       <EditCells r={r} form={form} />
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatUnitCost(r.unit_cost)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatRupiah(r.stock_value)}</td>
@@ -186,7 +186,7 @@ export function ItemsTable({ kind, extras }: { kind: Kind; extras?: Record<strin
       <div className="flex flex-wrap items-center gap-3">
         <NewItem kind={kind} />
         <label className="ml-auto flex min-h-11 items-center gap-2 text-sm">
-          <input type="checkbox" className="size-5 accent-[#5646C8]" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Tampilkan nonaktif
+          <input type="checkbox" className="size-5 accent-accent" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Tampilkan nonaktif
         </label>
       </div>
       {!rows.length ? <Empty>Belum ada item.</Empty> : (

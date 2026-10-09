@@ -64,14 +64,14 @@ export function Beranda({ master }: { master: Master }) {
   const alerts = [
     ...(side?.sop && !side.sop.closed && !side.sop.approval ? [{ text: `Checklist sterilisasi hari ini ${side.sop.done}/${side.sop.total}${side.sop.done >= side.sop.total ? " — siap diotorisasi" : ", belum lengkap"}`, cta: "SOP", href: `${b}/sop`, dot: "#1F7A45", bg: "#F3FAF5", border: "#9ED7B2" }] : []),
     ...(side?.tasks ?? []).map((t) => ({ text: t.days_left < 0 ? `${t.name} terlambat ${-t.days_left} hari` : `${t.name} jatuh tempo hari ini`, cta: "Perawatan", href: `${b}/sop#perawatan`, dot: "#E06C1A", bg: "#FFF6EE", border: "#F2B488" })),
-    ...(side?.insight ? [{ text: side.insight.message, cta: "Analitik lengkap", href: `${b}/analitik${side.insight.href}`, dot: "#5646C8", bg: "#F6F5FF", border: "#C9C3F0" }] : []),
-    ...(side?.reorder ? [{ text: `${side.reorder} item di bawah ambang reorder`, cta: "Daftar belanja", href: `${b}/inventaris`, dot: "#D23B3B", bg: "#FFF7F7", border: "#EFA3A3" }] : []),
-    ...(side?.drafts ? [{ text: `${side.drafts} stok opname draft belum disetujui`, cta: "Opname", href: `${b}/inventaris?tab=opname`, dot: "#C99500", bg: "#FFFDF3", border: "#EBCB67" }] : []),
-    ...(side?.prevOpen ? [{ text: `Periode gaji ${prevLabel} belum ditutup`, cta: "SDM", href: `${b}/sdm?bulan=${prevMonth.slice(0, 7)}`, dot: "#5646C8", bg: "#F6F5FF", border: "#C9C3F0" }] : []),
-    ...(side?.pendingOff ? [{ text: `${side.pendingOff} pengajuan izin staf menunggu persetujuan`, cta: "Izin staf", href: `${b}/izin`, dot: "#C99500", bg: "#FFFDF3", border: "#EBCB67" }] : []),
-    ...(by("completed").length ? [{ text: `${by("completed").length} tagihan selesai belum dibayar · ${by("completed").map((a) => a.customer?.name ?? "Walk-in").join(", ")}`, cta: "Kasir", href: `${b}/kasir`, dot: STATUS.completed.dot, bg: "#FFF7F7", border: "#EFA3A3" }] : []),
-    ...(side?.online ?? []).map((o) => ({ text: `Booking online: ${o.customer?.name ?? "Tamu"} · ${formatTanggal(o.start_at)} ${formatJam(o.start_at)}`, cta: "Jadwal", href: `${b}/jadwal`, dot: "#1C1B19", bg: "#FAF8F4", border: "#E4E0D6" })),
-    ...(side?.followCount ? [{ text: `${side.followCount} pelanggan belum kembali > ${master.shop.churnWeeks} minggu${side.followNames.length ? ` · ${side.followNames.join(", ")}` : ""}`, cta: "Pelanggan", href: `${b}/pelanggan?filter=follow`, dot: "#2F6FD6", bg: "#F5F9FF", border: "#A9C9F5" }] : []),
+    ...(side?.insight ? [{ text: side.insight.message, cta: "Analitik lengkap", href: `${b}/analitik${side.insight.href}`, dot: "#3A4137", bg: "#F5F6F2", border: "#D6D9CF" }] : []),
+    ...(side?.reorder ? [{ text: `${side.reorder} item di bawah ambang reorder`, cta: "Daftar belanja", href: `${b}/inventaris`, dot: "#D23B3B", bg: "#FFF7F7", border: "#E8C3C4" }] : []),
+    ...(side?.drafts ? [{ text: `${side.drafts} stok opname draft belum disetujui`, cta: "Opname", href: `${b}/inventaris?tab=opname`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
+    ...(side?.prevOpen ? [{ text: `Periode gaji ${prevLabel} belum ditutup`, cta: "SDM", href: `${b}/sdm?bulan=${prevMonth.slice(0, 7)}`, dot: "#3A4137", bg: "#F5F6F2", border: "#D6D9CF" }] : []),
+    ...(side?.pendingOff ? [{ text: `${side.pendingOff} pengajuan izin staf menunggu persetujuan`, cta: "Izin staf", href: `${b}/izin`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
+    ...(by("completed").length ? [{ text: `${by("completed").length} tagihan selesai belum dibayar · ${by("completed").map((a) => a.customer?.name ?? "Walk-in").join(", ")}`, cta: "Kasir", href: `${b}/kasir`, dot: STATUS.completed.dot, bg: "#FFF7F7", border: "#E8C3C4" }] : []),
+    ...(side?.online ?? []).map((o) => ({ text: `Booking online: ${o.customer?.name ?? "Tamu"} · ${formatTanggal(o.start_at)} ${formatJam(o.start_at)}`, cta: "Jadwal", href: `${b}/jadwal`, dot: "#1F2320", bg: "#FAF8F4", border: "#E5E5E0" })),
+    ...(side?.followCount ? [{ text: `${side.followCount} pelanggan belum kembali > ${master.shop.churnWeeks} minggu${side.followNames.length ? ` · ${side.followNames.join(", ")}` : ""}`, cta: "Pelanggan", href: `${b}/pelanggan?filter=follow`, dot: "#3F6A88", bg: "#F3F6F8", border: "#A9C9F5" }] : []),
   ];
   const team = master.staff.filter((s) => s.active).map((s) => {
     const mine = live.filter((a) => a.staff_id === s.id);
@@ -124,7 +124,7 @@ export function Beranda({ master }: { master: Master }) {
             <Link key={i} href={a.href} className="flex min-h-[52px] items-center gap-3 rounded-[10px] border px-3 py-2.5" style={{ background: a.bg, borderColor: a.border }}>
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: a.dot }} />
               <span className="min-w-0 flex-1 text-sm font-semibold">{a.text}</span>
-              <span className="text-xs font-bold text-[#4A463F]">{a.cta} →</span>
+              <span className="text-xs font-bold text-[#4A4C46]">{a.cta} →</span>
             </Link>
           ))}
         </section>
@@ -145,13 +145,13 @@ export function Beranda({ master }: { master: Master }) {
 
       <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
         <div className="flex items-center"><h2 className="flex-1 text-base font-bold">Berikutnya hari ini</h2>
-          <Link href={`${b}/jadwal`} className="flex h-11 items-center rounded-lg border border-[#D9D4C8] px-3 text-xs font-bold">Lihat jadwal</Link></div>
+          <Link href={`${b}/jadwal`} className="flex h-11 items-center rounded-lg border border-[#DCDCD6] px-3 text-xs font-bold">Lihat jadwal</Link></div>
         {!upcoming.length ? <span className="text-sm text-muted">Tidak ada booking lagi hari ini.</span> : upcoming.slice(0, 6).map((a) => (
-          <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#F0EDE6] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
+          <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#EEEEEA] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
             <b>{formatJam(a.start_at)}</b>
             <span className="flex min-w-0 items-center gap-1.5"><b className="truncate">{a.customer?.name ?? "Walk-in"}</b>
               {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[10px] font-bold text-white">Online</span>}</span>
-            <span className="truncate text-[#4A463F] max-sm:col-start-2 max-sm:col-end-4 max-sm:row-start-2 max-sm:text-xs">{a.appointment_services.map((s) => svcName(s.service_id)).join(", ")}</span>
+            <span className="truncate text-[#4A4C46] max-sm:col-start-2 max-sm:col-end-4 max-sm:row-start-2 max-sm:text-xs">{a.appointment_services.map((s) => svcName(s.service_id)).join(", ")}</span>
             <span className="flex items-center gap-1.5 text-xs font-semibold max-sm:col-start-3 max-sm:row-start-1"><span className="size-2 rounded-full" style={{ background: STATUS[a.status].dot }} />
               {master.staff.find((s) => s.id === a.staff_id)?.name}</span>
           </div>

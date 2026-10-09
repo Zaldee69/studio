@@ -69,14 +69,14 @@ export function Closing({ master }: { master: Master }) {
 
   const body = !s ? <Empty>Memuat…</Empty> : s.blind ? (
     <>
-      <div className="divide-y divide-[#F0EDE6]">{row("Jumlah transaksi", String(s.tx_count))}</div>
+      <div className="divide-y divide-[#EEEEEA]">{row("Jumlah transaksi", String(s.tx_count))}</div>
       <p className="rounded-[10px] bg-paper px-3.5 py-3 text-sm">
         Hitung uang di laci lalu isi <b>Kas fisik</b>. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
       </p>
     </>
   ) : (
     <>
-      <div className="divide-y divide-[#F0EDE6]">
+      <div className="divide-y divide-[#EEEEEA]">
         {row("Jumlah transaksi", String(s.tx_count))}
         {row("Omzet (setelah diskon)", s.gross_total)}
         {row("Total diskon", s.discount_total)}
@@ -108,7 +108,7 @@ export function Closing({ master }: { master: Master }) {
   return (
     <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto min-[1000px]:grid-cols-[1fr_380px]">
       <PrintSheet page="size: A4; margin: 14mm">
-        <div className="flex flex-col gap-4 text-[#1c1b19]">
+        <div className="flex flex-col gap-4 text-[#1f2320]">
           <div><h1 className="font-display text-2xl font-bold">Rekap kasir</h1>
             <span className="text-[13px]">{master.shop.name}{master.shop.address ? ` · ${master.shop.address}` : ""} · {formatTanggal(`${date}T12:00:00+07:00`)} · dicetak {formatJam(new Date())}</span></div>
           {body}
@@ -134,7 +134,7 @@ export function Closing({ master }: { master: Master }) {
             value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
         </Field>
         {diff != null && (
-          <div className={`rounded-[10px] px-3 py-2.5 text-[15px] font-bold tabular ${diff === 0 ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#FFDADA] text-[#6E1616]"}`}>
+          <div className={`rounded-[10px] px-3 py-2.5 text-[15px] font-bold tabular ${diff === 0 ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}

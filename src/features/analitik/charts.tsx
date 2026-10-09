@@ -26,7 +26,7 @@ export function DataTable({ head, rows, caption }: { head: string[]; rows: (stri
         <table className="w-full min-w-[480px] tabular">
           <caption className="sr-only">{caption}</caption>
           <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-1.5 pr-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#F0EDE6]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
+          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#EEEEEA]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
         </table>
       </div>
     </details>
@@ -53,18 +53,18 @@ export function LineChart({ labels, series, targets, tooltip, ariaLabel }: {
     <div className="relative">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={ariaLabel} onMouseLeave={() => setHover(null)}>
         {ticks.map((t) => (
-          <g key={t}><line x1={L} x2={W - R} y1={y(t)} y2={y(t)} stroke="#EEEBE4" /><text x={L - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#6B665C">{rb(t)}</text></g>
+          <g key={t}><line x1={L} x2={W - R} y1={y(t)} y2={y(t)} stroke="#EFEFEB" /><text x={L - 6} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#63665F">{rb(t)}</text></g>
         ))}
-        {labels.map((l, i) => ((i % every === 0 && n - 1 - i >= every / 2) || i === n - 1) && <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="11" fill="#6B665C">{l}</text>)}
+        {labels.map((l, i) => ((i % every === 0 && n - 1 - i >= every / 2) || i === n - 1) && <text key={i} x={x(i)} y={H - 8} textAnchor="middle" fontSize="11" fill="#63665F">{l}</text>)}
         {targets.map((t) => (
           <g key={t.label}>
             <line x1={L} x2={W - R} y1={y(t.value)} y2={y(t.value)} stroke={t.color} strokeWidth="1.5" strokeDasharray="5 4" opacity="0.8" />
-            <text x={W - R} y={y(t.value) - 5} textAnchor="end" fontSize="11" fontWeight="600" fill="#1C1B19" stroke="#fff" strokeWidth="3" paintOrder="stroke">{t.label}</text>
+            <text x={W - R} y={y(t.value) - 5} textAnchor="end" fontSize="11" fontWeight="600" fill="#1F2320" stroke="#fff" strokeWidth="3" paintOrder="stroke">{t.label}</text>
           </g>
         ))}
         {series.map((s) => <path key={s.key} d={path(s.values)} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" />)}
         {n <= 10 && series.map((s) => s.values.map((v, i) => v !== null && <circle key={`${s.key}${i}`} cx={x(i)} cy={y(v)} r="3.5" fill="#fff" stroke={s.color} strokeWidth="2" />))}
-        {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={T} y2={H - B} stroke="#1C1B19" strokeWidth="1" opacity="0.4" />}
+        {hover !== null && <line x1={x(hover)} x2={x(hover)} y1={T} y2={H - B} stroke="#1F2320" strokeWidth="1" opacity="0.4" />}
         {labels.map((_, i) => (
           <rect key={i} x={x(i) - (W - L - R) / Math.max(1, n - 1) / 2} y={T} width={Math.max(8, (W - L - R) / Math.max(1, n - 1))} height={H - T - B}
             fill="transparent" onMouseEnter={() => setHover(i)} onClick={() => setHover(i)} />
@@ -124,8 +124,8 @@ export function Heatmap({ cells }: { cells: { weekday: number; hour: number; min
                   const label = closed ? `${DAY_LONG[d]} ${String(h).padStart(2, "0")}:00 · Tutup` : `${DAY_LONG[d]} ${String(h).padStart(2, "0")}:00 · rata-rata ${Math.round(v)} menit terjual`;
                   return (
                     <td key={h} title={label} aria-label={label} className="h-8 w-10 rounded-[5px] text-center"
-                      style={closed ? { background: "repeating-linear-gradient(45deg,#EEEBE4,#EEEBE4 4px,#E4E0D6 4px,#E4E0D6 8px)", color: "#6B665C" }
-                        : { background: shade(v), color: v / max > 0.55 ? "#fff" : "#1C1B19" }}>
+                      style={closed ? { background: "repeating-linear-gradient(45deg,#EFEFEB,#EFEFEB 4px,#E5E5E0 4px,#E5E5E0 8px)", color: "#63665F" }
+                        : { background: shade(v), color: v / max > 0.55 ? "#fff" : "#1F2320" }}>
                       {closed ? "" : v >= 1 ? Math.round(v) : ""}
                     </td>
                   );
@@ -137,7 +137,7 @@ export function Heatmap({ cells }: { cells: { weekday: number; hour: number; min
       </div>
       <div className="flex items-center gap-2 text-xs text-muted" aria-hidden="true">
         <span>0</span><span className="h-3 w-40 rounded" style={{ background: `linear-gradient(90deg, ${shade(0)}, ${shade(max)})` }} /><span>{Math.round(max)} menit</span>
-        <span className="ml-3 inline-block h-3 w-5 rounded" style={{ background: "repeating-linear-gradient(45deg,#EEEBE4,#EEEBE4 4px,#E4E0D6 4px,#E4E0D6 8px)" }} /><span>Tutup</span>
+        <span className="ml-3 inline-block h-3 w-5 rounded" style={{ background: "repeating-linear-gradient(45deg,#EFEFEB,#EFEFEB 4px,#E5E5E0 4px,#E5E5E0 8px)" }} /><span>Tutup</span>
       </div>
     </div>
   );
@@ -149,7 +149,7 @@ export function Bullet({ value, min, max, scale = 30 }: { value: number | null; 
   return (
     <div className="flex flex-col gap-1" role="img" aria-label={`Rasio ritel ${value === null ? "—" : value.toFixed(1)}%, pita target ${min}–${max}%`}>
       <div className="relative h-8 rounded-md bg-paper">
-        <div className="absolute inset-y-0 rounded" style={{ left: pos(min), width: `calc(${pos(max)} - ${pos(min)})`, background: "repeating-linear-gradient(45deg,#D9F2E1,#D9F2E1 5px,#C4E8D0 5px,#C4E8D0 10px)" }} />
+        <div className="absolute inset-y-0 rounded" style={{ left: pos(min), width: `calc(${pos(max)} - ${pos(min)})`, background: "repeating-linear-gradient(45deg,#E6F1E4,#E6F1E4 5px,#C4E8D0 5px,#C4E8D0 10px)" }} />
         {value !== null && <div className="absolute inset-y-1.5 left-0 rounded-sm" style={{ width: pos(value), background: COLOR.retail }} />}
         {value !== null && <div aria-hidden="true" className="absolute -inset-y-1 w-1 rounded bg-ink" style={{ left: `calc(${pos(value)} - 2px)` }} />}
       </div>

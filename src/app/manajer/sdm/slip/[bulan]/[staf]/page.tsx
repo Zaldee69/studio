@@ -36,7 +36,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
         <Link href={`/manajer/sdm?bulan=${bulan}`} className="btn-ghost h-11">← SDM</Link>
         <SlipActions month={bulan} staffId={staf} closed={r.closed} paid={!!r.paid_at} wa={wa} />
       </div>
-      {!r.closed && <p role="alert" className="rounded-[12px] bg-[#FFF1C2] px-4 py-3 text-sm text-[#5A4300] print:hidden">Periode belum ditutup — angka masih bisa berubah. Tutup periode untuk slip final.</p>}
+      {!r.closed && <p role="alert" className="rounded-[12px] bg-[#FBF3DE] px-4 py-3 text-sm text-[#5A4300] print:hidden">Periode belum ditutup — angka masih bisa berubah. Tutup periode untuk slip final.</p>}
       <article className="mx-auto flex w-full max-w-[148mm] flex-col gap-3 rounded-[14px] border border-line bg-card p-6 text-sm tabular print:border-0 print:p-0">
         <header className="flex flex-col border-b border-ink pb-2">
           <b className="font-display text-xl">{shop?.shop_name}</b>
@@ -45,7 +45,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
         <div className="flex justify-between"><span><b className="text-base">{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></span>
           <span className="text-right">Slip gaji<b className="block">{monthLabel(bulan)}</b></span></div>
         <table className="w-full">
-          <tbody>{lines.map(([k, v]) => <tr key={k} className="border-t border-[#F0EDE6]"><td className="py-1">{k}</td><td className="text-right">{v}</td></tr>)}</tbody>
+          <tbody>{lines.map(([k, v]) => <tr key={k} className="border-t border-[#EEEEEA]"><td className="py-1">{k}</td><td className="text-right">{v}</td></tr>)}</tbody>
         </table>
         <div className="flex items-baseline justify-between border-y-2 border-ink py-2"><b>Total dibayar</b><b className="font-display text-2xl">{formatRupiah(r.total_pay)}</b></div>
         <p className="text-xs">{r.paid_at ? `Status: dibayar ${formatTanggal(r.paid_at)} (${r.paid_method})` : r.closed ? "Status: belum dibayar" : "Status: estimasi (periode belum ditutup)"}</p>
@@ -53,7 +53,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
           <b className="text-xs uppercase tracking-wide text-muted">Rincian</b>
           <table className="w-full text-xs">
             <tbody>{(items ?? []).slice().reverse().map((i) => (
-              <tr key={i.transaction_item_id} className="border-t border-[#F0EDE6]"><td className="py-0.5">{formatTanggal(i.created_at)}</td><td>{i.name}</td><td className="text-right">{formatRupiah(i.commission)}</td></tr>
+              <tr key={i.transaction_item_id} className="border-t border-[#EEEEEA]"><td className="py-0.5">{formatTanggal(i.created_at)}</td><td>{i.name}</td><td className="text-right">{formatRupiah(i.commission)}</td></tr>
             ))}</tbody>
           </table>
         </section>

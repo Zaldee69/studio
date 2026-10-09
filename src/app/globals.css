@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  /* admin */
-  --color-paper: #f6f4ef;
+  /* admin — terang & bersih: abu netral, kartu putih, aksen olive brand D'Pras */
+  --color-paper: #f5f5f3;
   --color-card: #ffffff;
-  --color-ink: #1c1b19;
-  --color-muted: #6b665c;
-  --color-line: #e4e0d6;
-  --color-accent: #5646c8;
-  --color-accent-ink: #3a2f8f;
+  --color-ink: #1f2320;
+  --color-muted: #63665f;
+  --color-line: #e5e5e0;
+  --color-accent: #3a4137;
+  --color-accent-ink: #262b24;
   --color-danger: #b42318;
-  /* status kunjungan */
-  --color-st-booked: #fff1c2;
-  --color-st-arrived: #dcebff;
-  --color-st-service: #ffe2cc;
-  --color-st-completed: #ffdada;
-  --color-st-paid: #d9f2e1;
+  /* status kunjungan (latar lembut) */
+  --color-st-booked: #fbf6e8;
+  --color-st-arrived: #eef3f7;
+  --color-st-service: #fbefe8;
+  --color-st-completed: #faeeee;
+  --color-st-paid: #eef4ed;
   /* publik — warm minimalism D'Pras Studio (dokumen strategi brand: charcoal/deep olive, beige, sage, dusty rose,
      warm brown). Nama token warisan desain gelap lama: lux = latar, cream = teks utama, gold = aksen.
      Aksen & teks sekunder digelapkan dari kode brand agar kontras teks ≥ 4.5:1 di atas latar beige. */
@@ -66,13 +66,13 @@ select:not([multiple]):not([size]) {
 /* Kontrol form dasar (target sentuh ≥44px) */
 /* 16px: mencegah zoom otomatis iOS saat input difokus */
 @utility input {
-  @apply min-h-11 w-full min-w-0 rounded-[10px] border border-[#D9D4C8] bg-card px-3 text-base text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:bg-paper disabled:text-muted;
+  @apply min-h-11 w-full min-w-0 rounded-[10px] border border-[#DCDCD6] bg-card px-3 text-base text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:bg-paper disabled:text-muted;
 }
 @utility btn {
   @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:opacity-50;
 }
 @utility btn-primary { @apply btn bg-accent text-white hover:bg-accent-ink; }
-@utility btn-ink { @apply btn rounded-[10px] bg-ink text-white hover:bg-[#33312D] disabled:bg-[#A8A397]; }
+@utility btn-ink { @apply btn rounded-[10px] bg-ink text-white hover:bg-[#353A33] disabled:bg-[#A3A59E]; }
 @utility btn-ghost { @apply btn border border-line bg-card text-ink hover:bg-paper; }
 @utility btn-danger { @apply btn text-danger hover:bg-st-completed; }
 @utility label { @apply mb-1 block text-xs font-semibold text-muted; }

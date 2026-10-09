@@ -20,7 +20,6 @@ import { bookOnline, type BookedAppt } from "./actions";
 // supabase-js (~250 KB) & form masuk dimuat setelah halaman tampil — hanya dipakai di efek & langkah "Masuk".
 const db = () => import("@/lib/supabase/client").then((m) => m.createClient());
 const CustomerAuth = dynamic(() => import("@/components/customer-auth").then((m) => m.CustomerAuth));
-const WaVerify = dynamic(() => import("@/components/wa-verify").then((m) => m.WaVerify));
 
 export type { Cust };
 type Cat = "barbershop" | "nail";
@@ -535,7 +534,6 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                     <span className="flex flex-col"><span className="font-serif text-xl font-medium">{cust.name}</span>{cust.wa && <span className="text-[13px] tabular-nums text-stone">{cust.wa}</span>}</span>
                   </div>
                 ) : null}
-                {cust && !cust.wa ? <WaVerify onDone={(wa) => setCust({ ...cust, wa })} /> : null}
                 {!cust && (
                   <>
                     <div className="flex flex-wrap items-center gap-3 border border-rule-2 px-4 py-4">

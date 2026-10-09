@@ -58,7 +58,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay }: 
         <Link href={`?bulan=${shiftMonth(month, -1)}`} aria-label="Bulan sebelumnya" className="btn-ghost size-11 p-0">‹</Link>
         <b className="min-w-44 text-center font-display text-xl">{monthLabel(month)}</b>
         <Link href={`?bulan=${shiftMonth(month, 1)}`} aria-label="Bulan berikutnya" className="btn-ghost size-11 p-0">›</Link>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-[#D9F2E1] text-[#144D2A]" : month === current ? "bg-[#FFF1C2] text-[#5A4300]" : "bg-[#FFDADA] text-[#6E1616]"}`}>
+        <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : month === current ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
           {closed ? `Ditutup ${formatTanggal(period!.closed_at!)}` : month === current ? "Bulan berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -91,7 +91,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay }: 
           </tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#F0EDE6] hover:bg-paper">
+              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#EEEEEA] hover:bg-paper">
                 <td className="py-2 pr-2">
                   <button className="flex min-h-11 items-center gap-2 text-left" onClick={(e) => { e.stopPropagation(); setDetail(r); }}>
                     <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
@@ -108,8 +108,8 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay }: 
                 <td className="pr-2 text-right text-base font-bold">{formatRupiah(r.total_pay)}</td>
                 <td className="pr-2">
                   {!closed ? <span className="text-xs text-muted">Belum final</span>
-                    : r.paid_at ? <span className="rounded-full bg-[#D9F2E1] px-2.5 py-0.5 text-xs font-bold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)}</span>
-                    : <Link onClick={(e) => e.stopPropagation()} href={`/manajer/sdm/slip/${month}/${r.staff_id}`} className="rounded-full bg-[#FFF1C2] px-2.5 py-1 text-xs font-bold text-[#5A4300]">Belum dibayar · Slip</Link>}
+                    : r.paid_at ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-0.5 text-xs font-bold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)}</span>
+                    : <Link onClick={(e) => e.stopPropagation()} href={`/manajer/sdm/slip/${month}/${r.staff_id}`} className="rounded-full bg-[#FBF3DE] px-2.5 py-1 text-xs font-bold text-[#5A4300]">Belum dibayar · Slip</Link>}
                 </td>
               </tr>
             ))}
@@ -134,7 +134,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay }: 
         <div className="flex flex-col gap-3 p-5">
           <p className="text-sm text-muted">Angka dibekukan sebagai final: slip gaji terbentuk, tab Komisi kapster menampilkan <b>Final</b>, dan void transaksi bulan ini dikunci sampai periode dibuka ulang.</p>
           <table className="w-full text-sm tabular">
-            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#F0EDE6]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-bold">{formatRupiah(r.total_pay)}</td></tr>)}
+            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-bold">{formatRupiah(r.total_pay)}</td></tr>)}
               <tr className="border-t-2 border-ink font-bold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>
           </table>
           <button onClick={close} disabled={!online} className="btn-ink h-12">Tutup & bekukan angka</button>
@@ -198,7 +198,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
       </div>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
         <div className="flex items-baseline justify-between rounded-[14px] bg-ink p-4 text-paper tabular">
-          <span className="text-sm text-[#B9B3A7]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
+          <span className="text-sm text-[#9A9C95]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
         </div>
         <Link href={`/manajer/sdm/slip/${month}/${row.staff_id}`} className={`btn-ghost h-11 ${closed ? "" : "pointer-events-none opacity-50"}`} aria-disabled={!closed}>
           Slip gaji{closed ? "" : " (tutup periode dulu)"}
@@ -220,7 +220,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-2">
           <b className="text-sm">Bonus & potongan</b>
           {!adj.length && <span className="text-sm text-muted">Belum ada.</span>}
-          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#F0EDE6] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
+          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#EEEEEA] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
           {!closed && (
             <form onSubmit={(e) => { e.preventDefault(); addAdj(); }} className="flex flex-col gap-2 rounded-[12px] border border-line p-3">
               <div className="grid grid-cols-2 gap-2">
@@ -240,7 +240,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-1">
           <b className="text-sm">Rincian item</b>
           {items === null ? <span className="text-sm text-muted">Memuat…</span> : !items.length ? <span className="text-sm text-muted">Belum ada item bulan ini.</span> : items.map((i) => (
-            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#F0EDE6] py-1.5 text-sm tabular">
+            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#EEEEEA] py-1.5 text-sm tabular">
               <span className="font-semibold">{i.name}{i.category === "retail" && " · ritel"}</span><b>{formatRupiah(i.commission)}</b>
               <span className="text-xs text-muted">{formatTanggal(i.created_at)} {formatJam(i.created_at)}</span>
               <span className="text-right text-xs text-muted">net {formatRupiah(i.net_amount)} · HPP {formatRupiah(i.hpp ?? 0)}</span>

@@ -1,5 +1,6 @@
 import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
-import { admin, mailLink, newSession, randomWa, uniq } from "./helpers";
+import { withFakeWablas } from "./fake-wablas";
+import { admin, newSession, randomWa, uniq } from "./helpers";
 
 // Tahap 3 — wajah publik: landing → booking online → konter/HP kapster, bentrok slot, pelanggan lama, mode tinjau.
 // Semua di tanggal H+2/H+3 supaya tidak bergantung jam saat tes jalan.
@@ -39,17 +40,21 @@ async function counterOn(browser: Browser, info: TestInfo, days: number) {
   return k;
 }
 
-async function register(p: Page, name: string, email: string) {
+// Kode masuk pelanggan dikirim lewat WhatsApp (Wablas tiruan)
+const wa = withFakeWablas(test);
+
+/** Masuk/daftar pelanggan dengan nomor WhatsApp + kode; akun baru ditanya nama sekali. */
+async function register(p: Page, name: string, wa62 = "62" + randomWa().slice(1)) {
   await p.goto("/akun");
-  await p.getByRole("tab", { name: "Daftar" }).click();
-  await p.fill("#c-name", name);
-  await p.fill("#c-wa", randomWa()); // wajib saat daftar; diverifikasi kode setelah masuk
-  await p.fill("#c-email", email);
-  await p.fill("#c-pw1", "rahasia123");
-  await p.fill("#c-pw2", "rahasia123");
-  await p.getByRole("button", { name: "Buat akun" }).click();
-  await expect(p.getByText(/Kami mengirim tautan konfirmasi/)).toBeVisible();
-  await p.goto(await mailLink(email)); // klik tautan konfirmasi → /auth/konfirmasi → /akun
+  await p.fill("#c-wa", "0" + wa62.slice(2));
+  await p.getByRole("button", { name: "Kirim kode ke WhatsApp" }).click();
+  await p.fill("#c-code", await wa.code(wa62));
+  await p.getByRole("button", { name: "Masuk", exact: true }).click();
+  const named = p.getByLabel("Nama");
+  if (await named.isVisible().catch(() => false)) {
+    await named.fill(name);
+    await p.getByRole("button", { name: "Simpan & lanjut" }).click();
+  }
   await expect(p.getByText("Saldo deposit", { exact: true })).toBeVisible();
 }
 
@@ -110,16 +115,16 @@ test("2 · dua pengunjung memilih jam yang sama → yang kedua diberi tahu 'baru
   await expect(b.locator("button[aria-pressed]:not([aria-label])", { hasText: /^11:00$/ })).toHaveCount(0);
 });
 
-test("3 · pelanggan lama daftar dgn email tercatat → saldo & riwayat tampil → jadwal ulang → konter ikut berubah", async ({ browser }, info) => {
+test("3 · pelanggan lama (WA tercatat di kasir) masuk dengan WA → saldo & riwayat tampil → jadwal ulang → konter ikut berubah", async ({ browser }, info) => {
   const { potong, st } = await ids();
-  const name = `Lama ${uniq()}`, email = `lama-${uniq()}@contoh.test`;
-  const { data: c } = await admin.from("customers").insert({ name, email, whatsapp: "62" + randomWa().slice(1) }).select("id").single();
+  const name = `Lama ${uniq()}`, wa62 = "62" + randomWa().slice(1);
+  const { data: c } = await admin.from("customers").insert({ name, whatsapp: wa62 }).select("id").single();
   await admin.from("deposit_topups").insert({ customer_id: c!.id, amount_paid: 500_000, amount_credited: 550_000, method: "cash" });
   const { data: tx } = await admin.from("transactions").insert({ customer_id: c!.id, subtotal: 75_000, total: 75_000, paid_amount: 75_000, payment_method: "cash" }).select("id").single();
   await admin.from("transaction_items").insert({ transaction_id: tx!.id, name: "Potong Rambut", category: "barbershop", price: 75_000, net_amount: 75_000 });
 
   const p = await visitor(browser, info);
-  await register(p, name, email);
+  await register(p, name, wa62); // nomor sudah tercatat → nama diambil dari data pelanggan, tanpa ditanya
   await expect(p.getByText("Rp550.000")).toBeVisible();
   await expect(p.getByText("Potong Rambut")).toBeVisible();
 
@@ -151,7 +156,7 @@ test("5 · mode tinjau → booking menunggu → kasir Terima → status pelangga
   try {
     const name = `Tinjau ${uniq()}`;
     const p = await visitor(browser, info);
-    await register(p, name, `tinjau-${uniq()}@contoh.test`);
+    await register(p, name);
     await p.goto(`/booking?langkah=konfirmasi&layanan=${potong}&staf=barbershop:${st.Dimas}&tgl=${H3}&jam=13:00`);
     await konfirmasi(p);
     await expect(p.getByText("Menunggu konfirmasi toko")).toBeVisible();

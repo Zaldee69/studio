@@ -14,7 +14,7 @@ export function HistoryStrip({ rows, current, href }: { rows: { date: string; st
           <>
             <span className="text-[10px] uppercase text-muted">{wd(r.date)}</span>
             <b className="text-sm tabular">{Number(r.date.slice(8))}</b>
-            <span aria-hidden="true" className="size-2 rounded-full" style={{ background: r.status === "empty" || r.status === "closed" ? "#B9B3A7" : s.fg }} />
+            <span aria-hidden="true" className="size-2 rounded-full" style={{ background: r.status === "empty" || r.status === "closed" ? "#9A9C95" : s.fg }} />
           </>
         );
         const cls = `flex h-[52px] w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[10px] border ${r.date === current ? "border-ink bg-card" : "border-line bg-paper"}`;

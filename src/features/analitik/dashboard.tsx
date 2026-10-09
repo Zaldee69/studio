@@ -37,7 +37,7 @@ const dm = (d: string) => `${Number(d.slice(8))}/${Number(d.slice(5, 7))}`;
 const csv = (name: string, rows: (string | number | null)[][]) => downloadText(`${name}.csv`, toCsv(rows));
 
 function Chip({ tone, icon, label }: { tone: "ok" | "warn" | "bad" | "info"; icon: string; label: string }) {
-  const c = { ok: ["#D9F2E1", "#144D2A"], warn: ["#FFF1C2", "#5A4300"], bad: ["#FFDADA", "#6E1616"], info: ["#EEEBE4", "#4A463F"] }[tone];
+  const c = { ok: ["#E6F1E4", "#144D2A"], warn: ["#FBF3DE", "#5A4300"], bad: ["#F9E6E6", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
   return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
 }
 function Delta({ d }: { d: number | null | undefined }) {
@@ -93,7 +93,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
         <div role="group" aria-label="Periode" className="flex flex-wrap gap-1.5">
           {PERIODS.map(([k, l]) => (
             <Link key={k} href={q({ periode: k, dari: "", sampai: "" })} aria-current={d.periode === k ? "true" : undefined}
-              className="inline-flex h-11 items-center rounded-full border border-[#D9D4C8] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
+              className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
           ))}
         </div>
         <form className="flex flex-wrap items-end gap-1.5" onChange={(e) => { const f = e.currentTarget; if ((e.target as HTMLElement).tagName === "SELECT") f.requestSubmit(); }}>
@@ -106,10 +106,10 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
         </form>
       </div>
       <p className="text-sm text-muted tabular">{d.label} · <b className="text-ink">{tx} transaksi</b> · dibanding {d.prevLabel}</p>
-      {tx < t.min_tx && <p role="status" className="rounded-[12px] bg-[#FFF1C2] px-4 py-2.5 text-sm text-[#5A4300]">Data masih sedikit ({tx} transaksi) — angka belum stabil.</p>}
+      {tx < t.min_tx && <p role="status" className="rounded-[12px] bg-[#FBF3DE] px-4 py-2.5 text-sm text-[#5A4300]">Data masih sedikit ({tx} transaksi) — angka belum stabil.</p>}
 
       {!!d.insights.length && (
-        <section aria-label="Insight" className="flex flex-col gap-1.5 rounded-[14px] border border-[#C9C3F0] bg-[#F6F5FF] p-4">
+        <section aria-label="Insight" className="flex flex-col gap-1.5 rounded-[14px] border border-[#D6D9CF] bg-[#F5F6F2] p-4">
           {d.insights.map((i) => (
             <p key={i.code} className="flex flex-wrap items-center gap-2 text-sm">
               <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">!</span>
@@ -161,7 +161,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
         ...d.util.map((u) => [u.name, u.type, Math.round(u.sold_minutes), u.planned_minutes, u.available_minutes, u.pct == null ? "" : pct1(u.pct), u.pct_planned == null ? "" : pct1(u.pct_planned), u.planned_vs_actual_avg == null ? "" : Math.round(u.planned_vs_actual_avg)])])}
         extra={<div role="group" aria-label="Sumber durasi" className="flex gap-1">{[[false, "Nyata"], [true, "Rencana"]].map(([v, l]) => (
           <button key={String(v)} aria-pressed={planned === v} onClick={() => setPlanned(v as boolean)}
-            className={`h-11 rounded-full border px-3.5 text-xs font-bold ${planned === v ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>{l as string}</button>))}</div>}>
+            className={`h-11 rounded-full border px-3.5 text-xs font-bold ${planned === v ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l as string}</button>))}</div>}>
         <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }]} />
         <HBars ariaLabel="Utilisasi per resource" target={{ value: t.utilization, label: `Target ${t.utilization}%` }}
           rows={d.util.map((u) => { const p = (planned ? u.pct_planned : u.pct) ?? 0; const m = planned ? u.planned_minutes : u.sold_minutes;
@@ -184,7 +184,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
           <table className="w-full text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Rencana", "Rata-rata nyata", "Selisih"].map((h, i) => <th key={h} className={`py-1.5 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>{d.duration.map((r) => (
-              <tr key={r.service_id} className="border-t border-[#F0EDE6]">
+              <tr key={r.service_id} className="border-t border-[#EEEEEA]">
                 <td className="py-2 font-semibold">{r.name}</td><td className="text-right">{r.planned_min} mnt</td><td className="text-right">{Math.round(r.actual_avg)} mnt</td>
                 <td className="text-right"><span className="mr-2">{r.diff_avg > 0 ? "+" : ""}{Math.round(r.diff_avg)} mnt (n={r.n})</span>
                   {Math.abs(r.diff_avg) >= 1 && <Chip tone={r.diff_avg > 0 ? "warn" : "info"} icon={r.diff_avg > 0 ? "▲" : "▼"} label={r.diff_avg > 0 ? "molor" : "lebih cepat"} />}</td>
@@ -208,7 +208,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
               <b className="text-sm">Top 5 produk</b>
               {!d.retail.top.length ? <p className="text-sm text-muted">Belum ada penjualan ritel.</p> : (
                 <table className="mt-1 w-full text-sm tabular"><tbody>{d.retail.top.map((p) => (
-                  <tr key={p.name} className="border-t border-[#F0EDE6]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
+                  <tr key={p.name} className="border-t border-[#EEEEEA]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
                 ))}</tbody></table>
               )}
             </div>

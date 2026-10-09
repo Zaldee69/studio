@@ -68,7 +68,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         <div className="max-h-full overflow-y-auto">
           {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>{date === today ? "Belum ada transaksi hari ini." : "Tidak ada transaksi di tanggal ini."}</Empty> : txs.map((t) => (
             <button key={t.id} onClick={() => setOpenId(t.id)}
-              className={`grid min-h-[52px] w-full grid-cols-[64px_1.4fr_1fr_1fr] items-center gap-3 border-b border-[#F0EDE6] px-4 py-2 text-left text-sm tabular hover:bg-paper min-[1000px]:grid-cols-[64px_1.6fr_1fr_1.1fr_1fr] ${t.voided_at ? "text-muted line-through" : ""}`}>
+              className={`grid min-h-[52px] w-full grid-cols-[64px_1.4fr_1fr_1fr] items-center gap-3 border-b border-[#EEEEEA] px-4 py-2 text-left text-sm tabular hover:bg-paper min-[1000px]:grid-cols-[64px_1.6fr_1fr_1.1fr_1fr] ${t.voided_at ? "text-muted line-through" : ""}`}>
               <b>{formatJam(t.created_at)}</b>
               <span className="truncate">{t.customer?.name ?? "Pelanggan umum"}</span>
               <span className="text-right font-semibold">{formatRupiah(t.total)}</span>
@@ -85,7 +85,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
             <div className="no-print flex justify-end"><CloseButton onClick={() => setOpenId(null)} /></div>
             <ReceiptView r={toReceipt(open, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, null)} title={`Transaksi ${formatTanggal(open.created_at)}`}>
               {master.role === "manager" && !open.voided_at && (voiding ? (
-                <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#EFA3A3] p-3">
+                <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
                   <input id="void-reason" className="input" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai/Belum Bayar&quot;, stok & saldo deposit dikembalikan.</p>

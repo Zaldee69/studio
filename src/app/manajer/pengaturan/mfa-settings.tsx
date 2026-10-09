@@ -57,7 +57,7 @@ export function MfaSettings() {
       </p>
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span role="status" className="rounded-full bg-[#D9F2E1] px-3 py-1 text-sm font-bold text-[#144D2A]">Aktif</span>
+          <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-bold text-[#144D2A]">Aktif</span>
           <button onClick={disable} className="btn-ghost h-11">Matikan</button>
         </div>
       ) : enroll ? (

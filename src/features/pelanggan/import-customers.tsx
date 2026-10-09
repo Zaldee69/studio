@@ -5,7 +5,7 @@ import { CloseButton, useToast } from "@/components/ui";
 import { parseCsv, previewImport, TEMPLATE_CSV, type ImportRow } from "@/lib/domain/csv";
 import { createClient } from "@/lib/supabase/client";
 
-const STATUS_STYLE = { valid: ["Valid", "#D9F2E1", "#144D2A"], duplicate: ["Duplikat", "#FFF1C2", "#5A4300"], error: ["Error", "#FFDADA", "#6E1616"] } as const;
+const STATUS_STYLE = { valid: ["Valid", "#E6F1E4", "#144D2A"], duplicate: ["Duplikat", "#FBF3DE", "#5A4300"], error: ["Error", "#F9E6E6", "#6E1616"] } as const;
 
 /** Impor pelanggan lama dari CSV/Excel: pratinjau (valid / duplikat / error) → konfirmasi → simpan. */
 export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
@@ -90,7 +90,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
               </thead>
               <tbody>
                 {rows.slice(0, 300).map((r) => (
-                  <tr key={r.row} className="border-t border-[#F0EDE6]">
+                  <tr key={r.row} className="border-t border-[#EEEEEA]">
                     <td className="px-3 py-2 text-muted">{r.row}</td>
                     <td className="px-3 py-2 font-semibold">{r.name || "—"}</td>
                     <td className="px-3 py-2">{r.wa ?? r.whatsapp}</td>

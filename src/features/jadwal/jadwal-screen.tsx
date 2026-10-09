@@ -143,7 +143,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
       </div>
 
       {!!offs?.length && (
-        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[#EEEBE4] px-3 py-2 text-[13px] text-[#4A463F]">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[#EFEFEB] px-3 py-2 text-[13px] text-[#4A4C46]">
           <b>Izin / cuti:</b>
           {offs.map((o) => <span key={o.id} className="rounded-full bg-card px-2.5 py-1 font-semibold">{master.staff.find((s) => s.id === o.staff_id)?.name} · {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}</span>)}
         </div>
@@ -156,7 +156,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
               <div className="sticky left-0 z-[1] w-14 shrink-0 bg-card" />
               {master.resources.map((r) => (
-                <div key={r.id} className="flex min-w-[120px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EFECE5] px-2.5 py-2">
+                <div key={r.id} className="flex min-w-[120px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDEDE9] px-2.5 py-2">
                   <span className="truncate text-[13px] font-bold">{r.name}</span>
                   <span className="self-start rounded-md px-1.5 py-px text-[11px] font-semibold" style={{ background: CAT_STYLE[r.type].bg, color: CAT_STYLE[r.type].fg }}>
                     {r.is_pedicure ? "Pedicure" : CAT_STYLE[r.type].label}
@@ -171,7 +171,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                 ))}
               </div>
               {master.resources.map((r) => (
-                <div key={r.id} className="relative min-w-[120px] flex-1 border-l border-[#EFECE5]"
+                <div key={r.id} className="relative min-w-[120px] flex-1 border-l border-[#EDEDE9]"
                   style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)`,
                     backgroundPositionY: ((Math.ceil(open / 60) * 60 - open) % 60) * px }}>
                   {slots.map((t) => (
@@ -231,7 +231,8 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick 
       onPointerDown={(e) => { if (e.pointerType !== "mouse") press.current = setTimeout(() => { long.current = true; onQuick(); }, 550); }}
       onPointerUp={() => clearTimeout(press.current)} onPointerLeave={() => clearTimeout(press.current)}
       className={`absolute inset-x-1 z-[1] flex flex-col gap-px overflow-hidden rounded-lg border px-2 py-1 text-left ${a.status === "pending_review" ? "border-2 border-dashed" : ""}`}
-      style={{ top, height: h, background: S.bg, color: S.fg, borderColor: S.bd, outline: selected ? `2px solid ${S.dot}` : undefined, outlineOffset: 1 }}>
+      style={{ top, height: h, background: "#FFFFFF", color: "#1F2320", borderColor: "#E5E5E0", borderLeft: `3px solid ${S.dot}`,
+        outline: selected ? `2px solid ${S.dot}` : undefined, outlineOffset: 1 }}>
       <span className="flex w-full items-center gap-1.5 text-xs font-bold">
         <span className="size-[7px] shrink-0 rounded-full" style={{ background: S.dot }} />
         <span className="flex-1 truncate">{a.customer?.name ?? "Walk-in"}</span>
@@ -239,7 +240,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick 
         {a.status === "pending_review" && <span className="rounded border border-ink px-1 text-[10px] font-bold">Menunggu</span>}
         {conflict && <span className="rounded bg-[#6E1616] px-1.5 text-[10px] font-bold text-white">Bentrok</span>}
         {a.change_request && <span className="rounded bg-[#B25E00] px-1.5 text-[10px] font-bold text-white">Minta ubah</span>}
-        {off && <span className="rounded bg-[#4A463F] px-1.5 text-[10px] font-bold text-white">Izin</span>}
+        {off && <span className="rounded bg-[#4A4C46] px-1.5 text-[10px] font-bold text-white">Izin</span>}
       </span>
       <span className="truncate text-[11px] tabular">{formatJam(a.start_at)}–{formatJam(a.end_at)} · {staff}</span>
       <span className="truncate text-[11px] opacity-85">{svc}</span>

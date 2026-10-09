@@ -25,7 +25,7 @@ export function StationLogin({ staff }: { staff: S[] }) {
             <span className="text-xs text-muted">{s.has_pin ? STAFF_TITLE[s.category] : "PIN belum diatur"}</span>
           </button>
         ))}
-        {!staff.length && <p className="col-span-full text-[#D8D2C6]">Belum ada kapster dengan akun aktif.</p>}
+        {!staff.length && <p className="col-span-full text-[#D6D6D0]">Belum ada kapster dengan akun aktif.</p>}
       </div>
     );
   }
@@ -41,14 +41,14 @@ export function StationLogin({ staff }: { staff: S[] }) {
           <span key={i} className={`size-4 rounded-full border-2 border-paper ${i < pin.length ? "bg-paper" : ""}`} />
         ))}
       </div>
-      {state?.error && <p role="alert" className="rounded-xl bg-[#FFDADA] px-3 py-2 text-center text-sm font-semibold text-[#6E1616]">{state.error}</p>}
+      {state?.error && <p role="alert" className="rounded-xl bg-[#F9E6E6] px-3 py-2 text-center text-sm font-semibold text-[#6E1616]">{state.error}</p>}
       <div className="grid w-full grid-cols-3 gap-3">
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
-          <button type="button" key={d} onClick={() => press(d)} className="h-[72px] rounded-2xl bg-[#2A2926] text-3xl font-bold tabular">{d}</button>
+          <button type="button" key={d} onClick={() => press(d)} className="h-[72px] rounded-2xl bg-[#2F332E] text-3xl font-bold tabular">{d}</button>
         ))}
-        <button type="button" onClick={() => { setSel(null); setPin(""); }} className="h-[72px] rounded-2xl text-base font-bold text-[#D8D2C6]">Kembali</button>
-        <button type="button" onClick={() => press("0")} className="h-[72px] rounded-2xl bg-[#2A2926] text-3xl font-bold">0</button>
-        <button type="button" onClick={() => setPin((p) => p.slice(0, -1))} aria-label="Hapus digit" className="h-[72px] rounded-2xl text-2xl font-bold text-[#D8D2C6]">⌫</button>
+        <button type="button" onClick={() => { setSel(null); setPin(""); }} className="h-[72px] rounded-2xl text-base font-bold text-[#D6D6D0]">Kembali</button>
+        <button type="button" onClick={() => press("0")} className="h-[72px] rounded-2xl bg-[#2F332E] text-3xl font-bold">0</button>
+        <button type="button" onClick={() => setPin((p) => p.slice(0, -1))} aria-label="Hapus digit" className="h-[72px] rounded-2xl text-2xl font-bold text-[#D6D6D0]">⌫</button>
       </div>
       <button disabled={pin.length < 4 || pending} className="h-[60px] w-full rounded-2xl bg-paper text-[17px] font-bold text-ink disabled:opacity-40">
         {pending ? "Memeriksa…" : "Masuk"}

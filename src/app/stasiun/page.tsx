@@ -13,10 +13,10 @@ export default async function StasiunPage() {
         <div className="flex items-center gap-3">
           <span className="flex size-12 items-center justify-center rounded-xl bg-paper font-display text-base font-bold text-ink">{BRAND_INITIALS}</span>
           <div className="flex flex-col"><h1 className="font-display text-2xl font-bold">Stasiun kapster</h1>
-            <span className="text-sm text-[#B9B3A7]">Ketuk nama Anda, lalu masukkan PIN</span></div>
+            <span className="text-sm text-[#9A9C95]">Ketuk nama Anda, lalu masukkan PIN</span></div>
         </div>
         {staff === null ? (
-          <div role="alert" className="rounded-2xl bg-[#FFF1C2] p-5 text-[15px] leading-relaxed text-[#5A4300]">
+          <div role="alert" className="rounded-2xl bg-[#FBF3DE] p-5 text-[15px] leading-relaxed text-[#5A4300]">
             <b>Perangkat ini belum terdaftar sebagai stasiun.</b> Minta manajer masuk di perangkat ini, buka
             Pengaturan → Stasiun &amp; PIN, lalu ketuk <b>Daftarkan perangkat ini</b>.
           </div>

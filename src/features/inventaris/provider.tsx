@@ -119,7 +119,7 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
           </Field>
         </div>
         <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input type="checkbox" className="size-5 accent-[#5646C8]" checked={f.total} onChange={(e) => setF({ ...f, total: e.target.checked })} />
+          <input type="checkbox" className="size-5 accent-accent" checked={f.total} onChange={(e) => setF({ ...f, total: e.target.checked })} />
           Saya isi total harga nota (dihitung per satuan otomatis)
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -265,7 +265,7 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
                 <thead><tr className="text-left text-xs text-muted"><th className="py-1.5 font-semibold">Item</th><th className="font-semibold">Stok</th><th className="font-semibold">Ambang</th><th className="font-semibold">Saran beli</th><th className="text-right font-semibold">Estimasi</th></tr></thead>
                 <tbody>
                   {g.rows.map((r) => (
-                    <tr key={r.item_id} className="border-t border-[#F0EDE6]">
+                    <tr key={r.item_id} className="border-t border-[#EEEEEA]">
                       <td className="py-1.5 font-semibold">{r.name}</td>
                       <td className={r.status === "reorder" ? "font-bold text-[#A12A2A]" : ""}>{qtyFmt(r.qty)} {r.unit}</td>
                       <td>{qtyFmt(r.reorder_at)}</td>

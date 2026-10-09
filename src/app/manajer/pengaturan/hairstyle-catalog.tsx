@@ -182,7 +182,7 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
           <textarea id="hs-notes" rows={2} className="input py-2" value={f.cut_notes} onChange={(e) => set("cut_notes", e.target.value)} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5 accent-[#1c1b19]" checked={f.active} onChange={(e) => set("active", e.target.checked)} />Aktif</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5 accent-[#1f2320]" checked={f.active} onChange={(e) => set("active", e.target.checked)} />Aktif</label>
           <Field label="Urut" htmlFor="hs-sort"><input id="hs-sort" type="number" className="input" value={f.sort} onChange={(e) => set("sort", Number(e.target.value))} /></Field>
         </div>
         <button disabled={busy} className="btn-ink h-12">{busy ? "Menyimpan…" : style ? "Simpan" : "Tambah model"}</button>

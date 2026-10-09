@@ -54,7 +54,7 @@ export function PelangganScreen({ master }: { master: Master }) {
 
   const rows = data?.rows ?? [];
   const sel = rows.find((r) => r.id === selId) ?? null;
-  const status = (r: CustRow) => r.stats?.is_churn ? ["Follow-up", "#FFDADA", "#6E1616"] : !r.stats?.visit_count ? ["Baru", "#DCEBFF", "#163D78"] : ["Aktif", "#D9F2E1", "#144D2A"];
+  const status = (r: CustRow) => r.stats?.is_churn ? ["Follow-up", "#F9E6E6", "#6E1616"] : !r.stats?.visit_count ? ["Baru", "#EEF3F7", "#24435A"] : ["Aktif", "#E6F1E4", "#144D2A"];
   // HP: nama (+ kunjungan terakhir di bawahnya) | total | status
   const cols = "grid-cols-[minmax(0,1fr)_auto_auto] sm:grid-cols-[2fr_1.4fr_1.2fr_1fr] xl:grid-cols-[2fr_1.3fr_1.3fr_1.1fr_1.1fr_1.2fr]";
 
@@ -72,7 +72,7 @@ export function PelangganScreen({ master }: { master: Master }) {
         <div role="tablist" aria-label="Filter pelanggan" className="flex gap-1.5">
           {([["all", `Semua${data ? ` · ${filter === "all" ? data.total : "…"}` : ""}`], ["follow", `Perlu follow-up · ${data?.followCount ?? 0}`]] as const).map(([k, l]) => (
             <button key={k} role="tab" aria-selected={filter === k} onClick={() => { setFilter(k); setLimit(PAGE); }}
-              className={`h-11 rounded-full border px-4 text-[13px] font-bold ${filter === k ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>{l}</button>
+              className={`h-11 rounded-full border px-4 text-[13px] font-bold ${filter === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l}</button>
           ))}
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-line bg-card">
@@ -85,10 +85,10 @@ export function PelangganScreen({ master }: { master: Master }) {
               const [label, bg, fg] = status(r);
               return (
                 <button key={r.id} aria-pressed={r.id === selId} onClick={() => setSelId(r.id)}
-                  className={`grid ${cols} min-h-[52px] w-full items-center gap-3 border-b border-[#F0EDE6] px-4 py-2 text-left text-sm [@media(pointer:coarse)]:min-h-[60px] ${r.id === selId ? "bg-paper" : "hover:bg-[#FAF8F4]"}`}>
+                  className={`grid ${cols} min-h-[52px] w-full items-center gap-3 border-b border-[#EEEEEA] px-4 py-2 text-left text-sm [@media(pointer:coarse)]:min-h-[60px] ${r.id === selId ? "bg-paper" : "hover:bg-[#FAF8F4]"}`}>
                   <span className="flex min-w-0 flex-col"><span className="truncate font-bold">{r.name}</span>
                     <span className="truncate text-xs text-muted tabular sm:hidden">{r.stats?.last_visit_at ? `Terakhir ${formatTanggal(r.stats.last_visit_at)}` : "Belum berkunjung"}</span></span>
-                  <span className="hidden truncate text-[#4A463F] tabular xl:block">{r.whatsapp ?? "—"}</span>
+                  <span className="hidden truncate text-[#4A4C46] tabular xl:block">{r.whatsapp ?? "—"}</span>
                   <span className="tabular max-sm:hidden">{r.stats?.last_visit_at ? formatTanggal(r.stats.last_visit_at) : "—"}</span>
                   <span className="text-right tabular">{formatRupiah(r.stats?.lifetime_value ?? 0)}</span>
                   <span className="hidden text-right tabular xl:block">{formatRupiah(r.stats?.deposit_balance ?? 0)}</span>

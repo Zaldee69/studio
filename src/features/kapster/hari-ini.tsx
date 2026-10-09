@@ -84,7 +84,7 @@ export function HariIni() {
 
       {appts === null ? <div className="rounded-[18px] bg-card p-7 text-center text-[15px] text-muted">Memuat…</div>
         : cur ? <CurrentCard key={cur.id} a={cur} busy={busy || !online} now={now} onAct={() => act(cur)} onRevert={() => revert(cur)} services={services} category={me.category} />
-        : <div className="rounded-[18px] bg-card p-7 text-center text-[15px] text-[#4A463F]">Tidak ada antrean lagi hari ini.</div>}
+        : <div className="rounded-[18px] bg-card p-7 text-center text-[15px] text-[#4A4C46]">Tidak ada antrean lagi hari ini.</div>}
 
       <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">
         <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Semua jadwal saya hari ini</span>
@@ -93,7 +93,7 @@ export function HariIni() {
           const S = STATUS[a.status], on = cur?.id === a.id;
           return (
             <button key={a.id} onClick={() => setSelId(a.id)} aria-pressed={on}
-              className={`flex min-h-[60px] items-center gap-3 border-t border-[#F0EDE6] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
+              className={`flex min-h-[60px] items-center gap-3 border-t border-[#EEEEEA] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
               <b className="w-[52px] shrink-0 text-[15px]">{formatJam(a.start_at)}</b>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="truncate text-[15px]">{a.customer_name ?? "Walk-in"}</b>
@@ -133,7 +133,7 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
       </div>
       <div className="flex flex-col gap-1">
         <h2 className="font-display text-[28px] font-bold leading-tight tracking-tight">{a.customer_name ?? "Walk-in"}</h2>
-        <span className="text-[15px] text-[#4A463F] tabular">{formatJam(a.start_at)}–{formatJam(a.end_at)} · {a.resource_name}</span>
+        <span className="text-[15px] text-[#4A4C46] tabular">{formatJam(a.start_at)}–{formatJam(a.end_at)} · {a.resource_name}</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {a.service_ids.map((id) => (
@@ -141,13 +141,13 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
         ))}
       </div>
       {timer && (
-        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[15px] font-bold tabular ${timer.over ? "bg-[#FFDADA] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
+        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[15px] font-bold tabular ${timer.over ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
           <span>⏱ {timer.elapsedMin} / {a.duration_min} menit</span>
           {timer.over && <span>Lewat {timer.overBy} mnt</span>}
         </div>
       )}
       {a.customer_notes && (
-        <div className="rounded-xl bg-[#EEEBFA] px-3.5 py-3 text-sm leading-normal text-[#2E2670]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
+        <div className="rounded-xl bg-[#ECEEE8] px-3.5 py-3 text-sm leading-normal text-[#262B24]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
       )}
       {a.notes && <div className="rounded-xl bg-paper px-3.5 py-3 text-sm leading-normal"><b>Catatan booking:</b> {a.notes}</div>}
       {a.customer_id && <History customerId={a.customer_id} />}
@@ -161,7 +161,7 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
           {action.label}
         </button>
       )}
-      {done && <span className="text-[15px] font-semibold text-[#4A463F]">{a.status === "paid" ? "Lunas ✓" : "Pembayaran diproses kasir."}</span>}
+      {done && <span className="text-[15px] font-semibold text-[#4A4C46]">{a.status === "paid" ? "Lunas ✓" : "Pembayaran diproses kasir."}</span>}
       {canRevert && (
         <button onClick={onRevert} disabled={busy} className="self-start rounded-lg px-2 py-2 text-[13px] font-semibold text-muted underline">Batalkan status terakhir</button>
       )}
@@ -181,7 +181,7 @@ function History({ customerId }: { customerId: string }) {
     <div className="flex flex-col gap-1">
       <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Kunjungan sebelumnya dengan Anda</span>
       {rows.map((r) => (
-        <span key={r.start_at} className="text-sm text-[#4A463F]">
+        <span key={r.start_at} className="text-sm text-[#4A4C46]">
           <b className="tabular">{formatTanggal(r.start_at).replace(/^\w+, /, "").replace(/ \d{4}$/, "")}</b> — {r.services}{r.notes && ` · ${r.notes}`}
         </span>
       ))}
@@ -205,7 +205,7 @@ function PrefEditor({ customerId, initial, category }: { customerId: string; ini
     <div className="flex flex-col gap-1.5">
       <label htmlFor="st-pref" className="text-[13px] font-bold">Perbarui preferensi ({category === "nail" ? "mis. warna gel, bentuk kuku" : category === "massage" ? "mis. tekanan pijat, area keluhan" : "mis. ukuran clipper, model"})</label>
       <textarea id="st-pref" rows={2} value={v} onChange={(e) => onChange(e.target.value)}
-        className="resize-y rounded-xl border border-[#D9D4C8] px-3 py-2.5 text-base leading-normal outline-none focus:border-accent" />
+        className="resize-y rounded-xl border border-[#DCDCD6] px-3 py-2.5 text-base leading-normal outline-none focus:border-accent" />
       <span className="text-xs text-muted" aria-live="polite">
         {state === "saving" ? "Menyimpan…" : state === "saved" ? "Tersimpan ✓" : state === "error" ? "Gagal menyimpan" : "Tersimpan otomatis"}
       </span>

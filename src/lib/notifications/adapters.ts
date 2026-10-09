@@ -1,9 +1,8 @@
-import { BRAND } from "../brand";
 // Adapter pengirim. Masing-masing "null" (nonaktif) sampai kredensial diisi di environment.
 export type EmailMsg = { subject: string; text: string; html: string };
 export type Adapters = {
   email: ((to: string, m: EmailMsg) => Promise<void>) | null;
-  whatsapp: ((to: string, text: string) => Promise<void>) | null;
+  whatsapp: ((to: string, text: string, opts?: { instant?: boolean }) => Promise<void>) | null;
 };
 
 async function ok(r: Response) {
@@ -41,13 +40,6 @@ export function sendWhatsAppAdapter(): ((to: string, text: string, opts?: { inst
     try { json = JSON.parse(text); } catch { /* bukan JSON */ }
     if (!r.ok || json?.status !== true) throw new Error(`Wablas ${r.status}: ${(json?.message ?? text).slice(0, 200)}`);
   };
-}
-
-/** Hook OTP WhatsApp (verifikasi nomor) — siap dipakai saat penyedia WA aktif. */
-export async function sendWhatsAppOtp(to: string, code: string) {
-  const wa = sendWhatsAppAdapter();
-  if (!wa) throw new Error("WhatsApp belum dikonfigurasi");
-  await wa(to, `Kode verifikasi ${BRAND}: ${code}. Berlaku 10 menit. Jangan bagikan kode ini kepada siapa pun, termasuk staf ${BRAND}.`, { instant: true });
 }
 
 export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter() });

@@ -213,7 +213,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     onSaved(date);
   }
 
-  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`;
+  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`;
   const resOptions = (c: Cat) => master.resources.filter((r) => r.type === c);
   const staffOptions = (c: Cat, s: string, e: string) => activeStaff.filter((x) => x.category === c).map((x) => (
     <option key={x.id} value={x.id}>{x.name}{approvedOffFor(dayOffs ?? [], x.id, s, e) ? " (izin)" : ""}</option>
@@ -242,7 +242,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 <input id="f-wa" className="input tabular" inputMode="tel" placeholder="08…" value={newWa} onChange={(e) => setNewWa(e.target.value)} />
               </Field>
               {existingOwner && (
-                <p role="status" className="rounded-[10px] bg-[#EEEBFA] px-3 py-2 text-[13px] text-[#2E2670] min-[520px]:col-span-2">
+                <p role="status" className="rounded-[10px] bg-[#ECEEE8] px-3 py-2 text-[13px] text-[#262B24] min-[520px]:col-span-2">
                   No. WA ini sudah terdaftar atas nama <b>{existingOwner}</b> — booking akan memakai pelanggan tersebut.
                 </p>
               )}
@@ -314,7 +314,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </div>
 
       {pair.sel.length > 0 && (
-        <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[12px] border border-dashed border-[#C9C2B3] p-3.5">
+        <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[12px] border border-dashed border-[#C9CAC3] p-3.5">
           <b className="text-sm">Booking kedua · {CAT_NAME[pairCat]} <span className="font-normal text-muted">— jam sama ({minToTime(start)}, {pairDur} mnt), pelanggan sama</span></b>
           <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
             <Field label="Kursi / meja" htmlFor="f-res2">
@@ -344,18 +344,18 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       )}
 
       {(staffOff || pairStaffOff) && (
-        <div role="alert" className="rounded-[10px] bg-[#EEEBE4] px-3.5 py-3 text-[13px] font-semibold text-[#4A463F]">
+        <div role="alert" className="rounded-[10px] bg-[#EFEFEB] px-3.5 py-3 text-[13px] font-semibold text-[#4A4C46]">
           {[staffOff && `${activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti (${offLabel(staffOff)})`,
             pairStaffOff && `${activeStaff.find((s) => s.id === pairStaff)?.name} sedang izin/cuti (${offLabel(pairStaffOff)})`].filter(Boolean).join(" · ")}. Pilih staf lain.
         </div>
       )}
       {notices.length > 0 && (
-        <div role="alert" className="rounded-[10px] bg-[#EEEBE4] px-3.5 py-3 text-[13px] leading-normal text-[#4A463F]">
+        <div role="alert" className="rounded-[10px] bg-[#EFEFEB] px-3.5 py-3 text-[13px] leading-normal text-[#4A4C46]">
           <b>Perhatikan:</b> {notices.join(" ")} Anda tetap bisa menyimpan.
         </div>
       )}
       {hasConflict && (
-        <div role="alert" className="flex gap-2.5 rounded-[10px] bg-[#FFF1C2] px-3.5 py-3 text-[13px] leading-normal text-[#5A4300]">
+        <div role="alert" className="flex gap-2.5 rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-[13px] leading-normal text-[#5A4300]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px shrink-0"><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18h.01" /></svg>
           <span><b>Jadwal bentrok:</b> {conflictText.join("; ")}{bufferMin ? ` (termasuk jeda ${bufferMin} mnt)` : ""}. Anda tetap bisa menyimpan.</span>
         </div>
@@ -365,7 +365,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       <div className="flex justify-end gap-2.5">
         <button type="button" onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
         <button type="submit" disabled={saving || !online}
-          className={`btn h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#33312D]"}`}>
+          className={`btn h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#353A33]"}`}>
           {saving ? "Menyimpan…" : hasConflict ? "Tetap simpan" : edit ? "Simpan perubahan" : pair.sel.length ? "Simpan 2 booking" : "Simpan booking"}
         </button>
       </div>

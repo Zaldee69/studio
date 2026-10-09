@@ -99,7 +99,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             </tbody>
           </table>
           {!!r.insights.length && (
-            <div className="mt-2 rounded-[10px] bg-[#F6F5FF] p-3"><b>Insight</b><ul className="mt-1 list-inside list-disc">{r.insights.map((i) => <li key={i.code}>{i.message}</li>)}</ul></div>
+            <div className="mt-2 rounded-[10px] bg-[#F5F6F2] p-3"><b>Insight</b><ul className="mt-1 list-inside list-disc">{r.insights.map((i) => <li key={i.code}>{i.message}</li>)}</ul></div>
           )}
         </section>
 
@@ -183,7 +183,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           </div>
           <div className="keep mt-3">
             <b className="text-[12px]">AOV harian per kategori</b>
-            <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }, { label: "Target", color: "#6B665C", dashed: true }]} />
+            <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }, { label: "Target", color: "#63665F", dashed: true }]} />
             <LineChart labels={d.daily.map((x) => `${Number(x.day.slice(8))}`)} ariaLabel="AOV harian"
               series={(["barbershop", "nail"] as const).map((k) => ({ key: k, label: CAT_LABEL[k], color: COLOR[k], values: d.daily.map((x) => x[`aov_${k}`]) }))}
               targets={[{ label: `Target barbershop ${rb(t.aov_barbershop)}`, value: t.aov_barbershop, color: COLOR.barbershop }, { label: `Target nail ${rb(t.aov_nail)}`, value: t.aov_nail, color: COLOR.nail }]} />

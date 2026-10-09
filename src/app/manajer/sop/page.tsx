@@ -51,7 +51,7 @@ export default async function Sop({ searchParams }: PageProps<"/manajer/sop">) {
           <div role="group" aria-label="Shift" className="ml-2 flex gap-1.5">
             {[1, 2].map((s) => (
               <Link key={s} href={q(date, s)} aria-current={shift === s ? "true" : undefined}
-                className="inline-flex h-11 items-center rounded-full border border-[#D9D4C8] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{names[s - 1] ?? `Shift ${s}`}</Link>
+                className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{names[s - 1] ?? `Shift ${s}`}</Link>
             ))}
           </div>
         )}

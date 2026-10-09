@@ -45,7 +45,7 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
       <section className="flex flex-col gap-2">
         <h2 className="text-base font-bold">Sedang berjalan</h2>
         {!drafts.length ? <Empty>Tidak ada opname draft.</Empty> : drafts.map((d) => (
-          <Link key={d.id} href={`${base}/${d.id}`} className="flex min-h-14 items-center gap-3 rounded-[14px] border-2 border-[#EBCB67] bg-[#FFFBEB] px-4 py-3">
+          <Link key={d.id} href={`${base}/${d.id}`} className="flex min-h-14 items-center gap-3 rounded-[14px] border-2 border-[#E8D6A6] bg-[#FFFBEB] px-4 py-3">
             <span className="flex flex-1 flex-col"><b>{SCOPE_LABEL[d.scope]} · dimulai {formatTanggal(d.started_at)} {formatJam(d.started_at)}</b>
               <span className="text-xs text-muted">oleh {d.starter} · {d.counted}/{d.total} item dihitung</span></span>
             <span className="btn-ink h-11">Lanjutkan →</span>
@@ -61,7 +61,7 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
                 <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Cakupan", "Penghitung", "Penyetuju", "Status", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i === 5 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
                 <tbody>
                   {done.map((r) => (
-                    <tr key={r.id} className="border-t border-[#F0EDE6]">
+                    <tr key={r.id} className="border-t border-[#EEEEEA]">
                       <td className="py-2"><Link className="font-semibold underline" href={`${base}/${r.id}`}>{formatTanggal(r.started_at)}</Link></td>
                       <td>{SCOPE_LABEL[r.scope]}</td><td>{r.starter}</td><td>{r.approver || "—"}</td>
                       <td>{r.status === "approved" ? "Disetujui" : "Dibatalkan"}</td>

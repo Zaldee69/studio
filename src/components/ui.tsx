@@ -97,30 +97,35 @@ export function StatusBadge({ status, short = false }: { status: ApptStatus; sho
   );
 }
 
+// chip kategori: latar abu netral + titik warna kategori (dot = warna grafik, palette.ts)
 export const CAT_STYLE = {
-  barbershop: { label: "Barbershop", short: "Barber", bg: "#E6E3F7", fg: "#3A2F8F" },
-  nail: { label: "Nail Art", short: "Nail", bg: "#F7E3EC", fg: "#8A2352" },
-  massage: { label: "Pijat", short: "Pijat", bg: "#E2F1EA", fg: "#1F5E44" },
-  retail: { label: "Ritel", short: "Ritel", bg: "#E4EEDF", fg: "#35502A" },
+  barbershop: { label: "Barbershop", short: "Barber", bg: "#F2F2EF", fg: "#2E312B", dot: "#5C6B4A" },
+  nail: { label: "Nail Art", short: "Nail", bg: "#F2F2EF", fg: "#2E312B", dot: "#B05A63" },
+  massage: { label: "Pijat", short: "Pijat", bg: "#F2F2EF", fg: "#2E312B", dot: "#9A6B3C" },
+  retail: { label: "Ritel", short: "Ritel", bg: "#F2F2EF", fg: "#2E312B", dot: "#4F7A9A" },
 } as const;
 
 export function CatChip({ cat }: { cat: keyof typeof CAT_STYLE }) {
   const c = CAT_STYLE[cat];
-  return <span className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-bold" style={{ background: c.bg, color: c.fg }}>{c.short}</span>;
+  return (
+    <span className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold" style={{ background: c.bg, color: c.fg }}>
+      <span aria-hidden="true" className="size-1.5 rounded-full" style={{ background: c.dot }} />{c.short}
+    </span>
+  );
 }
 
 export function Field({ label, htmlFor, children, hint }: { label: string; htmlFor: string; children: React.ReactNode; hint?: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-xs font-bold text-[#6B665C]">{label}</label>
+      <label htmlFor={htmlFor} className="text-xs font-bold text-[#63665F]">{label}</label>
       {children}
-      {hint && <span className="text-xs text-[#6B665C]">{hint}</span>}
+      {hint && <span className="text-xs text-[#63665F]">{hint}</span>}
     </div>
   );
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="px-2 py-8 text-center text-[13px] text-[#6B665C]">{children}</div>;
+  return <div className="px-2 py-8 text-center text-[13px] text-[#63665F]">{children}</div>;
 }
 
 export { Icon };

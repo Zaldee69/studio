@@ -69,23 +69,23 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
-      <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 bg-ink px-4 text-paper">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-paper font-display text-sm font-bold text-ink">{BRAND_INITIALS}</span>
+      <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-line bg-card px-4 text-ink">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-accent font-display text-sm font-bold text-white">{BRAND_INITIALS}</span>
         <span className="flex min-w-0 flex-1 flex-col">
           <b className="truncate text-base">Halo, {me.name.split(" ")[0]}</b>
-          <span className="truncate text-xs text-[#B9B3A7]">{role} · {formatTanggal(new Date())}</span>
+          <span className="truncate text-xs text-muted">{role} · {formatTanggal(new Date())}</span>
         </span>
         <nav aria-label="Menu kapster" className="hidden gap-1 min-[900px]:flex">
           {TABS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-              className={`relative flex h-10 items-center rounded-[10px] px-3.5 text-sm font-bold ${path === href ? "bg-paper text-ink" : "text-[#D8D2C6] hover:bg-[#2A2926]"}`}>
+              className={`relative flex h-10 items-center rounded-[10px] px-3.5 text-sm font-bold ${path === href ? "bg-[#ECEEE8] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
               {label}{badge(href) > 0 && <span className="ml-1.5 rounded-full bg-[#D23B3B] px-1.5 text-[11px] text-white tabular">{badge(href)}</span>}
             </Link>
           ))}
         </nav>
         <div className="relative">
           <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Menu"
-            className="flex size-10 items-center justify-center rounded-[10px] border border-[#3A3934] text-[#D8D2C6]">
+            className="flex size-10 items-center justify-center rounded-[10px] border border-line text-muted">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" /></svg>
           </button>
           {menu && (
@@ -94,13 +94,13 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
                 Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D23B3B] px-2 text-[11px] text-white tabular">{pending}</span>}
               </Link>
               <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-sm font-semibold hover:bg-paper">
-                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${muted ? "bg-[#EFECE5] text-muted" : "bg-[#D9F2E1] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
+                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${muted ? "bg-[#EDEDE9] text-muted" : "bg-[#E6F1E4] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
               </button>
               {!me.station && (
                 <button onClick={togglePush} disabled={!pushSupported() && !push} aria-pressed={!!push}
                   className="flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-sm font-semibold hover:bg-paper disabled:opacity-50">
                   Notifikasi push (walau aplikasi ditutup)
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${push ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#EFECE5] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${push ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EDEDE9] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
                 </button>
               )}
             </div>
@@ -109,7 +109,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
         {me.station ? (
           <form action={stationLogout}><button className="h-10 rounded-[10px] bg-paper px-3 text-[13px] font-bold text-ink">Ganti kapster</button></form>
         ) : (
-          <form action={signOut}><button aria-label={`Keluar dari akun ${me.name}`} className="h-10 rounded-[10px] border border-[#3A3934] px-3 text-[13px] font-bold text-[#D8D2C6]">Keluar</button></form>
+          <form action={signOut}><button aria-label={`Keluar dari akun ${me.name}`} className="h-10 rounded-[10px] border border-line px-3 text-[13px] font-bold text-muted hover:text-ink">Keluar</button></form>
         )}
       </header>
       <OfflineBanner />

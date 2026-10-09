@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 90], // 90: foto besar halaman publik (hero, kartu layanan)
     remotePatterns: [{
       protocol: supabase.protocol.replace(":", "") as "http" | "https", hostname: supabase.hostname,
       port: supabase.port, pathname: "/storage/v1/object/public/**",

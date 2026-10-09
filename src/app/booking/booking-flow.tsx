@@ -9,7 +9,7 @@ import type { Cust } from "@/components/customer-auth";
 import { OpenNow } from "@/components/open-now";
 import { BackButton, PublicHeader } from "@/components/public-header";
 import { captchaOn, Turnstile } from "@/components/turnstile";
-import { bundleDiscount } from "@/lib/domain/cart";
+import { calcCart, promoActive, type OnlinePromo } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, formatTanggal, jktDate, normalizeWhatsApp } from "@/lib/domain/format";
 import { dayWindow, type DayHours } from "@/lib/domain/hours";
 import { buildIcs } from "@/lib/domain/ics";
@@ -25,7 +25,7 @@ export type { Cust };
 type Cat = "barbershop" | "nail";
 type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string };
 type Staff = { id: string; name: string; category: Cat; photo: string | null };
-type Shop = { name: string; address: string; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean };
+type Shop = { name: string; address: string; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
 type View = "layanan" | "staf" | "waktu" | "konfirmasi" | "selesai" | "masuk";
 export type Init = { step?: string; services: string[]; pick: Record<string, string>; together: boolean; date?: string; time?: string; cat: Cat };
 export type Reschedule = { groupId: string; code: string; serviceIds: string[]; pick: Record<string, string>; together: boolean; startAt: string } | null;
@@ -40,7 +40,7 @@ const PRIMARY: Record<(typeof FLOW)[number], [string, string]> = {
 };
 const CAT: Record<Cat, { label: string; world: string; staffTitle: string; staffSub: string }> = {
   barbershop: { label: "Barbershop", world: "Barbershop", staffTitle: "Kapster barbershop", staffSub: "Barber" },
-  nail: { label: "Nail & Spa", world: "Nail & Spa", staffTitle: "Nail artist", staffSub: "Nail artist" },
+  nail: { label: "Nail Art", world: "Nail Art", staffTitle: "Nail artist", staffSub: "Nail artist" },
 };
 
 const fmtUtc = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("id-ID", { ...o, timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
@@ -52,7 +52,7 @@ const isView = (v?: string): v is (typeof FLOW)[number] => FLOW.includes(v as (t
 const h2 = "font-serif text-[34px] font-normal leading-none min-[900px]:text-[42px]";
 const opt = (on: boolean) => `border ${on ? "border-gold bg-lux-3" : "border-rule-2 hover:border-dust"}`;
 const chip = (on: boolean) => `border ${on ? "border-gold bg-gold text-lux" : "border-rule-2 text-cream hover:border-dust"}`;
-const errBox = "border border-[#7A2E26] bg-[#2A1512] px-3.5 py-3 text-sm text-[#F2B8B0]";
+const errBox = "border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]";
 // Kode dari booking_unavailable_reason(). "Keras" = tanggal lain pun tidak akan membantu.
 const HARD_REASONS = new Set(["closed", "services", "capacity", "staff"]);
 const REASON_MSG: Record<string, string> = {
@@ -66,8 +66,10 @@ const REASON_MSG: Record<string, string> = {
   today: "Jam tersisa hari ini sudah penuh atau sudah lewat. Silakan pilih tanggal lain.",
 };
 
-export default function BookingFlow({ services, staff, shop, hours, closures, customer, init, reschedule, cats: openCats }: {
+export default function BookingFlow({ services, staff, shop, hours, closures, customer, init, reschedule, cats: openCats, team = null }: {
   services: Svc[]; staff: Staff[]; shop: Shop; hours: DayHours[]; closures: string[]; customer: Cust; init: Init; reschedule: Reschedule;
+  /** login sebagai akun tim → tautan Jadwal-nya; booking publik hanya untuk pelanggan/tamu (ditolak di server) */
+  team?: string | null;
   cats: readonly Cat[]; // kategori yang punya kursi/meja & staf aktif — yang lain tidak ditawarkan
 }) {
   const router = useRouter();
@@ -142,7 +144,11 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const cats = (["barbershop", "nail"] as const).filter((c) => chosen.some((s) => s.category === c));
   const bothCats = cats.length === 2;
   const subtotal = chosen.reduce((a, s) => a + s.price, 0);
-  const discount = bundleDiscount(chosen.map((s) => ({ serviceId: s.id, name: s.name, category: s.category, price: s.price })), shop.bundlePct);
+  // estimasi = hitungan kasir: booking baru dalam periode promo → promo online (tidak ditumpuk dengan paket)
+  const promoNow = promoActive(shop.promo) && !reschedule;
+  const est = calcCart(chosen.map((s) => ({ serviceId: s.id, name: s.name, category: s.category, price: s.price, promo: promoNow })),
+    { bundlePct: shop.bundlePct, promoPct: promoNow ? shop.promo.pct : 0, method: "cash" });
+  const discount = est.discount;
   const total = subtotal - discount;
   const staffPick = Object.fromEntries(Object.entries(pick).filter(([, v]) => v));
   const previewKey = view === "konfirmasi" && time ? JSON.stringify([date, time, sel, staffPick, together]) : "";
@@ -326,21 +332,31 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           )}
 
           {/* STEP 1: LAYANAN */}
+          {team && (
+            <p role="alert" className="rounded-xl border border-[#E3B4AE] bg-[#FBEDEB] px-4 py-3 text-sm leading-relaxed text-[#9B2C22]">
+              Anda sedang login sebagai <b>akun tim</b>. Halaman ini untuk pelanggan, jadi booking dari sini akan ditolak.
+              Buat booking pelanggan lewat <Link href={team} className="font-semibold underline">Jadwal</Link>, atau keluar / pakai jendela
+              incognito untuk mencoba sebagai pelanggan.
+            </p>
+          )}
           {notice && inFlow && <p role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{notice}</p>}
           {view === "layanan" && (
             <>
               <section className="relative flex flex-col gap-5 overflow-hidden border border-rule bg-lux-2 p-6 min-[900px]:p-10">
                 <span className="eyebrow flex items-center gap-3.5"><span className="h-px w-10 bg-gold" />Reservasi online</span>
                 <h1 className="font-serif text-[44px] font-normal leading-[0.95] min-[900px]:text-[64px]">
-                  Seni merawat diri, <i className="text-gold">berdua.</i>
+                  For Every <i className="text-gold">You.</i>
                 </h1>
-                <span className="text-[15px] font-light text-sand">Barbershop &amp; Nail Spa dalam satu tempat{shop.address && ` · ${shop.address}`}</span>
+                <span className="text-[15px] text-sand">Barbershop • Nail Art • Lashes{shop.address && ` · ${shop.address}`}</span>
                 <div className="flex flex-wrap gap-2">
                   <span className="flex h-8 items-center gap-2 border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">
                     <OpenNow hours={hours} closures={closures} />
                   </span>
                   <span className="flex h-8 items-center border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">Bayar di tempat · Tunai / QRIS</span>
                 </div>
+                {promoNow && <div role="note" className="rounded-xl bg-rose/45 px-4 py-3 text-sm leading-relaxed text-cream">
+                  <b className="font-semibold">Diskon {shop.promo.pct}% untuk booking online.</b> Berlaku untuk booking lewat website sampai {formatTanggal(`${shop.promo.end}T12:00:00+07:00`)}. Potongan langsung saat bayar di studio — tidak perlu kode promo.
+                </div>}
                 {openCats.length > 1 && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
                   <span className="font-serif text-lg italic text-gold">Paket barbershop + nail</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
                 </div>}
@@ -366,7 +382,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                         <span className="flex min-w-0 flex-1 flex-col gap-1">
                           <span className="flex items-baseline gap-2.5 tabular-nums">
                             <span className="font-serif text-[22px] font-medium">{s.name}</span>
-                            <span className="flex-1 -translate-y-[5px] border-b border-dotted border-[#4A443B]" />
+                            <span className="flex-1 -translate-y-[5px] border-b border-dotted border-rule-2" />
                             <span className="text-base">{formatRupiah(s.price)}</span>
                           </span>
                           {s.description && <span className="text-[13px] font-light text-sand">{s.description}</span>}
@@ -502,7 +518,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 {summaryLines(false)}
                 {discount > 0 && (
                   <div className="flex justify-between text-sm tabular-nums text-gold">
-                    <span>Estimasi diskon paket {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
+                    <span>Estimasi {est.discountLabel.toLowerCase()}</span><span>−{formatRupiah(discount)}</span>
                   </div>
                 )}
                 <div className="flex items-baseline justify-between border-t border-rule pt-3 tabular-nums">
@@ -534,7 +550,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                         <input id="g-wa" inputMode="tel" autoComplete="tel" placeholder="08…" value={guest.wa} aria-describedby="g-wa-hint"
                           aria-invalid={!!guest.wa && !normalizeWhatsApp(guest.wa)}
                           onChange={(e) => setGuest({ ...guest, wa: e.target.value })} className="lux-input" />
-                        {guest.wa && !normalizeWhatsApp(guest.wa) && <span id="g-wa-hint" className="text-xs text-[#F2B8B0]">Format nomor Indonesia, mis. 0812… atau +62812…</span>}
+                        {guest.wa && !normalizeWhatsApp(guest.wa) && <span id="g-wa-hint" className="text-xs text-[#9B2C22]">Format nomor Indonesia, mis. 0812… atau +62812…</span>}
                       </div>
                     </div>
                     <label className="flex min-h-11 items-start gap-3 text-[13px] font-light leading-relaxed text-sand">
@@ -632,7 +648,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             <div className="flex flex-col gap-3">{summaryLines(true)}</div>
             {discount > 0 && (
               <div className="flex justify-between text-sm tabular-nums text-gold">
-                <span>Estimasi diskon paket {shop.bundlePct}%</span><span>−{formatRupiah(discount)}</span>
+                <span>Estimasi {est.discountLabel.toLowerCase()}</span><span>−{formatRupiah(discount)}</span>
               </div>
             )}
             {lines.length > 0 && discount === 0 && openCats.length > 1 && (
@@ -667,7 +683,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
       )}
 
       {toast && (
-        <div role="status" className="fixed bottom-[100px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap bg-cream px-5 py-3 text-sm font-medium text-lux shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+        <div role="status" className="fixed bottom-[100px] left-1/2 z-30 -translate-x-1/2 whitespace-nowrap bg-cream px-5 py-3 text-sm font-medium text-lux shadow-[0_12px_32px_rgba(36,41,35,0.18)]">
           {toast}
         </div>
       )}

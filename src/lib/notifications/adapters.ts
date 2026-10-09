@@ -10,7 +10,7 @@ async function ok(r: Response) {
   if (!r.ok) throw new Error(`${r.status} ${(await r.text()).slice(0, 200)}`);
 }
 
-/** Email via Resend (https://resend.com): RESEND_API_KEY + EMAIL_FROM ("D'Pras Barbershop <booking@domainanda.com>"). */
+/** Email via Resend (https://resend.com): RESEND_API_KEY + EMAIL_FROM ("D'Pras Studio <booking@domainanda.com>"). */
 export function sendEmailAdapter(): Adapters["email"] {
   const key = process.env.RESEND_API_KEY, from = process.env.EMAIL_FROM;
   if (!key || !from) return null;

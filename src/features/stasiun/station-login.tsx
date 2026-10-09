@@ -1,9 +1,11 @@
 "use client";
 
+import { CAT_TONE, STAFF_TITLE, type Cat } from "@/lib/domain/category";
+
 import { useActionState, useState } from "react";
 import { stationLogin } from "./actions";
 
-type S = { staff_id: string; name: string; category: "barbershop" | "nail"; has_pin: boolean };
+type S = { staff_id: string; name: string; category: Cat; has_pin: boolean };
 
 /** Pilih nama → PIN pad besar (4–6 digit). Verifikasi & rate limit di server. */
 export function StationLogin({ staff }: { staff: S[] }) {
@@ -18,9 +20,9 @@ export function StationLogin({ staff }: { staff: S[] }) {
           <button key={s.staff_id} onClick={() => { setSel(s); setPin(""); }} disabled={!s.has_pin}
             className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl bg-paper p-4 text-ink disabled:opacity-40">
             <span className="flex size-14 items-center justify-center rounded-full text-xl font-bold"
-              style={s.category === "nail" ? { background: "#F7E3EC", color: "#8A2352" } : { background: "#E6E3F7", color: "#3A2F8F" }}>{s.name.charAt(0)}</span>
+              style={{ background: CAT_TONE[s.category].bg, color: CAT_TONE[s.category].fg }}>{s.name.charAt(0)}</span>
             <b className="text-lg">{s.name}</b>
-            <span className="text-xs text-muted">{s.has_pin ? (s.category === "nail" ? "Nail artist" : "Kapster") : "PIN belum diatur"}</span>
+            <span className="text-xs text-muted">{s.has_pin ? STAFF_TITLE[s.category] : "PIN belum diatur"}</span>
           </button>
         ))}
         {!staff.length && <p className="col-span-full text-[#D8D2C6]">Belum ada kapster dengan akun aktif.</p>}

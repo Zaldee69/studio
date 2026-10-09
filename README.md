@@ -1,4 +1,4 @@
-# D'Pras Barbershop — aplikasi operasional
+# D'Pras Studio — aplikasi operasional
 
 Aplikasi web untuk barbershop + nail salon dalam satu lokasi: jadwal, kasir, deposit, inventaris, komisi, SOP.
 
@@ -407,7 +407,7 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
      sama (melindungi daftar/masuk/lupa sandi).
 - **Email (Resend)** — konfirmasi booking, "menunggu konfirmasi", dan pengingat H-1 ke pelanggan yang punya email.
   1. https://resend.com → *Domains* → tambahkan domain & pasang record DNS (SPF/DKIM) sampai *Verified*.
-  2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `D'Pras Barbershop <booking@domainanda.com>`).
+  2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `D'Pras Studio <booking@domainanda.com>`).
   3. Supabase → Authentication → **SMTP Settings** juga bisa diarahkan ke Resend (`smtp.resend.com`, port 465,
      user `resend`, sandi = API key) agar email konfirmasi akun & lupa sandi tidak kena batas email bawaan.
 - **WhatsApp otomatis** — adapter bawaan mengirim `POST WHATSAPP_API_URL` dengan header

@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
-import { CatChip, Empty, useOnline, useToast } from "@/components/ui";
-import { bundleHint, calcCart, quickCash, upsellSuggestions, type CartLine } from "@/lib/domain/cart";
+import { CAT_STYLE, CatChip, Empty, useOnline, useToast } from "@/components/ui";
+import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
+import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type CartLine } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
 import { cashChange } from "@/lib/domain/receipt";
 import { STATUS } from "@/lib/domain/status";
@@ -62,7 +63,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const inCart = new Set(items.map((i) => i.appointmentId).filter(Boolean));
   function toggleAppt(a: DayAppt) {
     setDone(null);
-    if (inCart.has(a.id)) { setItems(items.filter((i) => i.appointmentId !== a.id)); return; }
+    if (inCart.has(a.id)) {
+      const rest = items.filter((i) => i.appointmentId !== a.id);
+      setItems(rest);
+      // pelanggan diisi dari booking ini & tak ada booking lain miliknya di keranjang → kosongkan (jangan terbawa ke booking berikutnya)
+      const others = (dayAppts ?? []).filter((x) => rest.some((i) => i.appointmentId === x.id));
+      if (customer && customer.id === a.customer?.id && !others.some((x) => x.customer?.id === customer.id)) setCustomer(null);
+      return;
+    }
     setItems([...items, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id }))]);
     if (!customer && a.customer) setCustomer(a.customer);
   }
@@ -81,11 +89,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     if (cat !== "retail") setLastStaff({ ...lastStaff, [cat]: staffId });
   };
 
+  const apptOf = (id: string | null) => (id ? (dayAppts ?? []).find((a) => a.id === id) ?? (initialAppt?.id === id ? initialAppt : null) : null);
   const lines: CartLine[] = items.map((i) => {
     const s = svc.get(i.serviceId)!;
-    return { serviceId: s.id, name: s.name, category: s.category, price: s.price, staffId: i.staffId || null, appointmentId: i.appointmentId };
+    return { serviceId: s.id, name: s.name, category: s.category, price: s.price, staffId: i.staffId || null, appointmentId: i.appointmentId,
+      promo: s.category !== "retail" && promoEligible(apptOf(i.appointmentId), master.shop.promo) };
   });
-  const k = calcCart(lines, { bundlePct: master.shop.bundlePct, method, useDeposit: useDeposit && bal > 0, depositBalance: bal });
+  const k = calcCart(lines, { bundlePct: master.shop.bundlePct, promoPct: master.shop.promo.pct, method, useDeposit: useDeposit && bal > 0, depositBalance: bal });
   // <1000px keranjang ada di bawah katalog → bar ringkas melayang selama keranjang belum terlihat
   const cartRef = useRef<HTMLElement>(null);
   const [cartSeen, setCartSeen] = useState(true);
@@ -175,10 +185,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
         <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4 min-[1000px]:min-h-[260px] min-[1000px]:flex-1" aria-label="Katalog">
           <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5 overflow-x-auto">
-            {(["barbershop", "nail", "retail"] as const).map((c) => (
+            {(["barbershop", "nail", "massage", "retail"] as const).filter((c) => master.services.some((s) => s.active && s.category === c)).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
                 className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>
-                {c === "barbershop" ? "Barbershop" : c === "nail" ? "Nail & Spa" : "Ritel"}
+                {CAT_STYLE[c].label}
               </button>
             ))}
           </div>
@@ -240,10 +250,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                           {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       ) : (
-                        <select aria-label={`Kapster untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
+                        <select aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
                           title={i.staffLocked ? "Sesuai booking. Bila kapster diganti, ubah booking di Jadwal." : undefined}
                           className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A463F] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#D9D4C8]" : "border-[#D23B3B]"}`}>
-                          <option value="">{s.category === "nail" ? "Pilih nail artist" : "Pilih kapster"}</option>
+                          <option value="">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                       )}
@@ -269,7 +279,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             <div className="flex flex-col gap-2 border-t border-[#EFECE5] px-5 py-4 text-sm tabular">
               <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(k.subtotal)}</span></div>
               {k.discount > 0 && (
-                <div className="flex justify-between font-semibold text-accent-ink"><span>Diskon paket {master.shop.bundlePct}%</span><span>−{formatRupiah(k.discount)}</span></div>
+                <div className="flex justify-between font-semibold text-accent-ink"><span>{k.discountLabel}</span><span>−{formatRupiah(k.discount)}</span></div>
               )}
               {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon paket {master.shop.bundlePct}%</div>}
               {customer && (

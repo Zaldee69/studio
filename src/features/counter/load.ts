@@ -28,6 +28,7 @@ export async function loadMaster(role: "manager" | "cashier"): Promise<Master> {
       waTemplate: shop?.wa_followup_template ?? "",
       address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "", instagram: shop?.shop_instagram ?? "",
       bufferMin: shop?.booking_buffer_minutes ?? 0, hours: hours ?? [], closures: (closures ?? []).map((c) => c.date),
+      promo: { pct: shop?.online_promo_pct ?? 0, start: shop?.online_promo_start ?? null, end: shop?.online_promo_end ?? null },
     },
   };
 }

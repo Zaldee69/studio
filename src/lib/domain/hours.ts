@@ -17,18 +17,18 @@ export function dayWindow(date: string, hours: DayHours[], closures: string[]): 
   return { open: timeToMin(h.open_time), close: timeToMin(h.close_time) };
 }
 
-/** "Buka · tutup 21.00" / "Tutup · buka besok 09.00" — dihitung pada jam Asia/Jakarta. */
+/** "Sedang buka · sampai pukul 21.00" / "Sedang tutup · buka besok pukul 09.00" — dihitung pada jam Asia/Jakarta. */
 export function openStatus(now: Date, hours: DayHours[], closures: string[]): { open: boolean; label: string } {
   const today = jktDate(now), m = jktMinutes(now);
   const w = dayWindow(today, hours, closures);
   const fmt = (x: number) => minToTime(x).replace(":", ".");
-  if (w && m >= w.open && m < w.close) return { open: true, label: `Buka · tutup ${fmt(w.close)}` };
-  if (w && m < w.open) return { open: false, label: `Tutup · buka hari ini ${fmt(w.open)}` };
+  if (w && m >= w.open && m < w.close) return { open: true, label: `Sedang buka · sampai pukul ${fmt(w.close)}` };
+  if (w && m < w.open) return { open: false, label: `Sedang tutup · buka hari ini pukul ${fmt(w.open)}` };
   for (let i = 1; i <= 14; i++) {
     const d = addDays(today, i), n = dayWindow(d, hours, closures);
-    if (n) return { open: false, label: `Tutup · buka ${i === 1 ? "besok" : HARI[weekdayOf(d)]} ${fmt(n.open)}` };
+    if (n) return { open: false, label: `Sedang tutup · buka ${i === 1 ? "besok" : HARI[weekdayOf(d)]} pukul ${fmt(n.open)}` };
   }
-  return { open: false, label: "Tutup" };
+  return { open: false, label: "Sedang tutup" };
 }
 
 /** Pembatalan / jadwal ulang pelanggan: hanya sampai cutoffHours sebelum mulai. */

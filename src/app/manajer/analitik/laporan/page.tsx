@@ -108,7 +108,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           <h2 id="h-keu" className="mb-1 font-display text-lg font-bold">2. Keuangan</h2>
           <div className="grid gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
             <table className="w-full border-collapse text-[12px]"><tbody>
-              {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon (paket barbershop + nail)", -f.discount, false], ["= Omzet bersih", f.net, true],
+              {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon paket & promo", -f.discount, false], ...(f.discount_promo ? [["   termasuk promo booking online", -f.discount_promo, false]] : []), ["= Omzet bersih", f.net, true],
                  [`− HPP bahan & barang (${pc(hppPct)})`, -f.hpp, false], [`= Margin kotor (${pc(marginPct(f.net, f.hpp))})`, f.net - f.hpp, true],
                  ...(payroll == null ? [] : [["− Gaji & komisi staf", -payroll, false], ["= Kontribusi setelah gaji", afterPay, true]]),
                  ["Biaya perawatan fasilitas (dicatat)", f.maintenance_cost, false]] as [string, number, boolean][]).map(([k, v, b]) => (
@@ -162,7 +162,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             <tbody>
               {r.staff.map((x) => (
                 <tr key={x.staff_id}>
-                  <td className={td}>{x.name} <span className="text-[10px] text-muted">{x.category === "nail" ? "Nail" : "Barber"}{x.active ? "" : " · nonaktif"}</span></td>
+                  <td className={td}>{x.name} <span className="text-[10px] text-muted">{CAT_NAME[x.category]}{x.active ? "" : " · nonaktif"}</span></td>
                   <td className={num}>{n(x.tx)}</td><td className={num}>{m(x.revenue)}</td><td className={num}>{m(x.service_revenue)}</td><td className={num}>{m(x.retail_revenue)}</td>
                   <td className={num}>{m(x.aov)}</td><td className={num}>{pc(x.upsell_rate)}</td><td className={num}>{pc(x.utilization)}</td>
                   <td className={num}>{x.served} / {x.no_show}</td><td className={num}>{staffPay(x.staff_id) == null ? "—" : m(staffPay(x.staff_id))}</td>
@@ -183,7 +183,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           </div>
           <div className="keep mt-3">
             <b className="text-[12px]">AOV harian per kategori</b>
-            <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail & Spa", color: COLOR.nail }, { label: "Target", color: "#6B665C", dashed: true }]} />
+            <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }, { label: "Target", color: "#6B665C", dashed: true }]} />
             <LineChart labels={d.daily.map((x) => `${Number(x.day.slice(8))}`)} ariaLabel="AOV harian"
               series={(["barbershop", "nail"] as const).map((k) => ({ key: k, label: CAT_LABEL[k], color: COLOR[k], values: d.daily.map((x) => x[`aov_${k}`]) }))}
               targets={[{ label: `Target barbershop ${rb(t.aov_barbershop)}`, value: t.aov_barbershop, color: COLOR.barbershop }, { label: `Target nail ${rb(t.aov_nail)}`, value: t.aov_nail, color: COLOR.nail }]} />

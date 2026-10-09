@@ -12,10 +12,11 @@ import { stationLogout, stationPing } from "../stasiun/actions";
 import { useKapster } from "./provider";
 import { disablePush, enablePush, pushEnabled, pushSupported } from "./push";
 import { BRAND_INITIALS } from "@/lib/brand";
+import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 const BASE_TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
 // Konsultasi gaya rambut hanya untuk kapster barbershop
-const tabsFor = (cat: "barbershop" | "nail"): readonly (readonly [string, string])[] =>
+const tabsFor = (cat: Cat): readonly (readonly [string, string])[] =>
   cat === "barbershop" ? [...BASE_TABS.slice(0, 2), ["/kapster/gaya", "Gaya"], ...BASE_TABS.slice(2)] : BASE_TABS;
 const IDLE_MS = 5 * 60 * 1000;
 
@@ -58,7 +59,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
     return d && !d.closed && d.done < d.total ? 1 : 0;
   });
   const badge = (href: string) => (href === "/kapster" ? queue : href === "/kapster/sop" ? sop ?? 0 : 0);
-  const role = me.category === "nail" ? "Nail artist" : "Kapster barbershop";
+  const role = me.category === "barbershop" ? "Kapster barbershop" : STAFF_TITLE[me.category];
 
   async function togglePush() {
     if (push) { await disablePush(); setPush(false); toast("Notifikasi push dimatikan"); return; }

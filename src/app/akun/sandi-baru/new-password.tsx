@@ -38,7 +38,7 @@ export function NewPassword() {
       <span className="eyebrow">Akun pelanggan</span>
       <h1 className="-mt-2 font-serif text-[44px] font-normal leading-none">Kata sandi <i className="text-gold">baru.</i></h1>
       {phase === "checking" && <p className="text-sand">Memeriksa tautan…</p>}
-      {phase === "invalid" && <p role="alert" className="border border-[#7A2E26] bg-[#2A1512] px-3.5 py-3 text-sm text-[#F2B8B0]">Tautan tidak valid atau kedaluwarsa. Minta tautan baru dari halaman Masuk.</p>}
+      {phase === "invalid" && <p role="alert" className="border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]">Tautan tidak valid atau kedaluwarsa. Minta tautan baru dari halaman Masuk.</p>}
       {phase === "ready" && (
         <form onSubmit={save} className="flex flex-col gap-4">
           {(["a", "b"] as const).map((k) => (
@@ -47,7 +47,7 @@ export function NewPassword() {
               <input id={`np-${k}`} type="password" autoComplete="new-password" className="lux-input" value={pw[k]} onChange={(e) => { setPw({ ...pw, [k]: e.target.value }); setErr(""); }} />
             </div>
           ))}
-          {err && <p role="alert" className="border border-[#7A2E26] bg-[#2A1512] px-3.5 py-3 text-sm text-[#F2B8B0]">{err}</p>}
+          {err && <p role="alert" className="border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]">{err}</p>}
           <button disabled={busy} className="btn-gold w-full">{busy ? "Menyimpan…" : "Simpan kata sandi"}</button>
         </form>
       )}

@@ -9,12 +9,13 @@ import { TX_SELECT, useDayTransactions } from "../counter/hooks";
 import type { Master, TxRow } from "../counter/types";
 import { ReceiptView, toReceipt } from "./receipt-view";
 
-/** Transaksi hari ini: klik → struk & kirim ulang. Void hanya manajer (dijaga juga di server). */
+/** Transaksi per tanggal (default hari ini): klik → struk & kirim ulang. Void hanya manajer (dijaga juga di server). */
 export function History({ master, txParam }: { master: Master; txParam: string | null }) {
   const toast = useToast();
   const online = useOnline();
   const today = jktDate();
-  const { data, refresh } = useDayTransactions(today);
+  const [date, setDate] = useState(today);
+  const { data, refresh } = useDayTransactions(date);
   const [names, setNames] = useState<Map<string, string>>(new Map());
   const [openId, setOpenId] = useState<string | null>(txParam);
   const [extra, setExtra] = useState<TxRow | null>(null); // transaksi dari tanggal lain (tautan dari Jadwal)
@@ -47,7 +48,9 @@ export function History({ master, txParam }: { master: Master; txParam: string |
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex flex-wrap gap-4 text-[13px] text-muted tabular">
+      <div className="flex flex-wrap items-center gap-4 text-[13px] text-muted tabular">
+        <input type="date" aria-label="Tanggal transaksi" className="input h-9 w-auto" max={today} value={date}
+          onChange={(e) => setDate(e.target.value || today)} />
         <span><b className="text-ink">{sum.txCount}</b> transaksi</span>
         {/* total uang hanya untuk manajer: kasir menutup kas tanpa tahu angka sistem (tutup kasir buta) */}
         {master.role === "manager" && <>
@@ -63,7 +66,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
           <span>Jam</span><span>Pelanggan</span><span className="text-right">Total</span><span>Metode</span><span className="hidden min-[1000px]:block">Kasir</span>
         </div>
         <div className="max-h-full overflow-y-auto">
-          {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>Belum ada transaksi hari ini.</Empty> : txs.map((t) => (
+          {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>{date === today ? "Belum ada transaksi hari ini." : "Tidak ada transaksi di tanggal ini."}</Empty> : txs.map((t) => (
             <button key={t.id} onClick={() => setOpenId(t.id)}
               className={`grid min-h-[52px] w-full grid-cols-[64px_1.4fr_1fr_1fr] items-center gap-3 border-b border-[#F0EDE6] px-4 py-2 text-left text-sm tabular hover:bg-paper min-[1000px]:grid-cols-[64px_1.6fr_1fr_1.1fr_1fr] ${t.voided_at ? "text-muted line-through" : ""}`}>
               <b>{formatJam(t.created_at)}</b>

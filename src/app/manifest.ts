@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: BRAND,
     start_url: "/login",
     display: "standalone",
-    background_color: "#0E0D0C",
-    theme_color: "#0E0D0C",
+    background_color: "#F7F2EA",
+    theme_color: "#242923",
     // ponytail: ikon placeholder SVG; ganti dengan PNG 192/512 dari desainer
     icons: [{ src: "/icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],
   };

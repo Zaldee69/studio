@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
   ws = sheet(wb, "Keuangan", "Keuangan", sub);
   const payroll = r.payroll.complete ? r.payroll.total_pay : null;
   const k0 = table(ws, ["Laba kotor", "Rp"], [
-    ["Omzet kotor (harga normal)", f.gross], ["Diskon (paket barbershop + nail)", -f.discount], ["Omzet bersih", f.net],
+    ["Omzet kotor (harga normal)", f.gross], ["Diskon paket & promo", -f.discount], ["  termasuk promo booking online", -(f.discount_promo ?? 0)], ["Omzet bersih", f.net],
     ["HPP bahan & barang", -f.hpp], ["Margin kotor", f.net - f.hpp], ["Margin kotor %", marginPct(f.net, f.hpp)],
     ["Gaji & komisi staf", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : -payroll],
     ["Kontribusi setelah gaji", payroll == null ? null : f.net - f.hpp - payroll],
@@ -92,7 +92,7 @@ export async function GET(req: NextRequest) {
 
   // 3. Harian
   ws = sheet(wb, "Harian", "Rincian harian", sub);
-  table(ws, ["Tanggal", "Transaksi", "Omzet bersih", "Barbershop", "Nail & Spa", "Ritel", "Diskon", "HPP", "Margin", "Void", "Tunai", "QRIS", "Deposit"],
+  table(ws, ["Tanggal", "Transaksi", "Omzet bersih", "Barbershop", "Nail Art", "Ritel", "Diskon", "HPP", "Margin", "Void", "Tunai", "QRIS", "Deposit"],
     r.daily.map((x) => [x.day, x.tx, x.net, x.barbershop, x.nail, x.retail, x.discount, x.hpp, x.net - x.hpp, x.void, x.cash, x.qris, x.deposit]),
     [null, FMT.int, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.int, FMT.money, FMT.money, FMT.money]);
   const tot = (k: keyof (typeof r.daily)[number]) => r.daily.reduce((a, x) => a + (x[k] as number), 0);
@@ -105,7 +105,7 @@ export async function GET(req: NextRequest) {
   // 4. Staf
   ws = sheet(wb, "Staf", "Kinerja staf", sub);
   table(ws, ["Staf", "Kategori", "Transaksi", "Omzet", "Jasa", "Ritel", "AOV", "Upsell %", "Utilisasi %", "HPP", "Dilayani", "No-show", "Gaji & komisi"],
-    r.staff.map((x) => [x.name + (x.active ? "" : " (nonaktif)"), x.category === "nail" ? "Nail & Spa" : "Barbershop", x.tx, x.revenue, x.service_revenue,
+    r.staff.map((x) => [x.name + (x.active ? "" : " (nonaktif)"), CAT_NAME[x.category], x.tx, x.revenue, x.service_revenue,
       x.retail_revenue, x.aov, x.upsell_rate, x.utilization, x.hpp, x.served, x.no_show, r.payroll.by_staff[x.staff_id] ?? null]),
     [null, null, FMT.int, FMT.money, FMT.money, FMT.money, FMT.money, FMT.pct, FMT.pct, FMT.money, FMT.int, FMT.int, FMT.money]);
   widths(ws, [20, 12, 10, 15, 15, 13, 13, 10, 11, 13, 10, 9, 15]);
@@ -132,7 +132,7 @@ export async function GET(req: NextRequest) {
   // 7. Operasional
   ws = sheet(wb, "Operasional", "Operasional & kepatuhan", sub);
   table(ws, ["Kursi / meja", "Kategori", "Utilisasi %", "Jam terjual", "Jam tersedia"],
-    r.operations.utilization.map((u) => [u.name, u.type === "nail" ? "Nail & Spa" : "Barbershop", u.pct, u.sold_minutes / 60, u.available_minutes / 60]),
+    r.operations.utilization.map((u) => [u.name, CAT_NAME[u.type], u.pct, u.sold_minutes / 60, u.available_minutes / 60]),
     [null, null, FMT.pct, "#,##0.0", "#,##0.0"]);
   table(ws, ["Jam tersibuk", "Menit terjual rata-rata"], r.operations.peak_hours.map((h) => [`${WEEKDAY[h.weekday]} ${String(h.hour).padStart(2, "0")}.00`, h.minutes_avg]), [null, "#,##0"]);
   const inv = r.operations.inventory;

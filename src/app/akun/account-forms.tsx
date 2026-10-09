@@ -6,8 +6,8 @@ import { passwordError } from "@/lib/password";
 import { createClient } from "@/lib/supabase/client";
 import { cancelBooking, deleteAccount, updateName, type AkunState } from "./actions";
 
-const err = "border border-[#7A2E26] bg-[#2A1512] px-3 py-2 text-[13px] text-[#F2B8B0]";
-const ok = "text-[13px] text-[#8FD6A8]";
+const err = "border border-[#E3B4AE] bg-[#FBEDEB] px-3 py-2 text-[13px] text-[#9B2C22]";
+const ok = "text-[13px] text-[#2F6B45]";
 const Msg = ({ s }: { s: AkunState }) => s?.error ? <p role="alert" className={err}>{s.error}</p> : s?.ok ? <p role="status" className={ok}>{s.ok}</p> : null;
 
 export function CancelButton({ id }: { id: string }) {
@@ -20,7 +20,7 @@ export function CancelButton({ id }: { id: string }) {
         e.preventDefault();
         const btn = e.currentTarget; // requestSubmit tidak memicu onClick lagi
         if (await confirm({ title: "Batalkan booking ini?", description: "Jadwal akan dilepas dan tidak bisa dikembalikan.", confirmLabel: "Batalkan booking", cancelLabel: "Tidak", tone: "danger" })) btn.form?.requestSubmit(btn);
-      }} className="btn-line border-[#7A2E26] text-[#F2B8B0] hover:bg-[#2A1512]">{pending ? "Membatalkan…" : "Batalkan"}</button>
+      }} className="btn-line border-[#E3B4AE] text-[#9B2C22] hover:bg-[#FBEDEB] hover:text-[#9B2C22]">{pending ? "Membatalkan…" : "Batalkan"}</button>
       <Msg s={s} />
     </form>
   );
@@ -79,9 +79,9 @@ export function ProfileForms({ name, email }: { name: string; email: string }) {
 export function DeleteAccount() {
   const [open, setOpen] = useState(false);
   const [s, action, pending] = useActionState(deleteAccount, undefined);
-  if (!open) return <button onClick={() => setOpen(true)} className="self-start py-2 text-[13px] font-light text-[#F2B8B0] underline">Hapus akun saya</button>;
+  if (!open) return <button onClick={() => setOpen(true)} className="self-start py-2 text-[13px] font-light text-[#9B2C22] underline">Hapus akun saya</button>;
   return (
-    <form action={action} className="flex flex-col gap-3 border border-[#7A2E26] p-4">
+    <form action={action} className="flex flex-col gap-3 border border-[#E3B4AE] p-4">
       <p className="text-sm font-light leading-relaxed text-sand">
         Login akan dinonaktifkan dan data pribadi Anda (nama, WhatsApp, email, catatan) dianonimkan. Booking mendatang dibatalkan.
         Catatan transaksi tetap disimpan tanpa identitas untuk pembukuan toko. Saldo deposit yang tersisa tidak bisa dipakai lagi — hubungi toko sebelum menghapus.
@@ -91,7 +91,7 @@ export function DeleteAccount() {
       <Msg s={s} />
       <div className="flex gap-2">
         <button type="button" onClick={() => setOpen(false)} className="btn-line h-12 border-rule-2 text-dust">Batal</button>
-        <button disabled={pending} className="btn-line h-12 border-[#7A2E26] text-[#F2B8B0]">{pending ? "Menghapus…" : "Hapus akun"}</button>
+        <button disabled={pending} className="btn-line h-12 border-[#E3B4AE] text-[#9B2C22] hover:bg-[#FBEDEB] hover:text-[#9B2C22]">{pending ? "Menghapus…" : "Hapus akun"}</button>
       </div>
     </form>
   );

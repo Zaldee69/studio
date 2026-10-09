@@ -45,7 +45,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
           <div className="mb-3 flex h-12 items-center justify-center rounded-xl bg-paper font-display text-[17px] font-bold tracking-tight text-ink xl:hidden" aria-label={BRAND}>{BRAND_INITIALS}</div>
           <div className="hidden flex-col gap-1 px-2 pb-6 xl:flex">
             <span className="font-display text-2xl font-bold tracking-tight">{BRAND}</span>
-            <span className="text-xs text-[#B9B3A7]">Barbershop · Nail Spa — {area}</span>
+            <span className="text-xs text-[#B9B3A7]">Barbershop · Nail Art · Lashes — {area}</span>
           </div>
           <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">
             {menu.map((m) => {

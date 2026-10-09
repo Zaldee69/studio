@@ -1,5 +1,7 @@
 "use client";
 
+import type { Cat } from "@/lib/domain/category";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -10,7 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CAT, monthLabel, shiftMonth } from "./shared";
 
 export type PayRow = {
-  staff_id: string; staff_name: string; category: "barbershop" | "nail"; commission_pct: number; service_count: number;
+  staff_id: string; staff_name: string; category: Cat; commission_pct: number; service_count: number;
   revenue_net: number; hpp_total: number; commission_service: number; commission_retail: number; subsidy: number;
   adjustments: number; total_pay: number; closed: boolean; paid_at: string | null; paid_method: string | null;
 };

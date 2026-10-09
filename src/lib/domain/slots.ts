@@ -1,7 +1,7 @@
 // Slot booking online. Cermin plan_booking() & get_available_slots() di SQL (sumber kebenaran saat menyimpan).
 // Semua waktu = menit sejak 00:00 Asia/Jakarta pada tanggal yang dipilih.
 
-type Cat = "barbershop" | "nail";
+import type { Cat } from "./category";
 export interface SlotService { id: string; category: Cat | "retail"; durationMin: number; needsPedicure: boolean }
 export interface SlotResource { id: string; type: Cat; isPedicure: boolean }
 export interface SlotStaff { id: string; category: Cat; homeResourceId?: string | null } // kursi/meja utama (diutamakan)

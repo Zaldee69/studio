@@ -111,7 +111,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
               </span>
             </>
           )}
-        {err && <div role="alert" className="border border-[#7A2E26] bg-[#2A1512] px-3.5 py-3 text-sm text-[#F2B8B0]">{err}</div>}
+        {err && <div role="alert" className="border border-[#E3B4AE] bg-[#FBEDEB] px-3.5 py-3 text-sm text-[#9B2C22]">{err}</div>}
         {info && <div role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{info}</div>}
         <Turnstile key={attempt} onToken={setCaptcha} />
         <button disabled={busy} className="btn-gold w-full">

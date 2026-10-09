@@ -165,7 +165,7 @@ export const deltaLabel = (d: number | null) => (d === null ? "baru" : `${d >= 0
 
 const DAYS = ["", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 export type InsightInput = {
-  aov: Partial<Record<ServiceCat, number | null>>; targets: Record<ServiceCat, number>; aovGapPct: number;
+  aov: Partial<Record<ServiceCat, number | null>>; targets: Record<"barbershop" | "nail", number>; aovGapPct: number;
   upsellRate: Partial<Record<ServiceCat, number | null>>; upsellName: Partial<Record<ServiceCat, string | null>>;
   utilization: { name: string; pct: number | null }[]; lowUtilPct: number; busiest: { weekday: number; hour: number } | null;
   retailRatio: number | null; retailMin: number; retailMax: number; noShowRate: number | null;

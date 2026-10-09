@@ -21,7 +21,7 @@ export type AnalyticsData = {
   heat: { weekday: number; hour: number; minutes_avg: number; closed: boolean }[];
   duration: { service_id: string; name: string; planned_min: number; actual_avg: number; diff_avg: number; n: number }[];
   retail: { retail_revenue: number; service_revenue: number; ratio: number | null; min: number; max: number; top: { name: string; qty: number; revenue: number }[] };
-  mix: { mix: { category: "barbershop" | "nail" | "retail"; revenue: number; share: number | null }[]; weekly: { week: string; barbershop: number; nail: number; retail: number }[] };
+  mix: { mix: { category: "barbershop" | "nail" | "massage" | "retail"; revenue: number; share: number | null }[]; weekly: { week: string; barbershop: number; nail: number; massage?: number; retail: number }[] };
   customers: { new_customers: number; returning: number; return_rate: number | null; return_eligible: number; return_back: number; churn_count: number; followup_sent: number; followup_converted: number; followup_rate: number | null; window_days: number };
   online: { landing: number; booking_open: number; booked: number; share_online: number | null; cancel_rate: number | null; no_show_rate: number | null; online_appts: number; all_appts: number; no_show: number };
   insights: { code: string; message: string; href: string }[];
@@ -162,7 +162,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
         extra={<div role="group" aria-label="Sumber durasi" className="flex gap-1">{[[false, "Nyata"], [true, "Rencana"]].map(([v, l]) => (
           <button key={String(v)} aria-pressed={planned === v} onClick={() => setPlanned(v as boolean)}
             className={`h-11 rounded-full border px-3.5 text-xs font-bold ${planned === v ? "border-ink bg-ink text-white" : "border-[#D9D4C8] bg-card"}`}>{l as string}</button>))}</div>}>
-        <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail & Spa", color: COLOR.nail }]} />
+        <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }]} />
         <HBars ariaLabel="Utilisasi per resource" target={{ value: t.utilization, label: `Target ${t.utilization}%` }}
           rows={d.util.map((u) => { const p = (planned ? u.pct_planned : u.pct) ?? 0; const m = planned ? u.planned_minutes : u.sold_minutes;
             return { label: u.name, value: p, color: COLOR[u.type], caption: `${pct1(p)}% · ${(m / 60).toLocaleString("id-ID", { maximumFractionDigits: 1 })} jam dari ${Math.round(u.available_minutes / 60)} jam` }; })} />

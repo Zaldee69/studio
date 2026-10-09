@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { z } from "zod";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
+import { COMING_SOON } from "@/lib/domain/category";
 import { log } from "@/lib/log";
 import { verifyTurnstile } from "@/lib/turnstile";
 
@@ -49,12 +50,21 @@ export async function bookOnline(raw: unknown): Promise<BookResult> {
       return { ok: false, code: "captcha", message: "Verifikasi keamanan gagal. Muat ulang lalu coba lagi." };
     }
   }
-  const { data, error } = await createAdminClient().rpc("book_online", { p: { ...v, actor: user?.id ?? null, ip } });
+  const admin = createAdminClient();
+  // lini "Segera hadir" tidak dibuka untuk booking online walau ada staf & meja (mis. tautan lama / panggilan langsung)
+  const { data: cats } = await admin.from("services").select("category").in("id", v.service_ids);
+  if ((cats ?? []).some((c) => COMING_SOON.includes(c.category))) {
+    return { ok: false, code: "services", message: "Layanan ini belum dibuka untuk reservasi online." };
+  }
+  const { data, error } = await admin.rpc("book_online", { p: { ...v, actor: user?.id ?? null, ip } });
   if (error) {
     log("error", "booking_rpc_failed", { db_code: error.code, error: error.message, user: user?.id ?? null });
     return { ok: false, code: "error", message: "Gagal menyimpan booking. Coba lagi." };
   }
   const res = data as unknown as BookResult;
+  if (!res.ok && res.message === "Tim memakai jadwal admin") {
+    return { ok: false, code: "team", message: "Akun tim tidak bisa booking dari halaman pelanggan. Buat booking lewat menu Jadwal, atau keluar dulu untuk booking sebagai pelanggan." };
+  }
   // slot_taken / penuh = wajar; batas percobaan & batas booking aktif = sinyal penyalahgunaan
   if (!res.ok && (res.code === "rate" || res.code === "limit")) log("warn", "booking_blocked", { reason: res.code, ip, user: user?.id ?? null });
   else if (res.ok && !res.duplicate) log("info", "booking_created", { group: res.group_id, status: res.status, guest: !user, reschedule: !!v.reschedule_group });

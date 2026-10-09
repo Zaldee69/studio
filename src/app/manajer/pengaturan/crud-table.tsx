@@ -25,8 +25,8 @@ function FieldInput({ f, value, options, id }: { f: Field; value: unknown; optio
     return <textarea {...common} defaultValue={String(value ?? "")} rows={3} className="input py-2" />;
   return (
     <input {...common} defaultValue={value == null ? "" : String(value)}
-      type={f.type === "time" ? "time" : f.type === "text" ? "text" : "number"}
-      step={f.type === "money" ? 100 : 1} inputMode={f.type === "text" || f.type === "time" ? undefined : "numeric"}
+      type={f.type === "time" || f.type === "date" || f.type === "text" ? f.type : "number"}
+      step={f.type === "money" ? 100 : 1} inputMode={f.type === "text" || f.type === "time" || f.type === "date" ? undefined : "numeric"}
       className="input" />
   );
 }

@@ -13,7 +13,7 @@ export const SUMMARY_ROWS: SummaryRow[] = [
   { key: "aov_barbershop", label: "AOV Barbershop", kind: "money", target: (t) => t.aov_barbershop || null },
   { key: "aov_nail", label: "AOV Nail", kind: "money", target: (t) => t.aov_nail || null },
   { key: "rev_barbershop", label: "Omzet Barbershop", kind: "money" },
-  { key: "rev_nail", label: "Omzet Nail & Spa", kind: "money" },
+  { key: "rev_nail", label: "Omzet Nail Art", kind: "money" },
   { key: "rev_retail", label: "Omzet Ritel", kind: "money" },
   { key: "retail_ratio", label: "Rasio ritel : jasa", kind: "pct" },
   { key: "utilization", label: "Utilisasi kursi/meja", kind: "pct", target: (t) => t.utilization || null },
@@ -35,4 +35,4 @@ export function change(kind: RowKind, cur: number | null | undefined, prev: numb
 }
 
 export const WEEKDAY = ["", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"]; // isodow 1..7
-export const CAT_NAME = { barbershop: "Barbershop", nail: "Nail & Spa", retail: "Ritel" } as const;
+export const CAT_NAME = { barbershop: "Barbershop", nail: "Nail Art", massage: "Pijat", retail: "Ritel" } as const;

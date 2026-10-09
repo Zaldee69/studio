@@ -203,7 +203,7 @@ function PrefEditor({ customerId, initial, category }: { customerId: string; ini
   };
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor="st-pref" className="text-[13px] font-bold">Perbarui preferensi ({category === "nail" ? "mis. warna gel, bentuk kuku" : "mis. ukuran clipper, model"})</label>
+      <label htmlFor="st-pref" className="text-[13px] font-bold">Perbarui preferensi ({category === "nail" ? "mis. warna gel, bentuk kuku" : category === "massage" ? "mis. tekanan pijat, area keluhan" : "mis. ukuran clipper, model"})</label>
       <textarea id="st-pref" rows={2} value={v} onChange={(e) => onChange(e.target.value)}
         className="resize-y rounded-xl border border-[#D9D4C8] px-3 py-2.5 text-base leading-normal outline-none focus:border-accent" />
       <span className="text-xs text-muted" aria-live="polite">

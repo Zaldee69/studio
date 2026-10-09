@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calcCart, upsellSuggestions, type CartLine } from "./cart";
+import { calcCart, promoEligible, upsellSuggestions, type CartLine } from "./cart";
 import { monthlyPay, serviceHpp } from "./commission";
 import { followupLink, isChurn } from "./customer";
 import { formatRupiah, formatTanggal, normalizeWhatsApp } from "./format";
@@ -30,6 +30,18 @@ describe("keranjang (cermin checkout SQL)", () => {
     expect(r).toMatchObject({ subtotal: 275000, discount: 16500, total: 258500, paid: 258500, paymentMethod: "cash" });
     expect(r.shares).toEqual([7500, 9000, 0]);
     expect(r.discountLabel).toBe("Diskon paket 10%");
+  });
+  it("promo booking online: hanya layanan dari booking online, tidak ditumpuk dengan paket (pakai yang lebih besar)", () => {
+    const r = calcCart([{ ...potong, promo: true }, pomade], { bundlePct: 10, promoPct: 10, method: "cash" });
+    expect(r).toMatchObject({ discount: 7500, discountLabel: "Promo booking online 10%" });
+    expect(r.shares).toEqual([7500, 0]);
+    const both = calcCart([{ ...potong, promo: true }, mani], { bundlePct: 10, promoPct: 10, method: "cash" });
+    expect(both).toMatchObject({ discount: 16500, discountLabel: "Diskon paket 10%" }); // paket 16.500 > promo 7.500
+    const promo = { pct: 10, start: "2026-10-10", end: "2026-10-31" };
+    expect(promoEligible({ source: "online", created_at: "2026-10-09T17:30:00Z" }, promo)).toBe(true);  // 10 Okt 00.30 WIB
+    expect(promoEligible({ source: "online", created_at: "2026-10-09T16:30:00Z" }, promo)).toBe(false); // 9 Okt 23.30 WIB
+    expect(promoEligible({ source: "walk_in", created_at: "2026-10-15T03:00:00Z" }, promo)).toBe(false);
+    expect(promoEligible({ source: "online", created_at: "2026-10-15T03:00:00Z" }, { ...promo, pct: 0 })).toBe(false);
   });
   it("pembulatan ke Rp100 dan porsi selalu berjumlah = diskon", () => {
     const a = { ...potong, price: 33333 }, b = { ...mani, price: 44444 };

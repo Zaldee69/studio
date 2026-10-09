@@ -108,11 +108,14 @@ test("4 · kasir: /manajer/sdm ditolak, tidak ada void; manajer bisa void", asyn
   await page.getByRole("button", { name: /Tambah Pomade Matte/ }).click();
   await page.getByRole("button", { name: /Catat pembayaran/ }).click();
   await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
-  await page.getByRole("tab", { name: "Transaksi hari ini" }).click();
+  await page.getByRole("tab", { name: "Riwayat transaksi" }).click();
   await page.getByRole("button", { name: /Pelanggan umum/ }).first().click();
   const struk = page.getByRole("dialog", { name: "Struk transaksi" });
   await expect(struk).toBeVisible();
   await expect(struk.getByRole("button", { name: /void/i })).toHaveCount(0);
+  await page.keyboard.press("Escape");
+  await page.getByLabel("Tanggal transaksi").fill("2020-01-01"); // transaksi tanggal lain bisa dilihat
+  await expect(page.getByText("Tidak ada transaksi di tanggal ini.")).toBeVisible();
 
   const manager = await newSession(browser, info, "manager");
   await manager.goto("/manajer/kasir?tab=riwayat");

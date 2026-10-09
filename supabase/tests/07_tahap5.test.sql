@@ -81,7 +81,7 @@ select results_eq($$ select aov_barbershop, aov_nail, tx_barbershop, tx_nail, om
   $$ values (71250::bigint, 171000::bigint, 2, 2, 594500::bigint) $$, 'AOV harian = kartu (satu definisi)');
 select is((kpi_summary('2026-03-10', '2026-03-10', 'nail') #>> '{current,omzet}')::bigint, 342000::bigint, 'filter Nail: omzet layanan nail saja');
 select is((kpi_retail('2026-03-10', '2026-03-10') -> 'top' -> 0 ->> 'name'), 'Pomade Matte', 'top produk ritel');
-select is((kpi_revenue_mix('2026-03-10', '2026-03-10') -> 'mix' -> 2 ->> 'revenue')::bigint, 110000::bigint, 'porsi omzet ritel');
+select is((kpi_revenue_mix('2026-03-10', '2026-03-10') -> 'mix' -> 3 ->> 'revenue')::bigint, 110000::bigint, 'porsi omzet ritel');
 
 -- =============================== 4.5–4.7 (U5–U7) ===============================
 select results_eq($$ select sold_minutes, available_minutes, round(pct, 1), round(pct_planned, 1) from kpi_utilization('2026-03-10', '2026-03-10') where name = 'Kursi Barber 1' $$,

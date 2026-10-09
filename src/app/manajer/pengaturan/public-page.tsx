@@ -14,7 +14,7 @@ type Photo = { id: string; kind: string; path: string; caption: string; sort: nu
 type Msg = { id: string; channel: string; to_address: string; template: string; status: string; attempts: number; last_error: string | null; created_at: string };
 
 async function upload(file: File, folder: string) {
-  const blob = await compressImage(file);
+  const blob = await compressImage(file, { maxSide: 2400, maxBytes: 4.5 * 1024 * 1024 }); // foto landing tampil besar di layar retina
   const path = `${folder}/${crypto.randomUUID()}.webp`;
   const { error } = await createClient().storage.from("site").upload(path, blob, { contentType: "image/webp", upsert: false });
   if (error) throw error;
@@ -171,9 +171,9 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">Foto</h2>
-      <p className="-mt-2 text-xs text-muted">Dikompres otomatis ke WebP (maks. 2 MB, sisi terpanjang 1600 px). Tanpa foto, landing memakai ilustrasi garis emas.</p>
-      <div className="grid gap-4 min-[1000px]:grid-cols-3">
-        {[["hero", "Hero (bingkai lengkung)"], ["groom", "Sisi Barbershop"], ["bloom", "Sisi Nail & Spa"]].map(([k, l]) => (
+      <p className="-mt-2 text-xs text-muted">Dikompres otomatis ke WebP (sisi terpanjang 2400 px). Unggah foto asli (bukan tangkapan layar/hasil kirim WhatsApp) agar tetap tajam; hero & kartu layanan berbentuk lengkung tegak — foto potret paling pas. Tanpa foto, landing memakai ilustrasi garis.</p>
+      <div className="grid gap-4 min-[700px]:grid-cols-2 min-[1200px]:grid-cols-4">
+        {[["hero", "Hero (bingkai lengkung)"], ["groom", "Kartu Barbershop"], ["bloom", "Kartu Nail Art"], ["lashes", "Kartu Lashes"]].map(([k, l]) => (
           <div key={k} className="flex items-center gap-3">
             <Thumb path={list.find((p) => p.kind === k)?.path ?? null} alt={l} />
             <div className="flex flex-col gap-2"><b className="text-sm">{l}</b><Pick id={k} busy={busy} label="Ganti foto" onFile={(f) => setSingle(k, f?.[0])} /></div>

@@ -99,7 +99,8 @@ export function StatusBadge({ status, short = false }: { status: ApptStatus; sho
 
 export const CAT_STYLE = {
   barbershop: { label: "Barbershop", short: "Barber", bg: "#E6E3F7", fg: "#3A2F8F" },
-  nail: { label: "Nail & Spa", short: "Nail", bg: "#F7E3EC", fg: "#8A2352" },
+  nail: { label: "Nail Art", short: "Nail", bg: "#F7E3EC", fg: "#8A2352" },
+  massage: { label: "Pijat", short: "Pijat", bg: "#E2F1EA", fg: "#1F5E44" },
   retail: { label: "Ritel", short: "Ritel", bg: "#E4EEDF", fg: "#35502A" },
 } as const;
 

@@ -1,7 +1,7 @@
 {
   "name": "DP Kapster",
   "short_name": "DP Kapster",
-  "description": "Antrean, jadwal, komisi, dan izin untuk kapster & nail artist D'Pras Barbershop.",
+  "description": "Antrean, jadwal, komisi, dan izin untuk kapster, nail artist & terapis D'Pras Studio.",
   "id": "/kapster",
   "start_url": "/kapster",
   "scope": "/kapster",

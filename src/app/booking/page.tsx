@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { COMING_SOON, ONLINE_CATS, isOnlineCat } from "@/lib/domain/category";
 import { getProfile } from "@/lib/auth";
 import { jktDate } from "@/lib/domain/format";
 import { photoUrl } from "@/lib/storage";
@@ -58,21 +59,25 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
     together: one(sp.mode) !== "berurutan", date: one(sp.tgl), time: one(sp.jam),
     cat: one(sp.kategori) === "nail" ? "nail" : "barbershop",
   };
-  const cats = (["barbershop", "nail"] as const).filter((c) => (bookable ?? []).includes(c));
+  const cats = ONLINE_CATS.filter((c) => (bookable ?? []).includes(c) && !COMING_SOON.includes(c));
   if (cats.length && !cats.includes(init.cat)) init.cat = cats[0];
 
   return (
     <BookingFlow
       customer={customer} init={init} reschedule={reschedule}
+      team={profile && profile.role !== "customer"
+        ? { manager: "/manajer/jadwal", cashier: "/kasir/jadwal", staff: "/kapster/jadwal" }[profile.role as "manager" | "cashier" | "staff"] ?? "/login"
+        : null}
       cats={cats}
       services={(services ?? []).filter((s) => s.online_bookable && (cats as readonly string[]).includes(s.category!)).map((s) => ({
         id: s.id!, name: s.name!, category: s.category as "barbershop" | "nail", price: s.price!, duration: s.duration_min!, description: s.public_description ?? "",
       }))}
-      staff={(staff ?? []).map((s) => ({ id: s.id!, name: s.name!, category: s.category!, photo: photoUrl(s.photo_path) }))}
+      staff={(staff ?? []).flatMap((s) => isOnlineCat(s.category!) ? [{ id: s.id!, name: s.name!, category: s.category, photo: photoUrl(s.photo_path) }] : [])}
       hours={hours ?? []} closures={(closures ?? []).map((c) => c.date)}
       shop={{
         name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "",
         bundlePct: shop?.bundle_pct ?? 10, maxDays: shop?.booking_max_days_ahead ?? 14, cutoffHours: shop?.cancel_cutoff_hours ?? 2,
+        promo: { pct: shop?.online_promo_pct ?? 0, start: shop?.online_promo_start ?? null, end: shop?.online_promo_end ?? null },
         open: (shop?.online_booking_open ?? true) && cats.length > 0, review: shop?.online_booking_mode === "review",
       }}
     />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
 import { savePublicSettings, saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
@@ -34,7 +35,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       supabase.from("resources").select("id, name, type").eq("active", true).order("sort"),
     ]);
     // kursi utama: diutamakan saat booking, harus sekategori (dijaga trigger DB)
-    const resources = (res ?? []).map((r) => [r.id, `${r.name} (${r.type === "nail" ? "nail" : "barber"})`] as [string, string]);
+    const resources = (res ?? []).map((r) => [r.id, `${r.name} (${CAT_NAME[r.type]})`] as [string, string]);
     const hidden = (["barbershop", "nail"] as const).filter((c) => !(open ?? []).includes(c));
     body = (
       <div className="space-y-4">

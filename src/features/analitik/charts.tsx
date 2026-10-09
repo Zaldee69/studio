@@ -161,20 +161,21 @@ export function Bullet({ value, min, max, scale = 30 }: { value: number | null; 
 }
 
 /** Bar bertumpuk per minggu, celah 2 px antar segmen, label total. */
-export function StackedWeekly({ weeks }: { weeks: { week: string; barbershop: number; nail: number; retail: number }[] }) {
-  const max = Math.max(1, ...weeks.map((w) => w.barbershop + w.nail + w.retail));
-  const keys = ["barbershop", "nail", "retail"] as const;
+export function StackedWeekly({ weeks }: { weeks: { week: string; barbershop: number; nail: number; massage?: number; retail: number }[] }) {
+  const keys = ["barbershop", "nail", "massage", "retail"] as const;
+  const sum = (w: (typeof weeks)[number]) => keys.reduce((a, k) => a + (w[k] ?? 0), 0);
+  const max = Math.max(1, ...weeks.map(sum));
   return (
     <div className="flex flex-col gap-2">
       <Legend items={keys.map((k) => ({ label: CAT_LABEL[k], color: COLOR[k] }))} />
       <div className="flex h-44 items-end gap-2 overflow-x-auto" role="img" aria-label="Tren omzet mingguan per kategori">
         {weeks.map((w) => {
-          const tot = w.barbershop + w.nail + w.retail;
+          const tot = sum(w);
           return (
-            <div key={w.week} className="flex min-w-10 flex-1 flex-col items-center gap-1" title={`Minggu ${w.week}: ${keys.map((k) => `${CAT_LABEL[k]} ${rb(w[k])}`).join(", ")}`}>
+            <div key={w.week} className="flex min-w-10 flex-1 flex-col items-center gap-1" title={`Minggu ${w.week}: ${keys.map((k) => `${CAT_LABEL[k]} ${rb(w[k] ?? 0)}`).join(", ")}`}>
               <span className="text-[10px] font-semibold tabular">{rb(tot)}</span>
               <div className="flex w-full flex-col-reverse gap-[2px]" style={{ height: `${(tot / max) * 130}px` }}>
-                {keys.map((k) => w[k] > 0 && <div key={k} style={{ height: `${(w[k] / tot) * 100}%`, background: COLOR[k] }} className="w-full rounded-[2px]" />)}
+                {keys.map((k) => (w[k] ?? 0) > 0 && <div key={k} style={{ height: `${((w[k] ?? 0) / tot) * 100}%`, background: COLOR[k] }} className="w-full rounded-[2px]" />)}
               </div>
               <span className="text-[10px] text-muted">{w.week.slice(8)}/{w.week.slice(5, 7)}</span>
             </div>

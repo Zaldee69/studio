@@ -4,7 +4,7 @@ import { z } from "zod";
 export type Field = {
   name: string;
   label: string;
-  type: "text" | "textarea" | "money" | "int" | "bool" | "select" | "time";
+  type: "text" | "textarea" | "money" | "int" | "bool" | "select" | "time" | "date";
   /** opsi statis, atau nama kunci opsi dinamis yang dikirim halaman (mis. "services") */
   options?: [string, string][] | string;
   nullable?: boolean;
@@ -14,7 +14,7 @@ export type Field = {
   w?: string; // lebar kolom grid
 };
 
-const CATEGORY: [string, string][] = [["barbershop", "Barbershop"], ["nail", "Nail & Spa"]];
+const CATEGORY: [string, string][] = [["barbershop", "Barbershop"], ["nail", "Nail Art"], ["massage", "Pijat"]];
 
 export const TABLES = {
   services: {
@@ -114,7 +114,7 @@ export const PUBLIC_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "hero_title_accent", label: "Aksen miring emas", type: "text" },
     { name: "hero_text", label: "Paragraf hero (satu kalimat)", type: "textarea" },
     { name: "groom_text", label: "Deskripsi Barbershop", type: "textarea" },
-    { name: "bloom_text", label: "Deskripsi Nail & Spa", type: "textarea" },
+    { name: "bloom_text", label: "Deskripsi Nail Art", type: "textarea" },
     { name: "founded_year", label: "Tahun berdiri (est.)", type: "int", nullable: true, min: 1900, max: 2100 },
     { name: "maps_embed_url", label: "URL embed Google Maps (https://www.google.com/maps/embed?…)", type: "text", nullable: true },
   ] },
@@ -126,6 +126,11 @@ export const PUBLIC_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "show_staff", label: "Tampilkan staf di landing", type: "bool" },
     { name: "show_prices", label: "Tampilkan harga", type: "bool" },
     { name: "online_booking_open", label: "Booking online dibuka", type: "bool" },
+  ] },
+  { title: "Promo booking online", fields: [
+    { name: "online_promo_pct", label: "Diskon booking online (%) — 0 = promo mati", type: "int", min: 0, max: 50 },
+    { name: "online_promo_start", label: "Berlaku untuk booking yang dibuat mulai", type: "date", nullable: true },
+    { name: "online_promo_end", label: "sampai dengan", type: "date", nullable: true },
   ] },
   { title: "Aturan booking online", fields: [
     { name: "booking_lead_minutes", label: "Paling cepat (menit dari sekarang)", type: "int", min: 0, max: 2880 },
@@ -203,6 +208,10 @@ function fieldSchema(f: Field): z.ZodType {
     }
     case "time":
       return z.string().regex(/^\d{2}:\d{2}/, `${f.label}: format JJ:MM`);
+    case "date": {
+      const d = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, `${f.label}: pilih tanggal`);
+      return f.nullable ? z.preprocess((v) => (empty(v) ? null : v), d.nullable()) : d;
+    }
     case "select": {
       const s = Array.isArray(f.options)
         ? z.enum(f.options.map(([v]) => v) as [string, ...string[]], { message: `Pilih ${f.label}` })

@@ -52,7 +52,7 @@ async function register(p: Page, name: string, email: string) {
   await expect(p.getByText("Saldo deposit", { exact: true })).toBeVisible();
 }
 
-test("1 · landing → Reservasi Nail & Spa → Gel Polish + Potong Rambut bersamaan → tamu → sukses; muncul di konter (Online) & HP Andi", async ({ browser }, info) => {
+test("1 · landing → Reservasi Barbershop → Potong Rambut → tamu → sukses; muncul di konter (Online) & HP Andi", async ({ browser }, info) => {
   const kasir = await counterOn(browser, info, 2);
   const andi = await newSession(browser, info, "andi", { width: 390, height: 844 });
   await andi.goto("/kapster/jadwal");
@@ -60,10 +60,7 @@ test("1 · landing → Reservasi Nail & Spa → Gel Polish + Potong Rambut bersa
   const name = `Tamu ${uniq()}`;
   const p = await visitor(browser, info);
   await p.goto("/");
-  await p.getByRole("link", { name: "Reservasi Nail & Spa" }).click();
-  await p.waitForURL(/kategori=nail/);
-  await p.getByRole("button", { name: /Gel Polish Tangan/ }).click();
-  await p.getByRole("tab", { name: /Barbershop/ }).click();
+  await p.getByRole("link", { name: "Reservasi Barbershop" }).click();
   await p.getByRole("button", { name: /Potong Rambut/ }).first().click();
   await lanjut(p);
   await p.getByRole("button", { name: /^A\s*Andi/ }).click();
@@ -80,7 +77,7 @@ test("1 · landing → Reservasi Nail & Spa → Gel Polish + Potong Rambut bersa
   // konter: tanpa refresh — kartu dengan badge Online + toast
   await expect(kasir.getByText(/Booking online baru/)).toBeVisible();
   const cards = kasir.getByRole("button", { name: new RegExp(`^${name},`) });
-  await expect(cards).toHaveCount(2); // nail + barber bersamaan
+  await expect(cards).toHaveCount(1);
   await expect(cards.first()).toContainText("Online");
   // HP kapster yang ditunjuk (Andi)
   await expect(andi.getByText(name, { exact: true })).toBeVisible();
@@ -236,37 +233,16 @@ test("6 · tautan/tab lama berisi layanan & staf yang sudah tidak ada → bukan 
   }
 });
 
-test("7 · tidak ada meja nail aktif → reservasi nail tidak ditawarkan (landing, booking) & manajer diberi tahu", async ({ page, browser }, info) => {
-  const { data: nail } = await admin.from("resources").select("id, name").eq("type", "nail").order("sort");
-  const last = nail!.at(-1)!;
-  await admin.from("resources").update({ active: false }).eq("type", "nail").neq("id", last.id);
-  const m = await newSession(browser, info, "manager");
-  // meja terakhir dimatikan lewat Pengaturan (menyegarkan cache landing seperti pemakaian nyata)
-  const toggle = async (on: boolean) => {
-    await m.goto("/manajer/pengaturan?tab=kursi");
-    const row = m.locator("form", { has: m.locator(`input[value="${last.name}"]`) });
-    await row.getByLabel("Aktif").setChecked(on);
-    await row.getByRole("button", { name: "Simpan" }).click();
-    await expect(row.getByRole("status")).toBeVisible();
-  };
-  try {
-    await toggle(false);
-    await m.reload();
-    await expect(m.getByText(/Reservasi online nail sedang disembunyikan/)).toBeVisible();
-
-    await page.goto("/");
-    await expect(page.getByRole("link", { name: "Reservasi Nail & Spa" })).toHaveCount(0);
-    await expect(page.getByRole("link", { name: "Reservasi Barbershop" })).toBeVisible();
-    await page.goto("/booking?kategori=nail");
-    await expect(page.getByRole("tab", { name: /Nail & Spa/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Manicure Basic Rp/ })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /^Potong Rambut Rp/ })).toBeVisible();
-    await expect(page.getByText("Paket barbershop + nail")).toHaveCount(0);
-  } finally {
-    await admin.from("resources").update({ active: true }).eq("type", "nail");
-    await toggle(true);
-    await m.context().close();
-  }
+test("7 · Nail Art & Lashes \"Segera hadir\": tanpa menu & reservasi online walau meja & nail artist aktif", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Reservasi Nail & Spa" })).toBeVisible();
+  const lini = page.getByRole("region", { name: "Barbershop, Nail Art, dan Lashes" });
+  await expect(lini.getByText("Segera hadir")).toHaveCount(2);
+  await expect(page.getByRole("link", { name: "Reservasi Nail Art" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Reservasi Barbershop" })).toBeVisible();
+  await expect(page.getByText("Manicure Basic")).toHaveCount(0);           // menu nail belum tampil
+  await expect(page.getByText(/Barbershop \+ Nail Art — hemat/)).toHaveCount(0);
+  await page.goto("/booking?kategori=nail");
+  await expect(page.getByRole("tab", { name: /Nail Art/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Manicure Basic Rp/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Potong Rambut Rp/ })).toBeVisible();
 });

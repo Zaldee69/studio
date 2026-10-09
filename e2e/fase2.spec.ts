@@ -93,7 +93,7 @@ test("E2 · checkout 3× Potong → neck strip lewat ambang → banner & lonceng
     const href = decodeURIComponent((await group.getByRole("link", { name: "Kirim via WhatsApp" }).getAttribute("href"))!);
     expect(href).toContain("wa.me/6281200001111");
     expect(href).toContain(`- Neck strip ${new Intl.NumberFormat("id-ID").format(suggest)} pcs`);
-    expect(href).toContain(`Halo ${sup!.name}, kami dari D'Pras Barbershop mau pesan:`);
+    expect(href).toContain(`Halo ${sup!.name}, kami dari D'Pras Studio mau pesan:`);
   } finally {
     await admin.from("inventory_items").update({ reorder_at: 100, supplier_id: null }).eq("id", neck.id);
     await admin.from("suppliers").delete().eq("id", sup!.id);

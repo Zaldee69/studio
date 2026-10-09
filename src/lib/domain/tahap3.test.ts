@@ -15,10 +15,10 @@ describe("jam buka & Buka/Tutup (Asia/Jakarta)", () => {
     expect(dayWindow("2026-10-06", week, ["2026-10-06"])).toBeNull();              // libur khusus
   });
   it("penanda Buka/Tutup", () => {
-    expect(openStatus(new Date("2026-10-03T05:00:00Z"), week, [])).toEqual({ open: true, label: "Buka · tutup 21.00" });  // Sabtu 12.00
-    expect(openStatus(new Date("2026-10-03T01:00:00Z"), week, []).label).toBe("Tutup · buka hari ini 09.00");              // Sabtu 08.00
-    expect(openStatus(new Date("2026-10-04T12:00:00Z"), week, []).label).toBe("Tutup · buka Selasa 09.00");                // Minggu 19.00 → Senin libur
-    expect(openStatus(new Date("2026-10-03T15:00:00Z"), week, []).label).toBe("Tutup · buka besok 10.00");                 // Sabtu 22.00
+    expect(openStatus(new Date("2026-10-03T05:00:00Z"), week, [])).toEqual({ open: true, label: "Sedang buka · sampai pukul 21.00" });  // Sabtu 12.00
+    expect(openStatus(new Date("2026-10-03T01:00:00Z"), week, []).label).toBe("Sedang tutup · buka hari ini pukul 09.00");              // Sabtu 08.00
+    expect(openStatus(new Date("2026-10-04T12:00:00Z"), week, []).label).toBe("Sedang tutup · buka Selasa pukul 09.00");                // Minggu 19.00 → Senin libur
+    expect(openStatus(new Date("2026-10-03T15:00:00Z"), week, []).label).toBe("Sedang tutup · buka besok pukul 10.00");                 // Sabtu 22.00
   });
   it("batas pembatalan", () => {
     const now = Date.parse("2026-10-03T10:00:00+07:00");

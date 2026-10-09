@@ -1,5 +1,7 @@
 "use client";
 
+import type { Cat } from "@/lib/domain/category";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Field, useOnline, useToast } from "@/components/ui";
@@ -9,7 +11,7 @@ import { itemCommission } from "@/lib/domain/commission";
 import { createClient } from "@/lib/supabase/client";
 import { CAT } from "./shared";
 
-type StaffRule = { id: string; name: string; category: "barbershop" | "nail"; commission_pct_override: number | null; active: boolean };
+type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; active: boolean };
 
 /** Aturan komisi: rasio global, override per staf, komisi ritel, ambang gaji minimum. Berlaku untuk periode yang belum ditutup. */
 export function CommissionRules({ ratio, retailPct, minPay, staff }: { ratio: number; retailPct: number; minPay: number; staff: StaffRule[] }) {
@@ -69,7 +71,7 @@ export function CommissionRules({ ratio, retailPct, minPay, staff }: { ratio: nu
   );
 }
 
-export type LeaderRow = { rank: number; staff_id: string; staff_name: string; category: "barbershop" | "nail"; revenue_net: number; service_count: number; avg_per_service: number };
+export type LeaderRow = { rank: number; staff_id: string; staff_name: string; category: Cat; revenue_net: number; service_count: number; avg_per_service: number };
 
 /** Papan peringkat: satu sumbu, warna mengikuti bidang (bukan peringkat), label langsung + tabel. */
 export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
@@ -108,7 +110,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
 }
 
 export type ReviewRow = {
-  staff_id: string; staff_name: string; category: "barbershop" | "nail"; revenue_net: number; service_count: number; avg_per_service: number;
+  staff_id: string; staff_name: string; category: Cat; revenue_net: number; service_count: number; avg_per_service: number;
   upsell_rate: number; return_rate: number; work_days: number; off_days: number; total_paid: number; note: string;
 };
 

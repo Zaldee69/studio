@@ -13,7 +13,7 @@ export function Wordmark({ compact = false }: { compact?: boolean }) {
   );
 }
 
-const NAV = [["#dunia", "Layanan"], ["#menu", "Menu"], ["#ritual", "Ritual"], ["#kunjungi", "Kunjungi"]] as const;
+const NAV = [["#dunia", "Layanan"], ["#menu", "Menu"], ["#ritual", "Paket"], ["#kunjungi", "Kunjungi"]] as const;
 
 /** Header publik (landing, booking, akun). `left` untuk tombol kembali, `right` untuk aksi. */
 export function PublicHeader({ left, right, nav = false }: { left?: React.ReactNode; right?: React.ReactNode; nav?: boolean }) {
@@ -32,7 +32,7 @@ export function PublicHeader({ left, right, nav = false }: { left?: React.ReactN
               <summary aria-label="Buka menu" className="flex size-11 cursor-pointer list-none items-center justify-center border border-rule-2 text-cream [&::-webkit-details-marker]:hidden">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
               </summary>
-              <nav aria-label="Navigasi" className="absolute right-0 top-14 flex w-56 flex-col border border-rule-2 bg-lux-2 py-2 shadow-[0_16px_40px_rgba(0,0,0,0.5)]">
+              <nav aria-label="Navigasi" className="absolute right-0 top-14 flex w-56 flex-col border border-rule-2 bg-lux-2 py-2 shadow-[0_16px_40px_rgba(36,41,35,0.18)]">
                 {NAV.map(([h, l]) => <a key={h} href={h} className="flex min-h-11 items-center px-4 text-xs font-medium uppercase tracking-[0.22em] text-sand hover:text-gold">{l}</a>)}
               </nav>
             </details>

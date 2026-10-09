@@ -1,5 +1,6 @@
 "use client";
 
+import { CAT_NAME, CAT_TONE, type Cat } from "@/lib/domain/category";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -132,8 +133,8 @@ export function Beranda({ master }: { master: Master }) {
           {team.map(({ s, st, count }) => (
             <div key={s.id} className="flex min-h-11 items-center gap-3">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full font-bold"
-                style={s.category === "nail" ? { background: "#F7E3EC", color: "#8A2352" } : { background: "#E6E3F7", color: "#3A2F8F" }}>{s.name.charAt(0)}</span>
-              <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm">{s.name}</b><span className="truncate text-xs text-muted">{s.category === "nail" ? "Nail & Spa" : "Barbershop"} · {count} booking hari ini</span></span>
+                style={{ background: CAT_TONE[s.category].bg, color: CAT_TONE[s.category].fg }}>{s.name.charAt(0)}</span>
+              <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm">{s.name}</b><span className="truncate text-xs text-muted">{CAT_NAME[s.category as Cat]} · {count} booking hari ini</span></span>
               <span className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-[3px] text-xs font-bold" style={{ background: st.s.bg, color: st.s.fg }}>
                 <span className="size-[7px] rounded-full" style={{ background: st.s.dot }} />{st.label}
               </span>

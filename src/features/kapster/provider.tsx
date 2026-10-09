@@ -1,5 +1,7 @@
 "use client";
 
+import type { Cat } from "@/lib/domain/category";
+
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useToast } from "@/components/ui";
 import { formatJam, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -15,7 +17,7 @@ export type MyAppt = {
   changed_by_me: boolean | null; change_request: string | null; change_requested_at: string | null; service_ids: string[];
 };
 export type TimeOff = { id: string; staff_id: string; start_at: string; end_at: string; all_day: boolean; reason: string; status: "pending" | "approved" | "rejected" | "cancelled"; created_at: string };
-export type Me = { name: string; staffId: string; category: "barbershop" | "nail"; station: boolean };
+export type Me = { name: string; staffId: string; category: Cat; station: boolean };
 export type SvcLite = { id: string; name: string; duration_min: number };
 
 type Ctx = {

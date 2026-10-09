@@ -8,7 +8,7 @@ import { Closing } from "./closing";
 import { History } from "./history";
 import { Pos } from "./pos";
 
-const TABS = [["kasir", "Kasir"], ["riwayat", "Transaksi hari ini"], ["tutup", "Tutup kasir"]] as const;
+const TABS = [["kasir", "Kasir"], ["riwayat", "Riwayat transaksi"], ["tutup", "Tutup kasir"]] as const;
 type Tab = (typeof TABS)[number][0];
 
 export function KasirScreen({ master, initialAppt }: { master: Master; initialAppt: DayAppt | null }) {

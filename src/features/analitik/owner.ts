@@ -1,3 +1,4 @@
+import type { Cat as StaffCat } from "@/lib/domain/category";
 import "server-only";
 import { jktDate } from "@/lib/domain/format";
 import { ownerPeriod, type OwnerPeriod } from "@/lib/domain/owner";
@@ -11,11 +12,11 @@ export type OwnerSummary = {
   retail_ratio: N; utilization: N; void_count: number; topup_paid: number;
   new_customers: number; returning: number; return_rate: N; no_show_rate: N; online_share: N; sop_compliance: N;
 };
-type Cat = "barbershop" | "nail" | "retail";
+type Cat = "barbershop" | "nail" | "massage" | "retail";
 export type OwnerReport = {
   summary: OwnerSummary; previous: OwnerSummary; last_year: OwnerSummary;
   finance: {
-    tx_count: number; void_count: number; void_amount: number; gross: number; discount: number; net: number; hpp: number;
+    tx_count: number; void_count: number; void_amount: number; gross: number; discount: number; discount_promo?: number; net: number; hpp: number;
     by_category: { category: Cat; items: number; gross: number; discount: number; net: number; hpp: number; margin: number }[];
     payments: { cash: number; qris: number; deposit: number };
     deposit: { topup_count: number; topup_paid: number; topup_cash: number; topup_qris: number; topup_credited: number; bonus: number; used: number; balance_end: number };
@@ -23,7 +24,7 @@ export type OwnerReport = {
   };
   payroll: { months: { month: string; closed: boolean; total_pay: number }[]; complete: boolean; all_closed: boolean; total_pay: number;
     commission_service: number; commission_retail: number; subsidy: number; adjustments: number; by_staff: Record<string, number> };
-  staff: { staff_id: string; name: string; category: "barbershop" | "nail"; active: boolean; tx: number; revenue: number; service_revenue: number;
+  staff: { staff_id: string; name: string; category: StaffCat; active: boolean; tx: number; revenue: number; service_revenue: number;
     service_items: number; retail_revenue: number; aov: N; upsell_rate: N; hpp: number; utilization: N; served: number; no_show: number }[];
   services: { name: string; category: Cat; qty: number; revenue: number; hpp: number; margin: number; margin_pct: N }[];
   customers: { new_customers: number; returning: number; return_rate: N; return_eligible: number; return_back: number; churn_count: number;
@@ -32,7 +33,7 @@ export type OwnerReport = {
   online: { landing: number; booking_open: number; booked: number; online_appts: number; all_appts: number; online_created: number;
     online_cancelled: number; no_show: number; showed: number; share_online: N; cancel_rate: N; no_show_rate: N };
   operations: {
-    utilization: { name: string; type: "barbershop" | "nail"; pct: N; sold_minutes: number; available_minutes: number }[];
+    utilization: { name: string; type: StaffCat; pct: N; sold_minutes: number; available_minutes: number }[];
     peak_hours: { weekday: number; hour: number; minutes_avg: number }[];
     sop: { operational: number; ok: number; compliance_pct: N };
     maintenance_done: number; maintenance_overdue_now: number;

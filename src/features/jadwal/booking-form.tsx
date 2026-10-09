@@ -1,5 +1,6 @@
 "use client";
 
+import { CAT_NAME, CAT_TONE, CATS, STAFF_TITLE } from "@/lib/domain/category";
 import { useEffect, useMemo, useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
 import { bundleDiscount } from "@/lib/domain/cart";
@@ -20,8 +21,6 @@ type Source = "walk_in" | "whatsapp" | "admin";
 type Conflict = { id: string; start_at: string; end_at: string; customer_name: string; staff_name: string | null; resource_name: string };
 type Pair = { sel: string[]; resourceId: string | null; staffPick: string | null };
 
-const CAT_NAME: Record<Cat, string> = { barbershop: "Barbershop", nail: "Nail & Spa" };
-const other = (c: Cat): Cat => (c === "barbershop" ? "nail" : "barbershop");
 const hhmm = (m: number) => minToTime(m).replace(":", ".");
 
 /**
@@ -94,7 +93,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const staffId = staffPick ?? defaultStaffFor(cat, resourceId, startIso, endIso);
 
   // ---------- booking kedua (pasangan, kategori lain) ----------
-  const pairCat = other(cat);
+  const pairCat: Cat = (svcById.get(pair.sel[0] ?? "")?.category as Cat | undefined) ?? cat;
   const pairDur = durOf(pair.sel);
   const pairEndIso = jktIso(date, start + pairDur);
   const pairResource = pair.sel.length ? pair.resourceId ?? freeResource(pairCat, startIso, pairEndIso) : null;
@@ -122,7 +121,9 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       return;
     }
     if (edit) return setError(`Ubah booking hanya untuk layanan ${CAT_NAME[cat]}. Buat booking baru untuk ${CAT_NAME[c]}.`);
-    setPair((p) => ({ ...p, sel: p.sel.includes(id) ? p.sel.filter((x) => x !== id) : [...p.sel, id] }));
+    // booking kedua = satu kategori lain; pilih kategori ketiga → booking kedua diganti ke kategori itu
+    setPair((p) => p.sel.length && svcById.get(p.sel[0])?.category !== c ? { sel: [id], resourceId: null, staffPick: null }
+      : { ...p, sel: p.sel.includes(id) ? p.sel.filter((x) => x !== id) : [...p.sel, id] });
   }
 
   // ---------- peringatan ----------
@@ -254,9 +255,9 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         <legend className="mb-1 text-xs font-bold text-muted">
           Layanan {edit ? `(${CAT_NAME[cat]})` : "— pilih kategori lain untuk pasangan (booking kedua di jam yang sama)"}
         </legend>
-        {(["barbershop", "nail"] as const).map((c) => (
+        {CATS.filter((c) => bookable.some((s) => s.category === c)).map((c) => (
           <div key={c} className="flex flex-col gap-1.5">
-            <span className={`text-xs font-bold ${c === "barbershop" ? "text-[#3A2F8F]" : "text-[#8A2352]"}`}>
+            <span className="text-xs font-bold" style={{ color: CAT_TONE[c].fg }}>
               {CAT_NAME[c]}{sel.length > 0 && c !== cat && !edit ? " · booking kedua" : ""}
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -280,7 +281,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
             {resOptions(cat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
           </select>
         </Field>
-        <Field label={cat === "nail" ? "Nail artist" : "Kapster"} htmlFor="f-staff">
+        <Field label={STAFF_TITLE[cat]} htmlFor="f-staff">
           <select id="f-staff" className="input" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
             {!staffId && <option value="">— tidak ada staf aktif —</option>}
             {staffOptions(cat, startIso, endIso)}
@@ -321,7 +322,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 {resOptions(pairCat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             </Field>
-            <Field label={pairCat === "nail" ? "Nail artist" : "Kapster"} htmlFor="f-staff2">
+            <Field label={STAFF_TITLE[pairCat]} htmlFor="f-staff2">
               <select id="f-staff2" className="input" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value }); setServerConflicts(null); }}>
                 {!pairStaff && <option value="">— tidak ada staf aktif —</option>}
                 {staffOptions(pairCat, startIso, pairEndIso)}

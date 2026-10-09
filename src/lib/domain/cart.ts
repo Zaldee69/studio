@@ -1,5 +1,6 @@
 // Keranjang kasir. Cermin checkout() di SQL — ubah keduanya bersamaan.
-export type Category = "barbershop" | "nail" | "retail";
+import { jktDate } from "./format";
+export type Category = "barbershop" | "nail" | "massage" | "retail";
 export type PayMethod = "cash" | "qris" | "deposit" | "deposit_cash" | "deposit_qris";
 
 export interface CartLine {
@@ -9,7 +10,22 @@ export interface CartLine {
   price: number;
   staffId?: string | null;
   appointmentId?: string | null;
+  /** layanan dari booking yang dibuat online dalam periode promo (lihat promoEligible) */
+  promo?: boolean;
 }
+
+export type OnlinePromo = { pct: number; start: string | null; end: string | null };
+
+/** Promo booking online berlaku untuk booking ber-sumber online yang DIBUAT (bukan jadwalnya) dalam periode promo. */
+export function promoEligible(appt: { source: string; created_at: string } | null | undefined, promo: OnlinePromo): boolean {
+  if (!appt || appt.source !== "online" || promo.pct <= 0 || !promo.start || !promo.end) return false;
+  const made = jktDate(new Date(appt.created_at));
+  return made >= promo.start && made <= promo.end;
+}
+
+/** Promo sedang berjalan hari ini (banner publik). */
+export const promoActive = (promo: OnlinePromo, today = jktDate()) =>
+  promo.pct > 0 && !!promo.start && !!promo.end && today >= promo.start && today <= promo.end;
 
 export interface CartResult {
   subtotal: number;
@@ -30,14 +46,15 @@ export function bundleDiscount(lines: CartLine[], bundlePct: number): number {
   return Math.round((base * bundlePct) / 10000) * 100;
 }
 
-/** Porsi proporsional (dibulatkan ke bawah); sisa pembulatan ke item layanan terakhir. */
-export function allocateDiscount(lines: CartLine[], discount: number): number[] {
-  const base = lines.filter((l) => l.category !== "retail").reduce((a, l) => a + l.price, 0);
+/** Porsi proporsional (dibulatkan ke bawah); sisa pembulatan ke item layanan terakhir. Promo: hanya baris promo. */
+export function allocateDiscount(lines: CartLine[], discount: number, promoOnly = false): number[] {
+  const takes = (l: CartLine) => l.category !== "retail" && (!promoOnly || !!l.promo);
+  const base = lines.filter(takes).reduce((a, l) => a + l.price, 0);
   let last = -1;
-  lines.forEach((l, i) => { if (l.category !== "retail") last = i; });
+  lines.forEach((l, i) => { if (takes(l)) last = i; });
   let allocated = 0;
   return lines.map((l, i) => {
-    if (discount === 0 || l.category === "retail") return 0;
+    if (discount === 0 || !takes(l)) return 0;
     const share = i === last ? discount - allocated : Math.floor((discount * l.price) / base);
     allocated += share;
     return share;
@@ -46,18 +63,22 @@ export function allocateDiscount(lines: CartLine[], discount: number): number[] 
 
 export function calcCart(
   lines: CartLine[],
-  opts: { bundlePct: number; depositBalance?: number; useDeposit?: boolean; method: "cash" | "qris" },
+  opts: { bundlePct: number; promoPct?: number; depositBalance?: number; useDeposit?: boolean; method: "cash" | "qris" },
 ): CartResult {
   const subtotal = lines.reduce((a, l) => a + l.price, 0);
-  const discount = bundleDiscount(lines, opts.bundlePct);
+  const bundle = bundleDiscount(lines, opts.bundlePct);
+  const promoBase = lines.filter((l) => l.promo && l.category !== "retail").reduce((a, l) => a + l.price, 0);
+  const promo = Math.round((promoBase * (opts.promoPct ?? 0)) / 10000) * 100;
+  const usePromo = promo > bundle; // tidak ditumpuk: pakai yang lebih besar
+  const discount = usePromo ? promo : bundle;
   const total = subtotal - discount;
   const depositUsed = opts.useDeposit ? Math.min(Math.max(opts.depositBalance ?? 0, 0), total) : 0;
   const paymentMethod: PayMethod =
     depositUsed > 0 && depositUsed < total ? `deposit_${opts.method}` : depositUsed > 0 ? "deposit" : opts.method;
   return {
     subtotal, discount, total, depositUsed, paymentMethod,
-    discountLabel: discount ? `Diskon paket ${opts.bundlePct}%` : "",
-    shares: allocateDiscount(lines, discount),
+    discountLabel: usePromo ? `Promo booking online ${opts.promoPct}%` : discount ? `Diskon paket ${opts.bundlePct}%` : "",
+    shares: allocateDiscount(lines, discount, usePromo),
     paid: total - depositUsed,
   };
 }

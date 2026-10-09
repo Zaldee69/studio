@@ -4,6 +4,8 @@ const supabase = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0
 const local = ["127.0.0.1", "localhost"].includes(supabase.hostname);
 
 const nextConfig: NextConfig = {
+  // dev/build terhadap Supabase produksi (npm run dev:prod) memakai folder sendiri — cache lokal & produksi tidak tercampur
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Browser selalu meminta /favicon.ico; arahkan ke ikon SVG di app/icon.svg.
   async redirects() {
     return [{ source: "/favicon.ico", destination: "/icon.svg", permanent: true }];

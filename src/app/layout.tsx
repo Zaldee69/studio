@@ -22,11 +22,20 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#242923" };
 
+// dev server yang tersambung ke Supabase cloud (npm run dev:prod) → penanda agar tidak salah mengubah data asli
+const PROD_DB_IN_DEV = process.env.NODE_ENV === "development" && !/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className={`${bricolage.variable} ${jakarta.variable} ${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       {/* ekstensi browser (mis. ColorZilla: cz-shortcut-listen) menambah atribut di <body> → bukan mismatch dari kode kita */}
-      <body className="min-h-full" suppressHydrationWarning><ConfirmProvider>{children}</ConfirmProvider></body>
+      <body className="min-h-full" suppressHydrationWarning><ConfirmProvider>{children}</ConfirmProvider>
+        {PROD_DB_IN_DEV && (
+          <div role="status" className="pointer-events-none fixed bottom-3 left-3 z-[100] rounded-full bg-[#B42318] px-3.5 py-1.5 text-xs font-bold tracking-wide text-white shadow-lg print:hidden">
+            DATABASE PRODUKSI — data asli
+          </div>
+        )}
+      </body>
     </html>
   );
 }

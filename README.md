@@ -410,11 +410,12 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
   2. *API Keys* → buat kunci. Vercel: `RESEND_API_KEY` dan `EMAIL_FROM` (mis. `D'Pras Studio <booking@domainanda.com>`).
   3. Supabase → Authentication → **SMTP Settings** juga bisa diarahkan ke Resend (`smtp.resend.com`, port 465,
      user `resend`, sandi = API key) agar email konfirmasi akun & lupa sandi tidak kena batas email bawaan.
-- **WhatsApp otomatis** — adapter bawaan mengirim `POST WHATSAPP_API_URL` dengan header
-  `Authorization: Bearer WHATSAPP_API_TOKEN` dan body `{"to":"62…","message":"…"}`; cocok untuk penyedia
-  gateway WA Indonesia (Fonnte, Wablas, Qontak, dll. — sesuaikan `src/lib/notifications/adapters.ts` bila format
-  penyedia berbeda). Isi kedua variabel di Vercel → Redeploy. Sebelum diisi, pesan WA tercatat *dilewati* dan
-  kasir tetap bisa mengirim manual lewat tombol WhatsApp di Jadwal.
+- **WhatsApp otomatis (Wablas)** — pengingat booking & kode verifikasi nomor WA akun pelanggan.
+  1. Dashboard Wablas → hubungkan perangkat (scan QR) → *Device → Settings*: salin **token** dan buat **secret key**
+     (dikirim ke WA admin). Catat domain server API yang tertera di dashboard.
+  2. Vercel: `WABLAS_TOKEN`, `WABLAS_SECRET_KEY`, dan `WABLAS_URL` (default `https://wablas.com`) → Redeploy.
+  Sebelum diisi, pesan WA tercatat *dilewati*, verifikasi nomor WA akun nonaktif (pelanggan diminta menghubungi
+  studio), dan kasir tetap bisa mengirim manual lewat tombol WhatsApp di Jadwal. Format lain: `src/lib/notifications/adapters.ts`.
 
 Pesan gagal dicoba ulang maksimal 3× (jeda 5, 10 menit). Status tiap pesan: Pengaturan → Halaman publik → Pesan keluar ke pelanggan.
 

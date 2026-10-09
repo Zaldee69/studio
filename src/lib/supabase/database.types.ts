@@ -228,6 +228,62 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"campaign_sends": {
+                  Row: {
+                    "campaign_id": string,"created_at": string,"created_by": string | null,"id": string,"message": string,"recipient_count": number,"segment": NonNullable<Json>
+                  }
+                  Insert: {
+                    "campaign_id": string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message": string,"recipient_count"?: number,"segment": NonNullable<Json>
+                  }
+                  Update: {
+                    "campaign_id"?: string,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message"?: string,"recipient_count"?: number,"segment"?: NonNullable<Json>
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "campaign_sends_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_sends_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaign_sends_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"campaigns": {
+                  Row: {
+                    "archived": boolean,"created_at": string,"created_by": string | null,"id": string,"message": string,"name": string,"segment": NonNullable<Json>,"updated_at": string
+                  }
+                  Insert: {
+                    "archived"?: boolean,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message": string,"name": string,"segment"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Update: {
+                    "archived"?: boolean,"created_at"?: string,"created_by"?: string | null,"id"?: string,"message"?: string,"name"?: string,"segment"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "campaigns_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "campaigns_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"cash_closings": {
                   Row: {
                     "cashier_id": string | null,"created_at": string,"date": string,"difference": number | null,"expected_cash": number,"id": string,"note": string,"physical_cash": number,"summary": NonNullable<Json>
@@ -286,13 +342,13 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"email": string | null,"id": string,"name": string,"notes": string,"whatsapp": string | null
+                    "created_at": string,"created_by": string | null,"email": string | null,"id": string,"name": string,"notes": string,"promo_opt_out": boolean,"whatsapp": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -678,13 +734,13 @@ isOneToOne: false
                   ]
                 },"outbound_messages": {
                   Row: {
-                    "attempts": number,"booking_group_id": string | null,"channel": string,"created_at": string,"id": string,"last_error": string | null,"send_after": string,"sent_at": string | null,"status": string,"template": string,"to_address": string
+                    "attempts": number,"body": string | null,"booking_group_id": string | null,"channel": string,"created_at": string,"customer_id": string | null,"id": string,"last_error": string | null,"send_after": string,"send_id": string | null,"sent_at": string | null,"status": string,"template": string,"to_address": string
                   }
                   Insert: {
-                    "attempts"?: number,"booking_group_id"?: string | null,"channel": string,"created_at"?: string,"id"?: string,"last_error"?: string | null,"send_after"?: string,"sent_at"?: string | null,"status"?: string,"template": string,"to_address": string
+                    "attempts"?: number,"body"?: string | null,"booking_group_id"?: string | null,"channel": string,"created_at"?: string,"customer_id"?: string | null,"id"?: string,"last_error"?: string | null,"send_after"?: string,"send_id"?: string | null,"sent_at"?: string | null,"status"?: string,"template": string,"to_address": string
                   }
                   Update: {
-                    "attempts"?: number,"booking_group_id"?: string | null,"channel"?: string,"created_at"?: string,"id"?: string,"last_error"?: string | null,"send_after"?: string,"sent_at"?: string | null,"status"?: string,"template"?: string,"to_address"?: string
+                    "attempts"?: number,"body"?: string | null,"booking_group_id"?: string | null,"channel"?: string,"created_at"?: string,"customer_id"?: string | null,"id"?: string,"last_error"?: string | null,"send_after"?: string,"send_id"?: string | null,"sent_at"?: string | null,"status"?: string,"template"?: string,"to_address"?: string
                   }
                   Relationships: [
                     {
@@ -692,6 +748,42 @@ isOneToOne: false
       columns: ["booking_group_id"]
 isOneToOne: false
       referencedRelation: "booking_groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outbound_messages_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customer_stats"
+      referencedColumns: ["customer_id"]
+    },{
+      foreignKeyName: "outbound_messages_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outbound_messages_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "my_customer"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outbound_messages_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "staff_customer_card"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outbound_messages_send_id_fkey"
+      columns: ["send_id"]
+isOneToOne: false
+      referencedRelation: "campaign_send_stats"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "outbound_messages_send_id_fkey"
+      columns: ["send_id"]
+isOneToOne: false
+      referencedRelation: "campaign_sends"
       referencedColumns: ["id"]
     }
                   ]
@@ -1461,6 +1553,31 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"wa_verifications": {
+                  Row: {
+                    "attempts": number,"code_hash": string,"created_at": string,"expires_at": string,"id": number,"profile_id": string,"used_at": string | null,"whatsapp": string
+                  }
+                  Insert: {
+                    "attempts"?: number,"code_hash": string,"created_at"?: string,"expires_at": string,"id"?: never,"profile_id": string,"used_at"?: string | null,"whatsapp": string
+                  }
+                  Update: {
+                    "attempts"?: number,"code_hash"?: string,"created_at"?: string,"expires_at"?: string,"id"?: never,"profile_id"?: string,"used_at"?: string | null,"whatsapp"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "wa_verifications_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "wa_verifications_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -1470,6 +1587,19 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"campaign_send_stats": {
+                  Row: {
+                    "campaign_id": string | null,"created_at": string | null,"created_by_name": string | null,"failed": number | null,"id": string | null,"pending": number | null,"recipient_count": number | null,"sent": number | null,"skipped": number | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "campaign_sends_campaign_id_fkey"
+      columns: ["campaign_id"]
+isOneToOne: false
+      referencedRelation: "campaigns"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"customer_stats": {
                   Row: {
@@ -1745,6 +1875,11 @@ isOneToOne: false
 "booking_unavailable_reason":
 { Args: { "p_date": string,"p_service_ids": (string)[],"p_staff_pick"?: Json }; Returns: string
                            },
+"campaign_audience":
+{ Args: { "p_segment": Json }; Returns: {
+              "customer_id": string,"name": string,"whatsapp": string
+            }[]
+                           },
 "cancel_booking_admin":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
@@ -1794,6 +1929,9 @@ isOneToOne: false
                            },
 "create_time_off_admin":
 { Args: { "p_all_day": boolean,"p_end": string,"p_reason": string,"p_staff_id": string,"p_start": string }; Returns: string
+                           },
+"customer_has_activity":
+{ Args: { "p_cid": string }; Returns: boolean
                            },
 "daily_resource_minutes":
 { Args: { "p_from": string,"p_to": string }; Returns: {
@@ -2100,6 +2238,9 @@ isOneToOne: false
 "save_recipe":
 { Args: { "p_lines": Json,"p_service_id": string }; Returns: number
                            },
+"send_campaign":
+{ Args: { "p_campaign": string }; Returns: Json
+                           },
 "service_hpp":
 { Args: { "sid": string }; Returns: number
                            },
@@ -2202,6 +2343,12 @@ isOneToOne: false
                            },
 "void_transaction":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
+                           },
+"wa_otp_request":
+{ Args: { "p_code": string,"p_uid": string,"p_wa": string }; Returns: Json
+                           },
+"wa_otp_verify":
+{ Args: { "p_code": string,"p_uid": string }; Returns: Json
                            }
           }
           Enums: {

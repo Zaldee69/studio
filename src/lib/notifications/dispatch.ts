@@ -1,7 +1,7 @@
 import type { Adapters } from "./adapters";
 import { render, type GroupInfo, type Template } from "./templates";
 
-export type Queued = { id: string; channel: "email" | "whatsapp"; to_address: string; template: Template; booking_group_id: string | null; attempts: number };
+export type Queued = { id: string; channel: "email" | "whatsapp"; to_address: string; template: Template | "promo"; booking_group_id: string | null; attempts: number; body?: string | null };
 export type Store = {
   claim(limit: number): Promise<Queued[]>;                          // ambil 'queued' yang jatuh tempo → 'sending'
   group(id: string): Promise<GroupInfo | null>;
@@ -14,14 +14,15 @@ export const MAX_ATTEMPTS = 3;
 export async function processQueue(store: Store, adapters: Adapters, now = new Date()) {
   const out = { sent: 0, skipped: 0, failed: 0, retry: 0 };
   for (const m of await store.claim(25)) {
-    const g = m.booking_group_id ? await store.group(m.booking_group_id) : null;
     const send = m.channel === "email" ? adapters.email : adapters.whatsapp;
-    if (!g) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: "Booking tidak ditemukan" }); out.skipped++; continue; }
+    // promo (CRM): teks sudah jadi per pelanggan, tanpa data booking
+    const g = m.template === "promo" ? null : m.booking_group_id ? await store.group(m.booking_group_id) : null;
+    if (m.template !== "promo" && !g) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: "Booking tidak ditemukan" }); out.skipped++; continue; }
     if (!send) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: `${m.channel === "email" ? "Email" : "WhatsApp"} belum dikonfigurasi` }); out.skipped++; continue; }
-    const msg = render(m.template, g);
     try {
-      if (m.channel === "email") await adapters.email!(m.to_address, msg);
-      else await adapters.whatsapp!(m.to_address, msg.text);
+      if (m.template === "promo") await adapters.whatsapp!(m.to_address, m.body ?? "");
+      else if (m.channel === "email") await adapters.email!(m.to_address, render(m.template, g!));
+      else await adapters.whatsapp!(m.to_address, render(m.template, g!).text);
       await store.finish(m.id, { status: "sent", attempts: m.attempts + 1, last_error: null });
       out.sent++;
     } catch (e) {

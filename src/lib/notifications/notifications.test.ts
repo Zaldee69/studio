@@ -37,3 +37,32 @@ describe("notifikasi", () => {
     expect(r2.finished.e).toMatchObject({ status: "failed", attempts: 3 });
   });
 });
+
+describe("blast promosi (CRM)", () => {
+  it("pesan promo dikirim apa adanya tanpa data booking", async () => {
+    const wa = vi.fn(async () => {});
+    const { s, finished } = store([{ id: "p", channel: "whatsapp", to_address: "6281300000001", template: "promo", booking_group_id: null, attempts: 0, body: "Hai Dodi, diskon 10%!" }]);
+    expect(await processQueue(s, { email: null, whatsapp: wa })).toEqual({ sent: 1, skipped: 0, failed: 0, retry: 0 });
+    expect(wa).toHaveBeenCalledWith("6281300000001", "Hai Dodi, diskon 10%!");
+    expect(finished.p).toMatchObject({ status: "sent" });
+  });
+});
+
+describe("adapter WhatsApp (Wablas)", () => {
+  it("POST form ke /api/send-message dengan Authorization token.secret; status:false (HTTP 200) dianggap gagal", async () => {
+    const { sendWhatsAppAdapter } = await import("./adapters");
+    vi.stubEnv("WABLAS_TOKEN", "tok"); vi.stubEnv("WABLAS_SECRET_KEY", "sec"); vi.stubEnv("WABLAS_URL", "https://solo.wablas.com/");
+    const calls: [string, RequestInit][] = [];
+    let reply = { status: true, message: "pending" };
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => { calls.push([url, init]); return new Response(JSON.stringify(reply)); });
+    const send = sendWhatsAppAdapter()!;
+    await send("6281234567890", "Kode 123456", { instant: true });
+    expect(calls[0][0]).toBe("https://solo.wablas.com/api/send-message");
+    expect((calls[0][1].headers as Record<string, string>).Authorization).toBe("tok.sec");
+    expect(String(calls[0][1].body)).toBe("phone=6281234567890&message=Kode+123456&flag=instant");
+    reply = { status: false, message: "token invalid" };
+    await expect(send("6281234567890", "x")).rejects.toThrow(/token invalid/);
+    vi.unstubAllEnvs(); vi.unstubAllGlobals();
+    expect(sendWhatsAppAdapter()).toBeNull(); // tanpa kredensial = nonaktif
+  });
+});

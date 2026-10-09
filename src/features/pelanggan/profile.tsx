@@ -15,7 +15,7 @@ import { CutList, daysAgo, useCatalog, useStyleHistory } from "@/features/gaya/p
 import { HAIR_LABEL, normalizeConsult } from "@/lib/domain/hair";
 
 export type CustRow = {
-  id: string; name: string; whatsapp: string | null; notes: string;
+  id: string; name: string; whatsapp: string | null; notes: string; promo_opt_out?: boolean;
   stats: { lifetime_value: number; visit_count: number; last_visit_at: string | null; deposit_balance: number; is_churn: boolean } | null;
 };
 
@@ -27,6 +27,7 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
   const [name, setName] = useState(c.name);
   const [wa, setWa] = useState(c.whatsapp ?? "");
   const [notes, setNotes] = useState(c.notes);
+  const [optOut, setOptOut] = useState(!!c.promo_opt_out);
   const [noteState, setNoteState] = useState<"" | "saving" | "saved" | "error">("");
   const [fieldErr, setFieldErr] = useState("");
   const [topup, setTopup] = useState(false);
@@ -115,6 +116,15 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
         <button onClick={() => setTopup(true)} className="btn-ghost h-11 rounded-[10px]">Top-up saldo</button>
         <Link href={`${master.base}/jadwal?new=1&customer=${c.id}`} className="btn-ink h-11">Buat booking</Link>
       </div>
+
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" className="size-5 accent-[#5646C8]" checked={optOut} onChange={async (e) => {
+          const v = e.target.checked; setOptOut(v);
+          const { error } = await createClient().from("customers").update({ promo_opt_out: v }).eq("id", c.id);
+          if (error) { setOptOut(!v); toast(error.message, "error"); } else toast(v ? "Tidak akan dikirimi promo" : "Akan menerima promo lagi");
+        }} />
+        Tidak mau menerima promo WhatsApp <span className="text-xs text-muted">(pelanggan membalas STOP)</span>
+      </label>
 
       <Field label="Catatan preferensi teknis" htmlFor="pf-notes"
         hint={noteState === "saving" ? "Menyimpan…" : noteState === "saved" ? "Tersimpan ✓" : noteState === "error" ? "Gagal menyimpan — coba lagi" : "Tersimpan otomatis"}>

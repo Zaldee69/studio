@@ -24,7 +24,9 @@ export default defineConfig({
     url: "http://127.0.0.1:3100/login",
     reuseExistingServer: true,
     // konsultasi gaya: OpenAI tiruan (e2e/fake-openai.ts), bukan API sungguhan
-    env: { OPENAI_BASE_URL: "http://127.0.0.1:3199/v1", OPENAI_API_KEY: "e2e-palsu" },
+    // WhatsApp: Wablas tiruan (e2e/publik-wa.spec.ts) — pesan ke nomor lain cukup gagal/diulang, tidak keluar ke internet
+    env: { OPENAI_BASE_URL: "http://127.0.0.1:3199/v1", OPENAI_API_KEY: "e2e-palsu",
+      WABLAS_URL: "http://127.0.0.1:3197", WABLAS_TOKEN: "e2e", WABLAS_SECRET_KEY: "palsu" },
     timeout: 240_000,
   },
 });

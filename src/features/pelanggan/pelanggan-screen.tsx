@@ -31,7 +31,7 @@ export function PelangganScreen({ master }: { master: Master }) {
   const { data, refresh } = useRealtimeTable(["customers", "transactions", "deposit_topups"], async () => {
     const supabase = createClient();
     const { count: followCount } = await supabase.from("customer_stats").select("customer_id", { count: "exact", head: true }).eq("is_churn", true);
-    let query = supabase.from("customers").select("id, name, whatsapp, notes", { count: "exact" }).order("name");
+    let query = supabase.from("customers").select("id, name, whatsapp, notes, promo_opt_out", { count: "exact" }).order("name");
     if (term) {
       const digits = term.replace(/\D/g, "").replace(/^0/, "");
       query = query.or(digits.length >= 3 ? `name.ilike.%${term}%,whatsapp.ilike.%${digits}%` : `name.ilike.%${term}%`);

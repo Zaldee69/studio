@@ -43,6 +43,7 @@ async function register(p: Page, name: string, email: string) {
   await p.goto("/akun");
   await p.getByRole("tab", { name: "Daftar" }).click();
   await p.fill("#c-name", name);
+  await p.fill("#c-wa", randomWa()); // wajib saat daftar; diverifikasi kode setelah masuk
   await p.fill("#c-email", email);
   await p.fill("#c-pw1", "rahasia123");
   await p.fill("#c-pw2", "rahasia123");

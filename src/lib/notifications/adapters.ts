@@ -21,23 +21,33 @@ export function sendEmailAdapter(): Adapters["email"] {
 }
 
 /**
- * WhatsApp via penyedia pihak ketiga (WhatsApp Business API / penyedia lokal) dengan endpoint HTTP sederhana:
- * POST WHATSAPP_API_URL, header Authorization: Bearer WHATSAPP_API_TOKEN, body {"to":"62…","message":"…"}.
- * Penyedia dengan format berbeda: sesuaikan fungsi ini saja.
+ * WhatsApp via Wablas (https://wablas.com/documentation/api): POST {WABLAS_URL}/api/send-message,
+ * header `Authorization: {WABLAS_TOKEN}.{WABLAS_SECRET_KEY}`, form `phone` (62…) & `message`.
+ * WABLAS_URL default https://wablas.com — isi domain server dari dashboard Wablas bila berbeda.
+ * Gagal sering tetap HTTP 200 dengan {"status": false, "message": …} → dicek di body.
+ * `instant`: OTP diproses segera (flag=instant), tidak ikut antrean jeda perangkat.
  */
-export function sendWhatsAppAdapter(): Adapters["whatsapp"] {
-  const url = process.env.WHATSAPP_API_URL, token = process.env.WHATSAPP_API_TOKEN;
-  if (!url || !token) return null;
-  return async (to, message) => ok(await fetch(url, {
-    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ to, message }),
-  }));
+export function sendWhatsAppAdapter(): ((to: string, text: string, opts?: { instant?: boolean }) => Promise<void>) | null {
+  const token = process.env.WABLAS_TOKEN, secret = process.env.WABLAS_SECRET_KEY;
+  if (!token || !secret) return null;
+  const base = (process.env.WABLAS_URL || "https://wablas.com").replace(/\/$/, "");
+  return async (to, message, opts) => {
+    const body = new URLSearchParams({ phone: to, message, ...(opts?.instant ? { flag: "instant" } : {}) });
+    const r = await fetch(`${base}/api/send-message`, {
+      method: "POST", headers: { Authorization: `${token}.${secret}`, "Content-Type": "application/x-www-form-urlencoded" }, body,
+    });
+    const text = await r.text();
+    let json: { status?: boolean; message?: string } | null = null;
+    try { json = JSON.parse(text); } catch { /* bukan JSON */ }
+    if (!r.ok || json?.status !== true) throw new Error(`Wablas ${r.status}: ${(json?.message ?? text).slice(0, 200)}`);
+  };
 }
 
 /** Hook OTP WhatsApp (verifikasi nomor) — siap dipakai saat penyedia WA aktif. */
 export async function sendWhatsAppOtp(to: string, code: string) {
   const wa = sendWhatsAppAdapter();
   if (!wa) throw new Error("WhatsApp belum dikonfigurasi");
-  await wa(to, `Kode verifikasi ${BRAND}: ${code}. Berlaku 10 menit. Jangan bagikan kode ini.`);
+  await wa(to, `Kode verifikasi ${BRAND}: ${code}. Berlaku 10 menit. Jangan bagikan kode ini kepada siapa pun, termasuk staf ${BRAND}.`, { instant: true });
 }
 
 export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter() });

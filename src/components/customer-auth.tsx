@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { normalizeWhatsApp } from "@/lib/domain/format";
 import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { createClient } from "@/lib/supabase/client";
 import { captchaOn, Turnstile } from "./turnstile";
@@ -12,7 +13,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
   const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
   const [captcha, setCaptcha] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0); // token captcha sekali pakai → render ulang widget tiap percobaan
-  const [f, setF] = useState({ name: "", email: "", pw: "", pw2: "" });
+  const [f, setF] = useState({ name: "", wa: "", email: "", pw: "", pw2: "" });
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,6 +36,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
     const email = f.email.trim().toLowerCase();
     if (mode === "register") {
       if (!f.name.trim()) return setErr("Isi nama lengkap.");
+      if (!normalizeWhatsApp(f.wa)) return setErr("No. WhatsApp belum valid (mis. 0812… atau +62812…).");
       if (!/^\S+@\S+\.\S+$/.test(email)) return setErr("Email belum valid.");
       const weak = passwordError(f.pw);
       if (weak) return setErr(weak);
@@ -54,7 +56,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
     const res = mode === "login"
       ? await supabase.auth.signInWithPassword({ email, password: f.pw, options: { captchaToken } })
       : await supabase.auth.signUp({ email, password: f.pw, options: {
-        data: { full_name: f.name.trim() }, captchaToken, emailRedirectTo: `${location.origin}/auth/konfirmasi` } });
+        data: { full_name: f.name.trim(), whatsapp: normalizeWhatsApp(f.wa) }, captchaToken, emailRedirectTo: `${location.origin}/auth/konfirmasi` } });
     if (res.error) {
       setBusy(false);
       const e = res.error;
@@ -97,6 +99,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
       </div>
       <form onSubmit={submit} className="flex flex-col gap-4">
         {mode === "register" && field("c-name", "Nama lengkap", { autoComplete: "name", value: f.name, onChange: set("name") })}
+        {mode === "register" && field("c-wa", "No. WhatsApp", { type: "tel", inputMode: "tel", autoComplete: "tel", placeholder: "0812…", value: f.wa, onChange: set("wa") })}
         {field("c-email", "Email", { type: "email", autoComplete: mode === "login" ? "username" : "email", value: f.email, onChange: set("email") })}
         {mode === "forgot" ? null : mode === "login"
           ? field("c-pw", "Kata sandi", { type: "password", autoComplete: "current-password", value: f.pw, onChange: set("pw") })
@@ -107,7 +110,7 @@ export function CustomerAuth({ onDone }: { onDone: (c: NonNullable<Cust>) => voi
                 {field("c-pw2", "Ulangi", { type: "password", autoComplete: "new-password", value: f.pw2, onChange: set("pw2") })}
               </div>
               <span className="text-[13px] font-light text-stone">
-                {PASSWORD_HINT} Jika email Anda sudah tercatat di toko, riwayat &amp; saldo deposit tersambung setelah email dikonfirmasi.
+                {PASSWORD_HINT} Setelah email dikonfirmasi, verifikasi nomor WhatsApp dengan kode — riwayat booking &amp; saldo deposit dengan nomor itu ikut tersambung.
               </span>
             </>
           )}

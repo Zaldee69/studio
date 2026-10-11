@@ -1,3 +1,4 @@
+import type { ExpenseCat } from "@/lib/domain/expense";
 import type { Cat as StaffCat } from "@/lib/domain/category";
 import "server-only";
 import { jktDate } from "@/lib/domain/format";
@@ -20,7 +21,7 @@ export type OwnerReport = {
     by_category: { category: Cat; items: number; gross: number; discount: number; net: number; hpp: number; margin: number }[];
     payments: { cash: number; qris: number; deposit: number };
     deposit: { topup_count: number; topup_paid: number; topup_cash: number; topup_qris: number; topup_credited: number; bonus: number; used: number; balance_end: number };
-    maintenance_cost: number;
+    maintenance_cost: number; expenses_total: number; expenses_by_category: { category: ExpenseCat; amount: number }[];
   };
   payroll: { months: { month: string; closed: boolean; total_pay: number }[]; complete: boolean; all_closed: boolean; total_pay: number;
     commission_service: number; commission_retail: number; subsidy: number; adjustments: number; by_staff: Record<string, number> };

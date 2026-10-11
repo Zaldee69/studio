@@ -8,6 +8,7 @@ import { CAT_LABEL, COLOR, rb } from "@/features/analitik/palette";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { BAND_LABEL, bandStatus, pct1 } from "@/lib/domain/kpi";
 import { attainment, marginPct } from "@/lib/domain/owner";
+import { EXPENSE_CAT } from "@/lib/domain/expense";
 import { OwnerPeriodForm } from "./period-form";
 
 export const metadata = { title: "Laporan owner" };
@@ -42,6 +43,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const hppPct = f.net > 0 ? (f.hpp * 100) / f.net : null;
   const payroll = r.payroll.complete ? r.payroll.total_pay : null;
   const afterPay = payroll == null ? null : f.net - f.hpp - payroll;
+  const opex = f.maintenance_cost + f.expenses_total;
   const retailSt = bandStatus(s.retail_ratio ?? null, t.retail_min, t.retail_max);
   const staffPay = (id: string) => r.payroll.by_staff[id];
   const topServices = r.services.filter((x) => x.category !== "retail").slice(0, 10);
@@ -111,7 +113,9 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon paket & promo", -f.discount, false], ...(f.discount_promo ? [["   termasuk promo booking online", -f.discount_promo, false]] : []), ["= Omzet bersih", f.net, true],
                  [`− HPP bahan & barang (${pc(hppPct)})`, -f.hpp, false], [`= Margin kotor (${pc(marginPct(f.net, f.hpp))})`, f.net - f.hpp, true],
                  ...(payroll == null ? [] : [["− Gaji & komisi staf", -payroll, false], ["= Kontribusi setelah gaji", afterPay, true]]),
-                 ["Biaya perawatan fasilitas (dicatat)", f.maintenance_cost, false]] as [string, number, boolean][]).map(([k, v, b]) => (
+                 ["− Biaya perawatan fasilitas", -f.maintenance_cost, false],
+                 ...f.expenses_by_category.map((e) => [`− ${EXPENSE_CAT[e.category]}`, -e.amount, false]),
+                 ...(afterPay == null ? [["Total biaya operasional", -opex, true]] : [["= Laba bersih", afterPay - opex, true]])] as [string, number, boolean][]).map(([k, v, b]) => (
                 <tr key={k} className={b ? "font-bold" : ""}><td className={td}>{k}</td><td className={num}>{m(v)}</td></tr>
               ))}
             </tbody></table>
@@ -220,7 +224,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             {[["Jam tersibuk", r.operations.peak_hours.slice(0, 3).map((h) => `${WEEKDAY[h.weekday]} ${String(h.hour).padStart(2, "0")}.00`).join(", ") || "—"],
               ["Kepatuhan SOP", `${pc(r.operations.sop.compliance_pct)} (${r.operations.sop.ok}/${r.operations.sop.operational} hari)`],
               ["Perawatan fasilitas", `${r.operations.maintenance_done} selesai · ${r.operations.maintenance_overdue_now} terlambat kini`],
-              ["Biaya perawatan", m(f.maintenance_cost)],
+              ["Biaya perawatan", m(f.maintenance_cost)], ["Pengeluaran operasional", m(f.expenses_total)],
               ["Nilai stok akhir", m(inv.value_end)], ["Stok masuk / terpakai", `${m(inv.in_value)} / ${m(inv.out_value)}`],
               ["Stok menipis (kini)", n(inv.low_stock_now)],
               ["Selisih pemakaian bahan", inv.opnames >= 2 ? `${inv.usage_flagged} bahan ditandai · ${m(inv.usage_variance_value)}` : "butuh ≥ 2 opname di periode"],

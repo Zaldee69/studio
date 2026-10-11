@@ -25,7 +25,7 @@ export function Closing({ master }: { master: Master }) {
   const [saving, setSaving] = useState(false);
   const printer = usePrinter();
 
-  const { data: s, refresh } = useRealtimeTable(["transactions", "deposit_topups"], async () => {
+  const { data: s, refresh } = useRealtimeTable(["transactions", "deposit_topups", "expenses"], async () => {
     const { data, error } = await createClient().rpc("cash_summary", { p_date: date });
     if (error) throw error;
     return data as unknown as Summary;
@@ -86,8 +86,9 @@ export function Closing({ master }: { master: Master }) {
         {row(`Top-up deposit Tunai (${s.topup_count}×)`, s.topup_cash)}
         {row("Top-up deposit QRIS", s.topup_qris)}
         {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
+        {row(`Pengeluaran dari laci (${s.expense_count}×)`, -s.expense_cash)}
       </div>
-      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up)", s.expected_cash, true)}</div>
+      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up − pengeluaran laci)", s.expected_cash, true)}</div>
       <div>
         <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
         {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (

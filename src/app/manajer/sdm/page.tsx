@@ -1,18 +1,23 @@
 import Link from "next/link";
 import { TabNav } from "@/components/tab-nav";
 import { MonthlyPayroll, type PayRow, type Period } from "@/features/sdm/monthly";
+import { WeeklyCommission, type WeekRow } from "@/features/sdm/weekly";
+import { mondayOf } from "@/features/sdm/shared";
 import { AnnualReview, CommissionRules, Leaderboard, type LeaderRow, type ReviewRow } from "@/features/sdm/rules";
 import { jktDate } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "SDM & Komisi" };
 
-const TABS = [["bulanan", "Gaji bulanan"], ["aturan", "Aturan komisi"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
+const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan komisi"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   const sp = await searchParams;
-  const tab = TABS.some(([k]) => k === sp.tab) ? one(sp.tab) : "bulanan";
+  // tautan lama ?bulan=… (navigasi bulan, slip) tetap membuka Gaji bulanan
+  const tab = TABS.some(([k]) => k === sp.tab) ? one(sp.tab) : sp.bulan ? "bulanan" : "mingguan";
+  const thisWeek = mondayOf(jktDate());
+  const week = /^\d{4}-\d{2}-\d{2}$/.test(one(sp.minggu)) ? mondayOf(one(sp.minggu)) : thisWeek;
   const current = jktDate().slice(0, 7);
   const month = /^\d{4}-\d{2}$/.test(one(sp.bulan)) ? one(sp.bulan) : current;
   const year = /^\d{4}$/.test(one(sp.tahun)) ? Number(one(sp.tahun)) : Number(current.slice(0, 4));
@@ -20,12 +25,21 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, min_monthly_pay").single();
 
   let body: React.ReactNode;
-  if (tab === "bulanan") {
-    const [{ data: rows }, { data: period }] = await Promise.all([
+  if (tab === "mingguan") {
+    const [{ data: rows }, { data: wk }] = await Promise.all([
+      supabase.rpc("commission_week", { p_week: week }),
+      supabase.from("commission_weeks").select("status, reopen_reason").eq("week_start", week).maybeSingle(),
+    ]);
+    body = <WeeklyCommission key={week} week={week} thisWeek={thisWeek} rows={(rows ?? []) as WeekRow[]}
+      reopenReason={wk?.status === "open" ? wk.reopen_reason : null} />;
+  } else if (tab === "bulanan") {
+    const [{ data: rows }, { data: period }, { data: weekly }] = await Promise.all([
       supabase.rpc("commission_for_period", { p_month: `${month}-01` }),
       supabase.from("payroll_periods").select("status, closed_at, reopen_reason").eq("month", `${month}-01`).maybeSingle(),
+      supabase.rpc("commission_weekly_for_month", { p_month: `${month}-01` }),
     ]);
     body = <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
+      weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
       ratio={st?.commission_pct ?? 40} minPay={st?.min_monthly_pay ?? 0} />;
   } else if (tab === "aturan") {
     const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, active").order("sort");
@@ -61,7 +75,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="font-display text-[28px] font-bold tracking-tight">SDM &amp; Komisi</h1>
-      <TabNav tabs={TABS} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : ""} />
+      <TabNav tabs={TABS} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : tab === "mingguan" ? `&minggu=${week}` : ""} />
       {body}
     </div>
   );

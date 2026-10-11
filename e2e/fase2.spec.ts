@@ -63,7 +63,7 @@ test("E1 · stok masuk 1.000 ml krim @135 → harga pokok rata-rata → HPP Hair
   await expect(page.getByRole("complementary", { name: "Ringkasan margin" })).toContainText(`HPP bahan${formatRupiah(newHpp)}`);
   expect(newHpp).not.toBe(old.hpp);
 
-  await page.goto("/manajer/sdm");
+  await page.goto("/manajer/sdm?tab=bulanan");
   await page.getByRole("button", { name: /^Dimas/ }).click();
   await expect(page.getByRole("dialog", { name: "Detail staf" })).toContainText(`net ${formatRupiah(old.net)} · HPP ${formatRupiah(old.hpp)}`);
 });
@@ -168,7 +168,7 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip 1.300.000 di
     expect(sari).toBe(60000);
 
     await login(page, "manager");
-    await page.goto("/manajer/sdm");
+    await page.goto("/manajer/sdm?tab=bulanan");
     await page.getByRole("button", { name: /^Sari/ }).click();
     await expect(page.getByRole("dialog", { name: "Detail staf" })).toContainText(`Gel Polish Tangan${formatRupiah(sari)}`);
     await page.keyboard.press("Escape");

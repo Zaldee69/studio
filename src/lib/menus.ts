@@ -9,6 +9,7 @@ export const MANAGER_MENU: MenuItem[] = [
   { href: "/manajer/pelanggan", label: "Pelanggan", icon: "users", ready: true, badge: "follow" },
   { href: "/manajer/izin", label: "Izin staf", short: "Izin", icon: "clock", ready: true },
   { href: "/manajer/sdm", label: "SDM & Komisi", short: "SDM", icon: "badge", ready: true },
+  { href: "/manajer/pengeluaran", label: "Pengeluaran", short: "Biaya", icon: "receipt", ready: true },
   { href: "/manajer/inventaris", label: "Inventaris", short: "Stok", icon: "box", ready: true, badge: "stock" },
   { href: "/manajer/analitik", label: "Analitik KPI", short: "KPI", icon: "chart", ready: true },
   { href: "/manajer/promosi", label: "Promosi (CRM)", short: "Promo", icon: "megaphone", ready: true },
@@ -21,6 +22,7 @@ export const CASHIER_MENU: MenuItem[] = [
   { href: "/kasir/jadwal", label: "Jadwal", icon: "calendar", ready: true, badge: "online" },
   { href: "/kasir/kasir", label: "Kasir", icon: "cash", ready: true, badge: "ready" },
   { href: "/kasir/pelanggan", label: "Pelanggan", icon: "users", ready: true, badge: "follow" },
+  { href: "/kasir/pengeluaran", label: "Pengeluaran", short: "Biaya", icon: "receipt", ready: true },
   { href: "/kasir/opname", label: "Stok opname", short: "Opname", icon: "box", ready: true },
 ];
 

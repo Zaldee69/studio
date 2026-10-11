@@ -106,7 +106,7 @@ export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | n
 
 export type ClosingSummary = {
   tx_count: number; gross_total: number; discount_total: number; cash_sales: number; qris_sales: number; deposit_used: number;
-  topup_cash: number; topup_qris: number; topup_credited: number; topup_count: number; expected_cash: number;
+  topup_cash: number; topup_qris: number; topup_credited: number; topup_count: number; expense_cash: number; expense_count: number; expected_cash: number;
   voided: { created_at: string; total: number; reason: string }[];
 };
 
@@ -119,7 +119,8 @@ export function closingEscpos(s: ClosingSummary, o: {
   p.big("REKAP KASIR").cmd(CMD.center).lines(wrap(o.shop, p.cols)).line(o.date).cmd(CMD.left).rule();
   p.lr("Jumlah transaksi", String(s.tx_count)).lr("Omzet (stlh diskon)", rp(s.gross_total)).lr("Total diskon", rp(s.discount_total))
     .lr("Penjualan Tunai", rp(s.cash_sales)).lr("Penjualan QRIS", rp(s.qris_sales)).lr("Deposit terpakai", rp(s.deposit_used))
-    .lr(`Top-up Tunai (${s.topup_count}x)`, rp(s.topup_cash)).lr("Top-up QRIS", rp(s.topup_qris)).lr("Saldo deposit masuk", rp(s.topup_credited));
+    .lr(`Top-up Tunai (${s.topup_count}x)`, rp(s.topup_cash)).lr("Top-up QRIS", rp(s.topup_qris)).lr("Saldo deposit masuk", rp(s.topup_credited))
+    .lr(`Pengeluaran laci (${s.expense_count}x)`, `-${rp(s.expense_cash)}`);
   p.rule("=").cmd(CMD.bold(true)).lr("KAS DIHARAPKAN", rp(s.expected_cash)).cmd(CMD.bold(false)).rule("=");
   if (o.last) {
     p.lr(`Kas fisik (${o.time(o.last.at)})`, rp(o.last.physical_cash))

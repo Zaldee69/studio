@@ -15,7 +15,7 @@ function describe(n: N, base: string): { text: string; href: string } {
   if (n.kind === "unpaid_completed") return { text: `${p.customer} (${p.staff ?? "—"}) selesai dilayani sejak ${formatJam(String(p.since))} tapi belum dibayar`, href: `${base}/audit` };
   if (n.kind === "low_stock") return { text: `Stok ${p.name} tinggal ${qty(p.qty)} ${p.unit} (ambang ${qty(p.reorder_at)})`, href: `${base}/inventaris` };
   if (n.kind === "opname_pending") return { text: `Opname ${SCOPE[String(p.scope)] ?? ""} menunggu hitungan & persetujuan`, href: base === "/kasir" ? `/kasir/opname/${p.opname_id}` : `${base}/inventaris/opname/${p.opname_id}` };
-  if (n.kind === "payroll_ready") return { text: "Slip gaji sudah final", href: "/kapster/komisi" };
+  if (n.kind === "payroll_ready") return { text: p.week ? `Komisi minggu ${formatTanggal(String(p.week)).replace(/^\S+, /, "")} sudah final` : "Slip gaji sudah final", href: "/kapster/komisi" };
   if (n.kind === "sop_reminder") return { text: "Checklist sterilisasi hari ini belum dimulai", href: base === "/manajer" ? "/manajer/sop" : "/kapster/sop" };
   if (n.kind === "maintenance_overdue") return { text: `${p.name} terlambat ${-Number(p.days_left)} hari`, href: "/manajer/sop#perawatan" };
   if (n.kind === "maintenance_due") return { text: Number(p.days_left) === 0 ? `${p.name} jatuh tempo hari ini` : `${p.name} jatuh tempo besok`, href: "/manajer/sop#perawatan" };

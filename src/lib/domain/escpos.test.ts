@@ -48,10 +48,10 @@ describe("escpos", () => {
   it("rekap tutup kasir: kas diharapkan & selisih", () => {
     const t = str(closingEscpos({
       tx_count: 4, gross_total: 594500, discount_total: 20000, cash_sales: 300000, qris_sales: 294500, deposit_used: 0,
-      topup_cash: 500000, topup_qris: 0, topup_credited: 550000, topup_count: 1, expected_cash: 800000,
+      topup_cash: 500000, topup_qris: 0, topup_credited: 550000, topup_count: 1, expense_cash: 25000, expense_count: 1, expected_cash: 775000,
       voided: [{ created_at: "2026-10-05T03:00:00Z", total: 75000, reason: "Salah input" }],
     }, { paper: 58, shop: "D'Pras Barbershop", date: "Senin, 5 Okt 2026", printedAt: "21.00", time: () => "10.00",
-      last: { at: "2026-10-05T14:00:00Z", physical_cash: 795000, difference: -5000, note: null } }));
-    for (const s of ["REKAP KASIR", "KAS DIHARAPKAN", "Rp800.000", "Rp795.000", "-Rp5.000", "Salah input", "Tanda tangan"]) expect(t).toContain(s);
+      last: { at: "2026-10-05T14:00:00Z", physical_cash: 770000, difference: -5000, note: null } }));
+    for (const s of ["REKAP KASIR", "KAS DIHARAPKAN", "-Rp25.000", "Rp775.000", "Rp770.000", "-Rp5.000", "Salah input", "Tanda tangan"]) expect(t).toContain(s);
   });
 });

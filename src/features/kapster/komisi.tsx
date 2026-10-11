@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
+import { mondayOf, shiftWeek, weekLabel } from "@/features/sdm/shared";
 
 const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 
@@ -19,23 +20,59 @@ export function KomisiKapster({ ratio, minPay, retailPct }: { ratio: number; min
     const supabase = createClient();
     const day = `${month}-01`;
     const end = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).toISOString().slice(0, 10);
-    const [sum, items, rank, adj] = await Promise.all([
+    const [sum, items, rank, adj, weekly] = await Promise.all([
       supabase.rpc("commission_for_period", { p_month: day }),
       supabase.rpc("commission_items", { p_month: day }),
       supabase.rpc("staff_leaderboard", { p_from: day, p_to: end }),
       supabase.from("payroll_adjustments").select("id, kind, amount, reason").eq("month", day).order("created_at"),
+      supabase.rpc("commission_weekly_for_month", { p_month: day }),
     ]);
     const r = rank.data?.[0];
-    return { sum: sum.data?.[0] ?? null, items: items.data ?? [], rank: r ? { rank: r.rank, of: r.of_count } : null, adj: adj.data ?? [] };
+    return { sum: sum.data?.[0] ?? null, items: items.data ?? [], rank: r ? { rank: r.rank, of: r.of_count } : null, adj: adj.data ?? [], weekly: weekly.data?.[0] ?? null };
   }, month);
 
   const s = data?.sum;
+  const paidWeekly = Number(data?.weekly?.closed_amount ?? 0);
+  const thisWeek = mondayOf(jktDate()), lastWeek = shiftWeek(thisWeek, -1);
+  const { data: wk } = useRealtimeTable(["appointments", "commission_week_pays"], async () => {
+    const supabase = createClient();
+    const [now, prev, hist] = await Promise.all([
+      supabase.rpc("commission_week", { p_week: thisWeek }),
+      supabase.rpc("commission_week", { p_week: lastWeek }),
+      supabase.from("commission_week_pays").select("week_start, amount, paid_at, paid_method").order("week_start", { ascending: false }).limit(24),
+    ]);
+    // minggu tertutup: gabungkan potongan per bulan (minggu lintas bulan) jadi satu baris
+    const closed = new Map<string, { amount: number; paid_at: string | null; paid_method: string | null }>();
+    for (const r of hist.data ?? []) {
+      const c = closed.get(r.week_start) ?? { amount: 0, paid_at: r.paid_at, paid_method: r.paid_method };
+      c.amount += Number(r.amount); closed.set(r.week_start, c);
+    }
+    return { now: now.data?.[0] ?? null, prev: prev.data?.[0] ?? null, closed: [...closed.entries()].slice(0, 8) };
+  }, thisWeek);
   // Notifikasi "slip final" dianggap terbaca saat kapster membuka periode yang sudah final.
   useEffect(() => { if (s?.closed) createClient().rpc("mark_notifications_read"); }, [s?.closed]);
   return (
     <>
+      <h1 className="font-display text-[26px] font-bold">Komisi saya</h1>
+      <section aria-label="Komisi mingguan" className="flex flex-col rounded-[18px] bg-card px-4 py-2">
+        <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Komisi mingguan · dibayar per minggu (Senin–Minggu)</span>
+        {[[thisWeek, wk?.now, "Minggu ini · berjalan"], ...(wk?.prev && !wk.prev.closed ? [[lastWeek, wk.prev, "Menunggu ditutup manajer"]] : [])].map(([w, r, note]) => (
+          <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+            <span className="flex flex-col"><b>{weekLabel(String(w))}</b><span className="text-xs text-muted">{String(note)}</span></span>
+            <b>{r && typeof r === "object" ? formatRupiah(Number(r.amount)) : "Rp0"}</b>
+          </div>
+        ))}
+        {wk?.closed.map(([w, c]) => (
+          <div key={w} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+            <span className="flex flex-col"><b>{weekLabel(w)}</b>
+              <span className={`text-xs ${c.paid_at ? "text-[#144D2A]" : "text-[#5A4300]"}`}>{c.paid_at ? `Dibayar ${formatTanggal(c.paid_at)} · ${c.paid_method}` : "Final · menunggu dibayar"}</span></span>
+            <b>{formatRupiah(c.amount)}</b>
+          </div>
+        ))}
+      </section>
+
       <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="flex-1 font-display text-[26px] font-bold">Komisi saya</h1>
+        <h2 className="flex-1 font-display text-xl font-bold">Gaji bulanan</h2>
         <label htmlFor="km-month" className="sr-only">Bulan</label>
         <select id="km-month" value={month} onChange={(e) => setMonth(e.target.value)} className="input w-auto">
           {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
@@ -58,6 +95,11 @@ export function KomisiKapster({ ratio, minPay, retailPct }: { ratio: number; min
             {s.commission_retail > 0 && ` + ritel ${formatRupiah(s.commission_retail)}`}
             {s.subsidy > 0 && ` + subsidi jaring pengaman ${formatRupiah(s.subsidy)}`}
             {s.adjustments !== 0 && ` ${s.adjustments > 0 ? "+" : "−"} penyesuaian ${formatRupiah(Math.abs(s.adjustments))}`}
+          </span>
+        )}
+        {s && paidWeekly > 0 && (
+          <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#D6D6D0] tabular">
+            Sudah dibayar mingguan −{formatRupiah(paidWeekly)} · <b className="text-paper">sisa akhir bulan {formatRupiah(s.total_pay - paidWeekly)}</b>
           </span>
         )}
       </section>

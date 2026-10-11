@@ -22,7 +22,7 @@ type Audit = { id: number; at: string; actor_name: string; entity: string; actio
 
 const ENTITY: Record<string, string> = {
   appointments: "Booking", customers: "Pelanggan", transactions: "Transaksi", deposit_topups: "Top-up deposit",
-  cash_closings: "Tutup kasir", services: "Layanan", staff: "Staf", profiles: "Akun",
+  cash_closings: "Tutup kasir", expenses: "Pengeluaran", services: "Layanan", staff: "Staf", profiles: "Akun",
 };
 const LOG_PAGE = 25;
 const when = (iso: string) => `${formatTanggal(iso)} ${formatJam(iso)}`;

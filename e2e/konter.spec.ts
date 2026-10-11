@@ -101,7 +101,7 @@ test("4 · kasir: /manajer/sdm ditolak, tidak ada void; manajer bisa void", asyn
   await login(page, "cashier");
   await page.goto("/manajer/sdm");
   await expect(page).toHaveURL(/\/kasir\/kasir$/);
-  await expect(page.getByRole("navigation", { name: "Menu utama" }).getByRole("link")).toHaveText(["Jadwal", "Kasir", "Pelanggan", "Stok opname"].map((t) => new RegExp(t)));
+  await expect(page.getByRole("navigation", { name: "Menu utama" }).getByRole("link")).toHaveText(["Jadwal", "Kasir", "Pelanggan", "Pengeluaran", "Stok opname"].map((t) => new RegExp(t)));
 
   // transaksi ritel cepat
   await page.getByRole("tab", { name: "Ritel" }).click();
@@ -134,10 +134,10 @@ test("5 · tutup kasir buta: kasir hitung dulu → angka sistem & selisih muncul
   await page.goto("/kasir/kasir?tab=tutup");
   const main = page.getByRole("main"); // bukan salinan di lembar cetak
   await expect(main.getByText(/Hitung uang di laci/)).toBeVisible();
-  await expect(main.getByText("Kas diharapkan (tunai jual + tunai top-up)")).toHaveCount(0);
+  await expect(main.getByText(/^Kas diharapkan \(/)).toHaveCount(0);
   await page.fill("#cl-phys", "100000");
   await page.getByRole("button", { name: "Simpan tutup kasir" }).click();
-  const expectedRow = main.getByText("Kas diharapkan (tunai jual + tunai top-up)").locator("..");
+  const expectedRow = main.getByText(/^Kas diharapkan \(/).locator("..");
   await expect(expectedRow).toContainText("Rp");
   const expected = Number((await expectedRow.innerText()).split("Rp")[1].replace(/\D/g, ""));
   const diff = 100000 - expected;

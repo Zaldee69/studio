@@ -5,6 +5,7 @@ import { CAT_NAME, change, SUMMARY_ROWS, WEEKDAY, type RowKind } from "@/feature
 import { requireRole } from "@/lib/auth";
 import { log } from "@/lib/log";
 import { attainment, marginPct } from "@/lib/domain/owner";
+import { EXPENSE_CAT } from "@/lib/domain/expense";
 
 // Laporan owner → .xlsx (satu sheet per bagian). Angka sama persis dengan halaman PDF (owner_report()).
 const FMT: Record<RowKind | "delta" | "poin", string> = {
@@ -65,12 +66,15 @@ export async function GET(req: NextRequest) {
   // 2. Keuangan
   ws = sheet(wb, "Keuangan", "Keuangan", sub);
   const payroll = r.payroll.complete ? r.payroll.total_pay : null;
-  const k0 = table(ws, ["Laba kotor", "Rp"], [
+  const k0 = table(ws, ["Laba rugi", "Rp"], [
     ["Omzet kotor (harga normal)", f.gross], ["Diskon paket & promo", -f.discount], ["  termasuk promo booking online", -(f.discount_promo ?? 0)], ["Omzet bersih", f.net],
     ["HPP bahan & barang", -f.hpp], ["Margin kotor", f.net - f.hpp], ["Margin kotor %", marginPct(f.net, f.hpp)],
     ["Gaji & komisi staf", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : -payroll],
     ["Kontribusi setelah gaji", payroll == null ? null : f.net - f.hpp - payroll],
-    ["Biaya perawatan fasilitas (dicatat)", f.maintenance_cost],
+    ["Biaya perawatan fasilitas", -f.maintenance_cost],
+    ...f.expenses_by_category.map((e) => [`Pengeluaran: ${EXPENSE_CAT[e.category]}`, -e.amount]),
+    ["Total biaya operasional", -(f.maintenance_cost + f.expenses_total)],
+    ["Laba bersih", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : f.net - f.hpp - payroll - f.maintenance_cost - f.expenses_total],
   ], [null, FMT.money]);
   ws.getRow(k0 + 5).getCell(2).numFmt = FMT.pct; // baris "Margin kotor %"
   table(ws, ["Uang masuk", "Rp"], [

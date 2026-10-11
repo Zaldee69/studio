@@ -13,22 +13,28 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
   const { bulan, staf } = await params;
   if (!/^\d{4}-\d{2}$/.test(bulan)) notFound();
   const supabase = await createClient();
-  const [{ data: rows }, { data: items }, { data: adj }, { data: shop }] = await Promise.all([
+  const [{ data: rows }, { data: items }, { data: adj }, { data: shop }, { data: weekly }] = await Promise.all([
     supabase.rpc("commission_for_period", { p_month: `${bulan}-01`, p_staff_id: staf }),
     supabase.rpc("commission_items", { p_month: `${bulan}-01`, p_staff_id: staf }),
     supabase.from("payroll_adjustments").select("id, kind, amount, reason").eq("staff_id", staf).eq("month", `${bulan}-01`).order("created_at"),
     supabase.from("settings").select("shop_name, shop_address, shop_whatsapp").single(),
+    supabase.rpc("commission_weekly_for_month", { p_month: `${bulan}-01` }),
   ]);
   const r = (rows ?? [])[0] as PayRow | undefined;
   if (!r) notFound();
   const signed = (v: number) => (v < 0 ? "−" : "+") + formatRupiah(Math.abs(v));
+  // komisi yang sudah dibayar per minggu di bulan ini → slip menunjukkan sisa yang dibayar akhir bulan
+  const wk = (weekly ?? []).find((w) => w.staff_id === staf);
+  const paidWeekly = Number(wk?.closed_amount ?? 0);
+  const pay = r.total_pay - paidWeekly;
   const lines: [string, string][] = [
     ["Layanan", String(r.service_count)], ["Pendapatan jasa bersih", formatRupiah(r.revenue_net)], ["Komisi jasa", formatRupiah(r.commission_service)],
     ...(r.commission_retail ? [["Komisi ritel", formatRupiah(r.commission_retail)] as [string, string]] : []),
     ...(r.subsidy ? [["Subsidi jaring pengaman", formatRupiah(r.subsidy)] as [string, string]] : []),
     ...(adj ?? []).map((a) => [`${a.kind === "deduction" ? "Potongan" : a.kind === "bonus" ? "Bonus" : "Koreksi"}: ${a.reason}`, signed(a.amount)] as [string, string]),
+    ...(paidWeekly ? [["Total gaji bulan ini", formatRupiah(r.total_pay)], [`Sudah dibayar mingguan (${wk!.weeks} minggu)`, `−${formatRupiah(paidWeekly)}`]] as [string, string][] : []),
   ];
-  const wa = `Slip gaji ${monthLabel(bulan)} — ${r.staff_name}\n${lines.map(([k, v]) => `${k}: ${v}`).join("\n")}\nTotal dibayar: ${formatRupiah(r.total_pay)}${r.paid_at ? `\nDibayar ${formatTanggal(r.paid_at)} (${r.paid_method})` : ""}`;
+  const wa = `Slip gaji ${monthLabel(bulan)} — ${r.staff_name}\n${lines.map(([k, v]) => `${k}: ${v}`).join("\n")}\n${paidWeekly ? "Sisa dibayar akhir bulan" : "Total dibayar"}: ${pay < 0 ? "−" : ""}${formatRupiah(Math.abs(pay))}${r.paid_at ? `\nDibayar ${formatTanggal(r.paid_at)} (${r.paid_method})` : ""}`;
   return (
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A5; margin: 10mm } @media print { body { background: #fff } }"}</style>
@@ -47,7 +53,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
         <table className="w-full">
           <tbody>{lines.map(([k, v]) => <tr key={k} className="border-t border-[#EEEEEA]"><td className="py-1">{k}</td><td className="text-right">{v}</td></tr>)}</tbody>
         </table>
-        <div className="flex items-baseline justify-between border-y-2 border-ink py-2"><b>Total dibayar</b><b className="font-display text-2xl">{formatRupiah(r.total_pay)}</b></div>
+        <div className="flex items-baseline justify-between border-y-2 border-ink py-2"><b>{paidWeekly ? "Sisa dibayar akhir bulan" : "Total dibayar"}</b><b className="font-display text-2xl">{pay < 0 ? "−" : ""}{formatRupiah(Math.abs(pay))}</b></div>
         <p className="text-xs">{r.paid_at ? `Status: dibayar ${formatTanggal(r.paid_at)} (${r.paid_method})` : r.closed ? "Status: belum dibayar" : "Status: estimasi (periode belum ditutup)"}</p>
         <section>
           <b className="text-xs uppercase tracking-wide text-muted">Rincian</b>

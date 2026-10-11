@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(14);
+select plan(19);
 
 -- Pengeluaran: aturan kasir (hari ini, laci, ≤ kas kecil), nota wajib > Rp100.000, laci mengurangi kas diharapkan,
 -- final setelah tutup kasir, void hanya manajer, masuk owner_finance.
@@ -29,6 +29,15 @@ select lives_ok($$ select add_expense('2020-03-02', 'konsumsi', 'Snack', 40000, 
 select save_cash_closing('2020-03-02', 0);
 select throws_like($$ select void_expense((select id from expenses where description = 'Snack'), 'salah') $$, '%sudah final%', 'laci tanggal yang sudah ditutup tidak bisa dibatalkan');
 select lives_ok($$ select void_expense((select id from expenses where description = 'Sewa Maret'), 'dobel input') $$, 'manajer membatalkan dengan alasan');
+-- kasbon: wajib staf → potongan gaji bulan itu; batal → koreksi (+), total penyesuaian kembali 0
+select throws_like($$ select add_expense(jkt_today(), 'kasbon', 'Pinjam', 50000, 'kas_toko') $$, '%Pilih staf%', 'kasbon tanpa staf ditolak');
+select lives_ok($$ select add_expense(jkt_today(), 'kasbon', 'Keperluan keluarga', 50000, 'kas_toko', null, tests.staff_andi()) $$, 'kasbon Andi Rp50.000');
+select is((select amount from payroll_adjustments where staff_id = tests.staff_andi() and reason like 'Kasbon %Keperluan keluarga'), -50000::bigint,
+          'kasbon menjadi potongan gaji bulan ini');
+select lives_ok($$ select void_expense((select id from expenses where category = 'kasbon' and description = 'Keperluan keluarga'), 'batal pinjam') $$, 'batalkan kasbon');
+select is((select sum(amount) from payroll_adjustments where staff_id = tests.staff_andi() and (reason like 'Kasbon %Keperluan keluarga' or reason like 'Batal kasbon %batal pinjam')),
+          0::numeric, 'batal kasbon menambah koreksi sehingga potongan hilang');
+
 select tests.su();
 select results_eq($$ select (f ->> 'expenses_total')::bigint, jsonb_array_length(f -> 'expenses_by_category') from owner_finance('2020-03-01', '2020-03-31') f $$,
                   $$ values (40000::bigint, 1) $$, 'owner_finance: hanya yang tidak dibatalkan');

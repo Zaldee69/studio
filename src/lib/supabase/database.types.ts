@@ -461,16 +461,22 @@ isOneToOne: false
                   ]
                 },"expenses": {
                   Row: {
-                    "amount": number,"category": string,"created_at": string,"created_by": string | null,"date": string,"description": string,"id": string,"receipt_path": string | null,"source": string,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                    "adjustment_id": string | null,"amount": number,"category": string,"created_at": string,"created_by": string | null,"date": string,"description": string,"id": string,"receipt_path": string | null,"source": string,"staff_id": string | null,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
                   }
                   Insert: {
-                    "amount": number,"category": string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description": string,"id"?: string,"receipt_path"?: string | null,"source": string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "adjustment_id"?: string | null,"amount": number,"category": string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description": string,"id"?: string,"receipt_path"?: string | null,"source": string,"staff_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Update: {
-                    "amount"?: number,"category"?: string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description"?: string,"id"?: string,"receipt_path"?: string | null,"source"?: string,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "adjustment_id"?: string | null,"amount"?: number,"category"?: string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description"?: string,"id"?: string,"receipt_path"?: string | null,"source"?: string,"staff_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "expenses_adjustment_id_fkey"
+      columns: ["adjustment_id"]
+isOneToOne: false
+      referencedRelation: "payroll_adjustments"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "expenses_created_by_fkey"
       columns: ["created_by"]
 isOneToOne: false
@@ -481,6 +487,18 @@ isOneToOne: false
       columns: ["created_by"]
 isOneToOne: false
       referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "public_staff"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "staff"
       referencedColumns: ["id"]
     }
                   ]
@@ -1887,7 +1905,7 @@ isOneToOne: false
           }
           Functions: {
             "add_expense":
-{ Args: { "p_amount": number,"p_category": string,"p_date": string,"p_description": string,"p_receipt_path"?: string,"p_source": string }; Returns: string
+{ Args: { "p_amount": number,"p_category": string,"p_date": string,"p_description": string,"p_receipt_path"?: string,"p_source": string,"p_staff_id"?: string }; Returns: string
                            },
 "adjust_stock":
 { Args: { "p_item_id": string,"p_note"?: string,"p_qty": number,"p_reason": string }; Returns: number

@@ -49,6 +49,18 @@ export function lr(left: string, right: string, cols: number): string[] {
   return lines;
 }
 
+/** Gambar hitam-putih (GS v 0): `dark` per piksel baris demi baris, lebar kelipatan 8. */
+export function rasterCmd(dark: boolean[], w: number, h: number): number[] {
+  const row = w / 8, out = [GS, 0x76, 0x30, 0, row & 0xff, row >> 8, h & 0xff, h >> 8];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < row; x++) {
+      let b = 0;
+      for (let k = 0; k < 8; k++) if (dark[y * w + x * 8 + k]) b |= 0x80 >> k;
+      out.push(b);
+    }
+  return out;
+}
+
 /** Penyusun byte: teks + perintah. */
 export class Escpos {
   private parts: number[] = [];
@@ -73,10 +85,11 @@ const rp = formatRupiah;
 const waDisplay = (wa: string) => (wa.startsWith("62") ? `0${wa.slice(2)}` : wa);
 
 /** Struk pembayaran — isi sama dengan struk layar (ReceiptPaper). */
-export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | null; site?: string; drawer?: boolean }): Uint8Array {
+export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | null; site?: string; drawer?: boolean; logo?: number[] | null }): Uint8Array {
   const p = new Escpos(COLS[o.paper]);
   const change = cashChange(r.paid, r.cashReceived);
-  p.big(r.shop.toUpperCase()).cmd(CMD.center);
+  if (o.logo) p.cmd(CMD.center).cmd(o.logo).feed(1);
+  p.feed(1).big(r.shop).feed(1).cmd(CMD.center); // nama toko besar, diberi jarak atas & bawah
   if (r.shopAddress) p.lines(wrap(r.shopAddress, p.cols));
   const contact = [r.shopWhatsapp && `WA ${waDisplay(r.shopWhatsapp)}`, r.shopInstagram && `IG @${r.shopInstagram.replace(/^@/, "")}`].filter(Boolean).join("  ");
   if (contact) p.lines(wrap(contact, p.cols));

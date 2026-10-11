@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ascii, closingEscpos, CMD, lr, receiptEscpos, wrap } from "./escpos";
+import { ascii, closingEscpos, CMD, lr, rasterCmd, receiptEscpos, wrap } from "./escpos";
 import type { Receipt } from "./receipt";
 
 const str = (b: Uint8Array) => String.fromCharCode(...b);
@@ -30,7 +30,7 @@ describe("escpos", () => {
   it("struk: isi, kembalian, potong kertas; laci hanya bila diminta", () => {
     const b = receiptEscpos(r, { paper: 58, site: "groombloom.id" });
     const t = str(b);
-    for (const s of ["BARBERSHOP", "#AB12CD34", "TOTAL", "Rp126.000", "Kembalian", "Rp24.000", "oleh Andi", "groombloom.id/booking", "WA 081234567890"]) expect(t).toContain(s);
+    for (const s of ["Barbershop", "#AB12CD34", "TOTAL", "Rp126.000", "Kembalian", "Rp24.000", "oleh Andi", "groombloom.id/booking", "WA 081234567890"]) expect(t).toContain(s);
     expect(has(b, CMD.init)).toBe(true);
     expect(has(b, CMD.cut)).toBe(true);
     expect(has(b, CMD.drawer)).toBe(false);
@@ -39,6 +39,15 @@ describe("escpos", () => {
     // setiap baris cetak (tanpa byte perintah) muat di kertas; header besar = lebar ganda
     const text = t.replace(/\x1b@|\x1b[aEd][\s\S]|\x1d![\s\S]|\x1dV[\s\S]{2}/g, "");
     for (const l of text.split("\n")) expect(l.length, l).toBeLessThanOrEqual(32);
+  });
+
+  it("logo: GS v 0, 8 piksel per byte (MSB = kiri), dicetak sebelum nama toko", () => {
+    const dark = [...Array(8)].map((_, i) => i === 0).concat([...Array(8)].map((_, i) => i === 7)); // 8×2
+    const cmd = rasterCmd(dark, 8, 2);
+    expect(cmd).toEqual([0x1d, 0x76, 0x30, 0, 1, 0, 2, 0, 0x80, 0x01]);
+    const bytes = Array.from(receiptEscpos(r, { paper: 58, logo: cmd }));
+    const at = bytes.findIndex((b, i) => b === 0x1d && bytes[i + 1] === 0x76);
+    expect(at).toBe(CMD.init.length + CMD.center.length); // paling atas: init → rata tengah → logo
   });
 
   it("struk void ditandai", () => {

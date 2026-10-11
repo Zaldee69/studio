@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Row = {
   id: string; date: string; category: ExpenseCat; description: string; amount: number; source: ExpenseSource; receipt_path: string | null;
-  created_at: string; voided_at: string | null; void_reason: string | null; profiles: { full_name: string | null } | null;
+  created_at: string; voided_at: string | null; void_reason: string | null; profiles: { full_name: string | null } | null; staff: { name: string } | null;
 };
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
 
@@ -27,14 +27,15 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   const { data, refresh } = useRealtimeTable(["expenses", "cash_closings"], async () => {
     const supabase = createClient();
     let q = supabase.from("expenses")
-      .select("id, date, category, description, amount, source, receipt_path, created_at, voided_at, void_reason, profiles!expenses_created_by_fkey(full_name)")
+      .select("id, date, category, description, amount, source, receipt_path, created_at, voided_at, void_reason, profiles!expenses_created_by_fkey(full_name), staff(name)")
       .order("date", { ascending: false }).order("created_at", { ascending: false });
     q = manager ? q.gte("date", `${month}-01`).lte("date", monthEnd(month)) : q.eq("date", today);
-    const [rows, lim, closed] = await Promise.all([
+    const [rows, lim, closed, staff] = await Promise.all([
       q, supabase.rpc("expense_limits"), supabase.from("cash_closings").select("id").eq("date", today).limit(1),
+      supabase.from("staff").select("id, name").eq("active", true).order("name"),
     ]);
     if (rows.error) throw rows.error;
-    return { rows: rows.data as unknown as Row[], lim: lim.data?.[0] ?? { petty_cash_limit: 0, receipt_required_above: 0 }, todayClosed: !!closed.data?.length };
+    return { rows: rows.data as unknown as Row[], lim: lim.data?.[0] ?? { petty_cash_limit: 0, receipt_required_above: 0 }, todayClosed: !!closed.data?.length, staff: staff.data ?? [] };
   }, manager ? month : today);
 
   const live = (data?.rows ?? []).filter((r) => !r.voided_at);
@@ -49,8 +50,8 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   }
   function exportCsv() {
     downloadText(`pengeluaran-${month}.csv`, toCsv([
-      ["Tanggal", "Kategori", "Keterangan", "Sumber", "Jumlah", "Dicatat oleh", "Status"],
-      ...(data?.rows ?? []).map((r) => [r.date, EXPENSE_CAT[r.category], r.description, EXPENSE_SOURCE[r.source], r.amount,
+      ["Tanggal", "Kategori", "Staf (kasbon)", "Keterangan", "Sumber", "Jumlah", "Dicatat oleh", "Status"],
+      ...(data?.rows ?? []).map((r) => [r.date, EXPENSE_CAT[r.category], r.staff?.name ?? "", r.description, EXPENSE_SOURCE[r.source], r.amount,
         r.profiles?.full_name ?? "", r.voided_at ? `Dibatalkan: ${r.void_reason}` : ""]),
     ]));
   }
@@ -68,7 +69,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
       </div>
       <p className="text-sm text-muted">
         {manager
-          ? "Biaya operasional di luar stok, perawatan fasilitas, dan gaji. Pengeluaran dari laci mengurangi kas diharapkan di tutup kasir; semuanya masuk laporan owner sampai laba bersih."
+          ? "Biaya operasional di luar stok, perawatan fasilitas, dan gaji. Kasbon staf otomatis menjadi potongan gaji bulan itu. Pengeluaran dari laci mengurangi kas diharapkan di tutup kasir; semuanya masuk laporan owner sampai laba bersih."
           : `Belanja kecil hari ini yang dibayar dari laci kas (maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)}). Mengurangi kas diharapkan saat tutup kasir. Di atas itu, minta manajer yang mencatat.`}
         {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
       </p>
@@ -85,7 +86,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
         {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>Belum ada pengeluaran {manager ? "di bulan ini" : "hari ini"}.</Empty> : data.rows.map((r) => (
           <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EEEEEA] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
             <span className="flex min-w-0 flex-1 flex-col">
-              <b className={r.voided_at ? "line-through" : ""}>{r.description}</b>
+              <b className={r.voided_at ? "line-through" : ""}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
               <span className="text-xs text-muted">
                 {EXPENSE_CAT[r.category]} · {EXPENSE_SOURCE[r.source]} · {manager ? formatTanggal(`${r.date}T12:00:00+07:00`) : formatJam(r.created_at)}
                 {r.profiles?.full_name && ` · ${r.profiles.full_name}`}
@@ -100,7 +101,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
       </div>
 
       <Sheet open={adding} onClose={() => setAdding(false)} label="Catat pengeluaran" width={480}>
-        {data && <AddForm manager={manager} lim={data.lim} onDone={() => { setAdding(false); refresh(); }} />}
+        {data && <AddForm manager={manager} lim={data.lim} staff={data.staff} onDone={() => { setAdding(false); refresh(); }} />}
       </Sheet>
       <Sheet open={!!voiding} onClose={() => setVoiding(null)} label="Batalkan pengeluaran" width={440}>
         {voiding && <VoidForm row={voiding} onDone={() => { setVoiding(null); refresh(); }} />}
@@ -109,15 +110,18 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   );
 }
 
-function AddForm({ manager, lim, onDone }: { manager: boolean; lim: { petty_cash_limit: number; receipt_required_above: number }; onDone: () => void }) {
+function AddForm({ manager, lim, staff, onDone }: {
+  manager: boolean; lim: { petty_cash_limit: number; receipt_required_above: number }; staff: { id: string; name: string }[]; onDone: () => void;
+}) {
   const toast = useToast();
   const today = jktDate();
-  const [f, setF] = useState({ date: today, category: "perlengkapan" as ExpenseCat, description: "", amount: "", source: (manager ? "kas_toko" : "laci") as ExpenseSource });
+  const [f, setF] = useState({ date: today, category: "perlengkapan" as ExpenseCat, description: "", amount: "", source: (manager ? "kas_toko" : "laci") as ExpenseSource, staff: "" });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const amount = Number(f.amount) || 0;
   const needReceipt = amount > lim.receipt_required_above;
   const overLimit = !manager && amount > lim.petty_cash_limit;
+  const kasbon = f.category === "kasbon";
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setF({ ...f, [k]: e.target.value });
 
   async function save() {
@@ -133,6 +137,7 @@ function AddForm({ manager, lim, onDone }: { manager: boolean; lim: { petty_cash
     }
     const { error } = await supabase.rpc("add_expense", {
       p_date: f.date, p_category: f.category, p_description: f.description, p_amount: amount, p_source: f.source, p_receipt_path: path ?? undefined,
+      p_staff_id: kasbon ? f.staff : undefined,
     });
     setBusy(false);
     if (error) return toast(error.message, "error");
@@ -150,11 +155,23 @@ function AddForm({ manager, lim, onDone }: { manager: boolean; lim: { petty_cash
           </select>
         </Field>
         <Field label="Jumlah (Rp)" htmlFor="ex-amount" hint={overLimit ? `Melebihi batas kas kecil ${formatRupiah(lim.petty_cash_limit)}` : undefined}>
-          <input id="ex-amount" className="input" inputMode="numeric" required value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value.replace(/\D/g, "") })} />
+          <div className="relative">
+            <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted">Rp</span>
+            <input id="ex-amount" className="input pl-10 text-right tabular" inputMode="numeric" required placeholder="0"
+              value={f.amount ? Number(f.amount).toLocaleString("id-ID") : ""} onChange={(e) => setF({ ...f, amount: e.target.value.replace(/\D/g, "") })} />
+          </div>
         </Field>
       </div>
+      {kasbon && (
+        <Field label="Staf" htmlFor="ex-staff" hint="Dipotong otomatis dari gaji bulan ini (penyelesaian akhir bulan).">
+          <select id="ex-staff" className="input" required value={f.staff} onChange={set("staff")}>
+            <option value="">Pilih staf…</option>
+            {staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </Field>
+      )}
       <Field label="Keterangan" htmlFor="ex-desc">
-        <input id="ex-desc" className="input" required minLength={2} maxLength={200} placeholder="mis. Galon air minum 2 buah" value={f.description} onChange={set("description")} />
+        <input id="ex-desc" className="input" required minLength={2} maxLength={200} placeholder={kasbon ? "mis. Keperluan keluarga" : "mis. Galon air minum 2 buah"} value={f.description} onChange={set("description")} />
       </Field>
       {manager && (
         <div className="grid grid-cols-2 gap-3">
@@ -172,7 +189,7 @@ function AddForm({ manager, lim, onDone }: { manager: boolean; lim: { petty_cash
       {f.source === "laci" && <p className="text-xs text-muted">Diambil dari laci kas — mengurangi kas diharapkan saat tutup kasir {manager ? "tanggal itu" : "hari ini"}.</p>}
       <div className="flex gap-2">
         <button type="button" onClick={onDone} className="btn-ghost flex-1">Batal</button>
-        <button disabled={busy || !amount || overLimit || (needReceipt && !file)} className="btn-ink flex-1">{busy ? "Menyimpan…" : "Simpan"}</button>
+        <button disabled={busy || !amount || overLimit || (needReceipt && !file) || (kasbon && !f.staff)} className="btn-ink flex-1">{busy ? "Menyimpan…" : "Simpan"}</button>
       </div>
     </form>
   );

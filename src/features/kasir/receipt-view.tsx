@@ -3,6 +3,7 @@
 import { PrintSheet } from "@/components/print-sheet";
 import { useToast } from "@/components/ui";
 import { receiptEscpos } from "@/lib/domain/escpos";
+import { logoRaster, RECEIPT_LOGO } from "@/lib/logo-raster";
 import { printBytes, printerSettings, setPrinterSettings, usePrinter } from "@/lib/printer";
 import { METHOD_LABEL } from "@/lib/domain/closing";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
@@ -28,8 +29,10 @@ const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/^https?:\/\//, ""
 const waDisplay = (wa: string) => (wa.startsWith("62") ? `0${wa.slice(2)}` : wa);
 
 /** Cetak ke printer struk Bluetooth; `drawer` = buka laci (transaksi tunai & diaktifkan di pengaturan printer). */
-export const printReceipt = (r: ReceiptData, drawer = false) =>
-  printBytes(receiptEscpos(r, { paper: printerSettings().paper, voided: r.voided, site, drawer: drawer && printerSettings().drawer }));
+export async function printReceipt(r: ReceiptData, drawer = false) {
+  const paper = printerSettings().paper;
+  return printBytes(receiptEscpos(r, { paper, voided: r.voided, site, drawer: drawer && printerSettings().drawer, logo: await logoRaster(paper) }));
+}
 
 /** Struk modern — satu tampilan untuk pratinjau di layar dan lembar cetak (58/80 mm). */
 function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
@@ -43,9 +46,9 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
     <div className={`flex flex-col gap-3 text-[#1f2320] ${small ? "text-[10px]" : "text-[12px]"}`} style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
       {/* kepala */}
       <div className="flex flex-col items-center gap-1 text-center">
-        {/* eslint-disable-next-line @next/next/no-img-element -- ikon SVG lokal, tidak perlu optimasi gambar */}
-        <img src="/icon.svg" alt="" className={small ? "size-8" : "size-10"} />
-        <b className={`${small ? "text-[13px]" : "text-[16px]"} uppercase tracking-[0.18em]`}>{r.shop}</b>
+        {/* eslint-disable-next-line @next/next/no-img-element -- logo PNG kecil; lembar cetak butuh <img> biasa */}
+        <img src={RECEIPT_LOGO} alt="" className={small ? "w-14" : "w-[72px]"} />
+        <b className={`${small ? "my-1.5 text-[13px]" : "my-2 text-[16px]"} tracking-[0.04em]`}>{r.shop}</b>
         {r.shopAddress && <span className="leading-snug text-[#5A5A5A]">{r.shopAddress}</span>}
         {(r.shopWhatsapp || r.shopInstagram) && (
           <span className="text-[#5A5A5A]">{[r.shopWhatsapp && `WA ${waDisplay(r.shopWhatsapp)}`, r.shopInstagram && `IG ${r.shopInstagram.startsWith("@") ? r.shopInstagram : `@${r.shopInstagram}`}`].filter(Boolean).join(" · ")}</span>

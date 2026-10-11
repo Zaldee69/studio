@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
-import { login, newSession, sql, uniq } from "./helpers";
+import { login, newSession, resetTodayClosings, sql, uniq } from "./helpers";
 
 // Pengeluaran: kasir mencatat belanja kecil dari laci (≤ Rp100.000 tanpa nota) → manajer melihat & membatalkan dengan alasan.
 test("kasir catat pengeluaran laci → manajer lihat & batalkan", async ({ page, browser }, info) => {
-  test.skip(sql(`select 1 from cash_closings where date = jkt_today()`).length > 0, "kasir hari ini sudah ditutup di DB lokal");
+  resetTodayClosings(); // kasir hanya bisa mencatat sebelum tutup kasir hari ini
   const desc = `Galon ${uniq()}`;
   try {
     const k = await newSession(browser, info, "cashier");

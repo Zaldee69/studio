@@ -87,8 +87,9 @@ export function Closing({ master }: { master: Master }) {
         {row("Top-up deposit QRIS", s.topup_qris)}
         {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
         {row(`Pengeluaran dari laci (${s.expense_count}×)`, -s.expense_cash)}
+        {row(`Tips QRIS diserahkan tunai ke staf (${s.tip_count}×)`, -s.tip_qris)}
       </div>
-      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up − pengeluaran laci)", s.expected_cash, true)}</div>
+      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up − pengeluaran laci − tips QRIS)", s.expected_cash, true)}</div>
       <div>
         <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
         {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (

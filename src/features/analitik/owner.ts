@@ -19,7 +19,7 @@ export type OwnerReport = {
   finance: {
     tx_count: number; void_count: number; void_amount: number; gross: number; discount: number; discount_promo?: number; net: number; hpp: number;
     by_category: { category: Cat; items: number; gross: number; discount: number; net: number; hpp: number; margin: number }[];
-    payments: { cash: number; qris: number; deposit: number };
+    payments: { cash: number; qris: number; deposit: number; tips_qris?: number };
     deposit: { topup_count: number; topup_paid: number; topup_cash: number; topup_qris: number; topup_credited: number; bonus: number; used: number; balance_end: number };
     maintenance_cost: number; expenses_total: number; expenses_by_category: { category: ExpenseCat; amount: number }[];
   };

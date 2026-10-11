@@ -21,6 +21,9 @@ export interface Receipt {
   method: PayMethod;
   cashReceived: number | null;
   balanceAfter: number | null;
+  /** tips QRIS (titipan staf, bukan bagian tagihan) */
+  tip?: number;
+  tipStaff?: string | null;
 }
 
 /** Kembalian tunai; null bila tidak ada uang diterima. */
@@ -36,6 +39,7 @@ export function receiptText(r: Receipt): string {
     r.discount ? `${r.discountLabel}: −${formatRupiah(r.discount)}` : "",
     r.depositUsed ? `Saldo deposit: −${formatRupiah(r.depositUsed)}` : "",
     `*Dibayar (${METHOD_LABEL[r.method]}): ${formatRupiah(r.paid)}*`,
+    r.tip ? `Tips untuk ${r.tipStaff ?? "staf"}: ${formatRupiah(r.tip)} (total QRIS ${formatRupiah(r.paid + r.tip)})` : "",
     change ? `Kembalian: ${formatRupiah(change)}` : "",
     r.balanceAfter != null && (r.depositUsed || r.balanceAfter > 0) ? `Sisa saldo deposit: ${formatRupiah(r.balanceAfter)}` : "",
     "", "Terima kasih! 🙏",

@@ -125,7 +125,7 @@ export default async function Landing() {
   };
 
   return (
-    <div className="min-h-screen scroll-smooth bg-lux font-jost text-cream">
+    <div data-landing className="min-h-screen bg-lux font-jost text-cream">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <TrackView step="landing" />
       <PublicHeader nav right={<Link href={bookHref()} className="btn-line max-[459px]:hidden">{online ? "Reservasi" : "WhatsApp"}</Link>} />

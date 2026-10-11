@@ -111,3 +111,10 @@ select:not([multiple]):not([size]) {
   body > .print-sheet { display: block; color: #000; background: #fff; }
   .no-print { display: none !important; }
 }
+
+/* Halaman utama: gulir halus ke #layanan/#menu/… (yang di-scroll adalah <html>, bukan wrapper). Tidak untuk pengguna
+   "kurangi gerakan". data-scroll-behavior di <html> (layout) = perpindahan halaman Next tetap instan. Header sticky 76px. */
+@media (prefers-reduced-motion: no-preference) {
+  html:has([data-landing]) { scroll-behavior: smooth; }
+}
+[data-landing] section[id] { scroll-margin-top: 76px; }

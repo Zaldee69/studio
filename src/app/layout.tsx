@@ -27,7 +27,7 @@ const PROD_DB_IN_DEV = process.env.NODE_ENV === "development" && !/127\.0\.0\.1|
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" className={`${bricolage.variable} ${jakarta.variable} ${cormorant.variable} ${manrope.variable} h-full antialiased`}>
+    <html lang="id" data-scroll-behavior="smooth" className={`${bricolage.variable} ${jakarta.variable} ${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       {/* ekstensi browser (mis. ColorZilla: cz-shortcut-listen) menambah atribut di <body> → bukan mismatch dari kode kita */}
       <body className="min-h-full" suppressHydrationWarning><ConfirmProvider>{children}</ConfirmProvider>
         {PROD_DB_IN_DEV && (

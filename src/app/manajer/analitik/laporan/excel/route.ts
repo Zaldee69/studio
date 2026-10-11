@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
   ], [null, FMT.money]);
   ws.getRow(k0 + 5).getCell(2).numFmt = FMT.pct; // baris "Margin kotor %"
   table(ws, ["Uang masuk", "Rp"], [
-    ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
+    ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], ["  + tips QRIS (titipan staf, bukan omzet)", f.payments.tips_qris ?? 0], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
     ["Total uang masuk", f.payments.cash + f.payments.qris + f.deposit.topup_paid], ["Dibayar pakai saldo deposit", f.payments.deposit],
     [`Void (${f.void_count} transaksi)`, f.void_amount],
   ], [null, FMT.money]);

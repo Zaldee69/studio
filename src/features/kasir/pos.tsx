@@ -39,6 +39,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [method, setMethod] = useState<"cash" | "qris">("cash");
   const [qrisRef, setQrisRef] = useState(""); // bukti bayar QRIS (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
+  const [tip, setTip] = useState(""); // tips QRIS (titipan staf, diserahkan tunai dari laci)
+  const [tipPick, setTipPick] = useState("");
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [lastStaff, setLastStaff] = useState<Partial<Record<SvcCat, string>>>({});
   const [tab, setTab] = useState<SvcCat>("barbershop");
@@ -116,9 +118,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const recv = num(received);
   const change = cashDue > 0 ? cashChange(cashDue, recv ?? cashDue) : null;
   const shortCash = cashDue > 0 && recv != null && recv < cashDue;
+  const qrisPay = method === "qris" && k.paid > 0;
+  const tipAmt = qrisPay ? num(tip) ?? 0 : 0;
+  const tipStaffIds = [...new Set(lines.map((l) => l.staffId).filter(Boolean))] as string[];
+  const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setDismissed([]); setError("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setTip(""); setTipPick(""); setDismissed([]); setError("");
   }
 
   async function pay() {
@@ -132,6 +138,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method === "qris" ? qrisRef : null,
+      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
     if (error) { setPaying(false); return setError(error.message); }
@@ -307,6 +314,25 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   <input id="qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
+                  {tipStaffIds.length > 0 && (
+                    <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
+                      <div className="flex items-center gap-2">
+                        <label htmlFor="tip-in" className="flex-1 text-[13px] font-bold">Tips (opsional)</label>
+                        <input id="tip-in" inputMode="numeric" placeholder="0" className="input h-11 w-32 text-right tabular"
+                          value={tip ? Number(tip).toLocaleString("id-ID") : ""} onChange={(e) => setTip(e.target.value.replace(/\D/g, ""))} />
+                      </div>
+                      {tipAmt > 0 && <>
+                        <div className="flex items-center gap-2">
+                          <label htmlFor="tip-staff" className="flex-1 text-[13px] font-bold">Tips untuk</label>
+                          <select id="tip-staff" className="input h-11 w-40" value={tipStaff} onChange={(e) => setTipPick(e.target.value)}>
+                            {tipStaffIds.map((id) => <option key={id} value={id}>{master.staff.find((s) => s.id === id)?.name ?? "Staf"}</option>)}
+                          </select>
+                        </div>
+                        <div className="flex justify-between text-[15px] font-bold"><span>Total scan QRIS</span><span>{formatRupiah(k.paid + tipAmt)}</span></div>
+                        <span className="text-xs text-muted">Tips bukan omzet. Serahkan {formatRupiah(tipAmt)} tunai dari laci ke staf sekarang — kas diharapkan ikut berkurang.</span>
+                      </>}
+                    </div>
+                  )}
                 </div>
               )}
               {cashDue > 0 && (

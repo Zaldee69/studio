@@ -125,6 +125,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                 <tbody>
                   <tr><td className={td}>Tunai (transaksi)</td><td className={num}>{m(f.payments.cash)}</td></tr>
                   <tr><td className={td}>QRIS (transaksi)</td><td className={num}>{m(f.payments.qris)}</td></tr>
+                  {!!f.payments.tips_qris && <tr><td className={`${td} text-muted`}>+ tips QRIS (titipan staf, sudah diserahkan tunai — bukan omzet)</td><td className={`${num} text-muted`}>{m(f.payments.tips_qris)}</td></tr>}
                   <tr><td className={td}>Top-up deposit ({f.deposit.topup_count}×)</td><td className={num}>{m(f.deposit.topup_paid)}</td></tr>
                   <tr className="font-bold"><td className={td}>Total uang masuk</td><td className={num}>{m(cash)}</td></tr>
                   <tr><td className={td}>Dibayar pakai saldo deposit</td><td className={num}>{m(f.payments.deposit)}</td></tr>

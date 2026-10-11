@@ -20,6 +20,7 @@ test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + 
   await expect(card(page, name)).toBeVisible();
   await expect(card(manager, name)).toBeVisible(); // booking baru muncul di tab manajer (realtime)
 
+  await expect(page.getByRole("status").filter({ hasText: /disimpan/ })).toBeHidden(); // toast bisa menutupi kartu di bawah layar
   await card(page, name).click();
   for (const s of ["Datang", "Mulai", "Selesai"]) await page.getByRole("button", { name: s, exact: true }).click();
   await expect(card(manager, name)).toHaveAccessibleName(/Selesai\/Belum Bayar/);

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { login, sql, uniq } from "./helpers";
 
 // Tips QRIS: satu kali scan (tagihan + tips), tips untuk staf pilihan kasir, bukan omzet; tercetak di struk.
-test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak termasuk tips", async ({ page }) => {
+test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak termasuk tips; filter riwayat", async ({ page }) => {
   const ref = `TIP${uniq()}`.toUpperCase();
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
@@ -24,4 +24,15 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
     (select price from services where name = 'Cukur Jenggot') as price from transactions t where t.qris_ref = '${ref}'`);
   expect(Number(t.tip_amount)).toBe(20000);
   expect(Number(t.total)).toBe(Number(t.price)); // omzet = harga layanan saja
+
+  // riwayat: filter No. struk + metode + staf → hanya transaksi ini
+  const [{ no }] = sql<{ no: string }>(`select upper(left(id::text, 8)) as no from transactions where qris_ref = '${ref}'`);
+  await page.goto("/kasir/kasir?tab=riwayat");
+  await page.getByLabel("Cari pelanggan atau No. struk").fill(`#${no}`);
+  await page.getByLabel("Metode bayar").selectOption("qris");
+  await page.getByLabel("Staf").selectOption({ label: staffName });
+  await page.getByLabel("Layanan").selectOption("Cukur Jenggot");
+  await expect(page.getByText(/^1 dari \d+$/)).toBeVisible();
+  await page.getByLabel("Metode bayar").selectOption("cash");
+  await expect(page.getByText("Tidak ada transaksi yang cocok dengan filter.")).toBeVisible();
 });

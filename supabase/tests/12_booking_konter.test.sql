@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(13);
+select plan(15);
 
 create function tests.res(n text) returns uuid language sql security definer as $$ select id from public.resources where name = n $$;
 create function tests.at(h text) returns timestamptz language sql as $$ select jkt(jkt_today() + 5, h::time) $$;
@@ -56,6 +56,17 @@ select create_booking_admin(tests.res('Kursi Barber 2'), tests.staff_andi(), tes
   array[tests.svc('Potong Rambut')], null, 'Tamu Baru', '0813-9999-1111', 'walk_in', p_force => true, p_guest_name => 'X') ->> 'appointment_id' as a3 \gset
 select is((select guest_name from appointments where id = :'a3'), null, 'pelanggan ber-WA: nama panggilan diabaikan (pakai nama pelanggan)');
 select isnt((select customer_id from appointments where id = :'a3'), null, 'pelanggan ber-WA tetap dibuatkan data pelanggan');
+
+-- slot dilepas di jam selesai sebenarnya (prod 11/10: potong 45 mnt selesai ±20 mnt → walk-in berikutnya "bentrok" palsu)
+select create_booking_admin(tests.res('Kursi Barber 3'), tests.staff_andi(), tests.at('11:00'),
+  array[tests.svc('Potong Rambut')], p_source => 'walk_in', p_force => true) ->> 'appointment_id' as b1 \gset
+select tests.su();
+update settings set booking_buffer_minutes = 0; -- tes sebelumnya memakai jeda 30 menit
+update appointments set status = 'completed', service_started_at = tests.at('11:00'), service_ended_at = tests.at('11:20') where id = :'b1';
+select is(jsonb_array_length(booking_conflicts(tests.res('Kursi Barber 3'), tests.staff_andi(), tests.at('11:30'), tests.at('12:00'))), 0,
+          'selesai 11.20 → walk-in 11.30 di kursi & kapster sama tidak bentrok');
+select is(jsonb_array_length(booking_conflicts(tests.res('Kursi Barber 3'), tests.staff_andi(), tests.at('11:15'), tests.at('11:45'))), 1,
+          'sebelum jam selesai sebenarnya tetap bentrok');
 
 select * from finish();
 rollback;

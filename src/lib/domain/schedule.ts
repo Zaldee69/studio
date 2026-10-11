@@ -8,6 +8,7 @@ export interface ApptLike {
   start_at: string;
   end_at: string;
   status: string;
+  service_ended_at?: string | null;
 }
 
 const hm = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ });
@@ -35,6 +36,11 @@ export function nextQuarter(nowMin: number, openMin: number, closeMin: number): 
 const overlaps = (a0: number, a1: number, b0: number, b1: number) => a0 < b1 && a1 > b0;
 /** Booking yang tidak lagi memakai kursi/staf: dibatalkan atau pelanggan tidak datang. */
 const freesSlot = (status: string) => status === "cancelled" || status === "no_show";
+/** Kursi/staf terpakai sampai: jam selesai sebenarnya bila sudah selesai/lunas, selain itu jam selesai terjadwal. Cermin occupied_until(). */
+export function occupiedEnd(a: ApptLike): number {
+  const s = Date.parse(a.start_at), e = Date.parse(a.end_at);
+  return (a.status === "completed" || a.status === "paid") && a.service_ended_at ? Math.max(s, Math.min(e, Date.parse(a.service_ended_at))) : e;
+}
 
 /** Booking lain yang tumpang tindih di resource ATAU staf yang sama (± jeda antar-booking, menit). Cermin booking_conflicts(). */
 export function findConflicts<T extends ApptLike>(
@@ -45,7 +51,7 @@ export function findConflicts<T extends ApptLike>(
   const s = Date.parse(draft.start), e = Date.parse(draft.end);
   return appts.filter((a) => a.id !== draft.excludeId && !freesSlot(a.status)
     && (a.resource_id === draft.resourceId || (!!draft.staffId && a.staff_id === draft.staffId))
-    && overlaps(Date.parse(a.start_at) - buf, Date.parse(a.end_at) + buf, s, e));
+    && overlaps(Date.parse(a.start_at) - buf, occupiedEnd(a) + buf, s, e));
 }
 
 /** Id booking yang bentrok di resource yang sama (untuk badge "Bentrok" di grid). */
@@ -55,8 +61,8 @@ export function conflictingIds(appts: ApptLike[]): Set<string> {
   for (let i = 0; i < live.length; i++) {
     for (let j = i + 1; j < live.length; j++) {
       const a = live[i], b = live[j];
-      if (a.resource_id === b.resource_id
-        && overlaps(Date.parse(a.start_at), Date.parse(a.end_at), Date.parse(b.start_at), Date.parse(b.end_at))) {
+      if ((a.resource_id === b.resource_id || (!!a.staff_id && a.staff_id === b.staff_id)) // kursi ATAU staf sama — sama dengan peringatan saat simpan
+        && overlaps(Date.parse(a.start_at), occupiedEnd(a), Date.parse(b.start_at), occupiedEnd(b))) {
         out.add(a.id); out.add(b.id);
       }
     }

@@ -7,6 +7,7 @@ import { formatJam, formatTanggal, jktDate } from "@/lib/domain/format";
 import { dayRange } from "@/lib/domain/schedule";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "./ui";
+import { apptName } from "@/lib/domain/guest";
 
 type Row = { id: string; booking_group_id: string | null; status: string; source: string; created_at: string; cancel_reason: string | null;
   status_changed_at: string | null; change_request: string | null; change_requested_at: string | null };
@@ -50,7 +51,7 @@ export function useCounterAlerts(base: string) {
       setOnlineNew(onJadwalRef.current ? 0 : fresh ?? 0);
     };
     const describe = async (id: string) => {
-      const { data } = await supabase.from("appointments").select("start_at, customer:customers(name), staff:staff(name)").eq("id", id).single();
+      const { data } = await supabase.from("appointments").select("start_at, guest_name, customer:customers(name), staff:staff(name)").eq("id", id).single();
       return data;
     };
     const first = setTimeout(count, 0);
@@ -70,7 +71,7 @@ export function useCounterAlerts(base: string) {
       if (seen.current.has(`done:${id}`)) return;
       seen.current.add(`done:${id}`);
       const d = await describe(id);
-      if (alive && d) toast(`${d.customer?.name ?? "Walk-in"} — siap bayar${d.staff ? ` (${d.staff.name})` : ""}`, "info", { label: "Buka di kasir", href: `${base}/kasir?booking=${id}` });
+      if (alive && d) toast(`${apptName(d)} — siap bayar${d.staff ? ` (${d.staff.name})` : ""}`, "info", { label: "Buka di kasir", href: `${base}/kasir?booking=${id}` });
     };
     // Event realtime bisa terlewat (booking masuk sebelum langganan aktif, koneksi tablet putus-sambung):
     // kejar ketinggalan saat (ulang) tersambung + cadangan tiap 30 dtk. Duplikat dicegah `seen`.
@@ -109,7 +110,7 @@ export function useCounterAlerts(base: string) {
         if (r.change_request && fresh(r.change_requested_at) && !seen.current.has(key)) {
           seen.current.add(key);
           const d = await describe(r.id);
-          if (alive && d) toast(`${d.staff?.name ?? "Kapster"} minta ubah jadwal: ${d.customer?.name ?? "Walk-in"} ${formatJam(d.start_at)} — “${r.change_request}”`, "ok", { label: "Buka jadwal", href: `${base}/jadwal` });
+          if (alive && d) toast(`${d.staff?.name ?? "Kapster"} minta ubah jadwal: ${apptName(d)} ${formatJam(d.start_at)} — “${r.change_request}”`, "ok", { label: "Buka jadwal", href: `${base}/jadwal` });
         }
       });
     supabase.realtime.setAuth().then(() => { if (alive) channel.subscribe((status) => { if (status === "SUBSCRIBED") void catchUp(); }); });

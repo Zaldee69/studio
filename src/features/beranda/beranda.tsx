@@ -9,6 +9,7 @@ import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import { useDayAppointments, useDayTransactions } from "../counter/hooks";
 import type { Master } from "../counter/types";
+import { apptName } from "@/lib/domain/guest";
 
 /** Beranda manajer: 5 kartu, perlu perhatian, tim hari ini, berikutnya. Semua realtime. */
 export function Beranda({ master }: { master: Master }) {
@@ -69,7 +70,7 @@ export function Beranda({ master }: { master: Master }) {
     ...(side?.drafts ? [{ text: `${side.drafts} stok opname draft belum disetujui`, cta: "Opname", href: `${b}/inventaris?tab=opname`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
     ...(side?.prevOpen ? [{ text: `Periode gaji ${prevLabel} belum ditutup`, cta: "SDM", href: `${b}/sdm?bulan=${prevMonth.slice(0, 7)}`, dot: "#3A4137", bg: "#F5F6F2", border: "#D6D9CF" }] : []),
     ...(side?.pendingOff ? [{ text: `${side.pendingOff} pengajuan izin staf menunggu persetujuan`, cta: "Izin staf", href: `${b}/izin`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
-    ...(by("completed").length ? [{ text: `${by("completed").length} tagihan selesai belum dibayar · ${by("completed").map((a) => a.customer?.name ?? "Walk-in").join(", ")}`, cta: "Kasir", href: `${b}/kasir`, dot: STATUS.completed.dot, bg: "#FFF7F7", border: "#E8C3C4" }] : []),
+    ...(by("completed").length ? [{ text: `${by("completed").length} tagihan selesai belum dibayar · ${by("completed").map((a) => apptName(a)).join(", ")}`, cta: "Kasir", href: `${b}/kasir`, dot: STATUS.completed.dot, bg: "#FFF7F7", border: "#E8C3C4" }] : []),
     ...(side?.online ?? []).map((o) => ({ text: `Booking online: ${o.customer?.name ?? "Tamu"} · ${formatTanggal(o.start_at)} ${formatJam(o.start_at)}`, cta: "Jadwal", href: `${b}/jadwal`, dot: "#1F2320", bg: "#FAF8F4", border: "#E5E5E0" })),
     ...(side?.followCount ? [{ text: `${side.followCount} pelanggan belum kembali > ${master.shop.churnWeeks} minggu${side.followNames.length ? ` · ${side.followNames.join(", ")}` : ""}`, cta: "Pelanggan", href: `${b}/pelanggan?filter=follow`, dot: "#3F6A88", bg: "#F3F6F8", border: "#A9C9F5" }] : []),
   ];
@@ -149,7 +150,7 @@ export function Beranda({ master }: { master: Master }) {
         {!upcoming.length ? <span className="text-sm text-muted">Tidak ada booking lagi hari ini.</span> : upcoming.slice(0, 6).map((a) => (
           <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#EEEEEA] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
             <b>{formatJam(a.start_at)}</b>
-            <span className="flex min-w-0 items-center gap-1.5"><b className="truncate">{a.customer?.name ?? "Walk-in"}</b>
+            <span className="flex min-w-0 items-center gap-1.5"><b className="truncate">{apptName(a)}</b>
               {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[10px] font-bold text-white">Online</span>}</span>
             <span className="truncate text-[#4A4C46] max-sm:col-start-2 max-sm:col-end-4 max-sm:row-start-2 max-sm:text-xs">{a.appointment_services.map((s) => svcName(s.service_id)).join(", ")}</span>
             <span className="flex items-center gap-1.5 text-xs font-semibold max-sm:col-start-3 max-sm:row-start-1"><span className="size-2 rounded-full" style={{ background: STATUS[a.status].dot }} />

@@ -16,6 +16,7 @@ import type { Customer, DayAppt, Master, SvcCat, TxRow } from "../counter/types"
 import { printerReady, printerSettings } from "@/lib/printer";
 import { printReceipt, ReceiptView, toReceipt } from "./receipt-view";
 import { TopupModal } from "./topup-modal";
+import { apptName } from "@/lib/domain/guest";
 
 // staffLocked: item dari booking yang sudah ada kapsternya — komisi mengikuti booking (dicek juga di server)
 type Item = { key: string; serviceId: string; staffId: string; appointmentId: string | null; fromUpsell?: boolean; staffLocked?: boolean };
@@ -170,7 +171,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     className={`flex min-h-16 flex-col gap-1 rounded-[10px] border-2 px-3 py-2.5 text-left ${on ? "border-ink bg-paper" : "border-line bg-card"}`}>
                     <span className="flex w-full items-center gap-1.5 text-[13px] font-bold">
                       <span className="size-2 shrink-0 rounded-full" style={{ background: S.dot }} title={S.label} />
-                      <span className="flex-1 truncate">{a.customer?.name ?? "Walk-in"}</span>
+                      <span className="flex-1 truncate">{apptName(a)}</span>
                       <span className="text-xs font-semibold text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
                     <span className="w-full truncate text-xs text-[#4A4C46]">

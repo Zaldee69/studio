@@ -9,11 +9,11 @@ test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + 
   const manager = await newSession(browser, info, "manager");
   await manager.goto("/manajer/jadwal");
 
-  const name = `Walkin ${uniq()}`;
+  const guest = `Walkin ${uniq()}`, name = `${guest} \\(walk-in\\)`; // nama panggilan: hanya di booking, bukan data pelanggan
   await page.goto("/kasir/jadwal");
   // tap 1: slot kosong
   await page.getByRole("button", { name: `Booking baru Kursi Barber 3 ${h}:00` }).click();
-  await page.fill("#f-name", name);
+  await page.fill("#f-guest", guest); // tanpa No. WA
   // tap 2: layanan, tap 3: simpan
   await page.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   await page.getByRole("button", { name: "Simpan booking" }).click();
@@ -34,6 +34,7 @@ test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + 
   const receipt = page.getByRole("region", { name: "Keranjang" });
   await expect(receipt).toContainText("Uang diterimaRp100.000");
   await expect(receipt).toContainText("KembalianRp25.000");
+  await expect(receipt).toContainText(`Pelanggan${guest}`); // nama panggilan di struk
 
   await expect(card(manager, name)).toHaveAccessibleName(/Lunas/); // tab lain, tanpa refresh
   await manager.context().close();
@@ -46,13 +47,13 @@ test("2 · pasangan: barber + nail → satu tagihan, diskon, deposit + QRIS, sal
   await page.goto("/kasir/jadwal");
 
   await page.getByRole("button", { name: `Booking baru Kursi Barber 2 ${h}:00` }).click();
-  await page.fill("#f-name", name); await page.fill("#f-wa", wa);
+  await page.fill("#f-wa", wa); await page.fill("#f-name", name);
   await page.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   await page.getByRole("button", { name: "Simpan booking" }).click();
   await expect(card(page, name)).toBeVisible();
 
   await page.getByRole("button", { name: `Booking baru Meja Manicure 2 ${h}:00` }).click();
-  await page.fill("#f-name", name); await page.fill("#f-wa", wa);
+  await page.fill("#f-wa", wa); // nama tidak ditanya: WA lama
   await expect(page.getByText(/sudah terdaftar atas nama/)).toBeVisible(); // WA lama → pelanggan yang sama
   await page.getByRole("button", { name: /^Manicure Basic ·/ }).click();
   await page.getByRole("button", { name: "Simpan booking" }).click();
@@ -88,7 +89,7 @@ test("3 · bentrok: booking tumpang tindih → peringatan → Tetap simpan → b
   await page.getByRole("button", { name: "Booking baru", exact: true }).click();
   await page.selectOption("#f-res", { label: "Kursi Barber 1" });
   await page.selectOption("#f-start", { label: "10:15" }); // Rina 10:00–10:45 (seed)
-  await page.fill("#f-name", name);
+  await page.fill("#f-wa", randomWa()); await page.fill("#f-name", name);
   await page.getByRole("button", { name: /^Cukur Jenggot ·/ }).click();
   await expect(page.getByRole("dialog").getByRole("alert").filter({ hasText: "Jadwal bentrok" })).toContainText(/Jadwal bentrok:.*Rina/);
   await page.getByRole("button", { name: "Tetap simpan" }).click();

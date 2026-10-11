@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { card, login, newSession, slotHour, uniq } from "./helpers";
+import { card, login, newSession, randomWa, slotHour, uniq } from "./helpers";
 
 const row = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(name) }).filter({ hasText: name });
 
@@ -12,7 +12,7 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
 
   await kasir.goto("/kasir/jadwal");
   await kasir.getByRole("button", { name: `Booking baru Meja Manicure 3 ${h}:00` }).click();
-  await kasir.fill("#f-name", name);
+  await kasir.fill("#f-wa", randomWa()); await kasir.fill("#f-name", name); // tanpa WA = walk-in tanpa nama
   await kasir.getByRole("button", { name: /^Manicure Basic ·/ }).click();
   await kasir.selectOption("#f-staff", { label: "Sari" });
   await kasir.getByRole("button", { name: "Simpan booking" }).click();

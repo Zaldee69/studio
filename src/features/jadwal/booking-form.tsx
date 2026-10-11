@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CustomerCombobox } from "../counter/customer-combobox";
 import { useDayAppointments, useDayTimeOff } from "../counter/hooks";
 import type { Cat, Customer, DayAppt, Master } from "../counter/types";
+import { apptName } from "@/lib/domain/guest";
 
 export type FormInit = {
   date: string; startMin: number; resourceId: string;
@@ -42,6 +43,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const [customer, setCustomer] = useState<Customer | null>(edit?.customer ?? init.customer ?? null);
   const [newName, setNewName] = useState("");
   const [newWa, setNewWa] = useState("");
+  const [guestName, setGuestName] = useState(""); // nama panggilan walk-in — hanya di booking, bukan data pelanggan
   const [sel, setSel] = useState<string[]>(edit?.appointment_services.map((s) => s.service_id) ?? []);
   const [pair, setPair] = useState<Pair>({ sel: [], resourceId: null, staffPick: null });
   // Ubah booking: pertahankan durasi lama bila sebelumnya di-override.
@@ -130,7 +132,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const conflicts = staffId || resourceId ? busy({ resourceId, staffId, s: startIso, e: endIso }) : [];
   const pairConflicts = pairResource ? busy({ resourceId: pairResource, staffId: pairStaff, s: startIso, e: pairEndIso }) : [];
   const describe = (list: DayAppt[]) => list.map((a) => ({
-    id: a.id, start_at: a.start_at, end_at: a.end_at, customer_name: a.customer?.name ?? "Walk-in",
+    id: a.id, start_at: a.start_at, end_at: a.end_at, customer_name: apptName(a),
     staff_name: master.staff.find((s) => s.id === a.staff_id)?.name ?? null,
     resource_name: master.resources.find((r) => r.id === a.resource_id)?.name ?? "",
   }));
@@ -178,7 +180,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     if (!staffId) return setError(`Belum ada staf ${CAT_NAME[cat]} aktif.`);
     if (pair.sel.length && (!pairResource || !pairStaff)) return setError(`Belum ada kursi/meja atau staf ${CAT_NAME[pairCat]} aktif untuk booking kedua.`);
     if (!customer && newWa.trim() && !waNorm) return setError("No. WhatsApp belum valid.");
-    if (!customer && waNorm && !newName.trim() && !existingOwner) return setError("Isi nama untuk pelanggan baru (atau kosongkan No. WhatsApp untuk walk-in).");
+    if (!customer && waNorm && !newName.trim() && !existingOwner) return setError("Isi nama pelanggan (atau kosongkan No. WhatsApp untuk walk-in).");
     setSaving(true);
     const supabase = createClient();
     const force = hasConflict;
@@ -189,9 +191,10 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       })
       : await supabase.rpc("create_booking_admin", {
         p_resource_id: resourceId, p_staff_id: staffId, p_start_at: startIso, p_service_ids: sel,
-        p_customer_id: customer?.id, p_name: customer ? undefined : newName.trim() || undefined,
+        p_customer_id: customer?.id, p_name: customer || !waNorm ? undefined : newName.trim() || undefined,
         p_whatsapp: customer ? undefined : newWa.trim() || undefined, p_source: source, p_notes: notes,
         p_force: force, p_duration: duration !== autoDur ? duration : undefined,
+        p_guest_name: customer || waNorm ? undefined : guestName.trim() || undefined,
       });
     if (error) { setSaving(false); return setError(error.message); }
     const r = data as { saved: boolean; conflicts: Conflict[]; customer_existing?: boolean; customer_id?: string | null };
@@ -202,6 +205,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       const p2 = await supabase.rpc("create_booking_admin", {
         p_resource_id: pairResource, p_staff_id: pairStaff, p_start_at: startIso, p_service_ids: pair.sel,
         p_customer_id: r.customer_id ?? undefined, p_source: source, p_notes: notes, p_force: force,
+        p_guest_name: r.customer_id ? undefined : guestName.trim() || undefined,
       });
       const r2 = p2.data as { saved: boolean; conflicts: Conflict[] } | null;
       pairMsg = p2.error ? ` · booking ${CAT_NAME[pairCat]} gagal: ${p2.error.message}`
@@ -227,7 +231,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </div>
 
       {edit ? (
-        <p className="rounded-[10px] bg-paper px-3 py-2.5 text-sm"><b>{edit.customer?.name ?? "Walk-in"}</b>{edit.customer?.whatsapp && <span className="text-muted tabular"> · {edit.customer.whatsapp}</span>}</p>
+        <p className="rounded-[10px] bg-paper px-3 py-2.5 text-sm"><b>{apptName(edit)}</b>{edit.customer?.whatsapp && <span className="text-muted tabular"> · {edit.customer.whatsapp}</span>}</p>
       ) : (
         <>
           <Field label="Pelanggan" htmlFor="f-cust">
@@ -235,12 +239,20 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
           </Field>
           {!customer && (
             <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
-              <Field label="Nama baru (kosong = walk-in)" htmlFor="f-name">
-                <input id="f-name" className="input" autoComplete="off" value={newName} onChange={(e) => setNewName(e.target.value)} />
-              </Field>
-              <Field label="No. WhatsApp" htmlFor="f-wa">
+              {/* Tanpa No. WA = walk-in tanpa data pelanggan (nama asal-isi tidak berguna untuk CRM/pengingat) */}
+              <Field label="No. WhatsApp (opsional)" htmlFor="f-wa" hint={waNorm ? undefined : "Kosongkan untuk walk-in — tidak disimpan sebagai pelanggan."}>
                 <input id="f-wa" className="input tabular" inputMode="tel" placeholder="08…" value={newWa} onChange={(e) => setNewWa(e.target.value)} />
               </Field>
+              {waNorm && !existingOwner && (
+                <Field label="Nama pelanggan" htmlFor="f-name">
+                  <input id="f-name" className="input" autoComplete="off" required value={newName} onChange={(e) => setNewName(e.target.value)} />
+                </Field>
+              )}
+              {!waNorm && (
+                <Field label="Nama panggilan (opsional)" htmlFor="f-guest" hint="Untuk memanggil & membedakan walk-in di jadwal dan struk.">
+                  <input id="f-guest" className="input" autoComplete="off" maxLength={40} placeholder="mis. Budi kaos merah" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                </Field>
+              )}
               {existingOwner && (
                 <p role="status" className="rounded-[10px] bg-[#ECEEE8] px-3 py-2 text-[13px] text-[#262B24] min-[520px]:col-span-2">
                   No. WA ini sudah terdaftar atas nama <b>{existingOwner}</b> — booking akan memakai pelanggan tersebut.

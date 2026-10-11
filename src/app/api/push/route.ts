@@ -2,6 +2,7 @@ import webpush from "web-push";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { errInfo, log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
+import { apptName } from "@/lib/domain/guest";
 
 // Dipanggil trigger DB (pg_net) saat booking kapster dibuat / dipindah / dibatalkan → kirim Web Push ke perangkatnya.
 const TITLE = { new: "Booking baru", changed: "Booking diubah", cancelled: "Booking dibatalkan" } as const;
@@ -17,7 +18,7 @@ export async function POST(req: Request) {
 
   const admin = createAdminClient();
   const { data: a } = await admin.from("appointments")
-    .select("staff_id, start_at, customer:customers(name), resource:resources(name), appointment_services(service:services(name))")
+    .select("staff_id, start_at, guest_name, customer:customers(name), resource:resources(name), appointment_services(service:services(name))")
     .eq("id", appointment_id).single();
   if (!a?.staff_id) return Response.json({ sent: 0 });
   const { data: subs } = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth, profile:profiles!inner(staff_id)")
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
   // Tanpa no. WA / harga: cukup nama, waktu, layanan.
   const payload = JSON.stringify({
     title: TITLE[kind], tag: `appt-${appointment_id}`, url: "/kapster",
-    body: `${a.customer?.name ?? "Walk-in"} · ${formatTanggal(a.start_at).split(",")[0]} ${formatJam(a.start_at)} · ${a.appointment_services.map((s) => s.service?.name).join(", ")} · ${a.resource?.name ?? ""}`,
+    body: `${apptName(a)} · ${formatTanggal(a.start_at).split(",")[0]} ${formatJam(a.start_at)} · ${a.appointment_services.map((s) => s.service?.name).join(", ")} · ${a.resource?.name ?? ""}`,
   });
   let sent = 0;
   await Promise.all((subs ?? []).map(async (s) => {

@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { TX_SELECT, useDayTransactions } from "../counter/hooks";
 import type { Master, TxRow } from "../counter/types";
 import { ReceiptView, toReceipt } from "./receipt-view";
+import { receiptName } from "@/lib/domain/guest";
 
 /** Transaksi per tanggal (default hari ini): klik → struk & kirim ulang. Void hanya manajer (dijaga juga di server). */
 export function History({ master, txParam }: { master: Master; txParam: string | null }) {
@@ -70,7 +71,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
             <button key={t.id} onClick={() => setOpenId(t.id)}
               className={`grid min-h-[52px] w-full grid-cols-[64px_1.4fr_1fr_1fr] items-center gap-3 border-b border-[#EEEEEA] px-4 py-2 text-left text-sm tabular hover:bg-paper min-[1000px]:grid-cols-[64px_1.6fr_1fr_1.1fr_1fr] ${t.voided_at ? "text-muted line-through" : ""}`}>
               <b>{formatJam(t.created_at)}</b>
-              <span className="truncate">{t.customer?.name ?? "Pelanggan umum"}</span>
+              <span className="truncate">{receiptName(t.customer, t.transaction_items.map((i) => i.appointment?.guest_name))}</span>
               <span className="text-right font-semibold">{formatRupiah(t.total)}</span>
               <span>{t.voided_at ? "Void" : METHOD_LABEL[t.payment_method]}</span>
               <span className="hidden truncate text-muted min-[1000px]:block">{names.get(t.cashier_id ?? "") ?? "—"}</span>

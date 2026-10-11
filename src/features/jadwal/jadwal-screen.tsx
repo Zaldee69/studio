@@ -13,6 +13,7 @@ import { useDayAppointments, useDayTimeOff, useDayTransactions } from "../counte
 import type { Customer, DayAppt, Master } from "../counter/types";
 import { BookingDrawer } from "./booking-drawer";
 import { BookingForm, type FormInit } from "./booking-form";
+import { apptName } from "@/lib/domain/guest";
 
 const coarseQuery = "(pointer: coarse)";
 const useCoarse = () => useSyncExternalStore(
@@ -62,12 +63,12 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   async function setStatus(a: DayAppt, status: ApptStatus) {
     setData((d) => d?.map((x) => (x.id === a.id ? { ...x, status } : x)) ?? d); // optimistis
     const { error } = await createClient().rpc("set_appointment_status", { p_id: a.id, p_status: status });
-    if (error) { toast(error.message, "error"); refresh(); } else toast(`${a.customer?.name ?? "Walk-in"} → ${STATUS[status].label}`);
+    if (error) { toast(error.message, "error"); refresh(); } else toast(`${apptName(a)} → ${STATUS[status].label}`);
   }
   async function noShow(a: DayAppt) {
     const { error } = await createClient().rpc("mark_no_show", { p_id: a.id });
     if (error) return toast(error.message, "error");
-    toast(`${a.customer?.name ?? "Walk-in"} → Tidak datang`); setSelId(null); refresh();
+    toast(`${apptName(a)} → Tidak datang`); setSelId(null); refresh();
   }
   async function cancel(a: DayAppt, reason: string) {
     const { error } = await createClient().rpc("cancel_booking_admin", { p_id: a.id, p_reason: reason });
@@ -225,7 +226,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick 
   const svc = a.appointment_services.map((s) => master.services.find((x) => x.id === s.service_id)?.name).filter(Boolean).join(", ");
   return (
     <button
-      aria-label={`${a.customer?.name ?? "Walk-in"}, ${formatJam(a.start_at)}–${formatJam(a.end_at)}, ${staff}, ${S.label}${conflict ? ", bentrok" : ""}${a.change_request ? ", minta ubah jadwal" : ""}${off ? ", kapster izin" : ""}`}
+      aria-label={`${apptName(a)}, ${formatJam(a.start_at)}–${formatJam(a.end_at)}, ${staff}, ${S.label}${conflict ? ", bentrok" : ""}${a.change_request ? ", minta ubah jadwal" : ""}${off ? ", kapster izin" : ""}`}
       onClick={() => { if (!long.current) onOpen(); long.current = false; }}
       onContextMenu={(e) => { e.preventDefault(); onQuick(); }}
       onPointerDown={(e) => { if (e.pointerType !== "mouse") press.current = setTimeout(() => { long.current = true; onQuick(); }, 550); }}
@@ -235,7 +236,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick 
         outline: selected ? `2px solid ${S.dot}` : undefined, outlineOffset: 1 }}>
       <span className="flex w-full items-center gap-1.5 text-xs font-bold">
         <span className="size-[7px] shrink-0 rounded-full" style={{ background: S.dot }} />
-        <span className="flex-1 truncate">{a.customer?.name ?? "Walk-in"}</span>
+        <span className="flex-1 truncate">{apptName(a)}</span>
         {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[10px] font-bold text-white">Online</span>}
         {a.status === "pending_review" && <span className="rounded border border-ink px-1 text-[10px] font-bold">Menunggu</span>}
         {conflict && <span className="rounded bg-[#6E1616] px-1.5 text-[10px] font-bold text-white">Bentrok</span>}

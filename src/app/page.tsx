@@ -6,7 +6,7 @@ import { PublicFooter, PublicHeader } from "@/components/public-header";
 import { TrackView } from "@/components/track-view";
 import { bundleDiscount, promoActive } from "@/lib/domain/cart";
 import { formatRupiah, formatTanggal } from "@/lib/domain/format";
-import { COMING_SOON, STAFF_TITLE, type Cat } from "@/lib/domain/category";
+import { COMING_SOON, isOnlineCat, STAFF_TITLE, type Cat } from "@/lib/domain/category";
 import { HARI } from "@/lib/domain/hours";
 import { BRAND_LINES } from "@/lib/brand";
 import { igUrl, loadSite } from "@/lib/public-site";
@@ -76,6 +76,8 @@ export default async function Landing() {
   const pct = s.bundle_pct ?? 10;
   const list = (c: string) => services.filter((x) => x.category === c);
   const soon = (c: string) => COMING_SOON.includes(c);
+  // Tim di halaman publik = staf layanan yang bisa dibooking online (pijat hanya lewat kasir/WA → tidak ditampilkan)
+  const team = staff.filter((t) => isOnlineCat(t.category!) && !soon(t.category!));
   const photo = (k: string) => photos.find((p) => p.kind === k);
   const gallery = photos.filter((p) => p.kind === "gallery");
   const b = list("barbershop")[0], n = [...list("nail")].sort((x, y) => (y.price ?? 0) - (x.price ?? 0))[0];
@@ -298,7 +300,7 @@ export default async function Landing() {
         </section>
 
         {/* PARA AHLI */}
-        {s.show_staff && staff.some((t) => !soon(t.category!)) && (
+        {s.show_staff && team.length > 0 && (
           <section className="border-t border-rule bg-lux-2">
             <div className={`mx-auto flex max-w-[1180px] flex-col items-center gap-10 ${sec} ${px}`}>
               <div className="flex flex-col items-center gap-3.5 text-center">
@@ -306,7 +308,7 @@ export default async function Landing() {
                 <h2 className={h2}>Tim di balik hasilnya</h2>
               </div>
               <div className="grid w-full grid-cols-2 gap-6 min-[900px]:grid-cols-3 min-[1200px]:grid-cols-6">
-                {staff.filter((t) => !soon(t.category!)).map((t) => (
+                {team.map((t) => (
                   <div key={t.id} className="flex flex-col items-center gap-3 text-center">
                     <div className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux">
                       {t.photo_path ? <Image src={photoUrl(t.photo_path)!} alt={t.name ?? ""} fill sizes="(min-width: 1200px) 170px, (min-width: 900px) 30vw, 45vw" className="object-cover" />

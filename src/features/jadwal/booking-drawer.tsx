@@ -11,6 +11,7 @@ import { STATUS, FLOW, type ApptStatus } from "@/lib/domain/status";
 import { createClient } from "@/lib/supabase/client";
 import type { DayAppt, Master } from "../counter/types";
 import type { PayMethod } from "@/lib/domain/cart";
+import { apptName } from "@/lib/domain/guest";
 
 /** Laci detail booking: status satu langkah, bayar, ubah, batalkan. */
 export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdit, onStatus, onCancel, onDismissRequest, onReview, onNoShow }: {
@@ -51,7 +52,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       <div className="flex items-start gap-3">
         <div className="flex flex-1 flex-col items-start gap-1.5">
           <StatusBadge status={appt.status} />
-          <h2 className="font-display text-2xl font-bold">{appt.customer?.name ?? "Walk-in"}</h2>
+          <h2 className="font-display text-2xl font-bold">{apptName(appt)}</h2>
           {appt.customer?.whatsapp && <span className="text-[13px] text-muted tabular">{appt.customer.whatsapp}</span>}
           {appt.group?.code && <span className="text-xs font-bold text-muted">Kode {appt.group.code}</span>}
         </div>

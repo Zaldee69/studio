@@ -3,6 +3,7 @@
 import { PrintSheet } from "@/components/print-sheet";
 import { useToast } from "@/components/ui";
 import { receiptEscpos } from "@/lib/domain/escpos";
+import { receiptName } from "@/lib/domain/guest";
 import { logoRaster, RECEIPT_LOGO } from "@/lib/logo-raster";
 import { printBytes, printerSettings, setPrinterSettings, usePrinter } from "@/lib/printer";
 import { METHOD_LABEL } from "@/lib/domain/closing";
@@ -17,7 +18,7 @@ export function toReceipt(tx: TxRow, shop: Shop, staffName: (id: string | null) 
   return {
     shop: shop.name, shopAddress: shop.address, shopWhatsapp: shop.whatsapp, shopInstagram: shop.instagram,
     no: tx.id.slice(0, 8).toUpperCase(), cashier: cashier ?? null,
-    when: `${formatTanggal(tx.created_at)} ${formatJam(tx.created_at)}`, customer: tx.customer?.name ?? "Pelanggan umum",
+    when: `${formatTanggal(tx.created_at)} ${formatJam(tx.created_at)}`, customer: receiptName(tx.customer, tx.transaction_items.map((i) => i.appointment?.guest_name)),
     items: tx.transaction_items.map((i) => ({ name: i.name, price: i.price, staff: staffName(i.staff_id) ?? null })),
     subtotal: tx.subtotal, discount: tx.discount_amount, discountLabel: tx.discount_label, depositUsed: tx.deposit_used,
     paid: tx.paid_amount, method: tx.payment_method, cashReceived: tx.cash_received, balanceAfter,

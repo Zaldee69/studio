@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(9);
+select plan(13);
 
 create function tests.res(n text) returns uuid language sql security definer as $$ select id from public.resources where name = n $$;
 create function tests.at(h text) returns timestamptz language sql as $$ select jkt(jkt_today() + 5, h::time) $$;
@@ -45,6 +45,17 @@ select is((select c.name from customers c where c.id = (select (r ->> 'customer_
 select tests.login(tests.kasir());
 select ok((create_booking_admin(tests.res('Kursi Barber 3'), tests.staff_andi(), tests.at('18:00'), array[tests.svc('Potong Rambut')]) ->> 'saved')::boolean,
           'walk-in tanpa nama & WA tetap boleh');
+-- buat dulu (\gset), baru dibaca: baris yang dibuat di dalam satu query belum terlihat oleh query itu sendiri
+select create_booking_admin(tests.res('Kursi Barber 2'), tests.staff_andi(), tests.at('16:00'),
+  array[tests.svc('Potong Rambut')], null, 'asdf', null, 'walk_in', p_force => true) ->> 'appointment_id' as a1 \gset
+select is((select customer_id from appointments where id = :'a1'), null, 'nama tanpa WA → walk-in, tidak membuat data pelanggan');
+select create_booking_admin(tests.res('Kursi Barber 2'), tests.staff_andi(), tests.at('17:00'),
+  array[tests.svc('Potong Rambut')], p_source => 'walk_in', p_force => true, p_guest_name => '  Budi kaos merah ') ->> 'appointment_id' as a2 \gset
+select is((select guest_name from appointments where id = :'a2'), 'Budi kaos merah', 'nama panggilan walk-in tersimpan di booking');
+select create_booking_admin(tests.res('Kursi Barber 2'), tests.staff_andi(), tests.at('18:00'),
+  array[tests.svc('Potong Rambut')], null, 'Tamu Baru', '0813-9999-1111', 'walk_in', p_force => true, p_guest_name => 'X') ->> 'appointment_id' as a3 \gset
+select is((select guest_name from appointments where id = :'a3'), null, 'pelanggan ber-WA: nama panggilan diabaikan (pakai nama pelanggan)');
+select isnt((select customer_id from appointments where id = :'a3'), null, 'pelanggan ber-WA tetap dibuatkan data pelanggan');
 
 select * from finish();
 rollback;

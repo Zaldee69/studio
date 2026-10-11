@@ -5,7 +5,7 @@ import { OpenNow } from "@/components/open-now";
 import { PublicFooter, PublicHeader } from "@/components/public-header";
 import { TrackView } from "@/components/track-view";
 import { bundleDiscount, promoActive } from "@/lib/domain/cart";
-import { formatRupiah, formatTanggal } from "@/lib/domain/format";
+import { formatRupiah, formatTanggal, mapsUrl } from "@/lib/domain/format";
 import { COMING_SOON, isOnlineCat, STAFF_TITLE, type Cat } from "@/lib/domain/category";
 import { HARI } from "@/lib/domain/hours";
 import { BRAND_LINES } from "@/lib/brand";
@@ -367,7 +367,7 @@ export default async function Landing() {
             <span className="eyebrow">Kunjungi kami</span>
             <h2 className={h2}>Sampai jumpa<br /><i className="text-gold">di studio.</i></h2>
             <div className="flex flex-col gap-[18px] text-base leading-relaxed text-sand">
-              {s.shop_address && <div className="flex flex-col gap-1"><span className="lux-label">Alamat</span><address className="not-italic">{s.shop_address}</address></div>}
+              {s.shop_address && <div className="flex flex-col gap-1"><span className="lux-label">Alamat</span><address className="not-italic"><a href={mapsUrl(s.shop_address, s.maps_url)} target="_blank" rel="noopener" className="underline decoration-rule-2 underline-offset-4 hover:text-cream">{s.shop_address} ↗<span className="sr-only"> (buka di Google Maps)</span></a></address></div>}
               <div className="flex flex-col gap-1.5">
                 <span className="lux-label">Jam buka</span>
                 <span className="text-[13px] uppercase tracking-[0.18em] text-cream"><OpenNow hours={hours} closures={closureDates} /></span>

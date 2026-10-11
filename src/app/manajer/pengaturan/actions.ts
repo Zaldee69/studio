@@ -63,7 +63,7 @@ export async function savePublicSettings(_: SaveState, fd: FormData): Promise<Sa
   const supabase = await createClient();
   const { data, error } = await supabase.from("settings")
     .update({ ...row, standards, updated_at: new Date().toISOString() } as never).eq("id", true).select("id");
-  if (error) return { error: friendly(error).replace("cek durasi/jam/angka", "cek URL Google Maps harus https://www.google.com/maps/embed…") };
+  if (error) return { error: friendly(error).replace("cek durasi/jam/angka", "cek tautan Google Maps harus diawali https://, URL embed harus https://www.google.com/maps/embed…") };
   if (!data?.length) return { error: "Akses ditolak." };
   revalidatePublic();
   return { ok: "Halaman publik diperbarui" };

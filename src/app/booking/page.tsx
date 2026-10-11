@@ -75,7 +75,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
       staff={(staff ?? []).flatMap((s) => isOnlineCat(s.category!) ? [{ id: s.id!, name: s.name!, category: s.category, photo: photoUrl(s.photo_path) }] : [])}
       hours={hours ?? []} closures={(closures ?? []).map((c) => c.date)}
       shop={{
-        name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "", whatsapp: shop?.shop_whatsapp ?? "",
+        name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "", mapsUrl: shop?.maps_url ?? null, whatsapp: shop?.shop_whatsapp ?? "",
         bundlePct: shop?.bundle_pct ?? 10, maxDays: shop?.booking_max_days_ahead ?? 14, cutoffHours: shop?.cancel_cutoff_hours ?? 2,
         promo: { pct: shop?.online_promo_pct ?? 0, start: shop?.online_promo_start ?? null, end: shop?.online_promo_end ?? null },
         open: (shop?.online_booking_open ?? true) && cats.length > 0, review: shop?.online_booking_mode === "review",

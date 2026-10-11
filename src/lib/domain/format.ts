@@ -33,3 +33,6 @@ export function normalizeWhatsApp(raw: string | null | undefined): string | null
   if (/^8\d{7,12}$/.test(n)) return "62" + n;
   return null;
 }
+
+/** Tautan Google Maps: pin toko dari Pengaturan bila ada, selain itu pencarian dari alamat (terbuka di aplikasi Maps di HP). */
+export const mapsUrl = (address: string, pin?: string | null) => pin || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;

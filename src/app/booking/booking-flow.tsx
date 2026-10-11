@@ -10,7 +10,7 @@ import { OpenNow } from "@/components/open-now";
 import { BackButton, PublicHeader } from "@/components/public-header";
 import { captchaOn, Turnstile } from "@/components/turnstile";
 import { calcCart, promoActive, type OnlinePromo } from "@/lib/domain/cart";
-import { formatJam, formatRupiah, formatTanggal, jktDate, normalizeWhatsApp } from "@/lib/domain/format";
+import { formatJam, formatRupiah, formatTanggal, jktDate, mapsUrl, normalizeWhatsApp } from "@/lib/domain/format";
 import { dayWindow, type DayHours } from "@/lib/domain/hours";
 import { buildIcs } from "@/lib/domain/ics";
 import { addDays } from "@/lib/domain/schedule";
@@ -25,7 +25,7 @@ export type { Cust };
 type Cat = "barbershop" | "nail";
 type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string };
 type Staff = { id: string; name: string; category: Cat; photo: string | null };
-type Shop = { name: string; address: string; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
+type Shop = { name: string; address: string; mapsUrl: string | null; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
 type View = "layanan" | "staf" | "waktu" | "konfirmasi" | "selesai" | "masuk";
 export type Init = { step?: string; services: string[]; pick: Record<string, string>; together: boolean; date?: string; time?: string; cat: Cat };
 export type Reschedule = { groupId: string; code: string; serviceIds: string[]; pick: Record<string, string>; together: boolean; startAt: string } | null;
@@ -636,7 +636,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             <div className="flex flex-col gap-1">
               <span className="eyebrow">Ringkasan</span>
               <span className="font-serif text-2xl">{shop.name}</span>
-              {shop.address && <span className="text-[13px] font-light text-stone">{shop.address}</span>}
+              {shop.address && <a href={mapsUrl(shop.address, shop.mapsUrl)} target="_blank" rel="noopener" className="text-[13px] font-light text-stone underline underline-offset-4 hover:text-cream">{shop.address} ↗<span className="sr-only"> (buka di Google Maps)</span></a>}
             </div>
             <div className="h-px bg-rule" />
             {!lines.length && <span className="py-2 text-sm font-light italic text-dust">Belum ada layanan dipilih.</span>}

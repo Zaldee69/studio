@@ -116,6 +116,7 @@ export const PUBLIC_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "groom_text", label: "Deskripsi Barbershop", type: "textarea" },
     { name: "bloom_text", label: "Deskripsi Nail Art", type: "textarea" },
     { name: "founded_year", label: "Tahun berdiri (est.)", type: "int", nullable: true, min: 1900, max: 2100 },
+    { name: "maps_url", label: "Tautan Google Maps toko (dari tombol Bagikan; kosong = cari dari alamat)", type: "text", nullable: true },
     { name: "maps_embed_url", label: "URL embed Google Maps (https://www.google.com/maps/embed?…)", type: "text", nullable: true },
   ] },
   { title: "Standar kami (4 poin)", fields: [1, 2, 3, 4].flatMap((i) => [

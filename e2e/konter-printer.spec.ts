@@ -48,7 +48,7 @@ test("printer Bluetooth: sambungkan → bayar tunai → struk tercetak otomatis 
   expect(struk).toContain("Cukur Jenggot");
   expect(struk).toContain("TOTAL");
   expect(struk).toContain("\x1bp\x00\x19\xfa"); // laci terbuka (tunai)
-  expect(struk).toContain("\x1dv0\x00\x14\x00\xa0\x00"); // logo bercincin 160×160 dot (58 mm) di kepala struk
+  expect(struk).toContain("\x1dv0\x00\x20\x00\x00\x01"); // logo bercincin 256×256 dot (58 mm) di kepala struk
 
   // tutup kasir buta: rekap baru bisa dicetak setelah kas fisik disimpan
   resetTodayClosings();

@@ -2,10 +2,10 @@
 
 import { rasterCmd, type Paper } from "./domain/escpos";
 
-/** Logo struk: hitam-putih murni (public/logo-struk-v2.png) — cocok untuk kertas thermal tanpa dithering. */
+/** Logo struk: hitam-putih murni (public/logo-struk-v3.png) — cocok untuk kertas thermal tanpa dithering. */
 // ganti nama file (v2, v3, …) setiap logo diganti — nama baru = tidak tertahan cache browser
-export const RECEIPT_LOGO = "/logo-struk-v2.png";
-const WIDTH: Record<Paper, number> = { 58: 160, 80: 200 }; // dot, kelipatan 8
+export const RECEIPT_LOGO = "/logo-struk-v3.png";
+const WIDTH: Record<Paper, number> = { 58: 256, 80: 320 }; // dot, kelipatan 8
 const cache = new Map<Paper, Promise<number[] | null>>();
 
 /** Logo → perintah gambar ESC/POS. Gagal memuat = struk tanpa logo (tidak menggagalkan cetak). */
@@ -24,5 +24,5 @@ async function build(w: number) {
   g.imageSmoothingQuality = "high";
   g.drawImage(bmp, 0, 0, w, h);
   const px = g.getImageData(0, 0, w, h).data;
-  return rasterCmd(Array.from({ length: w * h }, (_, i) => px[i * 4] < 128), w, h);
+  return rasterCmd(Array.from({ length: w * h }, (_, i) => px[i * 4] < 100), w, h); // ambang < 128: garis putih halus (rambut, janggut) tidak tertutup
 }

@@ -47,7 +47,7 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
       {/* kepala */}
       <div className="flex flex-col items-center gap-1 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element -- logo PNG kecil; lembar cetak butuh <img> biasa */}
-        <img src={RECEIPT_LOGO} alt="" className={small ? "w-14" : "w-[72px]"} />
+        <img src={RECEIPT_LOGO} alt="" className={small ? "w-20" : "w-24"} />
         <b className={`${small ? "my-1.5 text-[13px]" : "my-2 text-[16px]"} tracking-[0.04em]`}>{r.shop}</b>
         {r.shopAddress && <span className="leading-snug text-[#5A5A5A]">{r.shopAddress}</span>}
         {(r.shopWhatsapp || r.shopInstagram) && (

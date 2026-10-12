@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { OwnerKind } from "@/lib/domain/owner";
 
-const KINDS: [OwnerKind, string][] = [["bulan", "Bulan"], ["kuartal", "Kuartal"], ["tahun", "Tahun"], ["kustom", "Rentang"]];
+const KINDS: [OwnerKind, string][] = [["minggu", "Minggu"], ["bulan", "Bulan"], ["kuartal", "Kuartal"], ["tahun", "Tahun"], ["kustom", "Rentang"]];
 
 /** Pilih periode laporan owner → URL (?periode=&nilai= / &dari=&sampai=). */
 export function OwnerPeriodForm({ kind, value, from, to, today }: { kind: OwnerKind; value: string; from: string; to: string; today: string }) {
@@ -12,6 +12,7 @@ export function OwnerPeriodForm({ kind, value, from, to, today }: { kind: OwnerK
   const y = today.slice(0, 4);
   const [k, setK] = useState<OwnerKind>(kind);
   const [v, setV] = useState({
+    minggu: kind === "minggu" ? value : "",
     bulan: kind === "bulan" ? value : today.slice(0, 7),
     kuartal: kind === "kuartal" ? value : `${y}-Q${Math.ceil(+today.slice(5, 7) / 3)}`,
     tahun: kind === "tahun" ? value : y,
@@ -31,6 +32,7 @@ export function OwnerPeriodForm({ kind, value, from, to, today }: { kind: OwnerK
           {KINDS.map(([id, l]) => <option key={id} value={id}>{l}</option>)}
         </select>
       </label>
+      {k === "minggu" && <input type="date" aria-label="Tanggal dalam minggu" title="Pilih tanggal mana pun — laporan memakai Senin–Minggu" className="input h-11 w-44" value={v.minggu} max={today} onChange={(e) => setV({ ...v, minggu: e.target.value })} />}
       {k === "bulan" && <input type="month" aria-label="Bulan" className="input h-11 w-44" value={v.bulan} max={today.slice(0, 7)} onChange={(e) => setV({ ...v, bulan: e.target.value })} />}
       {k === "kuartal" && (
         <select aria-label="Kuartal" className="input h-11 w-40" value={v.kuartal} onChange={(e) => setV({ ...v, kuartal: e.target.value })}>

@@ -874,6 +874,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"owner_report_notes": {
+                  Row: {
+                    "data": NonNullable<Json>,"kind": string,"period_start": string,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "data"?: NonNullable<Json>,"kind": string,"period_start": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "data"?: NonNullable<Json>,"kind"?: string,"period_start"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"payroll_adjustments": {
                   Row: {
                     "amount": number,"created_at": string,"created_by": string | null,"id": string,"kind": string,"month": string,"reason": string,"staff_id": string
@@ -2267,6 +2280,9 @@ isOneToOne: false
                            },
 "owner_report":
 { Args: { "p_from": string,"p_ly_from": string,"p_ly_to": string,"p_prev_from": string,"p_prev_to": string,"p_to": string }; Returns: Json
+                           },
+"owner_report_extra":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
 "owner_revenue_target":
 { Args: { "p_from": string,"p_to": string }; Returns: number

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attainment, marginPct, ownerPeriod } from "./owner";
+import { attainment, marginPct, mondayOf, ownerPeriod } from "./owner";
 
 describe("periode laporan owner", () => {
   const today = "2026-09-15";
@@ -14,7 +14,7 @@ describe("periode laporan owner", () => {
     expect([p.previous.from, p.previous.to]).toEqual(["2025-12-01", "2025-12-31"]);
   });
   it("bulan berjalan dipotong s.d. hari ini, pembanding sepanjang hari yang sama", () => {
-    const p = ownerPeriod({}, today);
+    const p = ownerPeriod({ periode: "bulan" }, today); // default laporan = minggu; bulan berjalan dipilih eksplisit
     expect([p.from, p.to, p.partial]).toEqual(["2026-09-01", "2026-09-15", true]);
     expect([p.previous.from, p.previous.to]).toEqual(["2026-08-01", "2026-08-15"]);
     expect([p.lastYear.from, p.lastYear.to]).toEqual(["2025-09-01", "2025-09-15"]);
@@ -46,5 +46,18 @@ describe("capaian & margin", () => {
     expect(attainment(90, 120)).toBe(75);
     expect(marginPct(594_500, 59_450)).toBe(90);
     expect(marginPct(0, 0)).toBeNull();
+  });
+});
+
+describe("periode mingguan (Senin–Minggu)", () => {
+  it("default = minggu lengkap terakhir; pembanding = minggu sebelumnya", () => {
+    const p = ownerPeriod({}, "2026-10-12"); // Senin
+    expect([p.kind, p.from, p.to, p.partial]).toEqual(["minggu", "2026-10-05", "2026-10-11", false]);
+    expect([p.previous.from, p.previous.to]).toEqual(["2026-09-28", "2026-10-04"]);
+  });
+  it("tanggal mana pun → Senin minggunya; minggu berjalan dipotong s.d. hari ini", () => {
+    expect(mondayOf("2026-10-11")).toBe("2026-10-05"); // Minggu
+    const p = ownerPeriod({ periode: "minggu", nilai: "2026-10-14" }, "2026-10-15");
+    expect([p.from, p.to, p.partial, p.previous.to]).toEqual(["2026-10-12", "2026-10-15", true, "2026-10-08"]);
   });
 });

@@ -87,7 +87,7 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Analitik KPI</h1>
-        <Link href={`/manajer/analitik/laporan?bulan=${d.monthForReport}`} className="btn-ghost h-11">Laporan owner (PDF/Excel)</Link>
+        <Link href="/manajer/analitik/laporan" className="btn-ghost h-11">Laporan owner (PDF)</Link>
       </div>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <div role="group" aria-label="Periode" className="flex flex-wrap gap-1.5">

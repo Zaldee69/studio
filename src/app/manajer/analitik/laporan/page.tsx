@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
-import { HBars, Legend, LineChart, StackedWeekly } from "@/features/analitik/charts";
-import { loadAnalytics } from "@/features/analitik/load";
-import { loadOwnerReport } from "@/features/analitik/owner";
-import { CAT_NAME, change, SUMMARY_ROWS, WEEKDAY, type RowKind } from "@/features/analitik/owner-rows";
-import { CAT_LABEL, COLOR, rb } from "@/features/analitik/palette";
-import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
-import { BAND_LABEL, bandStatus, pct1 } from "@/lib/domain/kpi";
-import { attainment, marginPct } from "@/lib/domain/owner";
+import { StackedWeekly } from "@/features/analitik/charts";
+import { loadOwnerReport, type OwnerNotes } from "@/features/analitik/owner";
+import { CAT_NAME } from "@/features/analitik/owner-rows";
+import { CAT_LABEL } from "@/features/analitik/palette";
 import { EXPENSE_CAT } from "@/lib/domain/expense";
+import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
+import { pct1 } from "@/lib/domain/kpi";
+import { attainment } from "@/lib/domain/owner";
+import { NotesEditor } from "./notes-editor";
 import { OwnerPeriodForm } from "./period-form";
 
 export const metadata = { title: "Laporan owner" };
@@ -17,227 +17,311 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : u
 const m = (v: number | null | undefined) => (v == null ? "—" : formatRupiah(Math.round(v)));
 const pc = (v: number | null | undefined) => (v == null ? "—" : `${pct1(v)}%`);
 const n = (v: number | null | undefined) => (v == null ? "—" : Math.round(v).toLocaleString("id-ID"));
-const fmt = (k: RowKind, v: number | null | undefined) => (k === "money" ? m(v) : k === "pct" ? pc(v) : n(v));
-function Change({ kind, cur, prev, lowerBetter }: { kind: RowKind; cur: number | null | undefined; prev: number | null | undefined; lowerBetter?: boolean }) {
-  const c = change(kind, cur, prev);
-  if (c.value == null) return <span className="text-muted">—</span>;
-  const good = lowerBetter ? c.value < 0 : c.value > 0;
+const th = "border-b border-ink px-1.5 py-1 text-left text-[11px] font-bold";
+const td = "border-b border-line px-1.5 py-1 align-top tabular";
+const num = `${td} text-right`;
+const NA = "Belum tersedia";
+
+/** Perubahan absolut & persen; persen tidak dihitung bila periode lalu 0/kosong (menyesatkan). */
+function Delta({ cur, prev, money, lowerBetter }: { cur: number | null; prev: number | null; money?: boolean; lowerBetter?: boolean }) {
+  if (cur == null || prev == null) return <span className="text-muted">—</span>;
+  const d = cur - prev;
+  const good = lowerBetter ? d < 0 : d > 0;
   return (
-    <span className={c.value === 0 ? "text-muted" : good ? "text-[#1F7A45]" : "text-[#A12A2A]"}>
-      {c.value > 0 ? "▲" : c.value < 0 ? "▼" : "="} {pct1(Math.abs(c.value))}{c.unit === "%" ? "%" : " poin"}
+    <span className={d === 0 ? "text-muted" : good ? "text-[#1F7A45]" : "text-[#A12A2A]"}>
+      {d > 0 ? "▲ +" : d < 0 ? "▼ −" : "= "}{money ? m(Math.abs(d)) : n(Math.abs(d))}{prev ? ` (${pct1((Math.abs(d) * 100) / Math.abs(prev))}%)` : ""}
     </span>
   );
 }
-const th = "border-b border-ink px-1.5 py-1 text-left text-[11px] font-bold";
-const td = "border-b border-line px-1.5 py-1 tabular";
-const num = `${td} text-right`;
+/** Status capaian target: konsisten di seluruh laporan. */
+const status = (a: number | null) => a == null ? <span className="text-muted">Baseline — target belum ditetapkan</span>
+  : a >= 100 ? <span className="text-[#1F7A45]">● Tercapai</span> : a >= 90 ? <span className="text-[#8A6100]">● Hampir</span> : <span className="text-[#A12A2A]">● Di bawah target</span>;
 
-// Laporan owner A4 (Cetak / PDF) + Excel. Angka dari owner_report() & kpi_* — definisi sama dengan layar Analitik.
+function H({ id, children }: { id: string; children: React.ReactNode }) {
+  return <h2 id={id} className="mb-1.5 font-display text-lg font-bold">{children}</h2>;
+}
+const Empty = ({ children = "Belum diisi manajer." }: { children?: React.ReactNode }) => <p className="text-[12px] italic text-muted">{children}</p>;
+
+// Laporan owner (PDF): mingguan = bagian A–I; bulanan = A–I + laba/rugi lengkap, retensi, stok, evaluasi & rencana.
+// Angka dari owner_report() & owner_report_extra(); narasi (A, G, H, I) dari catatan manajer per periode.
 export default async function OwnerReportPage({ searchParams }: PageProps<"/manajer/analitik/laporan">) {
   const sp = await searchParams;
   const q = { periode: one(sp.periode), nilai: one(sp.nilai), dari: one(sp.dari), sampai: one(sp.sampai), bulan: one(sp.bulan) };
-  const { p, r, shop } = await loadOwnerReport(q);
-  const d = await loadAnalytics({ periode: "kustom", dari: p.from, sampai: p.to });
-  const s = r.summary, f = r.finance, t = r.targets;
+  const { p, r, shop, charts, extra: x, extraPrev: xp, notes, notesKind } = await loadOwnerReport(q);
+  const s = r.summary, pv = r.previous, f = r.finance, t = r.targets;
+  const weekly = p.kind === "minggu", monthly = !weekly;
   const qs = new URLSearchParams(Object.entries({ periode: p.kind, nilai: p.value, dari: p.from, sampai: p.to }).filter(([, v]) => v) as [string, string][]);
-  const hppPct = f.net > 0 ? (f.hpp * 100) / f.net : null;
-  const payroll = r.payroll.complete ? r.payroll.total_pay : null;
-  const afterPay = payroll == null ? null : f.net - f.hpp - payroll;
-  const opex = f.maintenance_cost + f.expenses_total;
-  const retailSt = bandStatus(s.retail_ratio ?? null, t.retail_min, t.retail_max);
-  const staffPay = (id: string) => r.payroll.by_staff[id];
-  const topServices = r.services.filter((x) => x.category !== "retail").slice(0, 10);
-  const topRetail = r.services.filter((x) => x.category === "retail").slice(0, 10);
-  const inv = r.operations.inventory;
-  const cash = f.payments.cash + f.payments.qris + f.deposit.topup_paid;
+  const N: OwnerNotes = notes ?? {};
+
+  // Keuangan: kasbon = uang muka gaji (bukan biaya operasional); gaji bulanan sudah dipotong kasbon → biaya staf = gaji + kasbon.
+  const kasbon = f.expenses_by_category.find((e) => e.category === "kasbon")?.amount ?? 0;
+  const marketing = f.expenses_by_category.find((e) => e.category === "pemasaran")?.amount ?? 0;
+  const opexRows = f.expenses_by_category.filter((e) => e.category !== "kasbon");
+  const opex = f.expenses_total - kasbon + f.maintenance_cost;
+  const fullPayroll = !weekly && r.payroll.complete;
+  const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est;
+  const contribution = f.net - f.hpp - labor;
+  const operating = contribution - opex;
+  const cashIn = f.payments.cash + f.payments.qris + f.deposit.topup_paid;
+  const cashOut = f.expenses_total - kasbon + f.maintenance_cost + kasbon + x.commission_weekly_paid;
+  const revTarget = t.revenue || null;
+  const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
+  const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: null };
+  const cats = f.by_category.filter((c) => c.items > 0 || (prevCat[c.category] ?? 0) > 0);
+  const staff = r.staff.filter((st) => st.active || st.tx > 0);
+
+  const perf: [string, number | null, number | null, number | null, boolean, boolean?][] = [
+    // metrik, aktual, target, periode lalu, uang?, lebih kecil lebih baik?
+    ["Omzet bersih", s.net, revTarget, pv.net, true],
+    ["Transaksi selesai", s.tx_count, null, pv.tx_count, false],
+    ["Rata-rata nilai transaksi (AOV)", s.aov, null, pv.aov, true],
+    ["Booking terjadwal", x.bookings, null, xp.bookings, false],
+    ["Booking terealisasi (lunas)", x.bookings_paid, null, xp.bookings_paid, false],
+    ["Booking dibatalkan", x.bookings_cancelled, null, xp.bookings_cancelled, false, true],
+    ["No-show", x.bookings_no_show, null, xp.bookings_no_show, false, true],
+    ["Transaksi di-void", s.void_count, null, pv.void_count, false, true],
+  ];
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Bagian boleh terpotong antar halaman (bagian panjang yang dipaksa utuh meninggalkan halaman kosong); yang dijaga utuh:
-          judul bagian dengan isinya, baris tabel, kartu metrik, grafik. */}
       <style>{"@page { size: A4; margin: 11mm } @media print { body { background: #fff } article h2 { break-after: avoid } tr, .keep { break-inside: avoid } }"}</style>
       <div className="flex flex-wrap items-end gap-2 print:hidden">
         <Link href="/manajer/analitik" className="btn-ghost h-11">← Analitik</Link>
         <OwnerPeriodForm kind={p.kind} value={p.value} from={p.from} to={p.to} today={jktDate()} />
         <PrintButton />
-        <a href={`/manajer/analitik/laporan/excel?${qs}`} className="btn-ghost h-11" download>Unduh Excel</a>
+        <a href={`/manajer/analitik/laporan/excel?${qs}`} className="btn-ghost h-11" download>Unduh Excel (data lengkap)</a>
       </div>
+      {notesKind ? <NotesEditor key={`${notesKind}-${p.from}`} kind={notesKind} periodStart={p.from} initial={notes} suggestions={r.insights.map((i) => i.message)} />
+        : <p className="text-sm text-muted print:hidden">Catatan manajer (ringkasan, masalah, keputusan, prioritas) tersedia untuk laporan mingguan & bulanan.</p>}
 
       <article aria-label="Laporan owner" className="mx-auto flex w-full max-w-[210mm] flex-col gap-5 rounded-[14px] border border-line bg-card p-6 text-[13px] max-sm:p-3 max-sm:[&_table]:block max-sm:[&_table]:overflow-x-auto print:max-w-none print:border-0 print:p-0">
         <header className="flex flex-col border-b-2 border-ink pb-2">
           <b className="font-display text-xl">{shop.name}</b><span className="text-xs text-muted">{shop.address}</span>
-          <h1 className="mt-2 font-display text-2xl font-bold">Laporan owner · {p.label}</h1>
+          <h1 className="mt-2 font-display text-2xl font-bold">{title}</h1>
+          <span className="text-sm font-semibold tabular">{p.label}</span>
           <span className="text-xs text-muted tabular">
-            {formatTanggal(`${p.from}T12:00:00+07:00`)} – {formatTanggal(`${p.to}T12:00:00+07:00`)} · dibanding {p.previous.label}{p.sameCompare ? "" : ` & ${p.lastYear.label}`} · dibuat {formatTanggal(new Date())} {formatJam(new Date())}
+            Pembanding: {p.previous.label} · disusun Manajer Operasional · dicetak {formatTanggal(new Date())} {formatJam(new Date())}
           </span>
         </header>
 
-        {/* 1. Ringkasan */}
-        <section aria-labelledby="h-ring">
-          <h2 id="h-ring" className="mb-1 font-display text-lg font-bold">1. Ringkasan</h2>
-          <div className="mb-2 grid grid-cols-2 gap-2 min-[700px]:grid-cols-4 print:grid-cols-4">
-            {[["Omzet bersih", m(s.net), t.revenue ? `${pc(attainment(s.net, t.revenue))} dari target ${m(t.revenue)}` : "target belum diisi"],
-              ["Margin kotor", m(s.margin), `${pc(s.margin_pct)} dari omzet`],
-              ["Transaksi", n(s.tx_count), `AOV ${m(s.aov)}`],
-              ["Kontribusi setelah gaji", m(afterPay), payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : `gaji & komisi ${m(payroll)}`]].map(([k, v, sub]) => (
-              <div key={k} className="keep rounded-[10px] border border-line p-2.5"><span className="text-[11px] text-muted">{k}</span><b className="block text-lg tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>
-            ))}
-          </div>
+        <section aria-labelledby="h-a">
+          <H id="h-a">A. Ringkasan eksekutif</H>
+          {N.summary?.trim() ? <p className="whitespace-pre-line leading-relaxed">{N.summary}</p> : <Empty />}
+        </section>
+
+        <section aria-labelledby="h-b">
+          <H id="h-b">B. Kinerja bisnis</H>
           <table className="w-full border-collapse text-[12px]">
-            <thead><tr><th className={th}>Metrik</th><th className={`${th} text-right`}>{p.label}</th><th className={`${th} text-right`}>vs {p.previous.label}</th>{!p.sameCompare && <th className={`${th} text-right`}>vs {p.lastYear.label}</th>}<th className={`${th} text-right`}>Target · capaian</th></tr></thead>
+            <thead><tr>{["Metrik", "Aktual", "Target", "Capaian", "Periode lalu", "Perubahan"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
-              {SUMMARY_ROWS.map((row) => {
-                const cur = s[row.key] as number | null, target = row.target?.(t) ?? null;
-                return (
-                  <tr key={row.key}>
-                    <td className={td}>{row.label}</td>
-                    <td className={`${num} font-bold`}>{fmt(row.kind, cur)}</td>
-                    <td className={num}><Change kind={row.kind} cur={cur} prev={r.previous[row.key] as number | null} lowerBetter={row.lowerBetter} /> <span className="text-[10px] text-muted">({fmt(row.kind, r.previous[row.key] as number | null)})</span></td>
-                    {!p.sameCompare && <td className={num}><Change kind={row.kind} cur={cur} prev={r.last_year[row.key] as number | null} lowerBetter={row.lowerBetter} /> <span className="text-[10px] text-muted">({fmt(row.kind, r.last_year[row.key] as number | null)})</span></td>}
-                    <td className={num}>{row.key === "retail_ratio" ? `${retailSt ? BAND_LABEL[retailSt] : "—"} (${t.retail_min}–${t.retail_max}%)` : target ? `${fmt(row.kind, target)} · ${pc(attainment(cur, target))}` : "—"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {!!r.insights.length && (
-            <div className="mt-2 rounded-[10px] bg-[#F5F6F2] p-3"><b>Insight</b><ul className="mt-1 list-inside list-disc">{r.insights.map((i) => <li key={i.code}>{i.message}</li>)}</ul></div>
-          )}
-        </section>
-
-        {/* 2. Keuangan */}
-        <section aria-labelledby="h-keu">
-          <h2 id="h-keu" className="mb-1 font-display text-lg font-bold">2. Keuangan</h2>
-          <div className="grid gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
-            <table className="w-full border-collapse text-[12px]"><tbody>
-              {([["Omzet kotor (harga normal)", f.gross, false], ["− Diskon paket & promo", -f.discount, false], ...(f.discount_promo ? [["   termasuk promo booking online", -f.discount_promo, false]] : []), ["= Omzet bersih", f.net, true],
-                 [`− HPP bahan & barang (${pc(hppPct)})`, -f.hpp, false], [`= Margin kotor (${pc(marginPct(f.net, f.hpp))})`, f.net - f.hpp, true],
-                 ...(payroll == null ? [] : [["− Gaji & komisi staf", -payroll, false], ["= Kontribusi setelah gaji", afterPay, true]]),
-                 ["− Biaya perawatan fasilitas", -f.maintenance_cost, false],
-                 ...f.expenses_by_category.map((e) => [`− ${EXPENSE_CAT[e.category]}`, -e.amount, false]),
-                 ...(afterPay == null ? [["Total biaya operasional", -opex, true]] : [["= Laba bersih", afterPay - opex, true]])] as [string, number, boolean][]).map(([k, v, b]) => (
-                <tr key={k} className={b ? "font-bold" : ""}><td className={td}>{k}</td><td className={num}>{m(v)}</td></tr>
-              ))}
-            </tbody></table>
-            <div className="flex flex-col gap-2">
-              <table className="w-full border-collapse text-[12px]">
-                <thead><tr><th className={th}>Uang masuk</th><th className={`${th} text-right`}>Rp</th></tr></thead>
-                <tbody>
-                  <tr><td className={td}>Tunai (transaksi)</td><td className={num}>{m(f.payments.cash)}</td></tr>
-                  <tr><td className={td}>QRIS (transaksi)</td><td className={num}>{m(f.payments.qris)}</td></tr>
-                  {!!f.payments.tips_qris && <tr><td className={`${td} text-muted`}>+ tips QRIS (titipan staf, sudah diserahkan tunai — bukan omzet)</td><td className={`${num} text-muted`}>{m(f.payments.tips_qris)}</td></tr>}
-                  <tr><td className={td}>Top-up deposit ({f.deposit.topup_count}×)</td><td className={num}>{m(f.deposit.topup_paid)}</td></tr>
-                  <tr className="font-bold"><td className={td}>Total uang masuk</td><td className={num}>{m(cash)}</td></tr>
-                  <tr><td className={td}>Dibayar pakai saldo deposit</td><td className={num}>{m(f.payments.deposit)}</td></tr>
-                  <tr><td className={td}>Void: {f.void_count} transaksi</td><td className={num}>{m(f.void_amount)}</td></tr>
-                </tbody>
-              </table>
-              <p className="text-[11px] text-muted">
-                Deposit: bonus diberikan {m(f.deposit.bonus)} · saldo pelanggan per {formatTanggal(`${p.to}T12:00:00+07:00`)} <b>{m(f.deposit.balance_end)}</b> (kewajiban layanan yang belum dipakai).
-              </p>
-            </div>
-          </div>
-          <table className="mt-3 w-full border-collapse text-[12px]">
-            <thead><tr>{["Kategori", "Item", "Omzet kotor", "Diskon", "Omzet bersih", "HPP", "Margin", "Margin %"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-            <tbody>
-              {f.by_category.map((c) => (
-                <tr key={c.category}><td className={td}>{CAT_NAME[c.category]}</td><td className={num}>{n(c.items)}</td><td className={num}>{m(c.gross)}</td><td className={num}>{m(c.discount)}</td>
-                  <td className={num}>{m(c.net)}</td><td className={num}>{m(c.hpp)}</td><td className={num}>{m(c.margin)}</td><td className={num}>{pc(marginPct(c.net, c.hpp))}</td></tr>
-              ))}
-            </tbody>
-          </table>
-          {r.payroll.months.length > 0 && (
-            <p className="mt-1 text-[11px] text-muted">
-              Gaji & komisi per bulan: {r.payroll.months.map((x) => `${new Intl.DateTimeFormat("id-ID", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${x.month}T00:00:00Z`))} ${m(x.total_pay)}${x.closed ? "" : " (belum ditutup)"}`).join(" · ")}
-              {" "}— komisi jasa {m(r.payroll.commission_service)}, ritel {m(r.payroll.commission_retail)}, subsidi minimum {m(r.payroll.subsidy)}, penyesuaian {m(r.payroll.adjustments)}.
-            </p>
-          )}
-          <div className="keep mt-3">
-            <b className="text-[12px]">Omzet per minggu</b>
-            <p className="text-[11px] tabular">{d.mix.mix.map((x) => `${CAT_LABEL[x.category]} ${formatRupiah(x.revenue)} (${pc(x.share)})`).join(" · ")}</p>
-            <StackedWeekly weeks={d.mix.weekly} />
-          </div>
-        </section>
-
-        {/* 3. Staf & layanan */}
-        <section aria-labelledby="h-staf">
-          <h2 id="h-staf" className="mb-1 font-display text-lg font-bold">3. Staf & layanan</h2>
-          <table className="w-full border-collapse text-[11.5px]">
-            <thead><tr>{["Staf", "Transaksi", "Omzet", "Jasa", "Ritel", "AOV", "Upsell", "Utilisasi", "Dilayani / no-show", "Gaji & komisi"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-            <tbody>
-              {r.staff.map((x) => (
-                <tr key={x.staff_id}>
-                  <td className={td}>{x.name} <span className="text-[10px] text-muted">{CAT_NAME[x.category]}{x.active ? "" : " · nonaktif"}</span></td>
-                  <td className={num}>{n(x.tx)}</td><td className={num}>{m(x.revenue)}</td><td className={num}>{m(x.service_revenue)}</td><td className={num}>{m(x.retail_revenue)}</td>
-                  <td className={num}>{m(x.aov)}</td><td className={num}>{pc(x.upsell_rate)}</td><td className={num}>{pc(x.utilization)}</td>
-                  <td className={num}>{x.served} / {x.no_show}</td><td className={num}>{staffPay(x.staff_id) == null ? "—" : m(staffPay(x.staff_id))}</td>
+              {perf.map(([label, cur, target, prev, money, lowerBetter]) => (
+                <tr key={label}>
+                  <td className={td}>{label}</td>
+                  <td className={`${num} font-bold`}>{money ? m(cur) : n(cur)}</td>
+                  <td className={num}>{target ? m(target) : "—"}</td>
+                  <td className={num}>{target ? <>{pc(attainment(cur, target))} {status(attainment(cur, target))}</> : "—"}</td>
+                  <td className={num}>{money ? m(prev) : n(prev)}</td>
+                  <td className={num}><Delta cur={cur} prev={prev} money={money} lowerBetter={lowerBetter} /></td>
                 </tr>
               ))}
+              <tr><td className={td}>Komplain pelanggan</td><td className={num} colSpan={5}><span className="text-muted">{NA} — komplain belum dicatat di sistem</span></td></tr>
             </tbody>
           </table>
-          <div className="mt-3 grid items-start gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
-            {([["Layanan terlaris", topServices], ["Produk ritel terlaris", topRetail]] as const).map(([title, rows]) => (
-              <table key={title} className="w-full border-collapse text-[11.5px]">
-                <thead><tr><th className={th}>{title}</th><th className={`${th} text-right`}>Qty</th><th className={`${th} text-right`}>Omzet</th><th className={`${th} text-right`}>Margin %</th></tr></thead>
-                <tbody>
-                  {rows.length ? rows.map((x) => <tr key={x.name}><td className={td}>{x.name}</td><td className={num}>{n(x.qty)}</td><td className={num}>{m(x.revenue)}</td><td className={num}>{pc(x.margin_pct)}</td></tr>)
-                    : <tr><td className={td} colSpan={4}>Belum ada penjualan.</td></tr>}
-                </tbody>
-              </table>
-            ))}
-          </div>
-          <div className="keep mt-3">
-            <b className="text-[12px]">AOV harian per kategori</b>
-            <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }, { label: "Target", color: "#63665F", dashed: true }]} />
-            <LineChart labels={d.daily.map((x) => `${Number(x.day.slice(8))}`)} ariaLabel="AOV harian"
-              series={(["barbershop", "nail"] as const).map((k) => ({ key: k, label: CAT_LABEL[k], color: COLOR[k], values: d.daily.map((x) => x[`aov_${k}`]) }))}
-              targets={[{ label: `Target barbershop ${rb(t.aov_barbershop)}`, value: t.aov_barbershop, color: COLOR.barbershop }, { label: `Target nail ${rb(t.aov_nail)}`, value: t.aov_nail, color: COLOR.nail }]} />
-          </div>
-        </section>
-
-        {/* 4. Pelanggan & deposit */}
-        <section aria-labelledby="h-pel">
-          <h2 id="h-pel" className="mb-1 font-display text-lg font-bold">4. Pelanggan & booking</h2>
-          <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
-            {[["Pelanggan baru", n(r.customers.new_customers)], ["Pelanggan kembali", n(r.customers.returning)],
-              [`Kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
-              ["Belum kembali (churn, saat ini)", n(r.customers.churn_count)],
-              ["Follow-up berhasil", `${r.customers.followup_converted}/${r.customers.followup_sent} (${pc(r.customers.followup_rate)})`],
-              ["Porsi booking online", pc(r.online.share_online)], ["Batal (online)", pc(r.online.cancel_rate)], ["No-show", `${pc(r.online.no_show_rate)} (${r.online.no_show})`],
-            ].map(([k, v]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-base tabular">{v}</b></div>)}
-          </div>
-          <p className="mt-1 text-[11px] text-muted tabular">Corong booking online: {n(r.online.landing)} kunjungan landing → {n(r.online.booking_open)} buka booking → {n(r.online.booked)} booking.</p>
-          <table className="mt-2 w-full border-collapse text-[11.5px]">
-            <thead><tr><th className={th}>Pelanggan teratas</th><th className={`${th} text-right`}>Kunjungan</th><th className={`${th} text-right`}>Belanja</th><th className={`${th} text-right`}>Saldo deposit</th></tr></thead>
-            <tbody>
-              {r.customers.top.length ? r.customers.top.map((c, i) => <tr key={i}><td className={td}>{c.name}</td><td className={num}>{c.visits}</td><td className={num}>{m(c.spend)}</td><td className={num}>{m(c.deposit_balance)}</td></tr>)
-                : <tr><td className={td} colSpan={4}>Belum ada transaksi pelanggan terdaftar.</td></tr>}
-            </tbody>
-          </table>
-        </section>
-
-        {/* 5. Operasional & kepatuhan */}
-        <section aria-labelledby="h-ops">
-          <h2 id="h-ops" className="mb-1 font-display text-lg font-bold">5. Operasional & kepatuhan</h2>
-          <HBars ariaLabel="Utilisasi" target={{ value: t.utilization, label: `Target ${t.utilization}%` }}
-            rows={r.operations.utilization.map((u) => ({ label: u.name, value: u.pct ?? 0, color: COLOR[u.type], caption: `${pc(u.pct)} · ${Math.round(u.sold_minutes / 60)} dari ${Math.round(u.available_minutes / 60)} jam` }))} />
-          <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
-            {[["Jam tersibuk", r.operations.peak_hours.slice(0, 3).map((h) => `${WEEKDAY[h.weekday]} ${String(h.hour).padStart(2, "0")}.00`).join(", ") || "—"],
-              ["Kepatuhan SOP", `${pc(r.operations.sop.compliance_pct)} (${r.operations.sop.ok}/${r.operations.sop.operational} hari)`],
-              ["Perawatan fasilitas", `${r.operations.maintenance_done} selesai · ${r.operations.maintenance_overdue_now} terlambat kini`],
-              ["Biaya perawatan", m(f.maintenance_cost)], ["Pengeluaran operasional", m(f.expenses_total)],
-              ["Nilai stok akhir", m(inv.value_end)], ["Stok masuk / terpakai", `${m(inv.in_value)} / ${m(inv.out_value)}`],
-              ["Stok menipis (kini)", n(inv.low_stock_now)],
-              ["Selisih pemakaian bahan", inv.opnames >= 2 ? `${inv.usage_flagged} bahan ditandai · ${m(inv.usage_variance_value)}` : "butuh ≥ 2 opname di periode"],
-            ].map(([k, v]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>)}
-          </div>
-          <p className="mt-2 text-[10px] text-muted">
-            Catatan: omzet bersih = harga setelah diskon, tanpa transaksi void. Margin kotor = omzet bersih − HPP (bahan jasa & harga pokok ritel).
-            Kontribusi belum dikurangi biaya tetap yang tidak dicatat aplikasi (sewa, listrik, dll.). Nilai stok memakai harga pokok rata-rata saat ini.
+          <p className="mt-1 text-[11px] text-muted">
+            {revTarget ? `Target omzet = target bulanan ${m(t.revenue_monthly)} diprorata ke ${weekly ? "minggu" : "periode"} ini.` : "Target omzet belum ditetapkan — periode ini dipakai sebagai baseline."}
+            {" "}Booking terealisasi {x.bookings ? `${pc((x.bookings_paid * 100) / x.bookings)} dari booking terjadwal` : "—"}; walk-in {n(x.bookings_walk_in)}.
+            {" "}Perubahan % tidak dihitung bila periode lalu nol.
           </p>
         </section>
+
+        <section aria-labelledby="h-c">
+          <H id="h-c">C. Kinerja per layanan</H>
+          <table className="w-full border-collapse text-[12px]">
+            <thead><tr>{["Kategori", "Omzet bersih", "Layanan", "Rata-rata / layanan", "Kontribusi", "Periode lalu", "Perubahan"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <tbody>
+              {cats.length ? cats.map((c) => (
+                <tr key={c.category}>
+                  <td className={td}>{CAT_NAME[c.category]}</td><td className={`${num} font-bold`}>{m(c.net)}</td><td className={num}>{n(c.items)}</td>
+                  <td className={num}>{c.items ? m(c.net / c.items) : "—"}</td><td className={num}>{f.net ? pc((c.net * 100) / f.net) : "—"}</td>
+                  <td className={num}>{prevCat[c.category] == null ? <span className="text-muted">{NA}</span> : m(prevCat[c.category])}</td>
+                  <td className={num}><Delta cur={c.net} prev={prevCat[c.category]} money /></td>
+                </tr>
+              )) : <tr><td className={td} colSpan={7}>Belum ada penjualan.</td></tr>}
+            </tbody>
+          </table>
+          <p className="mt-1 text-[11px] text-muted">
+            Target AOV: barbershop {m(t.aov_barbershop)} (aktual {m(s.aov_barbershop)}){t.aov_nail ? ` · nail ${m(t.aov_nail)} (aktual ${m(s.aov_nail)})` : ""}.
+            {" "}Rasio ritel : jasa {pc(s.retail_ratio)} (target {t.retail_min}–{t.retail_max}%).
+            Produktivitas antarlayanan tidak dibandingkan dari jumlah pelanggan — durasi & karakter layanan berbeda.
+          </p>
+          {!!r.insights.length && (
+            <div className="keep mt-2 rounded-[10px] bg-[#F5F6F2] p-2.5 text-[12px]">
+              <b>Temuan otomatis sistem</b> <span className="text-muted">(observasi dari data, bukan kesimpulan penyebab)</span>
+              <ul className="mt-1 list-inside list-disc">{r.insights.map((i) => <li key={i.code}>{i.message}</li>)}</ul>
+            </div>
+          )}
+        </section>
+
+        <section aria-labelledby="h-d">
+          <H id="h-d">D. Ringkasan keuangan</H>
+          <div className="grid gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
+            <table className="w-full border-collapse text-[12px]">
+              <thead><tr><th className={th}>Laba/rugi operasional {fullPayroll ? "" : "(estimasi)"}</th><th className={`${th} text-right`}>Rp</th></tr></thead>
+              <tbody>
+                {([["Omzet bersih", f.net, true], ["− Bahan & harga pokok barang (HPP)", -f.hpp, false],
+                   [fullPayroll ? "− Gaji & komisi staf (termasuk kasbon)" : "− Komisi staf (estimasi)", -labor, false],
+                   ["= Margin kontribusi", contribution, true],
+                   ...opexRows.map((e) => [`− ${EXPENSE_CAT[e.category]}`, -e.amount, false]),
+                   ...(f.maintenance_cost ? [["− Perawatan fasilitas", -f.maintenance_cost, false]] : []),
+                   ["= Laba/rugi operasional", operating, true]] as [string, number, boolean][]).map(([k, v, b]) => (
+                  <tr key={k} className={b ? "font-bold" : ""}><td className={td}>{k}</td><td className={num}>{m(v)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+            <table className="w-full border-collapse text-[12px]">
+              <thead><tr><th className={th}>Arus kas tercatat</th><th className={`${th} text-right`}>Rp</th></tr></thead>
+              <tbody>
+                <tr><td className={td}>Masuk: tunai</td><td className={num}>{m(f.payments.cash)}</td></tr>
+                <tr><td className={td}>Masuk: QRIS</td><td className={num}>{m(f.payments.qris)}</td></tr>
+                <tr><td className={td}>Masuk: top-up deposit</td><td className={num}>{m(f.deposit.topup_paid)}</td></tr>
+                <tr><td className={td}>Keluar: pengeluaran operasional</td><td className={num}>−{m(f.expenses_total - kasbon + f.maintenance_cost)}</td></tr>
+                <tr><td className={td}>Keluar: kasbon staf</td><td className={num}>−{m(kasbon)}</td></tr>
+                <tr><td className={td}>Keluar: komisi mingguan dibayar</td><td className={num}>−{m(x.commission_weekly_paid)}</td></tr>
+                <tr className="font-bold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashIn - cashOut)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
+            {[["Selisih tutup kasir", `${m(x.cash_diff_total)}`, `total absolut ${m(x.cash_diff_abs)} · ${x.cash_days_closed}/${x.cash_days} hari ditutup`],
+              ["Hari belum tutup kasir", n(x.cash_days_unclosed), x.cash_days_unclosed ? "perlu ditelusuri" : "lengkap"],
+              ["Transaksi di-void", `${n(f.void_count)} · ${m(f.void_amount)}`, "dibatalkan manajer, beralasan"],
+              ["Diskon diberikan", m(f.discount), f.discount_promo ? `termasuk promo online ${m(f.discount_promo)}` : "paket & promo"],
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+          </div>
+          <p className="mt-1 text-[11px] text-muted">
+            {fullPayroll ? "Biaya staf = gaji & komisi bulan penuh (termasuk subsidi gaji minimum & penyesuaian) + kasbon yang sudah dipotong dari gaji."
+              : "Komisi staf = estimasi dari transaksi periode ini, sebelum subsidi gaji minimum & penyesuaian (diselesaikan akhir bulan)."}
+            {" "}Laba/rugi operasional belum memperhitungkan pajak, penyusutan, bunga, dan biaya tetap yang tidak dicatat di aplikasi — bukan laba bersih.
+            {!!f.payments.tips_qris && ` Tips QRIS ${m(f.payments.tips_qris)} adalah titipan staf (masuk via QRIS, diserahkan tunai) — tidak dihitung di atas.`}
+            {" "}Saldo deposit pelanggan {m(f.deposit.balance_end)} adalah kewajiban layanan yang belum dipakai.
+          </p>
+        </section>
+
+        <section aria-labelledby="h-e">
+          <H id="h-e">E. Orang & operasional</H>
+          <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
+            {[["Kepatuhan SOP", `${pc(r.operations.sop.compliance_pct)}`, `${r.operations.sop.ok}/${r.operations.sop.operational} hari diotorisasi`],
+              ["Utilisasi kursi/bed", pc(s.utilization), `target ${t.utilization}%`],
+              ["Perawatan fasilitas", `${r.operations.maintenance_done} selesai`, `${r.operations.maintenance_overdue_now} terlambat saat ini`],
+              ["Stok menipis (saat ini)", n(r.operations.inventory.low_stock_now), "item perlu pengadaan"],
+              ["Kehadiran staf", NA, "absensi belum dicatat"],
+              ["Komplain & pengerjaan ulang", NA, "belum dicatat"],
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+          </div>
+          <table className="mt-2 w-full border-collapse text-[11.5px]">
+            <thead><tr>{["Staf", "Bidang", "Pelanggan dilayani", "Omzet jasa", "Utilisasi", "No-show"].map((h, i) => <th key={h} className={`${th} ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <tbody>
+              {staff.map((st) => (
+                <tr key={st.staff_id}><td className={td}>{st.name}{st.active ? "" : " (nonaktif)"}</td><td className={td}>{CAT_NAME[st.category]}</td>
+                  <td className={num}>{n(st.served)}</td><td className={num}>{m(st.service_revenue)}</td><td className={num}>{pc(st.utilization)}</td><td className={num}>{n(st.no_show)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-1 text-[11px] text-muted">Urut menurut nama, bukan peringkat: omzet staf dipengaruhi jam kerja, durasi layanan, jumlah pelanggan yang datang, dan kualitas — belum seluruhnya tercatat.</p>
+        </section>
+
+        <section aria-labelledby="h-f">
+          <H id="h-f">F. Pemasaran</H>
+          <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
+            {[["Kampanye WA terkirim", n(x.campaign_sends), `${n(x.campaign_recipients)} penerima`],
+              ["Biaya pemasaran", m(marketing), "pengeluaran kategori Pemasaran"],
+              ["Promo booking online", m(f.discount_promo ?? 0), "diskon yang diberikan"],
+              ["Porsi booking online", pc(s.online_share), `pelanggan baru ${n(s.new_customers)}`],
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+          </div>
+          <p className="mt-1 text-[11px] text-muted">Atribusi kampanye → booking/omzet: {NA.toLowerCase()} (booking belum ditandai sumber kampanye). Hasil kampanye tidak disimpulkan dari kenaikan omzet saja.</p>
+        </section>
+
+        <section aria-labelledby="h-g">
+          <H id="h-g">G. Masalah utama & tindakan korektif</H>
+          {N.issues?.length ? (
+            <table className="w-full border-collapse text-[11px]">
+              <thead><tr>{["Masalah", "Bukti/data", "Dampak", "Akar penyebab / hipotesis", "Tindakan", "PJ", "Tenggat"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
+              <tbody>{N.issues.map((i, k) => <tr key={k}>{[i.masalah, i.bukti, i.dampak, i.akar, i.tindakan, i.pj, i.tenggat].map((v, j) => <td key={j} className={td}>{v || "—"}</td>)}</tr>)}</tbody>
+            </table>
+          ) : <Empty />}
+        </section>
+
+        <section aria-labelledby="h-h">
+          <H id="h-h">H. Keputusan yang dibutuhkan dari owner</H>
+          {N.decisions?.length ? (
+            <div className="flex flex-col gap-2">
+              {N.decisions.map((d, k) => (
+                <div key={k} className="keep rounded-[10px] border border-ink p-2.5 text-[12px]">
+                  <b className="block text-[13px]">{k + 1}. {d.keputusan || "—"}</b>
+                  {([["Alasan & bukti", d.alasan], ["Opsi", d.opsi], ["Rekomendasi manajer", d.rekomendasi], ["Estimasi biaya / dampak", d.biaya], ["Risiko bila ditunda", d.risiko], ["Tenggat keputusan", d.tenggat]] as const)
+                    .map(([l, v]) => <span key={l} className="block"><span className="text-muted">{l}:</span> {v || "—"}</span>)}
+                </div>
+              ))}
+            </div>
+          ) : N.no_decision ? <p className="text-[12px]">Tidak ada keputusan owner yang mendesak.</p> : <Empty />}
+        </section>
+
+        <section aria-labelledby="h-i">
+          <H id="h-i">I. Prioritas {weekly ? "minggu" : "bulan"} berikutnya</H>
+          {N.priorities?.length ? (
+            <table className="w-full border-collapse text-[11.5px]">
+              <thead><tr>{["Tujuan", "Tindakan konkret", "Indikator keberhasilan", "PJ", "Tenggat"].map((h) => <th key={h} className={th}>{h}</th>)}</tr></thead>
+              <tbody>{N.priorities.map((i, k) => <tr key={k}>{[i.tujuan, i.tindakan, i.indikator, i.pj, i.tenggat].map((v, j) => <td key={j} className={td}>{v || "—"}</td>)}</tr>)}</tbody>
+            </table>
+          ) : <Empty />}
+        </section>
+
+        {monthly && <>
+          <section aria-labelledby="h-j">
+            <H id="h-j">J. Pelanggan & retensi</H>
+            <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
+              {[["Pelanggan baru", n(r.customers.new_customers)], ["Pelanggan kembali", n(r.customers.returning)],
+                [`Kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
+                ["Belum kembali (saat ini)", n(r.customers.churn_count)]].map(([k, v]) => (
+                <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
+              ))}
+            </div>
+            {charts.mix.weekly.length > 1 && (
+              <div className="keep mt-2">
+                <b className="text-[12px]">Omzet per minggu</b>
+                <p className="text-[11px] tabular">{charts.mix.mix.map((c) => `${CAT_LABEL[c.category]} ${formatRupiah(c.revenue)} (${pc(c.share)})`).join(" · ")}</p>
+                <StackedWeekly weeks={charts.mix.weekly} />
+              </div>
+            )}
+          </section>
+          <section aria-labelledby="h-k">
+            <H id="h-k">K. Stok & pengadaan</H>
+            <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
+              {[["Nilai stok akhir", m(r.operations.inventory.value_end)], ["Stok masuk / terpakai", `${m(r.operations.inventory.in_value)} / ${m(r.operations.inventory.out_value)}`],
+                ["Stok menipis (saat ini)", n(r.operations.inventory.low_stock_now)],
+                ["Selisih pemakaian bahan", r.operations.inventory.opnames >= 2 ? `${r.operations.inventory.usage_flagged} bahan · ${m(r.operations.inventory.usage_variance_value)}` : "butuh ≥ 2 opname"]].map(([k, v]) => (
+                <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
+              ))}
+            </div>
+          </section>
+          <section aria-labelledby="h-l">
+            <H id="h-l">L. Evaluasi tindakan bulan sebelumnya</H>
+            {N.evaluation?.trim() ? <p className="whitespace-pre-line">{N.evaluation}</p> : <Empty />}
+          </section>
+          <section aria-labelledby="h-m">
+            <H id="h-m">M. Rencana & target bulan berikutnya</H>
+            {N.next_plan?.trim() ? <p className="whitespace-pre-line">{N.next_plan}</p> : <Empty />}
+          </section>
+        </>}
+
+        <footer className="border-t border-line pt-2 text-[10px] leading-relaxed text-muted">
+          <b>Definisi.</b> Omzet bersih = harga setelah diskon, tanpa transaksi void. Margin kontribusi = omzet bersih − bahan/HPP − biaya staf.
+          Laba/rugi operasional = margin kontribusi − pengeluaran operasional tercatat. Arus kas tercatat = uang masuk & keluar yang dicatat di aplikasi.
+          <br /><b>Data belum tersedia:</b> komplain & pengerjaan ulang, kehadiran staf, atribusi kampanye ke booking, biaya tetap di luar aplikasi,
+          batas nominal delegasi manajer (perlu disepakati dengan owner).
+        </footer>
       </article>
     </div>
   );
 }
-

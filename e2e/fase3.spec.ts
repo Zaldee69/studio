@@ -148,12 +148,12 @@ test.describe.serial("Analitik", () => {
     try {
       await page.goto(`/manajer/analitik/laporan?periode=bulan&nilai=${month}`);
       const rep = page.getByRole("article", { name: "Laporan owner" });
-      await expect(rep.getByRole("heading", { level: 1 })).toContainText("Laporan owner");
+      await expect(rep.getByRole("heading", { level: 1 })).toContainText("Laporan Bulanan Owner");
       const net = rep.getByRole("row", { name: /^Omzet bersih/ }).first();
       await expect(net).toContainText("Rp594.500");
       await expect(net).toContainText("59,5%"); // 594.500 ÷ target 1.000.000
-      for (const v of ["Rp71.250", "Rp171.000", "22,7%", "= Omzet bersih", "= Margin kotor"]) await expect(rep).toContainText(v);
-      await expect(rep.getByRole("heading", { name: "3. Staf & layanan" })).toBeVisible();
+      for (const v of ["Rp71.250", "Rp171.000", "22,7%", "= Margin kontribusi", "= Laba/rugi operasional"]) await expect(rep).toContainText(v);
+      await expect(rep.getByRole("heading", { name: "E. Orang & operasional" })).toBeVisible();
 
       const [dl] = await Promise.all([page.waitForEvent("download"), page.getByRole("link", { name: "Unduh Excel" }).click()]);
       expect(dl.suggestedFilename()).toMatch(/^laporan-owner-\d{4}-\d{2}-01_\d{4}-\d{2}-\d{2}\.xlsx$/);

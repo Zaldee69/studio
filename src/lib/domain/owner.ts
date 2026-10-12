@@ -2,7 +2,7 @@
 import { previousPeriod } from "./kpi";
 import { addDays } from "./schedule";
 
-export type OwnerKind = "bulan" | "kuartal" | "tahun" | "kustom";
+export type OwnerKind = "minggu" | "bulan" | "kuartal" | "tahun" | "kustom";
 export type Range = { from: string; to: string; label: string };
 /** sameCompare: pembanding "sebelumnya" = "tahun lalu" (laporan tahunan) → cukup satu kolom. */
 export type OwnerPeriod = Range & { kind: OwnerKind; partial: boolean; value: string; previous: Range; lastYear: Range; sameCompare: boolean };
@@ -22,7 +22,16 @@ const shiftYear = (d: string, n: number) => {
 };
 const rangeLabel = (from: string, to: string) => (from === to ? shortDate(from) : `${shortDate(from)} – ${shortDate(to)}`);
 
+/** Senin dari minggu tanggal itu (YYYY-MM-DD). */
+export const mondayOf = (d: string) => addDays(d, -((new Date(`${d}T00:00:00Z`).getUTCDay() + 6) % 7));
+const weekRange = (mon: string): Range => ({ from: mon, to: addDays(mon, 6), label: `Minggu ${rangeLabel(mon, addDays(mon, 6))}` });
+
 function full(kind: OwnerKind, value: string, dari: string, sampai: string, today: string): { kind: OwnerKind; value: string; cur: Range; prev: Range } {
+  if (kind === "minggu") {
+    // default: minggu lengkap terakhir (laporan dikirim setelah minggu selesai)
+    const mon = mondayOf(/^\d{4}-\d{2}-\d{2}$/.test(value) ? value : addDays(today, -7));
+    return { kind, value: mon, cur: weekRange(mon), prev: weekRange(addDays(mon, -7)) };
+  }
   if (kind === "kuartal" && /^\d{4}-Q[1-4]$/.test(value)) {
     const y = +value.slice(0, 4), q = +value.slice(6);
     const py = q === 1 ? y - 1 : y, pq = q === 1 ? 4 : q - 1;
@@ -53,7 +62,7 @@ function full(kind: OwnerKind, value: string, dari: string, sampai: string, toda
  * hari yang sama (mis. 1–15 Sep vs 1–15 Agu) supaya perbandingan adil (utilisasi tidak ikut menghitung hari mendatang).
  */
 export function ownerPeriod(q: { periode?: string; nilai?: string; dari?: string; sampai?: string }, today: string): OwnerPeriod {
-  const kind = (["bulan", "kuartal", "tahun", "kustom"] as const).find((k) => k === q.periode) ?? "bulan";
+  const kind = (["minggu", "bulan", "kuartal", "tahun", "kustom"] as const).find((k) => k === q.periode) ?? "minggu";
   const f = full(kind, q.nilai ?? "", q.dari ?? "", q.sampai ?? "", today);
   let { cur, prev } = f;
   let ly: Range = { from: shiftYear(cur.from, -1), to: shiftYear(cur.to, -1), label: "" };

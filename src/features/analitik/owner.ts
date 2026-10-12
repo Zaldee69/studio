@@ -5,6 +5,7 @@ import { jktDate } from "@/lib/domain/format";
 import { ownerPeriod, type OwnerPeriod } from "@/lib/domain/owner";
 import { createClient } from "@/lib/supabase/server";
 import { BRAND } from "@/lib/brand";
+import type { AnalyticsData } from "./dashboard";
 
 type N = number | null;
 export type OwnerSummary = {
@@ -50,14 +51,36 @@ export type OwnerReport = {
 export type OwnerQuery = { periode?: string; nilai?: string; dari?: string; sampai?: string; bulan?: string };
 
 /** Periode dari URL (+ ?bulan=YYYY-MM lama) → owner_report (satu RPC, khusus manajer). */
-export async function loadOwnerReport(q: OwnerQuery): Promise<{ p: OwnerPeriod; r: OwnerReport; shop: { name: string; address: string } }> {
+type Charts = { daily: AnalyticsData["daily"]; mix: AnalyticsData["mix"] };
+export type OwnerExtra = { bookings: number; bookings_paid: number; bookings_cancelled: number; bookings_no_show: number; bookings_walk_in: number;
+  commission_est: number; commission_weekly_paid: number; cash_days: number; cash_days_closed: number; cash_days_unclosed: number;
+  cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number };
+export type Issue = { masalah: string; bukti: string; dampak: string; akar: string; tindakan: string; pj: string; tenggat: string };
+export type Decision = { keputusan: string; alasan: string; opsi: string; rekomendasi: string; biaya: string; risiko: string; tenggat: string };
+export type Priority = { tujuan: string; tindakan: string; indikator: string; pj: string; tenggat: string };
+/** Catatan manajer per periode (owner_report_notes.data). */
+export type OwnerNotes = { summary?: string; issues?: Issue[]; decisions?: Decision[]; no_decision?: boolean; priorities?: Priority[];
+  evaluation?: string; next_plan?: string };
+/** Laporan owner + 2 grafik (bauran omzet mingguan, AOV harian) — semua paralel; tanpa kpi_dashboard penuh (heatmap/insight tidak dipakai di sini). */
+export async function loadOwnerReport(q: OwnerQuery): Promise<{ p: OwnerPeriod; r: OwnerReport; shop: { name: string; address: string }; charts: Charts;
+  extra: OwnerExtra; extraPrev: OwnerExtra; notes: OwnerNotes | null; notesKind: "minggu" | "bulan" | null }> {
   const p = ownerPeriod(q.bulan && !q.periode ? { periode: "bulan", nilai: q.bulan } : q, jktDate());
   const supabase = await createClient();
-  const [{ data, error }, { data: shop }] = await Promise.all([
+  const notesKind = p.kind === "minggu" || p.kind === "bulan" ? p.kind : null;
+  const [{ data, error }, { data: shop }, aov, mix, ex, exPrev, nt] = await Promise.all([
     supabase.rpc("owner_report", { p_from: p.from, p_to: p.to, p_prev_from: p.previous.from, p_prev_to: p.previous.to,
       p_ly_from: p.lastYear.from, p_ly_to: p.lastYear.to }),
     supabase.from("settings").select("shop_name, shop_address").single(),
+    supabase.rpc("kpi_aov_daily", { p_from: p.from, p_to: p.to }),
+    supabase.rpc("kpi_revenue_mix", { p_from: p.from, p_to: p.to }),
+    supabase.rpc("owner_report_extra", { p_from: p.from, p_to: p.to }),
+    supabase.rpc("owner_report_extra", { p_from: p.previous.from, p_to: p.previous.to }),
+    notesKind ? supabase.from("owner_report_notes").select("data").eq("kind", notesKind).eq("period_start", p.from).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   if (error) throw new Error(error.message);
-  return { p, r: data as unknown as OwnerReport, shop: { name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "" } };
+  const daily = (aov.data ?? []).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, typeof v === "string" && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v])));
+  return { p, r: data as unknown as OwnerReport, shop: { name: shop?.shop_name ?? BRAND, address: shop?.shop_address ?? "" },
+    charts: { daily: daily as unknown as Charts["daily"], mix: mix.data as unknown as Charts["mix"] },
+    extra: ex.data as unknown as OwnerExtra, extraPrev: exPrev.data as unknown as OwnerExtra,
+    notes: (nt.data?.data as OwnerNotes | undefined) ?? null, notesKind };
 }

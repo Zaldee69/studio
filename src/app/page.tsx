@@ -234,12 +234,15 @@ export default async function Landing() {
                 <span className="text-xs uppercase tracking-[0.18em] text-stone">Reservasi lewat WhatsApp</span>
               </div>
               <div className="grid gap-x-12 min-[900px]:grid-cols-2">
+                {/* seperti daftar harga cetak: nama · harga, lalu keterangan (durasi ditulis di keterangan bila ada di daftar harga) */}
                 {extra.map((x) => (
-                  <div key={x.id} className="flex items-baseline gap-2.5 py-2 tabular-nums">
-                    <span className="font-serif text-lg font-medium">{x.name}</span>
-                    <span className="text-xs text-stone">{x.duration_min} mnt</span>
-                    <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
-                    {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+                  <div key={x.id} className="flex flex-col gap-0.5 py-2">
+                    <div className="flex items-baseline gap-2.5 tabular-nums">
+                      <span className="font-serif text-lg font-medium">{x.name}</span>
+                      <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
+                      {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+                    </div>
+                    {x.public_description && <span className="text-[13px] leading-snug text-stone">{x.public_description}</span>}
                   </div>
                 ))}
               </div>

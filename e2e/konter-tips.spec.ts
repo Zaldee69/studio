@@ -36,3 +36,23 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   await page.getByLabel("Metode bayar").selectOption("cash");
   await expect(page.getByText("Tidak ada transaksi yang cocok dengan filter.")).toBeVisible();
 });
+
+test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak masuk kas tunai", async ({ page }) => {
+  const ref = `TRF${uniq()}`.toUpperCase();
+  await login(page, "cashier");
+  const cart = page.getByRole("region", { name: "Keranjang" });
+  await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
+  await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await cart.getByRole("radio", { name: "Transfer" }).click();
+  await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
+  await expect(cart.getByRole("alert")).toContainText("No. referensi transfer");
+  await cart.getByLabel("No. referensi transfer").fill(ref);
+  await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
+  await expect(cart).toContainText("Pembayaran tercatat");
+  await expect(cart).toContainText("Dibayar (Transfer)");
+  const [t] = sql<{ m: string }>(`select payment_method::text as m from transactions where qris_ref = '${ref}'`);
+  expect(t.m).toBe("transfer");
+  await page.goto("/kasir/kasir?tab=riwayat");
+  await page.getByLabel("Metode bayar").selectOption("transfer");
+  await expect(page.getByRole("button", { name: /Transaksi .* Rp45\.000/ }).first()).toBeVisible();
+});

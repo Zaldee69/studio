@@ -23,9 +23,9 @@ select is((select (r -> 'finance' ->> 'net')::bigint from rep), (select (kpi_per
 select is((select (r -> 'finance' ->> 'gross')::bigint - (r -> 'finance' ->> 'discount')::bigint from rep), (select (r -> 'finance' ->> 'net')::bigint from rep),
           'omzet kotor − diskon = omzet bersih');
 select ok((select (r -> 'finance' ->> 'discount')::bigint from rep) > 0, 'diskon bundle tercatat');
-select is((select (r -> 'finance' -> 'payments' ->> 'cash')::bigint + (r -> 'finance' -> 'payments' ->> 'qris')::bigint + (r -> 'finance' -> 'payments' ->> 'deposit')::bigint from rep),
+select is((select (r -> 'finance' -> 'payments' ->> 'cash')::bigint + (r -> 'finance' -> 'payments' ->> 'qris')::bigint + (r -> 'finance' -> 'payments' ->> 'transfer')::bigint + (r -> 'finance' -> 'payments' ->> 'deposit')::bigint from rep),
           (select coalesce(sum(total), 0)::bigint from transactions where voided_at is null and created_at >= jkt(jkt_today(), '00:00')),
-          'tunai + QRIS + deposit = total transaksi tidak di-void');
+          'tunai + QRIS + transfer + deposit = total transaksi tidak di-void');
 select is((select (r -> 'finance' ->> 'void_count')::int from rep), 1, 'void terhitung terpisah');
 select is((select sum((c ->> 'net')::bigint)::bigint from rep, jsonb_array_elements(r -> 'finance' -> 'by_category') c), (select (r -> 'finance' ->> 'net')::bigint from rep),
           'jumlah per kategori = omzet bersih');

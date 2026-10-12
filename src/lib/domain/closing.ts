@@ -15,6 +15,7 @@ export function dailySummary(txs: TxRow[], topups: TopupRow[]) {
     discountTotal: sum(ok, (t) => t.discount_amount),
     cashSales,
     qrisSales: sum(ok.filter((t) => t.payment_method === "qris" || t.payment_method === "deposit_qris"), (t) => t.paid_amount),
+    transferSales: sum(ok.filter((t) => t.payment_method === "transfer" || t.payment_method === "deposit_transfer"), (t) => t.paid_amount),
     depositUsed: sum(ok, (t) => t.deposit_used),
     topupCash,
     topupQris: topups.filter((t) => t.method === "qris").reduce((a, t) => a + t.amount_paid, 0),
@@ -24,5 +25,6 @@ export function dailySummary(txs: TxRow[], topups: TopupRow[]) {
 }
 
 export const METHOD_LABEL: Record<PayMethod, string> = {
-  cash: "Tunai", qris: "QRIS", deposit: "Deposit", deposit_cash: "Deposit + Tunai", deposit_qris: "Deposit + QRIS",
+  cash: "Tunai", qris: "QRIS", transfer: "Transfer", deposit: "Deposit", deposit_cash: "Deposit + Tunai", deposit_qris: "Deposit + QRIS",
+  deposit_transfer: "Deposit + Transfer",
 };

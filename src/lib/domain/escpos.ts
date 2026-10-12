@@ -119,27 +119,29 @@ export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | n
 }
 
 export type ClosingSummary = {
-  tx_count: number; gross_total: number; discount_total: number; cash_sales: number; qris_sales: number; deposit_used: number;
-  topup_cash: number; topup_qris: number; topup_credited: number; topup_count: number; expense_cash: number; expense_count: number; tip_qris: number; tip_count: number; expected_cash: number;
+  tx_count: number; gross_total: number; discount_total: number; opening_cash?: number; cash_sales: number; qris_sales: number; transfer_sales: number; deposit_used: number;
+  topup_cash: number; topup_qris: number; topup_transfer: number; topup_credited: number; topup_count: number; expense_cash: number; expense_count: number; tip_qris: number; tip_count: number; expected_cash: number;
   voided: { created_at: string; total: number; reason: string }[];
 };
 
 /** Rekap tutup kasir; `last` = penutupan terakhir (kas fisik & selisih) bila sudah disimpan. */
 export function closingEscpos(s: ClosingSummary, o: {
   paper: Paper; shop: string; date: string; printedAt: string; cashier?: string | null; time: (iso: string) => string;
-  last?: { at: string; physical_cash: number; difference: number | null; note: string | null } | null;
+  last?: { at: string; physical_cash: number; difference: number | null; note: string | null; deposit_out?: number } | null;
 }): Uint8Array {
   const p = new Escpos(COLS[o.paper]);
   p.big("REKAP KASIR").cmd(CMD.center).lines(wrap(o.shop, p.cols)).line(o.date).cmd(CMD.left).rule();
   p.lr("Jumlah transaksi", String(s.tx_count)).lr("Omzet (stlh diskon)", rp(s.gross_total)).lr("Total diskon", rp(s.discount_total))
-    .lr("Penjualan Tunai", rp(s.cash_sales)).lr("Penjualan QRIS", rp(s.qris_sales)).lr("Deposit terpakai", rp(s.deposit_used))
-    .lr(`Top-up Tunai (${s.topup_count}x)`, rp(s.topup_cash)).lr("Top-up QRIS", rp(s.topup_qris)).lr("Saldo deposit masuk", rp(s.topup_credited))
+    .lr("Saldo awal laci", rp(s.opening_cash ?? 0)).lr("Pemasukan tunai", rp(s.cash_sales)).lr("Pemasukan QRIS", rp(s.qris_sales)).lr("Pemasukan transfer", rp(s.transfer_sales)).lr("Deposit terpakai", rp(s.deposit_used))
+    .lr(`Top-up Tunai (${s.topup_count}x)`, rp(s.topup_cash)).lr("Top-up QRIS", rp(s.topup_qris)).lr("Top-up Transfer", rp(s.topup_transfer)).lr("Saldo deposit masuk", rp(s.topup_credited))
     .lr(`Pengeluaran laci (${s.expense_count}x)`, `-${rp(s.expense_cash)}`)
-    .lr(`Tips QRIS ke staf (${s.tip_count}x)`, `-${rp(s.tip_qris)}`);
+    .lr(`Tips non-tunai ke staf (${s.tip_count}x)`, `-${rp(s.tip_qris)}`);
   p.rule("=").cmd(CMD.bold(true)).lr("KAS DIHARAPKAN", rp(s.expected_cash)).cmd(CMD.bold(false)).rule("=");
   if (o.last) {
-    p.lr(`Kas fisik (${o.time(o.last.at)})`, rp(o.last.physical_cash))
+    p.lr(`Uang di laci (${o.time(o.last.at)})`, rp(o.last.physical_cash))
       .cmd(CMD.bold(true)).lr("Selisih", `${(o.last.difference ?? 0) > 0 ? "+" : ""}${rp(o.last.difference ?? 0)}`).cmd(CMD.bold(false));
+    if (o.last.deposit_out) p.lr("Disetor brankas/owner", `-${rp(o.last.deposit_out)}`);
+    p.lr("Sisa laci untuk besok", rp(o.last.physical_cash - (o.last.deposit_out ?? 0)));
     if (o.last.note) p.lines(wrap(`Catatan: ${o.last.note}`, p.cols));
   } else p.line("Kas fisik belum dicatat.");
   p.rule().line("Transaksi void:");

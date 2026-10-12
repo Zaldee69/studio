@@ -67,11 +67,13 @@ select is((select cash_received from transactions where id = tests.get('tx2')::u
 select topup_deposit(tests.get('rina_cid')::uuid, 'cash', (select id from deposit_packages where name = 'Classic'));
 
 -- ---------- Tutup kasir ----------
+select tests.su();
+update settings set drawer_start_date = null; -- tanpa saldo awal laci (diuji di 26_saldo_laci)
 select tests.login(tests.mgr());  -- kasir tidak melihat rekap uang sebelum menutup (tutup kasir buta, 13_anti_fraud)
 select results_eq($$ select (s ->> 'cash_sales')::bigint, (s ->> 'qris_sales')::bigint, (s ->> 'topup_cash')::bigint,
-                            (s ->> 'expected_cash')::bigint, (s ->> 'tx_count')::int from cash_summary(jkt_today()) s $$,
+                            (s ->> 'expected_cash')::bigint - (s ->> 'opening_cash')::bigint, (s ->> 'tx_count')::int from cash_summary(jkt_today()) s $$,
                   $$ values (95000::bigint, 110000::bigint, 500000::bigint, 595000::bigint, 2) $$,
-                  'rekap: kas diharapkan = tunai penjualan + tunai top-up');
+                  'rekap: kas diharapkan = saldo awal laci + tunai penjualan + tunai top-up');
 select tests.login(tests.kasir());
 select tests.put('cl', save_cash_closing(jkt_today(), 590000, 'Kurang 5rb')::text);
 select results_eq(format($$ select expected_cash, physical_cash, difference from cash_closings where id = '%s' $$, tests.get('cl')),

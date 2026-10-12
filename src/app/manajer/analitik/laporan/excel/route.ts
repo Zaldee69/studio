@@ -78,12 +78,12 @@ export async function GET(req: NextRequest) {
   ], [null, FMT.money]);
   ws.getRow(k0 + 5).getCell(2).numFmt = FMT.pct; // baris "Margin kotor %"
   table(ws, ["Uang masuk", "Rp"], [
-    ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], ["  + tips QRIS (titipan staf, bukan omzet)", f.payments.tips_qris ?? 0], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
-    ["Total uang masuk", f.payments.cash + f.payments.qris + f.deposit.topup_paid], ["Dibayar pakai saldo deposit", f.payments.deposit],
+    ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], ["Transfer (transaksi)", f.payments.transfer ?? 0], ["  + tips non-tunai (titipan staf, bukan omzet)", f.payments.tips_qris ?? 0], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
+    ["Total uang masuk", f.payments.cash + f.payments.qris + (f.payments.transfer ?? 0) + f.deposit.topup_paid], ["Dibayar pakai saldo deposit", f.payments.deposit],
     [`Void (${f.void_count} transaksi)`, f.void_amount],
   ], [null, FMT.money]);
   table(ws, ["Deposit pelanggan", "Rp"], [
-    ["Top-up dibayar", f.deposit.topup_paid], ["  tunai", f.deposit.topup_cash], ["  QRIS", f.deposit.topup_qris],
+    ["Top-up dibayar", f.deposit.topup_paid], ["  tunai", f.deposit.topup_cash], ["  QRIS", f.deposit.topup_qris], ["  transfer", f.deposit.topup_transfer ?? 0],
     ["Saldo dikreditkan", f.deposit.topup_credited], ["Bonus diberikan", f.deposit.bonus], ["Saldo terpakai", f.deposit.used],
     [`Saldo pelanggan per ${p.to} (kewajiban)`, f.deposit.balance_end],
   ], [null, FMT.money]);
@@ -96,12 +96,12 @@ export async function GET(req: NextRequest) {
 
   // 3. Harian
   ws = sheet(wb, "Harian", "Rincian harian", sub);
-  table(ws, ["Tanggal", "Transaksi", "Omzet bersih", "Barbershop", "Nail Art", "Ritel", "Diskon", "HPP", "Margin", "Void", "Tunai", "QRIS", "Deposit"],
-    r.daily.map((x) => [x.day, x.tx, x.net, x.barbershop, x.nail, x.retail, x.discount, x.hpp, x.net - x.hpp, x.void, x.cash, x.qris, x.deposit]),
+  table(ws, ["Tanggal", "Transaksi", "Omzet bersih", "Barbershop", "Nail Art", "Ritel", "Diskon", "HPP", "Margin", "Void", "Tunai", "QRIS", "Transfer", "Deposit"],
+    r.daily.map((x) => [x.day, x.tx, x.net, x.barbershop, x.nail, x.retail, x.discount, x.hpp, x.net - x.hpp, x.void, x.cash, x.qris, x.transfer ?? 0, x.deposit]),
     [null, FMT.int, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.int, FMT.money, FMT.money, FMT.money]);
-  const tot = (k: keyof (typeof r.daily)[number]) => r.daily.reduce((a, x) => a + (x[k] as number), 0);
+  const tot = (k: keyof (typeof r.daily)[number]) => r.daily.reduce((a, x) => a + Number(x[k] ?? 0), 0);
   const total = ws.getRow(ws.rowCount); // baris kosong setelah tabel → jadi baris total
-  total.values = ["Total", tot("tx"), tot("net"), tot("barbershop"), tot("nail"), tot("retail"), tot("discount"), tot("hpp"), tot("net") - tot("hpp"), tot("void"), tot("cash"), tot("qris"), tot("deposit")];
+  total.values = ["Total", tot("tx"), tot("net"), tot("barbershop"), tot("nail"), tot("retail"), tot("discount"), tot("hpp"), tot("net") - tot("hpp"), tot("void"), tot("cash"), tot("qris"), tot("transfer"), tot("deposit")];
   total.font = { bold: true };
   [FMT.int, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.money, FMT.int, FMT.money, FMT.money, FMT.money].forEach((x, i) => { total.getCell(i + 2).numFmt = x; });
   widths(ws, [12, 10, 15, 14, 14, 13, 12, 13, 14, 7, 14, 14, 13]);

@@ -1,7 +1,9 @@
 // Keranjang kasir. Cermin checkout() di SQL — ubah keduanya bersamaan.
 import { jktDate } from "./format";
 export type Category = "barbershop" | "nail" | "massage" | "retail";
-export type PayMethod = "cash" | "qris" | "deposit" | "deposit_cash" | "deposit_qris";
+export type PayMethod = "cash" | "qris" | "transfer" | "deposit" | "deposit_cash" | "deposit_qris" | "deposit_transfer";
+/** Metode yang dipilih kasir (deposit dihitung otomatis). */
+export type BaseMethod = "cash" | "qris" | "transfer";
 
 export interface CartLine {
   serviceId: string;
@@ -63,7 +65,7 @@ export function allocateDiscount(lines: CartLine[], discount: number, promoOnly 
 
 export function calcCart(
   lines: CartLine[],
-  opts: { bundlePct: number; promoPct?: number; depositBalance?: number; useDeposit?: boolean; method: "cash" | "qris" },
+  opts: { bundlePct: number; promoPct?: number; depositBalance?: number; useDeposit?: boolean; method: BaseMethod },
 ): CartResult {
   const subtotal = lines.reduce((a, l) => a + l.price, 0);
   const bundle = bundleDiscount(lines, opts.bundlePct);

@@ -87,7 +87,7 @@ export function AuditScreen() {
             {([["Selesai belum dibayar", o.unpaid.length, "#unpaid", true], ["Selisih / koreksi kas", diffDays.length, "#kas", true],
                ["Void", o.voids.length, "#void", false], ["Batal / mundur status", o.cancels.length, "#batal", false],
                ["Ganti kapster", o.staff_changes.length, "#kapster", false], ["Top-up tanpa paket", o.manual_topups.length, "#topup", false],
-               ["Pembayaran QRIS", o.qris.length, "#qris", false]] as const).map(([l, n, href, hot]) => (
+               ["Pembayaran QRIS & transfer", o.qris.length, "#qris", false]] as const).map(([l, n, href, hot]) => (
               <a key={l} href={href} className={`flex flex-col gap-1 rounded-[14px] border p-4 ${hot && n ? "border-[#E8C3C4] bg-[#FFF7F7]" : "border-line bg-card"}`}>
                 <span className="text-xs font-semibold text-muted">{l}</span>
                 <b className="font-display text-2xl tabular">{n}</b>
@@ -130,7 +130,7 @@ export function AuditScreen() {
               <span key="c" className={t.credited > t.paid ? "font-bold text-[#8A5A00]" : ""}>{formatRupiah(t.credited)}</span>, t.by ?? "—"])} />
           </Section>
 
-          <Section id="qris" title="Rekonsiliasi QRIS" count={o.qris.length}>
+          <Section id="qris" title="Rekonsiliasi QRIS & transfer" count={o.qris.length}>
             <p className="text-sm text-muted">Cocokkan No. referensi & nominal dengan mutasi rekening / aplikasi QRIS. Total (tanpa void): <b className="text-ink">{formatRupiah(qrisTotal)}</b></p>
             <Table head={["Waktu", "Jenis", "Nominal", "No. ref", "Kasir"]} rows={o.qris.map((q) => [
               when(q.at), q.kind, <span key="a" className={q.voided ? "line-through" : ""}>{formatRupiah(q.amount)}</span>,

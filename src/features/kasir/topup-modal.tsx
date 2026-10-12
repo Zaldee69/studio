@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
+import type { BaseMethod } from "@/lib/domain/cart";
 import { formatRupiah } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/client";
 import type { Customer, Pack } from "../counter/types";
@@ -19,7 +20,7 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
   const [pack, setPack] = useState<string | null>(null);
   const [paid, setPaid] = useState("");
   const [credited, setCredited] = useState("");
-  const [method, setMethod] = useState<"cash" | "qris">("cash");
+  const [method, setMethod] = useState<BaseMethod>("cash");
   const [qrisRef, setQrisRef] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,13 +33,13 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
     setError("");
     if (amountPaid <= 0) return setError("Pilih paket atau isi nominal.");
     if (amountCredited < amountPaid) return setError("Saldo masuk tidak boleh lebih kecil dari yang dibayar.");
-    if (method === "qris" && qrisRef.replace(/[\s-]/g, "").length < 4) return setError("Isi No. referensi QRIS dari bukti bayar.");
+    if (method !== "cash" && qrisRef.replace(/[\s-]/g, "").length < 4) return setError(`Isi No. referensi ${method === "transfer" ? "transfer" : "QRIS"} dari bukti bayar.`);
     setSaving(true);
     const supabase = createClient();
     const { error } = await supabase.rpc("topup_deposit", {
       p_customer_id: customer.id, p_method: method, p_package_id: p?.id,
       p_amount_paid: p ? undefined : amountPaid, p_amount_credited: p ? undefined : amountCredited,
-      p_qris_ref: method === "qris" ? qrisRef : undefined,
+      p_qris_ref: method !== "cash" ? qrisRef : undefined,
     });
     if (error) { setSaving(false); return setError(error.message); }
     const { data } = await supabase.from("customer_stats").select("deposit_balance").eq("customer_id", customer.id).single();
@@ -79,15 +80,15 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
               value={p ? p.amount_credited.toLocaleString("id-ID") : canBonus ? credited : amountPaid ? amountPaid.toLocaleString("id-ID") : ""} onChange={(e) => setCredited(e.target.value)} />
           </Field>
         </div>
-        <div role="radiogroup" aria-label="Metode" className="grid grid-cols-2 gap-2">
-          {([["cash", "Tunai"], ["qris", "QRIS"]] as const).map(([v, l]) => (
+        <div role="radiogroup" aria-label="Metode" className="grid grid-cols-3 gap-2">
+          {([["cash", "Tunai"], ["qris", "QRIS"], ["transfer", "Transfer"]] as const).map(([v, l]) => (
             <button type="button" role="radio" aria-checked={method === v} key={v} onClick={() => setMethod(v)}
               className={`h-11 rounded-[10px] border-2 text-sm font-bold ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
           ))}
         </div>
-        {method === "qris" && (
+        {method !== "cash" && (
           <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
-                  <label htmlFor="tp-qris-ref" className="text-[13px] font-bold">No. referensi QRIS</label>
+                  <label htmlFor="tp-qris-ref" className="text-[13px] font-bold">No. referensi {method === "transfer" ? "transfer" : "QRIS"}</label>
                   <input id="tp-qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>

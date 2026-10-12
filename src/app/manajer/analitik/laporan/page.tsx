@@ -62,7 +62,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est;
   const contribution = f.net - f.hpp - labor;
   const operating = contribution - opex;
-  const cashIn = f.payments.cash + f.payments.qris + f.deposit.topup_paid;
+  const cashIn = f.payments.cash + f.payments.qris + (f.payments.transfer ?? 0) + f.deposit.topup_paid;
   const cashOut = f.expenses_total - kasbon + f.maintenance_cost + kasbon + x.commission_weekly_paid;
   const revTarget = t.revenue || null;
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
@@ -183,6 +183,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               <tbody>
                 <tr><td className={td}>Masuk: tunai</td><td className={num}>{m(f.payments.cash)}</td></tr>
                 <tr><td className={td}>Masuk: QRIS</td><td className={num}>{m(f.payments.qris)}</td></tr>
+                <tr><td className={td}>Masuk: transfer bank</td><td className={num}>{m(f.payments.transfer ?? 0)}</td></tr>
                 <tr><td className={td}>Masuk: top-up deposit</td><td className={num}>{m(f.deposit.topup_paid)}</td></tr>
                 <tr><td className={td}>Keluar: pengeluaran operasional</td><td className={num}>−{m(f.expenses_total - kasbon + f.maintenance_cost)}</td></tr>
                 <tr><td className={td}>Keluar: kasbon staf</td><td className={num}>−{m(kasbon)}</td></tr>
@@ -202,7 +203,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             {fullPayroll ? "Biaya staf = gaji & komisi bulan penuh (termasuk subsidi gaji minimum & penyesuaian) + kasbon yang sudah dipotong dari gaji."
               : "Komisi staf = estimasi dari transaksi periode ini, sebelum subsidi gaji minimum & penyesuaian (diselesaikan akhir bulan)."}
             {" "}Laba/rugi operasional belum memperhitungkan pajak, penyusutan, bunga, dan biaya tetap yang tidak dicatat di aplikasi — bukan laba bersih.
-            {!!f.payments.tips_qris && ` Tips QRIS ${m(f.payments.tips_qris)} adalah titipan staf (masuk via QRIS, diserahkan tunai) — tidak dihitung di atas.`}
+            {!!f.payments.tips_qris && ` Tips non-tunai ${m(f.payments.tips_qris)} adalah titipan staf (masuk via QRIS/transfer, diserahkan tunai) — tidak dihitung di atas.`}
             {" "}Saldo deposit pelanggan {m(f.deposit.balance_end)} adalah kewajiban layanan yang belum dipakai.
           </p>
         </section>

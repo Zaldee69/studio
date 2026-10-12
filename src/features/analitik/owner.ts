@@ -20,8 +20,8 @@ export type OwnerReport = {
   finance: {
     tx_count: number; void_count: number; void_amount: number; gross: number; discount: number; discount_promo?: number; net: number; hpp: number;
     by_category: { category: Cat; items: number; gross: number; discount: number; net: number; hpp: number; margin: number }[];
-    payments: { cash: number; qris: number; deposit: number; tips_qris?: number };
-    deposit: { topup_count: number; topup_paid: number; topup_cash: number; topup_qris: number; topup_credited: number; bonus: number; used: number; balance_end: number };
+    payments: { cash: number; qris: number; transfer?: number; deposit: number; tips_qris?: number };
+    deposit: { topup_count: number; topup_paid: number; topup_cash: number; topup_qris: number; topup_transfer?: number; topup_credited: number; bonus: number; used: number; balance_end: number };
     maintenance_cost: number; expenses_total: number; expenses_by_category: { category: ExpenseCat; amount: number }[];
   };
   payroll: { months: { month: string; closed: boolean; total_pay: number }[]; complete: boolean; all_closed: boolean; total_pay: number;
@@ -43,7 +43,7 @@ export type OwnerReport = {
       low_stock_now: number; opnames: number; usage_flagged: number; usage_variance_value: number };
   };
   daily: { day: string; tx: number; net: number; barbershop: number; nail: number; retail: number; discount: number; hpp: number;
-    void: number; cash: number; qris: number; deposit: number }[];
+    void: number; cash: number; qris: number; transfer?: number; deposit: number }[];
   insights: { priority: number; code: string; message: string; href: string }[];
   targets: { revenue: number; revenue_monthly: number; aov_barbershop: number; aov_nail: number; utilization: number; retail_min: number; retail_max: number };
 };

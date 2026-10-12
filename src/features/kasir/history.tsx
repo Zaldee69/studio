@@ -74,6 +74,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
           <span>Omzet <b className="text-ink">{formatRupiah(sum.grossTotal)}</b></span>
           <span>Tunai <b className="text-ink">{formatRupiah(sum.cashSales)}</b></span>
           <span>QRIS <b className="text-ink">{formatRupiah(sum.qrisSales)}</b></span>
+          <span>Transfer <b className="text-ink">{formatRupiah(sum.transferSales)}</b></span>
           <span>Deposit <b className="text-ink">{formatRupiah(sum.depositUsed)}</b></span>
         </>}
         {sum.voidedCount > 0 && <span className="text-[#A12A2A]">{sum.voidedCount} void</span>}
@@ -82,7 +83,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         <input type="search" aria-label="Cari pelanggan atau No. struk" placeholder="Cari pelanggan / No. struk" className="input h-9 w-56"
           value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} />
         <select aria-label="Metode bayar" className="input h-9 w-auto" value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>
-          <option value="">Semua metode</option><option value="cash">Tunai</option><option value="qris">QRIS</option><option value="deposit">Pakai deposit</option>
+          <option value="">Semua metode</option><option value="cash">Tunai</option><option value="qris">QRIS</option><option value="transfer">Transfer</option><option value="deposit">Pakai deposit</option>
         </select>
         <select aria-label="Status" className="input h-9 w-auto" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
           <option value="">Semua status</option><option value="ok">Lunas</option><option value="void">Void</option>

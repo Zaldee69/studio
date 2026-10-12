@@ -5,7 +5,9 @@ select plan(19);
 -- Pengeluaran: aturan kasir (hari ini, laci, ≤ kas kecil), nota wajib > Rp100.000, laci mengurangi kas diharapkan,
 -- final setelah tutup kasir, void hanya manajer, masuk owner_finance.
 select tests.su();
+alter table cash_closings disable trigger cash_closings_immutable; -- dibatalkan di akhir (rollback)
 delete from cash_closings where date in (jkt_today(), '2020-03-02');
+alter table cash_closings enable trigger cash_closings_immutable;
 update settings set petty_cash_limit = 200000, receipt_required_above = 100000;
 
 select tests.login(tests.kasir());
@@ -18,8 +20,9 @@ select is((select count(*) from expenses), 1::bigint, 'kasir hanya melihat penge
 select tests.login(tests.mgr()); -- rekap lengkap (kasir hanya melihatnya setelah tutup)
 select is((cash_summary(jkt_today()) ->> 'expense_cash')::bigint, 30000::bigint, 'pengeluaran laci tercatat di rekap kasir');
 select is((cash_summary(jkt_today()) ->> 'expected_cash')::bigint,
-          (cash_summary(jkt_today()) ->> 'cash_sales')::bigint + (cash_summary(jkt_today()) ->> 'topup_cash')::bigint - 30000,
-          'kas diharapkan = tunai jual + tunai top-up − pengeluaran laci');
+          (cash_summary(jkt_today()) ->> 'opening_cash')::bigint + (cash_summary(jkt_today()) ->> 'cash_sales')::bigint
+            + (cash_summary(jkt_today()) ->> 'topup_cash')::bigint - 30000,
+          'kas diharapkan = saldo awal laci + tunai jual + tunai top-up − pengeluaran laci');
 select tests.login(tests.kasir());
 select throws_like($$ select void_expense((select id from expenses limit 1), 'salah') $$, '%%', 'kasir tidak bisa membatalkan');
 

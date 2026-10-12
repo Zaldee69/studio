@@ -56,8 +56,8 @@ describe("escpos", () => {
 
   it("rekap tutup kasir: kas diharapkan & selisih", () => {
     const t = str(closingEscpos({
-      tx_count: 4, gross_total: 594500, discount_total: 20000, cash_sales: 300000, qris_sales: 294500, deposit_used: 0,
-      topup_cash: 500000, topup_qris: 0, topup_credited: 550000, topup_count: 1, expense_cash: 25000, expense_count: 1, tip_qris: 0, tip_count: 0, expected_cash: 775000,
+      tx_count: 4, gross_total: 594500, discount_total: 20000, cash_sales: 300000, qris_sales: 294500, transfer_sales: 0, deposit_used: 0,
+      topup_cash: 500000, topup_qris: 0, topup_transfer: 0, topup_credited: 550000, topup_count: 1, expense_cash: 25000, expense_count: 1, tip_qris: 0, tip_count: 0, expected_cash: 775000,
       voided: [{ created_at: "2026-10-05T03:00:00Z", total: 75000, reason: "Salah input" }],
     }, { paper: 58, shop: "D'Pras Barbershop", date: "Senin, 5 Okt 2026", printedAt: "21.00", time: () => "10.00",
       last: { at: "2026-10-05T14:00:00Z", physical_cash: 770000, difference: -5000, note: null } }));

@@ -170,6 +170,10 @@ export const SETTINGS_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "churn_weeks", label: "Churn setelah (minggu)", type: "int", min: 1, max: 52 },
     { name: "wa_followup_template", label: "Template follow-up WA ({nama} = nama depan)", type: "textarea" },
   ] },
+  { title: "Laci kas", fields: [
+    { name: "drawer_start_date", label: "Saldo awal laci berlaku mulai tanggal", type: "date", nullable: true },
+    { name: "drawer_start_balance", label: "Saldo awal laci pada tanggal itu (Rp)", type: "money" },
+  ] },
   { title: "SDM & komisi", fields: [
     { name: "commission_pct", label: "Komisi default (%)", type: "int", min: 0, max: 100 },
     { name: "min_monthly_pay", label: "Jaring pengaman / bulan (Rp)", type: "money" },

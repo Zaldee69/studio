@@ -22,6 +22,7 @@ export function Closing({ master }: { master: Master }) {
   const [date, setDate] = useState(jktDate());
   const [physical, setPhysical] = useState("");
   const [note, setNote] = useState("");
+  const [deposit, setDeposit] = useState(""); // disetor / diambil dari laci saat tutup (opsional)
   const [saving, setSaving] = useState(false);
   const printer = usePrinter();
 
@@ -31,23 +32,24 @@ export function Closing({ master }: { master: Master }) {
     return data as unknown as Summary;
   }, date);
   const { data: closings } = useRealtimeTable(["cash_closings"], async () => {
-    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note")
+    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note, deposit_out")
       .eq("date", date).order("created_at", { ascending: false });
     return data ?? [];
   }, date);
 
   const phys = physical === "" ? null : Number(physical);
+  const dep = Number(deposit || 0);
   const diff = s && !s.blind && phys != null ? phys - s.expected_cash : null;
   const lockedForCashier = master.role === "cashier" && !!closings?.length; // kasir hanya menutup sekali per tanggal
 
   async function save() {
     if (phys == null) return;
     setSaving(true);
-    const { error } = await createClient().rpc("save_cash_closing", { p_date: date, p_physical_cash: phys, p_note: note });
+    const { error } = await createClient().rpc("save_cash_closing", { p_date: date, p_physical_cash: phys, p_note: note, p_deposit_out: dep });
     setSaving(false);
     if (error) return toast(error.message, "error");
     toast("Tutup kasir tersimpan");
-    setPhysical(""); setNote(""); refresh();
+    setPhysical(""); setNote(""); setDeposit(""); refresh();
   }
 
   async function printSlip() {
@@ -57,7 +59,7 @@ export function Closing({ master }: { master: Master }) {
       await printBytes(closingEscpos(s, {
         paper: printerSettings().paper, shop: master.shop.name, date: formatTanggal(`${date}T12:00:00+07:00`), printedAt: formatJam(new Date()),
         cashier: master.userName, time: (iso) => formatJam(iso),
-        last: c ? { at: c.created_at, physical_cash: c.physical_cash, difference: c.difference, note: c.note } : null,
+        last: c ? { at: c.created_at, physical_cash: c.physical_cash, difference: c.difference, note: c.note, deposit_out: c.deposit_out } : null,
       }));
       toast("Rekap dicetak");
     } catch (e) { toast(e instanceof Error ? e.message : String(e), "error"); }
@@ -71,7 +73,7 @@ export function Closing({ master }: { master: Master }) {
     <>
       <div className="divide-y divide-[#EEEEEA]">{row("Jumlah transaksi", String(s.tx_count))}</div>
       <p className="rounded-[10px] bg-paper px-3.5 py-3 text-sm">
-        Hitung uang di laci lalu isi <b>Kas fisik</b>. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
+        Hitung <b>seluruh uang di laci</b> (termasuk sisa kemarin) lalu isi kolom di samping. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
       </p>
     </>
   ) : (
@@ -80,16 +82,19 @@ export function Closing({ master }: { master: Master }) {
         {row("Jumlah transaksi", String(s.tx_count))}
         {row("Omzet (setelah diskon)", s.gross_total)}
         {row("Total diskon", s.discount_total)}
-        {row("Penjualan Tunai", s.cash_sales)}
-        {row("Penjualan QRIS", s.qris_sales)}
+        {row("Saldo awal laci (sisa tutup kasir sebelumnya)", s.opening_cash ?? 0)}
+        {row("Pemasukan tunai (transaksi)", s.cash_sales)}
+        {row("Pemasukan QRIS (transaksi)", s.qris_sales)}
+        {row("Pemasukan transfer (transaksi)", s.transfer_sales)}
         {row("Deposit terpakai", s.deposit_used)}
-        {row(`Top-up deposit Tunai (${s.topup_count}×)`, s.topup_cash)}
+        {row(`Top-up deposit tunai (${s.topup_count}×)`, s.topup_cash)}
         {row("Top-up deposit QRIS", s.topup_qris)}
+        {row("Top-up deposit transfer", s.topup_transfer)}
         {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
         {row(`Pengeluaran dari laci (${s.expense_count}×)`, -s.expense_cash)}
-        {row(`Tips QRIS diserahkan tunai ke staf (${s.tip_count}×)`, -s.tip_qris)}
+        {row(`Tips QRIS/transfer diserahkan tunai ke staf (${s.tip_count}×)`, -s.tip_qris)}
       </div>
-      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan (tunai jual + tunai top-up − pengeluaran laci − tips QRIS)", s.expected_cash, true)}</div>
+      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan di laci (saldo awal + tunai masuk − tunai keluar)", s.expected_cash, true)}</div>
       <div>
         <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
         {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (
@@ -99,8 +104,10 @@ export function Closing({ master }: { master: Master }) {
       {closings?.[0] && (
         <div className="rounded-[10px] border border-line p-3 text-sm">
           <b>Penutupan terakhir {formatJam(closings[0].created_at)}</b>
-          {row("Kas fisik", closings[0].physical_cash)}
+          {row("Uang di laci", closings[0].physical_cash)}
           {row("Selisih", closings[0].difference ?? 0, true)}
+          {!!closings[0].deposit_out && row("Disetor ke brankas / owner", -closings[0].deposit_out)}
+          {row("Sisa di laci untuk besok", closings[0].physical_cash - closings[0].deposit_out)}
           {closings[0].note && <p className="text-muted">{closings[0].note}</p>}
         </div>
       )}
@@ -131,7 +138,7 @@ export function Closing({ master }: { master: Master }) {
 
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
-        <Field label="Kas fisik di laci (Rp)" htmlFor="cl-phys">
+        <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci, termasuk sisa kemarin.">
           <input id="cl-phys" inputMode="numeric" className="input text-right text-lg tabular"
             value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
         </Field>
@@ -140,10 +147,19 @@ export function Closing({ master }: { master: Master }) {
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}
+        <Field label="Disetor ke brankas / owner (Rp, opsional)" htmlFor="cl-dep" hint="Pemindahan uang, bukan biaya. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
+          <input id="cl-dep" inputMode="numeric" className="input text-right tabular"
+            value={deposit ? Number(deposit).toLocaleString("id-ID") : ""} onChange={(e) => setDeposit(e.target.value.replace(/\D/g, ""))} />
+        </Field>
+        {phys != null && (
+          <div className={`flex justify-between rounded-[10px] bg-paper px-3 py-2 text-sm tabular ${dep > phys ? "text-[#A12A2A]" : ""}`}>
+            <span>Sisa di laci untuk besok</span><b>{formatRupiah(phys - dep)}</b>
+          </div>
+        )}
         <Field label="Catatan (opsional)" htmlFor="cl-note">
           <textarea id="cl-note" rows={2} className="input py-2.5" value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
-        <button onClick={save} disabled={phys == null || saving || !online || lockedForCashier} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
+        <button onClick={save} disabled={phys == null || dep > (phys ?? 0) || saving || !online || lockedForCashier} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
         {lockedForCashier && <p className="text-xs text-muted">Tanggal ini sudah ditutup. Koreksi hitungan dilakukan manajer.</p>}
         {printer.status === "on" && <button onClick={printSlip} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak ke printer struk</button>}
         <button onClick={() => window.print()} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>

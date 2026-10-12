@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CAT_STYLE, CatChip, Empty, useOnline, useToast } from "@/components/ui";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
-import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type CartLine } from "@/lib/domain/cart";
+import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
 import { cashChange } from "@/lib/domain/receipt";
 import { STATUS } from "@/lib/domain/status";
@@ -36,8 +36,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     : []);
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
   const [useDeposit, setUseDeposit] = useState(false);
-  const [method, setMethod] = useState<"cash" | "qris">("cash");
-  const [qrisRef, setQrisRef] = useState(""); // bukti bayar QRIS (wajib, dicek unik di server)
+  const [method, setMethod] = useState<BaseMethod>("cash");
+  const [qrisRef, setQrisRef] = useState(""); // No. referensi QRIS / transfer (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
   const [tip, setTip] = useState(""); // tips QRIS (titipan staf, diserahkan tunai dari laci)
   const [tipPick, setTipPick] = useState("");
@@ -118,8 +118,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const recv = num(received);
   const change = cashDue > 0 ? cashChange(cashDue, recv ?? cashDue) : null;
   const shortCash = cashDue > 0 && recv != null && recv < cashDue;
-  const qrisPay = method === "qris" && k.paid > 0;
-  const tipAmt = qrisPay ? num(tip) ?? 0 : 0;
+  const nonCash = method !== "cash" && k.paid > 0; // QRIS / transfer: wajib No. referensi, boleh tips
+  const refLabel = method === "transfer" ? "transfer" : "QRIS";
+  const tipAmt = nonCash ? num(tip) ?? 0 : 0;
   const tipStaffIds = [...new Set(lines.map((l) => l.staffId).filter(Boolean))] as string[];
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
@@ -132,12 +133,12 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     if (!items.length) return;
     if (missingStaff) return setError("Pilih kapster/nail artist untuk setiap layanan (dasar komisi).");
     if (shortCash) return setError("Uang diterima kurang dari tagihan.");
-    if (method === "qris" && k.paid > 0 && qrisRef.replace(/[\s-]/g, "").length < 4) return setError("Isi No. referensi QRIS dari bukti bayar.");
+    if (nonCash && qrisRef.replace(/[\s-]/g, "").length < 4) return setError(`Isi No. referensi ${refLabel} dari bukti bayar.`);
     setPaying(true);
     const supabase = createClient();
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
-      cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method === "qris" ? qrisRef : null,
+      cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
       tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
@@ -302,18 +303,19 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               )}
               {k.depositUsed > 0 && <div className="flex justify-between text-[13px] text-muted"><span>Sisa dibayar</span><span>{formatRupiah(k.paid)}</span></div>}
 
-              <div role="radiogroup" aria-label="Metode pembayaran" className="grid grid-cols-2 gap-2">
-                {([["cash", "Tunai"], ["qris", "QRIS"]] as const).map(([v, l]) => (
+              <div role="radiogroup" aria-label="Metode pembayaran" className="grid grid-cols-3 gap-2">
+                {([["cash", "Tunai"], ["qris", "QRIS"], ["transfer", "Transfer"]] as const).map(([v, l]) => (
                   <button key={v} role="radio" aria-checked={method === v} disabled={k.paid === 0 && items.length > 0} onClick={() => setMethod(v)}
                     className={`h-11 rounded-[10px] border-2 text-sm font-bold disabled:opacity-40 ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
                 ))}
               </div>
-              {method === "qris" && k.paid > 0 && (
+              {nonCash && (
                 <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
-                  <label htmlFor="qris-ref" className="text-[13px] font-bold">No. referensi QRIS</label>
-                  <input id="qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
+                  <label htmlFor="qris-ref" className="text-[13px] font-bold">No. referensi {refLabel}</label>
+                  <input id="qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case"
+                    placeholder={method === "transfer" ? "mis. No. Ref / 4 digit terakhir rekening pengirim" : "mis. 4 digit terakhir No. Ref"}
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
-                  <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
+                  <span className="text-xs text-muted">{method === "transfer" ? "Cek dana sudah masuk di mutasi rekening toko sebelum dicatat. " : "Dari bukti bayar di HP pelanggan / notifikasi bank. "}Satu nomor hanya untuk satu transaksi.</span>
                   {tipStaffIds.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
                       <div className="flex items-center gap-2">
@@ -328,7 +330,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                             {tipStaffIds.map((id) => <option key={id} value={id}>{master.staff.find((s) => s.id === id)?.name ?? "Staf"}</option>)}
                           </select>
                         </div>
-                        <div className="flex justify-between text-[15px] font-bold"><span>Total scan QRIS</span><span>{formatRupiah(k.paid + tipAmt)}</span></div>
+                        <div className="flex justify-between text-[15px] font-bold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(k.paid + tipAmt)}</span></div>
                         <span className="text-xs text-muted">Tips bukan omzet. Serahkan {formatRupiah(tipAmt)} tunai dari laci ke staf sekarang — kas diharapkan ikut berkurang.</span>
                       </>}
                     </div>

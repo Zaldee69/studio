@@ -138,7 +138,7 @@ export function Closing({ master }: { master: Master }) {
 
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
-        <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci, termasuk sisa kemarin.">
+        <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci saat ini — uang hari ini & sisa kemarin — sebelum disetor.">
           <input id="cl-phys" inputMode="numeric" className="input text-right text-lg tabular"
             value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
         </Field>

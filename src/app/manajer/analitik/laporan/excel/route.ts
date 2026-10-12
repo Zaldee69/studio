@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import type { NextRequest } from "next/server";
-import { loadOwnerReport } from "@/features/analitik/owner";
+import { loadOwnerReport, ownerFinanceView } from "@/features/analitik/owner";
 import { CAT_NAME, change, SUMMARY_ROWS, WEEKDAY, type RowKind } from "@/features/analitik/owner-rows";
 import { requireRole } from "@/lib/auth";
 import { log } from "@/lib/log";
@@ -37,7 +37,8 @@ export async function GET(req: NextRequest) {
   await requireRole("manager");
   const sp = req.nextUrl.searchParams;
   const q = { periode: sp.get("periode") ?? undefined, nilai: sp.get("nilai") ?? undefined, dari: sp.get("dari") ?? undefined, sampai: sp.get("sampai") ?? undefined, bulan: sp.get("bulan") ?? undefined };
-  const { p, r, shop } = await loadOwnerReport(q);
+  const { p, r, shop, extra: x } = await loadOwnerReport(q);
+  const fv = ownerFinanceView(r, x, p.kind === "minggu");
   const s = r.summary, f = r.finance, t = r.targets;
   const sub = `${shop.name} · ${p.from} s.d. ${p.to} · dibanding ${p.previous.label}${p.sameCompare ? "" : ` & ${p.lastYear.label}`} · dibuat ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`;
 
@@ -65,18 +66,24 @@ export async function GET(req: NextRequest) {
 
   // 2. Keuangan
   ws = sheet(wb, "Keuangan", "Keuangan", sub);
-  const payroll = r.payroll.complete ? r.payroll.total_pay : null;
-  const k0 = table(ws, ["Laba rugi", "Rp"], [
+  // sama dengan laporan PDF (ownerFinanceView)
+  table(ws, [`Laba/rugi operasional${fv.fullPayroll ? "" : " (estimasi)"}`, "Rp"], [
     ["Omzet kotor (harga normal)", f.gross], ["Diskon paket & promo", -f.discount], ["  termasuk promo booking online", -(f.discount_promo ?? 0)], ["Omzet bersih", f.net],
-    ["HPP bahan & barang", -f.hpp], ["Margin kotor", f.net - f.hpp], ["Margin kotor %", marginPct(f.net, f.hpp)],
-    ["Gaji & komisi staf", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : -payroll],
-    ["Kontribusi setelah gaji", payroll == null ? null : f.net - f.hpp - payroll],
-    ["Biaya perawatan fasilitas", -f.maintenance_cost],
-    ...f.expenses_by_category.map((e) => [`Pengeluaran: ${EXPENSE_CAT[e.category]}`, -e.amount]),
-    ["Total biaya operasional", -(f.maintenance_cost + f.expenses_total)],
-    ["Laba bersih", payroll == null ? "hanya untuk bulan/kuartal/tahun penuh" : f.net - f.hpp - payroll - f.maintenance_cost - f.expenses_total],
+    ["Bahan & harga pokok barang (HPP)", -f.hpp],
+    [fv.fullPayroll ? "Gaji & komisi staf (termasuk kasbon)" : "Komisi staf (estimasi, sebelum subsidi gaji minimum)", -fv.labor],
+    ["Margin kontribusi", fv.contribution],
+    ...fv.opexRows.map((e) => [`Pengeluaran: ${EXPENSE_CAT[e.category]}`, -e.amount]),
+    ["Perawatan fasilitas", -f.maintenance_cost],
+    ["Laba/rugi operasional (sebelum pajak, penyusutan & biaya di luar aplikasi — bukan laba bersih)", fv.operating],
   ], [null, FMT.money]);
-  ws.getRow(k0 + 5).getCell(2).numFmt = FMT.pct; // baris "Margin kotor %"
+  const a0 = table(ws, ["Arus kas tercatat", "Rp"], [
+    ["Masuk: tunai", fv.cashIn.cash], ["Masuk: QRIS", fv.cashIn.qris], ["Masuk: rekening bank (transfer)", fv.cashIn.transfer], ["Masuk: top-up deposit", fv.cashIn.topup],
+    ["Keluar: pengeluaran operasional", -fv.cashOut.expenses], ["Keluar: pembelian stok", -fv.cashOut.stock],
+    ["Keluar: kasbon staf", -fv.cashOut.kasbon], ["Keluar: komisi mingguan dibayar", -fv.cashOut.weeklyCommission],
+    ["Arus kas bersih tercatat", fv.cashNet],
+    ["Selisih tutup kasir (total)", x.cash_diff_total], [`Hari belum tutup kasir (dari ${x.cash_days} hari bertransaksi)`, x.cash_days_unclosed],
+  ], [null, FMT.money]);
+  ws.getRow(a0 + 10).getCell(2).numFmt = FMT.int; // baris jumlah hari, bukan rupiah
   table(ws, ["Uang masuk", "Rp"], [
     ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], ["Transfer (transaksi)", f.payments.transfer ?? 0], ["  + tips non-tunai (titipan staf, bukan omzet)", f.payments.tips_qris ?? 0], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
     ["Total uang masuk", f.payments.cash + f.payments.qris + (f.payments.transfer ?? 0) + f.deposit.topup_paid], ["Dibayar pakai saldo deposit", f.payments.deposit],

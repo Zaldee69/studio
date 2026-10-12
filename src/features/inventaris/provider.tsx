@@ -8,6 +8,7 @@ import { formatUnitCost, newUnitCost, suggestOrder, supplierMessage } from "@/li
 import { createClient } from "@/lib/supabase/client";
 import { ADJUST_REASONS, qtyFmt, type InvSettings, type StockRow, type Supplier } from "./types";
 import { IMAGE_ACCEPT, toUploadable } from "@/lib/image";
+import { EXPENSE_SOURCE } from "@/lib/domain/expense";
 
 type Modal = { kind: "in" | "adjust" | "cost"; itemId?: string } | { kind: "shopping" } | null;
 type Ctx = { open: (m: Modal) => void; items: StockRow[]; suppliers: Supplier[]; settings: InvSettings };
@@ -74,7 +75,7 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
   const toast = useToast(); const router = useRouter(); const online = useOnline();
   const [itemId, setItemId] = useState(initial ?? "");
   const it = items.find((i) => i.item_id === itemId);
-  const [f, setF] = useState({ qty: "", price: "", total: false, supplier: it?.supplier_id ?? "", invoice: "", note: "" });
+  const [f, setF] = useState({ qty: "", price: "", total: false, supplier: it?.supplier_id ?? "", invoice: "", note: "", paidFrom: "" });
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const qty = num(f.qty), price = num(f.price);
@@ -96,7 +97,7 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
     }
     const { error } = await supabase.rpc("receive_stock", {
       p_item_id: it.item_id, p_qty: qty, p_unit_cost: Math.round(unitCost * 10000) / 10000,
-      p_supplier_id: f.supplier || undefined, p_invoice_no: f.invoice || undefined, p_note: f.note || undefined, p_attachment_path: path ?? undefined,
+      p_supplier_id: f.supplier || undefined, p_invoice_no: f.invoice || undefined, p_note: f.note || undefined, p_attachment_path: path ?? undefined, p_paid_from: f.paidFrom,
     });
     setBusy(false);
     if (error) return toast(error.message, "error");
@@ -131,6 +132,12 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
           </Field>
           <Field label="No. nota" htmlFor="si-inv"><input id="si-inv" className="input" value={f.invoice} onChange={(e) => setF({ ...f, invoice: e.target.value })} /></Field>
         </div>
+        <Field label="Dibayar dari" htmlFor="si-paid" hint={f.paidFrom === "laci" ? "Mengurangi kas diharapkan di tutup kasir hari ini." : "Wajib — supaya tercatat di arus kas laporan."}>
+          <select id="si-paid" className="input" required value={f.paidFrom} onChange={(e) => setF({ ...f, paidFrom: e.target.value })}>
+            <option value="">Pilih…</option>
+            {Object.entries(EXPENSE_SOURCE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </Field>
         <Field label="Foto nota (opsional)" htmlFor="si-file">
           <input id="si-file" type="file" accept={`${IMAGE_ACCEPT},application/pdf`} className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </Field>
@@ -141,7 +148,7 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
             {f.total && <span className="block text-xs text-muted">{formatUnitCost(unitCost, 4)} per {it.unit}</span>}
           </p>
         )}
-        <button disabled={!valid || busy || !online} className="btn-ink h-12">{busy ? "Menyimpan…" : "Simpan stok masuk"}</button>
+        <button disabled={!valid || !f.paidFrom || busy || !online} className="btn-ink h-12">{busy ? "Menyimpan…" : "Simpan stok masuk"}</button>
       </div>
     </form>
   );

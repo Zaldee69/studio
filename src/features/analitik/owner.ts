@@ -54,7 +54,7 @@ export type OwnerQuery = { periode?: string; nilai?: string; dari?: string; samp
 type Charts = { daily: AnalyticsData["daily"]; mix: AnalyticsData["mix"] };
 export type OwnerExtra = { bookings: number; bookings_paid: number; bookings_cancelled: number; bookings_no_show: number; bookings_walk_in: number;
   commission_est: number; commission_weekly_paid: number; cash_days: number; cash_days_closed: number; cash_days_unclosed: number;
-  cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number };
+  cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number; stock_purchases?: number };
 export type Issue = { masalah: string; bukti: string; dampak: string; akar: string; tindakan: string; pj: string; tenggat: string };
 export type Decision = { keputusan: string; alasan: string; opsi: string; rekomendasi: string; biaya: string; risiko: string; tenggat: string };
 export type Priority = { tujuan: string; tindakan: string; indikator: string; pj: string; tenggat: string };
@@ -83,4 +83,25 @@ export async function loadOwnerReport(q: OwnerQuery): Promise<{ p: OwnerPeriod; 
     charts: { daily: daily as unknown as Charts["daily"], mix: mix.data as unknown as Charts["mix"] },
     extra: ex.data as unknown as OwnerExtra, extraPrev: exPrev.data as unknown as OwnerExtra,
     notes: (nt.data?.data as OwnerNotes | undefined) ?? null, notesKind };
+}
+
+/**
+ * Angka keuangan laporan owner (PDF & Excel memakai fungsi yang sama → angka tidak bisa berbeda).
+ * Kasbon = uang muka gaji (bukan biaya operasional); gaji bulanan sudah dipotong kasbon → biaya staf = gaji + kasbon.
+ * Periode tanpa gaji bulan penuh (mis. mingguan): biaya staf = estimasi komisi dari transaksi periode itu.
+ */
+export function ownerFinanceView(r: OwnerReport, x: OwnerExtra, weekly: boolean) {
+  const f = r.finance;
+  const kasbon = f.expenses_by_category.find((e) => e.category === "kasbon")?.amount ?? 0;
+  const marketing = f.expenses_by_category.find((e) => e.category === "pemasaran")?.amount ?? 0;
+  const opexRows = f.expenses_by_category.filter((e) => e.category !== "kasbon");
+  const opex = f.expenses_total - kasbon + f.maintenance_cost;
+  const fullPayroll = !weekly && r.payroll.complete;
+  const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est;
+  const contribution = f.net - f.hpp - labor;
+  const operating = contribution - opex;
+  const cashIn = { cash: f.payments.cash, qris: f.payments.qris, transfer: f.payments.transfer ?? 0, topup: f.deposit.topup_paid };
+  const cashOut = { expenses: opex, stock: x.stock_purchases ?? 0, kasbon, weeklyCommission: x.commission_weekly_paid };
+  const net = Object.values(cashIn).reduce((a, v) => a + v, 0) - Object.values(cashOut).reduce((a, v) => a + v, 0);
+  return { kasbon, marketing, opexRows, opex, fullPayroll, labor, contribution, operating, cashIn, cashOut, cashNet: net };
 }

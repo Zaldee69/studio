@@ -43,3 +43,18 @@ test("manajer menghapus pelanggan: hilang dari daftar, transaksi tetap", async (
   await expect(page.getByText("Pelanggan dihapus")).toBeVisible();
   expect(sql(`select 1 from customers where id = '${id}'`)).toHaveLength(0);
 });
+
+test("pijat 2 jam: layanan utama + Tambah waktu → durasi & perkiraan tagihan dijumlahkan", async ({ page }) => {
+  await login(page, "cashier");
+  await page.goto("/kasir/jadwal");
+  await page.getByRole("button", { name: /^Booking baru Bed Pijat 1 \d\d:\d\d$/ }).first().click();
+  const form = page.getByRole("dialog", { name: "Booking baru" });
+  await expect(form.getByRole("tab", { name: /Pijat/, selected: true })).toBeVisible();
+  const [{ d, p }] = sql<{ d: number; p: number }>(`select sum(duration_min)::int as d, sum(price)::int as p from services
+    where name in ('Pijat Fullbody', 'Tambah waktu pijat 60 menit')`);
+  await form.getByRole("button", { name: /^Pijat Fullbody ·/ }).click();
+  await form.getByRole("button", { name: /^Tambah waktu pijat 60 menit ·/ }).click();
+  await expect(form.getByText(`Durasi (menit) · otomatis ${d}`)).toBeVisible();
+  await expect(form.getByLabel(/^Durasi \(menit\)/)).toHaveValue(String(d));
+  await expect(form).toContainText(`Rp${Number(p).toLocaleString("id-ID")}`);
+});

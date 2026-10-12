@@ -120,7 +120,7 @@ export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | n
 
 export type ClosingSummary = {
   tx_count: number; gross_total: number; discount_total: number; opening_cash?: number; cash_sales: number; qris_sales: number; transfer_sales: number; deposit_used: number;
-  topup_cash: number; topup_qris: number; topup_transfer: number; topup_credited: number; topup_count: number; expense_cash: number; expense_count: number; tip_qris: number; tip_count: number; expected_cash: number;
+  topup_cash: number; topup_qris: number; topup_transfer: number; topup_credited: number; topup_count: number; expense_cash: number; expense_count: number; stock_cash?: number; stock_count?: number; tip_qris: number; tip_count: number; expected_cash: number;
   voided: { created_at: string; total: number; reason: string }[];
 };
 
@@ -136,6 +136,7 @@ export function closingEscpos(s: ClosingSummary, o: {
     .lr(`Top-up Tunai (${s.topup_count}x)`, rp(s.topup_cash)).lr("Top-up QRIS", rp(s.topup_qris)).lr("Top-up Transfer", rp(s.topup_transfer)).lr("Saldo deposit masuk", rp(s.topup_credited))
     .lr(`Pengeluaran laci (${s.expense_count}x)`, `-${rp(s.expense_cash)}`)
     .lr(`Tips non-tunai ke staf (${s.tip_count}x)`, `-${rp(s.tip_qris)}`);
+  if (s.stock_cash) p.lr(`Beli stok dari laci (${s.stock_count}x)`, `-${rp(s.stock_cash)}`);
   p.rule("=").cmd(CMD.bold(true)).lr("KAS DIHARAPKAN", rp(s.expected_cash)).cmd(CMD.bold(false)).rule("=");
   if (o.last) {
     p.lr(`Uang di laci (${o.time(o.last.at)})`, rp(o.last.physical_cash))

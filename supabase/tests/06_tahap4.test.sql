@@ -35,12 +35,12 @@ select is((select count(*) from service_materials) + (select count(*) from suppl
 
 -- =============================== 4.1 Harga pokok (U1) ===============================
 select tests.login(tests.mgr());
-select is((receive_stock(tests.item('Krim uji'), 1000, 135) ->> 'unit_cost')::numeric, 130.3448, 'U1 rata-rata tertimbang: (450×120 + 1000×135)/1450');
+select is((receive_stock(tests.item('Krim uji'), 1000, 135, p_paid_from => 'kas_toko') ->> 'unit_cost')::numeric, 130.3448, 'U1 rata-rata tertimbang: (450×120 + 1000×135)/1450');
 select is((select unit_cost from inventory_items where id = tests.item('Krim uji')), 130.3448::numeric(14,4), 'U1 harga pokok tersimpan 4 desimal');
 select is((select qty from stock_levels where item_id = tests.item('Krim uji')), 1450::numeric, 'stok = Σ mutasi');
-select is((receive_stock(tests.item('Base uji'), 10, 1300) ->> 'unit_cost')::numeric, 1300::numeric, 'U1 stok lama 0 → harga beli');
+select is((receive_stock(tests.item('Base uji'), 10, 1300, p_paid_from => 'kas_toko') ->> 'unit_cost')::numeric, 1300::numeric, 'U1 stok lama 0 → harga beli');
 update settings set inventory_cost_method = 'last';
-select is((receive_stock(tests.item('Krim uji'), 100, 140) ->> 'unit_cost')::numeric, 140::numeric, 'U1 metode harga terakhir');
+select is((receive_stock(tests.item('Krim uji'), 100, 140, p_paid_from => 'kas_toko') ->> 'unit_cost')::numeric, 140::numeric, 'U1 metode harga terakhir');
 update settings set inventory_cost_method = 'weighted_avg';
 select throws_like($$ update inventory_items set unit_cost = 1 where name = 'Krim uji' $$, '%Harga pokok hanya berubah%', 'harga pokok tidak bisa diedit langsung');
 select set_unit_cost(tests.item('Base uji'), 1200, 'salah input nota');
@@ -127,7 +127,7 @@ select checkout(jsonb_build_object('method', 'cash', 'items', jsonb_build_array(
 select tests.login(tests.mgr());
 select is((select count(*) from notifications where kind = 'low_stock' and payload ->> 'name' = 'Neck strip'), 1::bigint, 'tidak dobel selama belum dibaca');
 select ok(exists (select 1 from shopping_list() where name = 'Neck strip' and suggested > 0), 'daftar belanja memuat neck strip');
-select receive_stock(tests.item('Neck strip'), 200, 300);
+select receive_stock(tests.item('Neck strip'), 200, 300, p_paid_from => 'kas_toko');
 select is((select count(*) from notifications where kind = 'low_stock' and read_at is null and payload ->> 'name' = 'Neck strip'), 0::bigint,
           'stok masuk menandai notifikasi terbaca');
 
@@ -165,7 +165,7 @@ select checkout(jsonb_build_object('method', 'cash', 'items', jsonb_build_array(
   jsonb_build_object('service_id', tests.svc('Layanan X'), 'staff_id', tests.staff_andi()),
   jsonb_build_object('service_id', tests.svc('Layanan X'), 'staff_id', tests.staff_andi()))));
 select tests.login(tests.mgr());
-select receive_stock(tests.item('Bahan X'), 500, 100);
+select receive_stock(tests.item('Bahan X'), 500, 100, p_paid_from => 'kas_toko');
 select adjust_stock(tests.item('Bahan X'), -10, 'tumpah');
 select tests.put('o2', opname_start('consumable')::text);
 select opname_save_counts(tests.get('o2')::uuid, jsonb_build_array(jsonb_build_object('item_id', tests.item('Bahan X'), 'counted_qty', 1440)));

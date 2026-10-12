@@ -53,6 +53,8 @@ test("E1 · stok masuk 1.000 ml krim @135 → harga pokok rata-rata → HPP Hair
   await page.fill("#si-qty", "1000");
   await page.fill("#si-price", "135");
   await expect(page.getByRole("dialog", { name: "Stok masuk" }).getByRole("status")).toContainText(`harga pokok ${formatUnitCost(krim.cost)} → ${formatUnitCost(expected)}`);
+  await expect(page.getByRole("button", { name: "Simpan stok masuk" })).toBeDisabled(); // sumber dana wajib
+  await page.selectOption("#si-paid", "transfer"); // rekening bank (dana QRIS)
   await page.getByRole("button", { name: "Simpan stok masuk" }).click();
   await expect(toast(page, "Stok Krim hair spa +1.000 ml")).toBeVisible();
   await expect.poll(async () => (await item("Krim hair spa")).cost).toBe(expected);

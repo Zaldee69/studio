@@ -1408,13 +1408,13 @@ isOneToOne: false
                   ]
                 },"stock_moves": {
                   Row: {
-                    "attachment_path": string | null,"created_at": string,"created_by": string | null,"id": string,"invoice_no": string | null,"item_id": string,"note": string,"opname_id": string | null,"qty": number,"reason": string | null,"supplier_id": string | null,"transaction_id": string | null,"type": Database["public"]['Enums']["stock_move_type"],"unit_cost": number | null
+                    "attachment_path": string | null,"created_at": string,"created_by": string | null,"id": string,"invoice_no": string | null,"item_id": string,"note": string,"opname_id": string | null,"paid_from": string | null,"qty": number,"reason": string | null,"supplier_id": string | null,"transaction_id": string | null,"type": Database["public"]['Enums']["stock_move_type"],"unit_cost": number | null
                   }
                   Insert: {
-                    "attachment_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"invoice_no"?: string | null,"item_id": string,"note"?: string,"opname_id"?: string | null,"qty": number,"reason"?: string | null,"supplier_id"?: string | null,"transaction_id"?: string | null,"type": Database["public"]['Enums']["stock_move_type"],"unit_cost"?: number | null
+                    "attachment_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"invoice_no"?: string | null,"item_id": string,"note"?: string,"opname_id"?: string | null,"paid_from"?: string | null,"qty": number,"reason"?: string | null,"supplier_id"?: string | null,"transaction_id"?: string | null,"type": Database["public"]['Enums']["stock_move_type"],"unit_cost"?: number | null
                   }
                   Update: {
-                    "attachment_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"invoice_no"?: string | null,"item_id"?: string,"note"?: string,"opname_id"?: string | null,"qty"?: number,"reason"?: string | null,"supplier_id"?: string | null,"transaction_id"?: string | null,"type"?: Database["public"]['Enums']["stock_move_type"],"unit_cost"?: number | null
+                    "attachment_path"?: string | null,"created_at"?: string,"created_by"?: string | null,"id"?: string,"invoice_no"?: string | null,"item_id"?: string,"note"?: string,"opname_id"?: string | null,"paid_from"?: string | null,"qty"?: number,"reason"?: string | null,"supplier_id"?: string | null,"transaction_id"?: string | null,"type"?: Database["public"]['Enums']["stock_move_type"],"unit_cost"?: number | null
                   }
                   Relationships: [
                     {
@@ -2333,7 +2333,7 @@ isOneToOne: false
 { Args: { "p_date": string }; Returns: string[]
                            },
 "receive_stock":
-{ Args: { "p_attachment_path"?: string,"p_invoice_no"?: string,"p_item_id": string,"p_note"?: string,"p_qty": number,"p_supplier_id"?: string,"p_unit_cost": number }; Returns: Json
+{ Args: { "p_attachment_path"?: string,"p_invoice_no"?: string,"p_item_id": string,"p_note"?: string,"p_paid_from"?: string,"p_qty": number,"p_supplier_id"?: string,"p_unit_cost": number }; Returns: Json
                            },
 "record_sop_stage":
 { Args: { "p_group_id": string,"p_note"?: string,"p_on_behalf_staff"?: string,"p_photo_path"?: string,"p_shift"?: number,"p_stage": Database["public"]['Enums']["sop_stage"] }; Returns: string

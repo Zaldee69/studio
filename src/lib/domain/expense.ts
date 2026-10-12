@@ -7,5 +7,6 @@ export const EXPENSE_CAT = {
 } as const;
 export type ExpenseCat = keyof typeof EXPENSE_CAT;
 
-export const EXPENSE_SOURCE = { laci: "Laci kas", kas_toko: "Kas toko (brankas)", transfer: "Transfer bank" } as const;
+// "transfer" = rekening bank toko, termasuk dana QRIS yang sudah masuk rekening
+export const EXPENSE_SOURCE = { laci: "Laci kas", kas_toko: "Kas toko (brankas)", transfer: "Rekening bank (termasuk dana QRIS)" } as const;
 export type ExpenseSource = keyof typeof EXPENSE_SOURCE;

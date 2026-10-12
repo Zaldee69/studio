@@ -166,6 +166,8 @@ test.describe.serial("Analitik", () => {
       };
       expect(find("Ringkasan", "Omzet bersih")).toBe(594500);
       expect(find("Keuangan", "Omzet bersih")).toBe(594500);
+      expect(find("Keuangan", "Keluar: pembelian stok")).toBe(0); // arus kas sama dengan laporan PDF
+      expect(find("Keuangan", "Laba bersih")).toBeUndefined(); // istilah: laba/rugi operasional, bukan laba bersih
       expect(find("Harian", "Total")).toBeGreaterThan(0);
       let harian = 0; wb.getWorksheet("Harian")!.eachRow((r, i) => { if (i > 3 && r.getCell(1).value !== "Total" && typeof r.getCell(3).value === "number") harian += r.getCell(3).value as number; });
       expect(harian).toBe(594500);

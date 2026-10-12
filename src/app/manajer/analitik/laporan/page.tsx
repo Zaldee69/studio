@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
 import { StackedWeekly } from "@/features/analitik/charts";
-import { loadOwnerReport, type OwnerNotes } from "@/features/analitik/owner";
+import { loadOwnerReport, ownerFinanceView, type OwnerNotes } from "@/features/analitik/owner";
 import { CAT_NAME } from "@/features/analitik/owner-rows";
 import { CAT_LABEL } from "@/features/analitik/palette";
 import { EXPENSE_CAT } from "@/lib/domain/expense";
@@ -54,16 +54,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const N: OwnerNotes = notes ?? {};
 
   // Keuangan: kasbon = uang muka gaji (bukan biaya operasional); gaji bulanan sudah dipotong kasbon → biaya staf = gaji + kasbon.
-  const kasbon = f.expenses_by_category.find((e) => e.category === "kasbon")?.amount ?? 0;
-  const marketing = f.expenses_by_category.find((e) => e.category === "pemasaran")?.amount ?? 0;
-  const opexRows = f.expenses_by_category.filter((e) => e.category !== "kasbon");
-  const opex = f.expenses_total - kasbon + f.maintenance_cost;
-  const fullPayroll = !weekly && r.payroll.complete;
-  const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est;
-  const contribution = f.net - f.hpp - labor;
-  const operating = contribution - opex;
-  const cashIn = f.payments.cash + f.payments.qris + (f.payments.transfer ?? 0) + f.deposit.topup_paid;
-  const cashOut = f.expenses_total - kasbon + f.maintenance_cost + kasbon + x.commission_weekly_paid;
+  const { kasbon, marketing, opexRows, fullPayroll, labor, contribution, operating, cashNet } = ownerFinanceView(r, x, weekly);
   const revTarget = t.revenue || null;
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
   const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: null };
@@ -186,9 +177,10 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                 <tr><td className={td}>Masuk: transfer bank</td><td className={num}>{m(f.payments.transfer ?? 0)}</td></tr>
                 <tr><td className={td}>Masuk: top-up deposit</td><td className={num}>{m(f.deposit.topup_paid)}</td></tr>
                 <tr><td className={td}>Keluar: pengeluaran operasional</td><td className={num}>−{m(f.expenses_total - kasbon + f.maintenance_cost)}</td></tr>
+                <tr><td className={td}>Keluar: pembelian stok</td><td className={num}>−{m(x.stock_purchases ?? 0)}</td></tr>
                 <tr><td className={td}>Keluar: kasbon staf</td><td className={num}>−{m(kasbon)}</td></tr>
                 <tr><td className={td}>Keluar: komisi mingguan dibayar</td><td className={num}>−{m(x.commission_weekly_paid)}</td></tr>
-                <tr className="font-bold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashIn - cashOut)}</td></tr>
+                <tr className="font-bold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashNet)}</td></tr>
               </tbody>
             </table>
           </div>

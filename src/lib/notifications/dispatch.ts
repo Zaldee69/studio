@@ -21,10 +21,11 @@ export async function processQueue(store: Store, adapters: Adapters, now = new D
     if (!raw && !g) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: "Booking tidak ditemukan" }); out.skipped++; continue; }
     if (!send) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: `${m.channel === "email" ? "Email" : "WhatsApp"} belum dikonfigurasi` }); out.skipped++; continue; }
     try {
-      if (m.template === "otp") await adapters.whatsapp!(m.to_address, m.body ?? "", { instant: true }); // kode: kirim segera
-      else if (raw) await adapters.whatsapp!(m.to_address, m.body ?? "");
+      // transaksional (OTP, konfirmasi, pengingat) didahulukan dari antrean blast promo di perangkat Wablas
+      if (m.template === "otp") await adapters.whatsapp!(m.to_address, m.body ?? "", { instant: true, priority: true }); // kode: kirim segera
+      else if (raw) await adapters.whatsapp!(m.to_address, m.body ?? ""); // promo: ikut jeda perangkat
       else if (m.channel === "email") await adapters.email!(m.to_address, render(m.template as Template, g!));
-      else await adapters.whatsapp!(m.to_address, render(m.template as Template, g!).text);
+      else await adapters.whatsapp!(m.to_address, render(m.template as Template, g!).text, { priority: true });
       await store.finish(m.id, { status: "sent", attempts: m.attempts + 1, last_error: null });
       out.sent++;
     } catch (e) {

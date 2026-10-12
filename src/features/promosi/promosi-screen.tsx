@@ -16,7 +16,7 @@ type Send = { id: string; campaign_id: string; recipient_count: number; created_
 type Draft = { id: string | null; name: string; message: string; segment: Segment };
 
 const MAX = 900;
-const footer = (shop: string) => `\n\n— ${shop}\nTidak ingin menerima info promo? Balas STOP.`;
+const footer = (shop: string) => `\n\n— ${shop}`;
 const blank = (bookingUrl: string): Draft => ({ id: null, name: "", segment: {},
   message: `Hai {nama}! Sekarang booking bisa online. Dapatkan DISKON 10% dengan booking online sekarang 👇\n${bookingUrl}` });
 const ago = (iso: string) => {
@@ -213,7 +213,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
             <p className="text-sm" aria-live="polite">
               <b>{describeSegment(seg)}</b> → {count ? <b className="text-accent-ink">{count.n} pelanggan</b> : "menghitung…"}
               {!!count?.n && <span className="block text-xs text-muted">mis. {count.names.join(", ")}{count.n > count.names.length ? ", …" : ""}</span>}
-              <span className="block text-xs text-muted">Pelanggan tanpa WhatsApp dan yang pernah membalas STOP tidak ikut dikirimi.</span>
+              <span className="block text-xs text-muted">Pelanggan tanpa WhatsApp tidak ikut dikirimi.</span>
             </p>
           </section>
 

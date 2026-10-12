@@ -2,7 +2,7 @@
 export type EmailMsg = { subject: string; text: string; html: string };
 export type Adapters = {
   email: ((to: string, m: EmailMsg) => Promise<void>) | null;
-  whatsapp: ((to: string, text: string, opts?: { instant?: boolean }) => Promise<void>) | null;
+  whatsapp: ((to: string, text: string, opts?: { instant?: boolean; priority?: boolean }) => Promise<void>) | null;
 };
 
 async function ok(r: Response) {
@@ -25,13 +25,14 @@ export function sendEmailAdapter(): Adapters["email"] {
  * WABLAS_URL default https://wablas.com — isi domain server dari dashboard Wablas bila berbeda.
  * Gagal sering tetap HTTP 200 dengan {"status": false, "message": …} → dicek di body.
  * `instant`: OTP diproses segera (flag=instant), tidak ikut antrean jeda perangkat.
+ * `priority`: didahulukan dari antrean (blast promo), dipakai untuk pesan transaksional (OTP, konfirmasi, pengingat).
  */
-export function sendWhatsAppAdapter(): ((to: string, text: string, opts?: { instant?: boolean }) => Promise<void>) | null {
+export function sendWhatsAppAdapter(): ((to: string, text: string, opts?: { instant?: boolean; priority?: boolean }) => Promise<void>) | null {
   const token = process.env.WABLAS_TOKEN, secret = process.env.WABLAS_SECRET_KEY;
   if (!token || !secret) return null;
   const base = (process.env.WABLAS_URL || "https://wablas.com").replace(/\/$/, "");
   return async (to, message, opts) => {
-    const body = new URLSearchParams({ phone: to, message, ...(opts?.instant ? { flag: "instant" } : {}) });
+    const body = new URLSearchParams({ phone: to, message, ...(opts?.instant ? { flag: "instant" } : {}), ...(opts?.priority ? { priority: "true" } : {}) });
     const r = await fetch(`${base}/api/send-message`, {
       method: "POST", headers: { Authorization: `${token}.${secret}`, "Content-Type": "application/x-www-form-urlencoded" }, body,
     });

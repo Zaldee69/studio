@@ -1,15 +1,13 @@
 begin;
 \ir helpers.psql
-select plan(14);
+select plan(13);
 
 -- CRM blast promosi: segmen pelanggan → satu pesan WA per pelanggan di antrean outbound_messages.
 select tests.su();
 update campaign_sends set created_at = created_at - interval '1 hour'; -- kiriman lain (mis. E2E) tidak ikut batas 3/10 menit
 insert into customers (id, name, whatsapp) values
   ('00000000-0000-0000-00dd-000000000001', 'Dodi Lama Pergi', '6281300000001'),  -- terakhir datang 10 minggu lalu, online, pijat
-  ('00000000-0000-0000-00dd-000000000002', 'Eka Baru',        '6281300000002'),  -- datang minggu lalu (walk-in)
-  ('00000000-0000-0000-00dd-000000000003', 'Fani Berhenti',   '6281300000003');  -- minta berhenti (STOP)
-update customers set promo_opt_out = true where id = '00000000-0000-0000-00dd-000000000003';
+  ('00000000-0000-0000-00dd-000000000002', 'Eka Baru',        '6281300000002');  -- datang minggu lalu (walk-in)
 insert into appointments (customer_id, resource_id, staff_id, start_at, duration_min, source, status) values
   ('00000000-0000-0000-00dd-000000000001', (select id from resources where name = 'Kursi Barber 1'), tests.staff_andi(), now() - interval '70 days', 30, 'online', 'completed'),
   ('00000000-0000-0000-00dd-000000000002', (select id from resources where name = 'Kursi Barber 1'), tests.staff_andi(), now() - interval '7 days', 30, 'walk_in', 'completed');
@@ -50,11 +48,10 @@ select results_eq($$ select message from campaign_sends where campaign_id = '000
   $$ values ('Hai {nama}, ada diskon 10% booking online!'), ('Hai {nama}, masih ada diskon 10%!') $$, 'riwayat menyimpan pesan saat dikirim');
 select tests.su();
 select is((select body from outbound_messages where customer_id = '00000000-0000-0000-00dd-000000000001' and template = 'promo' order by created_at limit 1),
-          E'Hai Dodi, ada diskon 10% booking online!\n\n— ' || (select shop_name from settings) || E'\nTidak ingin menerima info promo? Balas STOP.',
-          '{nama} = nama depan + cara berhenti');
+          E'Hai Dodi, ada diskon 10% booking online!\n\n— ' || (select shop_name from settings),
+          '{nama} = nama depan + nama toko (tanpa janji "Balas STOP")');
 select is((select count(*) from outbound_messages where customer_id = '00000000-0000-0000-00dd-000000000001' and template = 'promo' and to_address = '6281300000001'),
           2::bigint, 'dikirim ke WA pelanggan (2 pengiriman)');
-select is((select count(*) from outbound_messages where customer_id = '00000000-0000-0000-00dd-000000000003'), 0::bigint, 'yang minta berhenti tidak dikirimi');
 
 select tests.login(tests.mgr());
 insert into campaigns (id, name, message, segment) values ('00000000-0000-0000-00dd-0000000000c2', 'Kosong', 'Hai {nama}, promo!', '{"min_visits": 9999}');

@@ -9,7 +9,7 @@ import { mondayOf, shiftWeek, weekLabel } from "@/features/sdm/shared";
 const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 
 /** Komisi saya: dari commission_for_period (sama dengan layar SDM & slip gaji), rincian tanpa HPP. */
-export function KomisiKapster({ ratio, minPay, retailPct }: { ratio: number; minPay: number; retailPct: number }) {
+export function KomisiKapster({ ratio, minPay, retailPct, gross }: { ratio: number; minPay: number; retailPct: number; gross?: boolean }) {
   const cur = jktDate().slice(0, 7);
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(Date.UTC(+cur.slice(0, 4), +cur.slice(5, 7) - 1 - i, 1));
@@ -115,7 +115,7 @@ export function KomisiKapster({ ratio, minPay, retailPct }: { ratio: number; min
         </div>
       )}
       <span className="text-[13px] leading-normal text-muted">
-        Komisi per layanan = (harga bersih − HPP bahan) × {s?.commission_pct ?? ratio}%.{retailPct > 0 && ` Produk ritel yang Anda jual: ${retailPct}% dari harga bersih.`}
+        Komisi per layanan = (harga {gross ? "normal, sebelum diskon/promo" : "bersih"} − HPP bahan) × {s?.commission_pct ?? ratio}%.{retailPct > 0 && ` Produk ritel yang Anda jual: ${retailPct}% dari harga ${gross ? "normal" : "bersih"}.`}
       </span>
       {!!data?.adj.length && (
         <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">

@@ -50,7 +50,13 @@ describe("blast promosi (CRM)", () => {
     const wa = vi.fn(async () => {});
     const { s } = store([{ id: "o", channel: "whatsapp", to_address: "6281300000002", template: "otp", booking_group_id: null, attempts: 0, body: "Kode masuk: 123456" }]);
     await processQueue(s, { email: null, whatsapp: wa });
-    expect(wa).toHaveBeenCalledWith("6281300000002", "Kode masuk: 123456", { instant: true });
+    expect(wa).toHaveBeenCalledWith("6281300000002", "Kode masuk: 123456", { instant: true, priority: true });
+  });
+  it("konfirmasi & pengingat booking didahulukan dari antrean promo (priority); promo tanpa priority", async () => {
+    const wa = vi.fn(async () => {});
+    const { s } = store([q("b", "whatsapp")]);
+    await processQueue(s, { email: null, whatsapp: wa });
+    expect(wa).toHaveBeenCalledWith("6281234567890", expect.stringContaining("GB-7K3Q"), { priority: true });
   });
 });
 
@@ -66,6 +72,8 @@ describe("adapter WhatsApp (Wablas)", () => {
     expect(calls[0][0]).toBe("https://solo.wablas.com/api/send-message");
     expect((calls[0][1].headers as Record<string, string>).Authorization).toBe("tok.sec");
     expect(String(calls[0][1].body)).toBe("phone=6281234567890&message=Kode+123456&flag=instant");
+    await send("6281234567890", "Pengingat", { priority: true }); // transaksional didahulukan dari antrean promo
+    expect(String(calls[1][1].body)).toBe("phone=6281234567890&message=Pengingat&priority=true");
     reply = { status: false, message: "token invalid" };
     await expect(send("6281234567890", "x")).rejects.toThrow(/token invalid/);
     vi.unstubAllEnvs(); vi.unstubAllGlobals();

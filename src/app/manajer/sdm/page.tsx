@@ -22,7 +22,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   const month = /^\d{4}-\d{2}$/.test(one(sp.bulan)) ? one(sp.bulan) : current;
   const year = /^\d{4}$/.test(one(sp.tahun)) ? Number(one(sp.tahun)) : Number(current.slice(0, 4));
   const supabase = await createClient();
-  const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, min_monthly_pay").single();
+  const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, min_monthly_pay, commission_basis").single();
 
   let body: React.ReactNode;
   if (tab === "mingguan") {
@@ -43,7 +43,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
       ratio={st?.commission_pct ?? 40} minPay={st?.min_monthly_pay ?? 0} />;
   } else if (tab === "aturan") {
     const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, active").order("sort");
-    body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} minPay={st?.min_monthly_pay ?? 0} staff={staff ?? []} />;
+    body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} minPay={st?.min_monthly_pay ?? 0} basis={st?.commission_basis === "gross" ? "gross" : "net"} staff={staff ?? []} />;
   } else if (tab === "peringkat") {
     const byYear = sp.periode === "tahun";
     const end = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).toISOString().slice(0, 10);

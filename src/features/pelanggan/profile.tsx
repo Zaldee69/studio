@@ -22,8 +22,10 @@ export type CustRow = {
 const WEEK = 7 * 864e5;
 
 /** Profil pelanggan: edit nama/WA, catatan (simpan otomatis), follow-up, top-up, riwayat & mutasi deposit. */
-export function Profile({ c, master, onClose }: { c: CustRow; master: Master; onClose?: () => void }) {
+export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master: Master; onClose?: () => void; onDeleted?: () => void }) {
   const toast = useToast();
+  const [forgetting, setForgetting] = useState(false);
+  const [forgetReason, setForgetReason] = useState("");
   const [name, setName] = useState(c.name);
   const [wa, setWa] = useState(c.whatsapp ?? "");
   const [notes, setNotes] = useState(c.notes);
@@ -169,6 +171,26 @@ export function Profile({ c, master, onClose }: { c: CustRow; master: Master; on
           </div>
         ))}
       </div>
+
+      {master.role === "manager" && (forgetting ? (
+        <form className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3" onSubmit={async (e) => {
+          e.preventDefault();
+          const { data, error } = await createClient().rpc("forget_customer", { p_id: c.id, p_reason: forgetReason });
+          if (error) return toast(error.message, "error");
+          toast(data === "anonymized" ? "Data pribadi pelanggan dianonimkan" : "Pelanggan dihapus");
+          onDeleted?.();
+        }}>
+          <label htmlFor="pf-forget" className="text-xs font-bold text-[#6E1616]">Alasan menghapus (wajib)</label>
+          <input id="pf-forget" className="input" required autoFocus placeholder="mis. Data asal-isi / permintaan pelanggan" value={forgetReason} onChange={(e) => setForgetReason(e.target.value)} />
+          <p className="text-xs text-muted">Nama, WA & catatan dihapus. Riwayat transaksi tetap ada untuk pembukuan (tampil sebagai &quot;Pelanggan umum&quot;); booking mendatang dibatalkan. Tidak bisa dibatalkan.</p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => setForgetting(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
+            <button disabled={!forgetReason.trim()} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Hapus pelanggan</button>
+          </div>
+        </form>
+      ) : (
+        <button onClick={() => setForgetting(true)} className="btn-ghost h-11 self-start rounded-[10px] text-[#A12A2A]">Hapus pelanggan…</button>
+      ))}
 
       <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />
     </div>

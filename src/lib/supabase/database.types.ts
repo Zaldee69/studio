@@ -100,7 +100,7 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null
+                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null,"occupied_until": string | null
                   }
                   Insert: {
                     "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min": number,"end_at": string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"resource_id": string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
@@ -386,13 +386,13 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"email": string | null,"id": string,"name": string,"notes": string,"promo_opt_out": boolean,"whatsapp": string | null
+                    "created_at": string,"created_by": string | null,"deleted_at": string | null,"email": string | null,"id": string,"name": string,"notes": string,"promo_opt_out": boolean,"whatsapp": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"promo_opt_out"?: boolean,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -2093,6 +2093,12 @@ isOneToOne: false
               "petty_cash_limit": number,"receipt_required_above": number
             }[]
                            },
+"forget_customer":
+{ Args: { "p_id": string,"p_reason": string }; Returns: string
+                           },
+"forget_customer_core":
+{ Args: { "p_id": string,"p_reason": string }; Returns: string
+                           },
 "fraud_overview":
 { Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
@@ -2225,6 +2231,9 @@ isOneToOne: false
                            },
 "notify":
 { Args: { "p_kind": string,"p_payload": Json,"p_role": Database["public"]['Enums']["app_role"],"p_user"?: string }; Returns: undefined
+                           },
+"occupied_until":
+{ Args: { "a": Database["public"]['Tables']["appointments"]['Row'] }; Returns: string
                            },
 "open_minutes":
 { Args: { "p_from": string,"p_to": string }; Returns: number

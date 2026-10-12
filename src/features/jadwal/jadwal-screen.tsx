@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Sheet, useToast } from "@/components/ui";
 import { CAT_STYLE } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -17,6 +17,13 @@ import { apptName } from "@/lib/domain/guest";
 import Link from "next/link";
 import { floorStaff, staffNow } from "./now";
 import { WalkInForm } from "./walk-in";
+
+// Pilihan tampilan (per kursi / per kapster) diingat per perangkat; server selalu "kursi" (tanpa beda hidrasi).
+const VIEW_KEY = "jadwal-view";
+const viewSubs = new Set<() => void>();
+const subscribeView = (cb: () => void) => { viewSubs.add(cb); return () => { viewSubs.delete(cb); }; };
+const readView = (): "kursi" | "kapster" => { try { return localStorage.getItem(VIEW_KEY) === "kapster" ? "kapster" : "kursi"; } catch { return "kursi"; } };
+const pickView = (v: "kursi" | "kapster") => { try { localStorage.setItem(VIEW_KEY, v); } catch { /* opsional */ } viewSubs.forEach((f) => f()); };
 
 const nowMinutes = () => jktMinutes(new Date());
 function useNowMin() {
@@ -51,17 +58,39 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   const appts = (data ?? []).filter((a) => a.status !== "cancelled");
   const conflicts = conflictingIds(appts);
   const sel = (data ?? []).find((a) => a.id === selId) ?? null;
+  const view = useSyncExternalStore(subscribeView, readView, () => "kursi" as const);
   /** Staf di kursi/bed: yang sedang melayani di sini (hari ini) + pemilik kursi (home_resource_id). */
   const chairStaff = (resId: string) => [...new Set([
     ...(date === today ? appts.filter((a) => a.resource_id === resId && (a.status === "in_service" || a.status === "arrived")).map((a) => a.staff_id) : []),
     ...master.staff.filter((s) => s.active && s.home_resource_id === resId).map((s) => s.id),
   ])].map((id) => master.staff.find((s) => s.id === id)?.name).filter(Boolean).join(", ");
+  /** Kolom grid: per kursi/bed (default) atau per kapster (kartu = booking staf itu di kursi mana pun). */
+  const cols = view === "kapster"
+    ? [...floorStaff(master).map((s) => {
+        const home = master.resources.find((r) => r.id === s.home_resource_id) ?? master.resources.find((r) => r.type === s.category);
+        return { id: s.id, title: s.name, label: CAT_STYLE[s.category].label, tone: CAT_STYLE[s.category], sub: home?.name ?? "—",
+          resourceId: home?.id ?? "", staffId: s.id as string | undefined, has: (a: DayAppt) => a.staff_id === s.id };
+      }),
+      ...(appts.some((a) => !a.staff_id) ? [{ id: "-", title: "Tanpa kapster", label: "—", tone: { bg: "#EFEFEB", fg: "#4A4C46" }, sub: "",
+        resourceId: master.resources[0]?.id ?? "", staffId: undefined, has: (a: DayAppt) => !a.staff_id }] : [])]
+    : master.resources.map((r) => ({ id: r.id, title: r.name, label: r.is_pedicure ? "Pedicure" : CAT_STYLE[r.type].label, tone: CAT_STYLE[r.type],
+        sub: chairStaff(r.id) || "—", resourceId: r.id, staffId: undefined as string | undefined, has: (a: DayAppt) => a.resource_id === r.id }));
   const revenue = (txs ?? []).filter((t) => !t.voided_at).reduce((a, t) => a + t.total, 0);
 
-  // Gulir ke jam sekarang saat membuka hari ini.
+  // Rentang grid = jam buka, diperlebar bila ada booking di luar jam buka (walk-in larut / datang awal).
+  const startOf = (a: DayAppt) => jktMinutes(a.start_at);
+  const endOf = (a: DayAppt) => startOf(a) + (occupiedEnd(a) - Date.parse(a.start_at)) / 60_000;
+  const gOpen = Math.min(open, ...appts.map((a) => Math.floor(startOf(a) / 60) * 60));
+  const gClose = Math.max(close, ...appts.map((a) => Math.ceil(endOf(a) / 60) * 60));
+
+  // Setelah data hari itu termuat (sekali per tanggal): hari ini → jam sekarang; hari lain → booking pertama.
+  const scrolledFor = useRef<string | null>(null);
   useEffect(() => {
-    if (date === today && scroller.current) scroller.current.scrollTop = Math.max(0, (nowMin - open - 60) * px);
-  }, [date, today, px]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!data || !scroller.current || scrolledFor.current === date) return;
+    scrolledFor.current = date;
+    const first = appts.length ? Math.min(...appts.map(startOf)) : open;
+    scroller.current.scrollTop = Math.max(0, ((date === today ? nowMin : first) - gOpen - 60) * px);
+  }, [data, date]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function setStatus(a: DayAppt, status: ApptStatus) {
     setData((d) => d?.map((x) => (x.id === a.id ? { ...x, status } : x)) ?? d); // optimistis
@@ -99,7 +128,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   const quick = (a: DayAppt) => { const n = nextStatus(a.status); if (n) setStatus(a, n); };
 
   const hours: number[] = [];
-  for (let h = Math.ceil(open / 60) * 60; h < close; h += 60) hours.push(h);
+  for (let h = Math.ceil(gOpen / 60) * 60; h < gClose; h += 60) hours.push(h);
   const slots: number[] = [];
   for (let t = open; t < close; t += 30) slots.push(t);
   const newBooking = () => setForm({ date, resourceId: master.resources[0]?.id ?? "",
@@ -146,48 +175,55 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         </div>
       )}
 
+      <div role="radiogroup" aria-label="Tampilan jadwal" className="flex self-start rounded-[10px] bg-paper p-1">
+        {([["kursi", "Per kursi"], ["kapster", "Per kapster"]] as const).map(([v, l]) => (
+          <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
+            className={`h-9 rounded-lg px-3.5 text-[13px] font-bold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
+        ))}
+      </div>
+
       {/* GRID */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-line bg-card">
         <div ref={scroller} className="min-h-0 flex-1 overflow-auto overscroll-contain">
-          <div style={{ minWidth: 56 + master.resources.length * 190 }}>
+          <div style={{ minWidth: 56 + cols.length * 190 }}>
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
               <div className="sticky left-0 z-[1] w-14 shrink-0 bg-card" />
-              {master.resources.map((r) => (
-                <div key={r.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDEDE9] px-2.5 py-2">
-                  <span className="truncate text-[13px] font-bold">{r.name}</span>
+              {cols.map((c) => (
+                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDEDE9] px-2.5 py-2">
+                  <span className="truncate text-[13px] font-bold">{c.title}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="shrink-0 rounded-md px-1.5 py-px text-[11px] font-semibold" style={{ background: CAT_STYLE[r.type].bg, color: CAT_STYLE[r.type].fg }}>
-                      {r.is_pedicure ? "Pedicure" : CAT_STYLE[r.type].label}
-                    </span>
-                    <span className="truncate text-xs text-muted" title="Staf di kursi/bed ini">{chairStaff(r.id) || "—"}</span>
+                    <span className="shrink-0 rounded-md px-1.5 py-px text-[11px] font-semibold" style={{ background: c.tone.bg, color: c.tone.fg }}>{c.label}</span>
+                    <span className="truncate text-xs text-muted">{c.sub}</span>
                   </span>
                 </div>
               ))}
             </div>
-            <div className="relative flex" style={{ height: (close - open) * px }}>
+            <div className="relative flex" style={{ height: (gClose - gOpen) * px }}>
               <div className="sticky left-0 z-[2] w-14 shrink-0 bg-card">
                 {hours.map((h) => (
-                  <div key={h} className="absolute right-0 w-14 pr-2 pt-1 text-right text-[11px] text-muted tabular" style={{ top: (h - open) * px }}>{minToTime(h)}</div>
+                  <div key={h} className="absolute right-0 w-14 pr-2 pt-1 text-right text-[11px] text-muted tabular" style={{ top: (h - gOpen) * px }}>{minToTime(h % 1440)}</div>
                 ))}
               </div>
-              {master.resources.map((r) => (
-                <div key={r.id} className="relative min-w-[190px] flex-1 border-l border-[#EDEDE9]"
-                  style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)`,
-                    backgroundPositionY: ((Math.ceil(open / 60) * 60 - open) % 60) * px }}>
+              {cols.map((c) => (
+                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#EDEDE9]"
+                  style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)` }}>
+                  {/* di luar jam buka: arsir abu-abu (tetap bisa melihat kartu walk-in larut) */}
+                  {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F4F2ED]/70" style={{ height: (open - gOpen) * px }} />}
+                  {gClose > close && <div aria-hidden="true" className="absolute inset-x-0 bg-[#F4F2ED]/70" style={{ top: (close - gOpen) * px, height: (gClose - close) * px }} />}
                   {slots.map((t) => (
-                    <button key={t} aria-label={`Booking baru ${r.name} ${minToTime(t)}`}
-                      onClick={() => setForm({ date, startMin: t, resourceId: r.id })}
-                      className="absolute inset-x-0 hover:bg-accent/5 focus-visible:bg-accent/10" style={{ top: (t - open) * px, height: 30 * px }} />
+                    <button key={t} aria-label={`Booking baru ${c.title} ${minToTime(t)}`}
+                      onClick={() => setForm({ date, startMin: t, resourceId: c.resourceId, staffId: c.staffId })}
+                      className="absolute inset-x-0 hover:bg-accent/5 focus-visible:bg-accent/10" style={{ top: (t - gOpen) * px, height: 30 * px }} />
                   ))}
-                  {appts.filter((a) => a.resource_id === r.id).map((a) => (
-                    <ApptCard key={a.id} a={a} master={master} top={(jktMinutes(a.start_at) - open) * px} h={Math.max(((occupiedEnd(a) - Date.parse(a.start_at)) / 60_000) * px, 40)}
+                  {appts.filter(c.has).map((a) => (
+                    <ApptCard key={a.id} a={a} master={master} top={(jktMinutes(a.start_at) - gOpen) * px} h={Math.max(((occupiedEnd(a) - Date.parse(a.start_at)) / 60_000) * px, 40)}
                       conflict={conflicts.has(a.id)} off={!!offFor(a)} selected={a.id === selId} onOpen={() => setSelId(a.id)} onQuick={() => quick(a)}
-                      payHref={`${master.base}/kasir?booking=${a.id}`} />
+                      payHref={`${master.base}/kasir?booking=${a.id}`} who={view === "kapster" ? master.resources.find((r) => r.id === a.resource_id)?.name : undefined} />
                   ))}
                 </div>
               ))}
-              {date === today && nowMin >= open && nowMin <= close && (
-                <div aria-hidden="true" className="pointer-events-none absolute left-[50px] right-0 z-[2] h-0.5 bg-[#D23B3B]" style={{ top: (nowMin - open) * px }}>
+              {date === today && nowMin >= gOpen && nowMin <= gClose && (
+                <div aria-hidden="true" className="pointer-events-none absolute left-[50px] right-0 z-[2] h-0.5 bg-[#D23B3B]" style={{ top: (nowMin - gOpen) * px }}>
                   <span className="absolute -left-1 -top-1 size-2.5 rounded-full bg-[#D23B3B]" />
                 </div>
               )}
@@ -224,8 +260,9 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
 /** Aksi berikutnya di kartu: Datang → Mulai → Selesai → Bayar (ke kasir). */
 const NEXT_LABEL: Partial<Record<ApptStatus, string>> = { booked: "Datang", arrived: "Mulai", in_service: "Selesai" };
 
-function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick, payHref }: {
+function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick, payHref, who }: {
   a: DayAppt; master: Master; top: number; h: number; conflict: boolean; off: boolean; selected: boolean; onOpen: () => void; onQuick: () => void; payHref: string;
+  who?: string; // tampilan per kapster: nama kursi menggantikan nama staf di kartu
 }) {
   const S = STATUS[a.status];
   const press = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -256,7 +293,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
         {a.change_request && <span className="rounded bg-[#B25E00] px-1.5 text-[10px] font-bold text-white">Minta ubah</span>}
         {off && <span className="rounded bg-[#4A4C46] px-1.5 text-[10px] font-bold text-white">Izin</span>}
       </span>
-      <span className="truncate text-[11px] tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {staff}</span>
+      <span className="truncate text-[11px] tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {who ?? staff}</span>
       <span className="truncate text-[11px] opacity-85">{svc}</span>
     </button>
     {action && <button onClick={onQuick} aria-label={`${action} ${apptName(a)}`} className={`${pill} bg-ink text-white`}>{action} ▸</button>}
@@ -289,9 +326,9 @@ function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
             ) : <span className="text-muted">{n.off ? "Tidak bisa dipilih hari ini" : "Siap menerima pelanggan"}</span>}
             <span className="truncate text-xs text-muted">{n.next ? `Berikutnya ${formatJam(n.next.start_at)} · ${apptName(n.next)}` : "Tidak ada booking berikutnya"}</span>
             <div className="mt-1 flex gap-1.5">
-              {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Selesai</button>}
-              {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Mulai</button>}
-              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} className="h-8 rounded-lg border border-ink px-3 text-xs font-bold">+ Walk-in</button>}
+              {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} aria-label={`Selesai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Selesai</button>}
+              {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} aria-label={`Mulai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Mulai</button>}
+              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 rounded-lg border border-ink px-3 text-xs font-bold">+ Walk-in</button>}
             </div>
           </div>
         );

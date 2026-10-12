@@ -20,7 +20,7 @@ test("walk-in sekarang → dilayani → Selesai dari panel → Bayar", async ({ 
   const panel = page.getByRole("region", { name: "Sekarang" });
   const tile = panel.locator("div", { has: page.getByText(staff, { exact: true }) }).filter({ hasText: guest }).first();
   await expect(tile).toContainText("Melayani");
-  await tile.getByRole("button", { name: "Selesai" }).click();
+  await tile.getByRole("button", { name: /^Selesai / }).click();
 
   // Bayar dari panel "Belum bayar" (kartu di grid juga punya tombol Bayar ▸, tapi di luar jam buka kartunya di luar grid)
   await panel.getByRole("link", { name: new RegExp(guest) }).click();

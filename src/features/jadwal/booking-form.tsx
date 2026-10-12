@@ -1,6 +1,6 @@
 "use client";
 
-import { CAT_NAME, CAT_TONE, CATS, STAFF_TITLE } from "@/lib/domain/category";
+import { CAT_NAME, CATS, STAFF_TITLE } from "@/lib/domain/category";
 import { useEffect, useMemo, useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
 import { bundleDiscount } from "@/lib/domain/cart";
@@ -17,6 +17,7 @@ import { apptName } from "@/lib/domain/guest";
 export type FormInit = {
   date: string; startMin: number; resourceId: string;
   appt?: DayAppt; customer?: Customer | null;
+  staffId?: string; // dari tampilan per kapster
 };
 type Source = "walk_in" | "whatsapp" | "admin";
 type Conflict = { id: string; start_at: string; end_at: string; customer_name: string; staff_name: string | null; resource_name: string };
@@ -53,7 +54,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     return edit.duration_min !== auto ? edit.duration_min : null;
   });
   const [resourceId, setResourceId] = useState(edit?.resource_id ?? init.resourceId);
-  const [staffPick, setStaffPick] = useState<string | null>(edit?.staff_id ?? null);
+  const [staffPick, setStaffPick] = useState<string | null>(edit?.staff_id ?? init.staffId ?? null);
   const [date, setDate] = useState(init.date);
   const [start, setStart] = useState(edit ? jktMinutes(edit.start_at) : init.startMin);
   const [notes, setNotes] = useState(edit?.notes ?? "");
@@ -63,6 +64,8 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const [saving, setSaving] = useState(false);
   const [waOwner, setWaOwner] = useState<{ wa: string; name: string } | null>(null);
   const [nowMin] = useState(() => jktMinutes(new Date())); // untuk peringatan "jam sudah lewat"
+  const [svcTab, setSvcTab] = useState<Cat | null>(null); // tab layanan; default = kategori booking
+  const [svcQ, setSvcQ] = useState("");
 
   const { data: dayAppts } = useDayAppointments(date);
   const { data: dayOffs } = useDayTimeOff(date);
@@ -76,6 +79,12 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
 
   // Kategori booking = kategori layanan terpilih; sebelum ada layanan = jenis kursi/meja yang diklik.
   const cat: Cat = (sel.map((id) => svcById.get(id)?.category).find((c) => c && c !== "retail") as Cat | undefined) ?? resource?.type ?? "barbershop";
+  // hanya kategori yang punya kursi/bed aktif (mis. nail tanpa meja aktif tidak ditawarkan)
+  const svcCats = CATS.filter((c) => bookable.some((s) => s.category === c) && master.resources.some((r) => r.type === c));
+  const tab: Cat = svcTab ?? cat;
+  const q = svcQ.trim().toLowerCase();
+  // cari = lintas kategori; tanpa cari = layanan di tab terpilih
+  const shownSvcs = bookable.filter((s) => svcCats.includes(s.category as Cat) && (q ? s.name.toLowerCase().includes(q) : s.category === tab));
   const others = useMemo(() => (dayAppts ?? []).filter((a) => a.id !== edit?.id), [dayAppts, edit?.id]);
   const busy = (draft: { resourceId: string; staffId: string | null; s: string; e: string }) =>
     findConflicts(others, { resourceId: draft.resourceId, staffId: draft.staffId, start: draft.s, end: draft.e, bufferMin });
@@ -230,6 +239,29 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         <CloseButton onClick={onClose} />
       </div>
 
+      <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
+        <Field label={`Kursi / meja · ${CAT_NAME[cat]}`} htmlFor="f-res">
+          <select id="f-res" className="input" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setStaffPick(null); setServerConflicts(null); }}>
+            {resOptions(cat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+          </select>
+        </Field>
+        <Field label={STAFF_TITLE[cat]} htmlFor="f-staff">
+          <select id="f-staff" className="input" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
+            {!staffId && <option value="">— tidak ada staf aktif —</option>}
+            {staffOptions(cat, startIso, endIso)}
+          </select>
+        </Field>
+        <Field label="Tanggal" htmlFor="f-date">
+          <input id="f-date" type="date" className="input" value={date} min={edit ? undefined : today}
+            onChange={(e) => { if (e.target.value) setDate(e.target.value); setServerConflicts(null); }} />
+        </Field>
+        <Field label="Jam mulai" htmlFor="f-start">
+          <select id="f-start" className="input tabular" value={start} onChange={(e) => { setStart(+e.target.value); setServerConflicts(null); }}>
+            {times.map((t) => <option key={t} value={t}>{minToTime(t)}</option>)}
+          </select>
+        </Field>
+      </div>
+
       {edit ? (
         <p className="rounded-[10px] bg-paper px-3 py-2.5 text-sm"><b>{apptName(edit)}</b>{edit.customer?.whatsapp && <span className="text-muted tabular"> · {edit.customer.whatsapp}</span>}</p>
       ) : (
@@ -265,49 +297,41 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-xs font-bold text-muted">
-          Layanan {edit ? `(${CAT_NAME[cat]})` : "— pilih kategori lain untuk pasangan (booking kedua di jam yang sama)"}
+          Layanan {edit ? `(${CAT_NAME[cat]})` : "— layanan kategori lain = booking kedua (pasangan) di jam yang sama"}
         </legend>
-        {CATS.filter((c) => bookable.some((s) => s.category === c)).map((c) => (
-          <div key={c} className="flex flex-col gap-1.5">
-            <span className="text-xs font-bold" style={{ color: CAT_TONE[c].fg }}>
-              {CAT_NAME[c]}{sel.length > 0 && c !== cat && !edit ? " · booking kedua" : ""}
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {bookable.filter((s) => s.category === c).map((s) => {
-                const on = sel.includes(s.id) || pair.sel.includes(s.id);
-                return (
-                  <button type="button" key={s.id} aria-pressed={on} className={chip(on)} disabled={!!edit && sel.length > 0 && c !== cat}
-                    onClick={() => toggleService(s.id)}>
-                    {s.name} <span className={`tabular ${on ? "text-white/70" : "text-muted"}`}>· {formatRupiah(s.price)}</span>
-                  </button>
-                );
-              })}
-            </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1 rounded-[10px] bg-paper p-1">
+            {svcCats.map((c) => {
+              const n = [...sel, ...pair.sel].filter((id) => svcById.get(id)?.category === c).length;
+              return (
+                <button type="button" role="tab" key={c} aria-selected={tab === c} onClick={() => { setSvcTab(c); setSvcQ(""); }}
+                  className={`h-9 rounded-lg px-3 text-[13px] font-bold ${tab === c && !q ? "bg-card shadow-sm" : "text-muted"}`}>
+                  {CAT_NAME[c]}{n > 0 && <span className="ml-1 rounded-full bg-ink px-1.5 text-[11px] text-white">{n}</span>}
+                </button>
+              );
+            })}
           </div>
-        ))}
+          <input type="search" aria-label="Cari layanan" placeholder="Cari layanan…" className="input h-10 min-w-40 flex-1" value={svcQ} onChange={(e) => setSvcQ(e.target.value)} />
+        </div>
+        {tab !== cat && sel.length > 0 && !edit && !q && <span className="text-xs text-muted">Layanan {CAT_NAME[tab]} di sini dibuat sebagai booking kedua (pasangan).</span>}
+        <div className="flex flex-wrap gap-1.5">
+          {shownSvcs.map((s) => {
+            const on = sel.includes(s.id) || pair.sel.includes(s.id);
+            return (
+              <button type="button" key={s.id} aria-pressed={on} className={chip(on)} disabled={!!edit && sel.length > 0 && s.category !== cat}
+                onClick={() => toggleService(s.id)}>
+                {s.name} <span className={`tabular ${on ? "text-white/70" : "text-muted"}`}>· {q ? `${CAT_NAME[s.category as Cat]} · ` : ""}{formatRupiah(s.price)}</span>
+              </button>
+            );
+          })}
+          {!shownSvcs.length && <span className="text-[13px] text-muted">Tidak ada layanan yang cocok.</span>}
+        </div>
+        {[...sel, ...pair.sel].length > 0 && (
+          <span className="text-xs text-muted">Dipilih: <b className="text-ink">{[...sel, ...pair.sel].map((id) => svcById.get(id)?.name).join(", ")}</b></span>
+        )}
       </fieldset>
 
       <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
-        <Field label={`Kursi / meja · ${CAT_NAME[cat]}`} htmlFor="f-res">
-          <select id="f-res" className="input" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setStaffPick(null); setServerConflicts(null); }}>
-            {resOptions(cat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
-        </Field>
-        <Field label={STAFF_TITLE[cat]} htmlFor="f-staff">
-          <select id="f-staff" className="input" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
-            {!staffId && <option value="">— tidak ada staf aktif —</option>}
-            {staffOptions(cat, startIso, endIso)}
-          </select>
-        </Field>
-        <Field label="Tanggal" htmlFor="f-date">
-          <input id="f-date" type="date" className="input" value={date} min={edit ? undefined : today}
-            onChange={(e) => { if (e.target.value) setDate(e.target.value); setServerConflicts(null); }} />
-        </Field>
-        <Field label="Jam mulai" htmlFor="f-start">
-          <select id="f-start" className="input tabular" value={start} onChange={(e) => { setStart(+e.target.value); setServerConflicts(null); }}>
-            {times.map((t) => <option key={t} value={t}>{minToTime(t)}</option>)}
-          </select>
-        </Field>
         <Field label={`Durasi (menit) · otomatis ${autoDur}`} htmlFor="f-dur">
           <input id="f-dur" type="number" inputMode="numeric" min={5} max={720} step={5} className="input tabular" value={duration}
             onChange={(e) => { setDurOverride(e.target.value ? +e.target.value : null); setServerConflicts(null); }} />

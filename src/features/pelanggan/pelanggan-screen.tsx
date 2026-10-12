@@ -31,7 +31,7 @@ export function PelangganScreen({ master }: { master: Master }) {
   const { data, refresh } = useRealtimeTable(["customers", "transactions", "deposit_topups"], async () => {
     const supabase = createClient();
     const { count: followCount } = await supabase.from("customer_stats").select("customer_id", { count: "exact", head: true }).eq("is_churn", true);
-    let query = supabase.from("customers").select("id, name, whatsapp, notes, promo_opt_out", { count: "exact" }).order("name");
+    let query = supabase.from("customers").select("id, name, whatsapp, notes, promo_opt_out", { count: "exact" }).is("deleted_at", null).order("name");
     if (term) {
       const digits = term.replace(/\D/g, "").replace(/^0/, "");
       query = query.or(digits.length >= 3 ? `name.ilike.%${term}%,whatsapp.ilike.%${digits}%` : `name.ilike.%${term}%`);
@@ -107,11 +107,11 @@ export function PelangganScreen({ master }: { master: Master }) {
 
       {wide ? (
         <section aria-label="Profil pelanggan" className="w-[340px] shrink-0 overflow-y-auto rounded-[14px] border border-line bg-card xl:w-[420px]">
-          {sel ? <Profile key={sel.id} c={sel} master={master} /> : <Empty>Pilih pelanggan untuk melihat profil, riwayat, dan saldo deposit.</Empty>}
+          {sel ? <Profile key={sel.id} c={sel} master={master} onDeleted={() => { setSelId(null); refresh(); }} /> : <Empty>Pilih pelanggan untuk melihat profil, riwayat, dan saldo deposit.</Empty>}
         </section>
       ) : (
         <Sheet open={!!sel} onClose={() => setSelId(null)} label="Profil pelanggan" variant="drawer">
-          {sel && <Profile key={sel.id} c={sel} master={master} onClose={() => setSelId(null)} />}
+          {sel && <Profile key={sel.id} c={sel} master={master} onClose={() => setSelId(null)} onDeleted={() => { setSelId(null); refresh(); }} />}
         </Sheet>
       )}
 

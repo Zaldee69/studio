@@ -21,7 +21,7 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus }:
     const t = setTimeout(async () => {
       const digits = term.replace(/\D/g, "").replace(/^0/, "");
       const filter = digits.length >= 3 ? `name.ilike.%${term}%,whatsapp.ilike.%${digits}%` : `name.ilike.%${term}%`;
-      const { data } = await createClient().from("customers").select("id, name, whatsapp, notes").or(filter).order("name").limit(8);
+      const { data } = await createClient().from("customers").select("id, name, whatsapp, notes").is("deleted_at", null).or(filter).order("name").limit(8);
       if (alive) { setRes({ q: term, list: data ?? [] }); setHi(0); }
     }, 180);
     return () => { alive = false; clearTimeout(t); };

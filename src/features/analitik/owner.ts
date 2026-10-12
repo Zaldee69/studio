@@ -10,7 +10,7 @@ import type { AnalyticsData } from "./dashboard";
 type N = number | null;
 export type OwnerSummary = {
   from: string; to: string; net: number; gross: number; discount: number; hpp: number; margin: number; margin_pct: N;
-  tx_count: number; aov: N; aov_barbershop: N; aov_nail: N; rev_barbershop: number; rev_nail: number; rev_retail: number;
+  tx_count: number; aov: N; aov_barbershop: N; aov_nail: N; rev_barbershop: number; rev_nail: number; rev_massage?: number; rev_retail: number;
   retail_ratio: N; utilization: N; void_count: number; topup_paid: number;
   new_customers: number; returning: number; return_rate: N; no_show_rate: N; online_share: N; sop_compliance: N;
 };
@@ -54,7 +54,7 @@ export type OwnerQuery = { periode?: string; nilai?: string; dari?: string; samp
 type Charts = { daily: AnalyticsData["daily"]; mix: AnalyticsData["mix"] };
 export type OwnerExtra = { bookings: number; bookings_paid: number; bookings_cancelled: number; bookings_no_show: number; bookings_walk_in: number;
   commission_est: number; commission_weekly_paid: number; cash_days: number; cash_days_closed: number; cash_days_unclosed: number;
-  cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number; stock_purchases?: number };
+  cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number; stock_purchases?: number; payroll_paid?: number };
 export type Issue = { masalah: string; bukti: string; dampak: string; akar: string; tindakan: string; pj: string; tenggat: string };
 export type Decision = { keputusan: string; alasan: string; opsi: string; rekomendasi: string; biaya: string; risiko: string; tenggat: string };
 export type Priority = { tujuan: string; tindakan: string; indikator: string; pj: string; tenggat: string };
@@ -101,7 +101,7 @@ export function ownerFinanceView(r: OwnerReport, x: OwnerExtra, weekly: boolean)
   const contribution = f.net - f.hpp - labor;
   const operating = contribution - opex;
   const cashIn = { cash: f.payments.cash, qris: f.payments.qris, transfer: f.payments.transfer ?? 0, topup: f.deposit.topup_paid };
-  const cashOut = { expenses: opex, stock: x.stock_purchases ?? 0, kasbon, weeklyCommission: x.commission_weekly_paid };
+  const cashOut = { expenses: opex, stock: x.stock_purchases ?? 0, kasbon, weeklyCommission: x.commission_weekly_paid, payroll: x.payroll_paid ?? 0 };
   const net = Object.values(cashIn).reduce((a, v) => a + v, 0) - Object.values(cashOut).reduce((a, v) => a + v, 0);
   return { kasbon, marketing, opexRows, opex, fullPayroll, labor, contribution, operating, cashIn, cashOut, cashNet: net };
 }

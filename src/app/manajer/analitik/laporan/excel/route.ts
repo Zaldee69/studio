@@ -79,11 +79,11 @@ export async function GET(req: NextRequest) {
   const a0 = table(ws, ["Arus kas tercatat", "Rp"], [
     ["Masuk: tunai", fv.cashIn.cash], ["Masuk: QRIS", fv.cashIn.qris], ["Masuk: rekening bank (transfer)", fv.cashIn.transfer], ["Masuk: top-up deposit", fv.cashIn.topup],
     ["Keluar: pengeluaran operasional", -fv.cashOut.expenses], ["Keluar: pembelian stok", -fv.cashOut.stock],
-    ["Keluar: kasbon staf", -fv.cashOut.kasbon], ["Keluar: komisi mingguan dibayar", -fv.cashOut.weeklyCommission],
+    ["Keluar: kasbon staf", -fv.cashOut.kasbon], ["Keluar: komisi mingguan dibayar", -fv.cashOut.weeklyCommission], ["Keluar: gaji akhir bulan dibayar", -fv.cashOut.payroll],
     ["Arus kas bersih tercatat", fv.cashNet],
     ["Selisih tutup kasir (total)", x.cash_diff_total], [`Hari belum tutup kasir (dari ${x.cash_days} hari bertransaksi)`, x.cash_days_unclosed],
   ], [null, FMT.money]);
-  ws.getRow(a0 + 10).getCell(2).numFmt = FMT.int; // baris jumlah hari, bukan rupiah
+  ws.getRow(a0 + 11).getCell(2).numFmt = FMT.int; // baris jumlah hari, bukan rupiah
   table(ws, ["Uang masuk", "Rp"], [
     ["Tunai (transaksi)", f.payments.cash], ["QRIS (transaksi)", f.payments.qris], ["Transfer (transaksi)", f.payments.transfer ?? 0], ["  + tips non-tunai (titipan staf, bukan omzet)", f.payments.tips_qris ?? 0], [`Top-up deposit (${f.deposit.topup_count}×)`, f.deposit.topup_paid],
     ["Total uang masuk", f.payments.cash + f.payments.qris + (f.payments.transfer ?? 0) + f.deposit.topup_paid], ["Dibayar pakai saldo deposit", f.payments.deposit],

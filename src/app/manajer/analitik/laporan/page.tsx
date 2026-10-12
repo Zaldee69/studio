@@ -57,7 +57,9 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const { kasbon, marketing, opexRows, fullPayroll, labor, contribution, operating, cashNet } = ownerFinanceView(r, x, weekly);
   const revTarget = t.revenue || null;
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
-  const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: null };
+  const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: pv.rev_massage ?? null };
+  // AOV per transaksi per kategori (definisi yang sama dengan target AOV); kategori lain belum punya AOV & target
+  const aovCat: Record<string, [number | null, number | null]> = { barbershop: [s.aov_barbershop, t.aov_barbershop || null], nail: [s.aov_nail, t.aov_nail || null] };
   const cats = f.by_category.filter((c) => c.items > 0 || (prevCat[c.category] ?? 0) > 0);
   const staff = r.staff.filter((st) => st.active || st.tx > 0);
 
@@ -66,7 +68,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
     ["Omzet bersih", s.net, revTarget, pv.net, true],
     ["Transaksi selesai", s.tx_count, null, pv.tx_count, false],
     ["Rata-rata nilai transaksi (AOV)", s.aov, null, pv.aov, true],
-    ["Booking terjadwal", x.bookings, null, xp.bookings, false],
+    ["Booking terjadwal (tanpa yang dibatalkan)", x.bookings, null, xp.bookings, false],
     ["Booking terealisasi (lunas)", x.bookings_paid, null, xp.bookings_paid, false],
     ["Booking dibatalkan", x.bookings_cancelled, null, xp.bookings_cancelled, false, true],
     ["No-show", x.bookings_no_show, null, xp.bookings_no_show, false, true],
@@ -82,6 +84,12 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
         <PrintButton />
         <a href={`/manajer/analitik/laporan/excel?${qs}`} className="btn-ghost h-11" download>Unduh Excel (data lengkap)</a>
       </div>
+      {weekly && !p.partial && p.to < jktDate() && (
+        <p className="text-sm text-muted print:hidden">
+          Menampilkan minggu lengkap terakhir. Transaksi & pengeluaran minggu berjalan ada di{" "}
+          <Link href={`/manajer/analitik/laporan?periode=minggu&nilai=${jktDate()}`} className="font-semibold text-ink underline">laporan minggu ini</Link>.
+        </p>
+      )}
       {notesKind ? <NotesEditor key={`${notesKind}-${p.from}`} kind={notesKind} periodStart={p.from} initial={notes} suggestions={r.insights.map((i) => i.message)} />
         : <p className="text-sm text-muted print:hidden">Catatan manajer (ringkasan, masalah, keputusan, prioritas) tersedia untuk laporan mingguan & bulanan.</p>}
 
@@ -121,6 +129,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           <p className="mt-1 text-[11px] text-muted">
             {revTarget ? `Target omzet = target bulanan ${m(t.revenue_monthly)} diprorata ke ${weekly ? "minggu" : "periode"} ini.` : "Target omzet belum ditetapkan — periode ini dipakai sebagai baseline."}
             {" "}Booking terealisasi {x.bookings ? `${pc((x.bookings_paid * 100) / x.bookings)} dari booking terjadwal` : "—"}; walk-in {n(x.bookings_walk_in)}.
+            {" "}Transaksi ≠ booking: satu transaksi bisa melunasi beberapa booking (mis. pasangan), dan penjualan langsung di kasir tanpa booking hanya dihitung sebagai transaksi.
             {" "}Perubahan % tidak dihitung bila periode lalu nol.
           </p>
         </section>
@@ -128,20 +137,22 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
         <section aria-labelledby="h-c">
           <H id="h-c">C. Kinerja per layanan</H>
           <table className="w-full border-collapse text-[12px]">
-            <thead><tr>{["Kategori", "Omzet bersih", "Layanan", "Rata-rata / layanan", "Kontribusi", "Periode lalu", "Perubahan"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr>{["Kategori", "Omzet bersih", "Item", "Kontribusi", "AOV / transaksi", "Target AOV", "Periode lalu", "Perubahan"].map((h, i) => <th key={h} className={`${th} ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {cats.length ? cats.map((c) => (
                 <tr key={c.category}>
                   <td className={td}>{CAT_NAME[c.category]}</td><td className={`${num} font-bold`}>{m(c.net)}</td><td className={num}>{n(c.items)}</td>
-                  <td className={num}>{c.items ? m(c.net / c.items) : "—"}</td><td className={num}>{f.net ? pc((c.net * 100) / f.net) : "—"}</td>
+                  <td className={num}>{f.net ? pc((c.net * 100) / f.net) : "—"}</td>
+                  <td className={num}>{aovCat[c.category] ? m(aovCat[c.category][0]) : "—"}</td>
+                  <td className={num}>{aovCat[c.category]?.[1] ? <>{m(aovCat[c.category][1])} {status(attainment(aovCat[c.category][0], aovCat[c.category][1]))}</> : "—"}</td>
                   <td className={num}>{prevCat[c.category] == null ? <span className="text-muted">{NA}</span> : m(prevCat[c.category])}</td>
                   <td className={num}><Delta cur={c.net} prev={prevCat[c.category]} money /></td>
                 </tr>
-              )) : <tr><td className={td} colSpan={7}>Belum ada penjualan.</td></tr>}
+              )) : <tr><td className={td} colSpan={8}>Belum ada penjualan.</td></tr>}
             </tbody>
           </table>
           <p className="mt-1 text-[11px] text-muted">
-            Target AOV: barbershop {m(t.aov_barbershop)} (aktual {m(s.aov_barbershop)}){t.aov_nail ? ` · nail ${m(t.aov_nail)} (aktual ${m(s.aov_nail)})` : ""}.
+            AOV / transaksi = omzet kategori ÷ jumlah transaksi yang memuat kategori itu (dasar target AOV). Item = jumlah layanan/produk terjual.
             {" "}Rasio ritel : jasa {pc(s.retail_ratio)} (target {t.retail_min}–{t.retail_max}%).
             Produktivitas antarlayanan tidak dibandingkan dari jumlah pelanggan — durasi & karakter layanan berbeda.
           </p>
@@ -180,6 +191,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                 <tr><td className={td}>Keluar: pembelian stok</td><td className={num}>−{m(x.stock_purchases ?? 0)}</td></tr>
                 <tr><td className={td}>Keluar: kasbon staf</td><td className={num}>−{m(kasbon)}</td></tr>
                 <tr><td className={td}>Keluar: komisi mingguan dibayar</td><td className={num}>−{m(x.commission_weekly_paid)}</td></tr>
+                <tr><td className={td}>Keluar: gaji akhir bulan dibayar</td><td className={num}>−{m(x.payroll_paid ?? 0)}</td></tr>
                 <tr className="font-bold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashNet)}</td></tr>
               </tbody>
             </table>
@@ -212,11 +224,11 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <table className="mt-2 w-full border-collapse text-[11.5px]">
-            <thead><tr>{["Staf", "Bidang", "Pelanggan dilayani", "Omzet jasa", "Utilisasi", "No-show"].map((h, i) => <th key={h} className={`${th} ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr>{["Staf", "Bidang", "Layanan dikerjakan", "Omzet jasa", "Utilisasi", "No-show"].map((h, i) => <th key={h} className={`${th} ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {staff.map((st) => (
                 <tr key={st.staff_id}><td className={td}>{st.name}{st.active ? "" : " (nonaktif)"}</td><td className={td}>{CAT_NAME[st.category]}</td>
-                  <td className={num}>{n(st.served)}</td><td className={num}>{m(st.service_revenue)}</td><td className={num}>{pc(st.utilization)}</td><td className={num}>{n(st.no_show)}</td></tr>
+                  <td className={num}>{n(st.service_items)}</td><td className={num}>{m(st.service_revenue)}</td><td className={num}>{pc(st.utilization)}</td><td className={num}>{n(st.no_show)}</td></tr>
               ))}
             </tbody>
           </table>
@@ -275,7 +287,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             <H id="h-j">J. Pelanggan & retensi</H>
             <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
               {[["Pelanggan baru", n(r.customers.new_customers)], ["Pelanggan kembali", n(r.customers.returning)],
-                [`Kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
+                [`Pelanggan baru yang kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
                 ["Belum kembali (saat ini)", n(r.customers.churn_count)]].map(([k, v]) => (
                 <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
               ))}

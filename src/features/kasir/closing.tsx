@@ -93,6 +93,7 @@ export function Closing({ master }: { master: Master }) {
         {row("Saldo deposit masuk (termasuk bonus)", s.topup_credited)}
         {row(`Pengeluaran dari laci (${s.expense_count}×)`, -s.expense_cash)}
         {!!s.stock_cash && row(`Pembelian stok dari laci (${s.stock_count}×)`, -s.stock_cash)}
+        {!!s.refund_cash && row(`Refund tunai transaksi yang di-void (${s.refund_count}×)`, -s.refund_cash)}
         {row(`Tips QRIS/transfer diserahkan tunai ke staf (${s.tip_count}×)`, -s.tip_qris)}
       </div>
       <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan di laci (saldo awal + tunai masuk − tunai keluar)", s.expected_cash, true)}</div>

@@ -7,8 +7,9 @@ select tests.su();
 insert into staff (id, name, category) values ('00000000-0000-0000-00fe-000000000001', 'Terapis Uji', 'massage');
 
 select is((select count(*) from resources where type = 'massage' and active), 2::bigint, '2 bed pijat');
-select is((select count(*) from services where category = 'massage' and online_bookable), 0::bigint, 'layanan pijat tidak dibooking online');
-select ok(not exists (select 1 from bookable_categories() c where c = 'massage'), 'pijat tidak ditawarkan di booking publik walau ada bed & terapis');
+select is((select count(*) from services where category = 'massage' and active and not online_bookable), 1::bigint,
+          'pijat bisa dibooking online, kecuali "Tambahan 1 titik bekam" (ditentukan di tempat)');
+select ok(exists (select 1 from bookable_categories() c where c = 'massage'), 'pijat ditawarkan di booking publik bila ada bed & terapis aktif');
 
 select tests.login(tests.kasir());
 select checkout(jsonb_build_object('method', 'cash', 'cash_received', 500000, 'items', jsonb_build_array(

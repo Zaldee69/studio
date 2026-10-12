@@ -55,7 +55,7 @@ test("printer Bluetooth: sambungkan → bayar tunai → struk tercetak otomatis 
   await page.getByRole("tab", { name: "Tutup kasir" }).click();
   await page.fill("#cl-phys", "100000");
   await page.getByRole("button", { name: "Simpan tutup kasir" }).click();
-  await expect(page.getByRole("main").getByText(/Penutupan terakhir/)).toBeVisible();
+  await expect(page.getByRole("main").getByText(/^Penutupan \d\d\.\d\d/)).toBeVisible();
   await page.evaluate(() => { (window as unknown as { __printed: number[] }).__printed = []; });
   await page.getByRole("button", { name: "Cetak ke printer struk" }).click();
   await expect.poll(() => printed(page)).toContain("KAS DIHARAPKAN");

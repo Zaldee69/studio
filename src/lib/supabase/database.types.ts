@@ -1606,13 +1606,13 @@ isOneToOne: false
                   ]
                 },"transactions": {
                   Row: {
-                    "cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null
+                    "cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"refund_date": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null
                   }
                   Insert: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Update: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Relationships: [
                     {

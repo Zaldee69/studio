@@ -54,6 +54,17 @@ export function Beranda({ master }: { master: Master }) {
   const upcoming = live.filter((a) => (a.status === "booked" || a.status === "arrived") && a.end_at >= now);
   const b = master.base;
 
+  // Pendapatan hari ini per layanan, dikelompokkan per kategori (omzet bersih setelah diskon, tanpa void & tips = kartu Omzet)
+  const byCat = (["barbershop", "massage", "nail", "retail"] as const).map((c) => {
+    const lines = new Map<string, { qty: number; rev: number }>();
+    for (const it of okTx.flatMap((t) => t.transaction_items).filter((i) => i.category === c)) {
+      const l = lines.get(it.name) ?? { qty: 0, rev: 0 };
+      l.qty++; l.rev += it.net_amount; lines.set(it.name, l);
+    }
+    return { c, lines: [...lines].sort((x, y) => y[1].rev - x[1].rev), total: [...lines.values()].reduce((a, l) => a + l.rev, 0) };
+  }).filter((g) => g.lines.length);
+  const dayTotal = byCat.reduce((a, g) => a + g.total, 0);
+
   const tiles = [
     { label: "Omzet hari ini", value: formatRupiah(okTx.reduce((a, t) => a + t.total, 0)), sub: `${okTx.length} transaksi`, href: `${b}/kasir?tab=riwayat` },
     { label: "Booking hari ini", value: String(live.length), sub: `${live.filter((a) => a.source === "online").length} dari online`, href: `${b}/jadwal` },
@@ -103,6 +114,32 @@ export function Beranda({ master }: { master: Master }) {
           </Link>
         ))}
       </div>
+
+      <section aria-label="Pendapatan per layanan hari ini" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-base font-bold">Pendapatan per layanan hari ini</h2>
+          <b className="tabular">{formatRupiah(dayTotal)}</b>
+        </div>
+        {!byCat.length ? <span className="text-sm text-muted">Belum ada transaksi hari ini.</span> : (
+          <div className="grid gap-3 min-[700px]:grid-cols-2 xl:grid-cols-4">
+            {byCat.map((g) => (
+              <div key={g.c} className="flex flex-col gap-1.5 rounded-[12px] bg-paper p-3">
+                <div className="flex items-center gap-2">
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ background: g.c === "retail" ? "#8A8C84" : CAT_TONE[g.c].fg }} />
+                  <b className="flex-1 text-sm">{g.c === "retail" ? "Produk ritel" : CAT_NAME[g.c]}</b>
+                  <span className="text-xs text-muted tabular">{dayTotal ? Math.round((g.total * 100) / dayTotal) : 0}%</span>
+                </div>
+                <b className="font-display text-xl tabular">{formatRupiah(g.total)}</b>
+                <ul className="flex flex-col gap-0.5 border-t border-[#E3E3DE] pt-1.5 text-[13px] tabular">
+                  {g.lines.map(([name, l]) => (
+                    <li key={name} className="flex justify-between gap-2"><span className="min-w-0 truncate">{name} <span className="text-muted">×{l.qty}</span></span><span>{formatRupiah(l.rev)}</span></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {side?.funnel && (
         <section aria-label="Booking online minggu ini" className="flex flex-wrap items-center gap-x-6 gap-y-3 rounded-[14px] border border-line bg-card p-4">

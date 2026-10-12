@@ -143,7 +143,7 @@ test("5 · tutup kasir buta: kasir hitung dulu → angka sistem & selisih muncul
   await expect(expectedRow).toContainText("Rp");
   const expected = Number((await expectedRow.innerText()).split("Rp")[1].replace(/\D/g, ""));
   const diff = 100000 - expected;
-  await expect(main.getByText(/Penutupan terakhir/).locator("..")).toContainText(`Selisih${formatRupiah(diff)}`);
+  await expect(main.getByText(/^Penutupan \d\d\.\d\d/).locator("..")).toContainText(`Selisih${formatRupiah(diff)}`);
   await expect(page.getByRole("button", { name: "Simpan tutup kasir" })).toBeDisabled();
   await expect(main.getByText(/Koreksi hitungan dilakukan manajer/)).toBeVisible();
 });

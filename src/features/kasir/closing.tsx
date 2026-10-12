@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { closingEscpos, type ClosingSummary } from "@/lib/domain/escpos";
 import { printBytes, printerSettings, usePrinter } from "@/lib/printer";
 import { PrintSheet } from "@/components/print-sheet";
@@ -32,7 +32,7 @@ export function Closing({ master }: { master: Master }) {
     return data as unknown as Summary;
   }, date);
   const { data: closings } = useRealtimeTable(["cash_closings"], async () => {
-    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note, deposit_out")
+    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note, deposit_out, cashier_id")
       .eq("date", date).order("created_at", { ascending: false });
     return data ?? [];
   }, date);
@@ -40,6 +40,10 @@ export function Closing({ master }: { master: Master }) {
   const phys = physical === "" ? null : Number(physical);
   const dep = Number(deposit || 0);
   const diff = s && !s.blind && phys != null ? phys - s.expected_cash : null;
+  const [names, setNames] = useState<Map<string, string>>(new Map()); // siapa yang menutup
+  useEffect(() => {
+    createClient().from("team_names").select("id, full_name").then(({ data }) => setNames(new Map((data ?? []).map((r) => [r.id!, r.full_name!]))));
+  }, []);
   const lockedForCashier = master.role === "cashier" && !!closings?.length; // kasir hanya menutup sekali per tanggal
 
   async function save() {
@@ -103,16 +107,25 @@ export function Closing({ master }: { master: Master }) {
           <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm tabular"><span>{formatJam(v.created_at)} · {v.reason}</span><span>{formatRupiah(v.total)}</span></div>
         ))}
       </div>
-      {closings?.[0] && (
-        <div className="rounded-[10px] border border-line p-3 text-sm">
-          <b>Penutupan terakhir {formatJam(closings[0].created_at)}</b>
-          {row("Uang di laci", closings[0].physical_cash)}
-          {row("Selisih", closings[0].difference ?? 0, true)}
-          {!!closings[0].deposit_out && row("Disetor ke brankas / owner", -closings[0].deposit_out)}
-          {row("Sisa di laci untuk besok", closings[0].physical_cash - closings[0].deposit_out)}
-          {closings[0].note && <p className="text-muted">{closings[0].note}</p>}
-        </div>
+      {/* Angka penutupan = saat ditutup (resmi). Bila ada transaksi/void/pengeluaran sesudahnya, rekap di atas sudah berubah → beri tahu. */}
+      {closings?.[0] && closings[0].expected_cash !== s.expected_cash && (
+        <p role="note" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+          Ada perubahan setelah kasir ditutup (transaksi, void, atau pengeluaran): kas diharapkan saat ditutup {formatRupiah(closings[0].expected_cash)},
+          sekarang {formatRupiah(s.expected_cash)}. Selisih di bawah dihitung saat penutupan.
+        </p>
       )}
+      {closings?.map((c, i) => (
+        <div key={c.id} className="keep rounded-[10px] border border-line p-3 text-sm">
+          <b>Penutupan {formatJam(c.created_at)}{names.get(c.cashier_id ?? "") ? ` · oleh ${names.get(c.cashier_id ?? "")}` : ""}
+            {closings.length > 1 && <span className="font-normal text-muted">{i === 0 ? " · terakhir (dipakai laporan)" : " · digantikan penutupan sesudahnya"}</span>}</b>
+          {row("Kas diharapkan saat ditutup", c.expected_cash)}
+          {row("Uang di laci", c.physical_cash)}
+          {row("Selisih", c.difference ?? 0, true)}
+          {!!c.deposit_out && row("Disetor ke brankas / owner", -c.deposit_out)}
+          {row("Sisa di laci untuk besok", c.physical_cash - c.deposit_out)}
+          {c.note && <p className="text-muted">Catatan: {c.note}</p>}
+        </div>
+      ))}
     </>
   );
 
@@ -123,6 +136,10 @@ export function Closing({ master }: { master: Master }) {
           <div><h1 className="font-display text-2xl font-bold">Rekap kasir</h1>
             <span className="text-[13px]">{master.shop.name}{master.shop.address ? ` · ${master.shop.address}` : ""} · {formatTanggal(`${date}T12:00:00+07:00`)} · dicetak {formatJam(new Date())}</span></div>
           {body}
+          {/* hanya di lembar cetak/PDF */}
+          <div className="keep mt-6 grid grid-cols-2 gap-10 text-sm">
+            {["Kasir", "Manajer"].map((r) => <div key={r} className="flex flex-col gap-12"><span>{r}</span><span className="border-t border-[#1f2320] pt-1 text-xs">Nama & tanda tangan</span></div>)}
+          </div>
         </div>
       </PrintSheet>
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
@@ -164,7 +181,8 @@ export function Closing({ master }: { master: Master }) {
         <button onClick={save} disabled={phys == null || dep > (phys ?? 0) || saving || !online || lockedForCashier} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
         {lockedForCashier && <p className="text-xs text-muted">Tanggal ini sudah ditutup. Koreksi hitungan dilakukan manajer.</p>}
         {printer.status === "on" && <button onClick={printSlip} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak ke printer struk</button>}
-        <button onClick={() => window.print()} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>
+        <button onClick={() => { const t = document.title; document.title = `Rekap kasir ${date}`; window.print(); document.title = t; }} // nama file PDF
+          disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>
         {!!closings?.length && <p className="text-xs text-muted">{closings.length}× ditutup pada tanggal ini.</p>}
       </section>
     </div>

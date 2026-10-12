@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { COMING_SOON, ONLINE_CATS, isOnlineCat } from "@/lib/domain/category";
+import { COMING_SOON, ONLINE_CATS, isOnlineCat, type OnlineCat } from "@/lib/domain/category";
 import { getProfile } from "@/lib/auth";
 import { jktDate } from "@/lib/domain/format";
 import { photoUrl } from "@/lib/storage";
@@ -57,7 +57,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
     step: one(sp.langkah), services: one(sp.layanan)?.split(",").filter(Boolean) ?? [],
     pick: Object.fromEntries((one(sp.staf) ?? "").split(",").filter(Boolean).map((x) => x.split(":")).filter((x) => x.length === 2)),
     together: one(sp.mode) !== "berurutan", date: one(sp.tgl), time: one(sp.jam),
-    cat: one(sp.kategori) === "nail" ? "nail" : "barbershop",
+    cat: ONLINE_CATS.find((c) => c === one(sp.kategori)) ?? "barbershop",
   };
   const cats = ONLINE_CATS.filter((c) => (bookable ?? []).includes(c) && !COMING_SOON.includes(c));
   if (cats.length && !cats.includes(init.cat)) init.cat = cats[0];
@@ -70,7 +70,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
         : null}
       cats={cats}
       services={(services ?? []).filter((s) => s.online_bookable && (cats as readonly string[]).includes(s.category!)).map((s) => ({
-        id: s.id!, name: s.name!, category: s.category as "barbershop" | "nail", price: s.price!, duration: s.duration_min!, description: s.public_description ?? "",
+        id: s.id!, name: s.name!, category: s.category as OnlineCat, price: s.price!, duration: s.duration_min!, description: s.public_description ?? "",
       }))}
       staff={(staff ?? []).flatMap((s) => isOnlineCat(s.category!) ? [{ id: s.id!, name: s.name!, category: s.category, photo: photoUrl(s.photo_path) }] : [])}
       hours={hours ?? []} closures={(closures ?? []).map((c) => c.date)}

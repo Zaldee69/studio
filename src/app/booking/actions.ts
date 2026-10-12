@@ -6,6 +6,7 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { COMING_SOON } from "@/lib/domain/category";
 import { log } from "@/lib/log";
 import { verifyTurnstile } from "@/lib/turnstile";
+import type { OnlineCat } from "@/lib/domain/category";
 
 // z.guid(): format uuid saja — id seed (0000…-0001-…) bukan RFC v4 tapi sah di Postgres
 const Input = z.object({
@@ -23,7 +24,7 @@ const Input = z.object({
   reschedule_group: z.guid().optional(),
 });
 
-export type BookedAppt = { id: string; category: "barbershop" | "nail"; start_at: string; status: string; staff_name: string | null };
+export type BookedAppt = { id: string; category: OnlineCat; start_at: string; status: string; staff_name: string | null };
 export type BookResult =
   | { ok: true; code: string; group_id: string; status: string; duplicate?: boolean; appointments: BookedAppt[] }
   | { ok: false; code: string; message: string };

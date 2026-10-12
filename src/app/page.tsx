@@ -76,8 +76,8 @@ export default async function Landing() {
   const pct = s.bundle_pct ?? 10;
   const list = (c: string) => services.filter((x) => x.category === c);
   const soon = (c: string) => COMING_SOON.includes(c);
-  // Tim di halaman publik = staf layanan yang bisa dibooking online (pijat hanya lewat kasir/WA → tidak ditampilkan)
-  const team = staff.filter((t) => isOnlineCat(t.category!) && !soon(t.category!));
+  // Tim di halaman publik = barber & nail artist (terapis pijat tidak ditampilkan — permintaan pemilik)
+  const team = staff.filter((t) => isOnlineCat(t.category!) && t.category !== "massage" && !soon(t.category!));
   const photo = (k: string) => photos.find((p) => p.kind === k);
   const gallery = photos.filter((p) => p.kind === "gallery");
   const b = list("barbershop")[0], n = [...list("nail")].sort((x, y) => (y.price ?? 0) - (x.price ?? 0))[0];
@@ -99,6 +99,7 @@ export default async function Landing() {
   const wa = s.shop_whatsapp ? `https://wa.me/${s.shop_whatsapp}` : "";
   // Booking online hanya bila dibuka DAN ada kategori yang punya kursi/meja & staf aktif.
   const online = !!s.online_booking_open && bookable.some((c) => !soon(c));
+  const massageOnline = online && bookable.includes("massage");
   const bookHref = (cat?: string) => (online ? `/booking${cat ? `?kategori=${cat}` : ""}` : wa || "#kunjungi");
   const bookLabel = online ? "Reservasi" : "Reservasi via WhatsApp";
   // ponytail: halaman di-cache ≤1 jam — banner bisa terlambat ≤1 jam saat periode promo mulai/berakhir (simpan Pengaturan = segar)
@@ -231,7 +232,7 @@ export default async function Landing() {
             <div id="tambahan" className="flex flex-col gap-4 rounded-3xl border border-rule bg-lux-2 p-6 min-[900px]:p-8">
               <div className="flex flex-wrap items-baseline justify-between gap-3">
                 <h3 className="font-serif text-[28px] font-normal italic text-gold">Layanan tambahan · Pijat & refleksi</h3>
-                <span className="text-xs uppercase tracking-[0.18em] text-stone">Reservasi lewat WhatsApp</span>
+                <span className="text-xs uppercase tracking-[0.18em] text-stone">{massageOnline ? "Bisa reservasi online" : "Reservasi lewat WhatsApp"}</span>
               </div>
               <div className="grid gap-x-12 min-[900px]:grid-cols-2">
                 {/* seperti daftar harga cetak: nama · harga, lalu keterangan (durasi ditulis di keterangan bila ada di daftar harga) */}
@@ -246,7 +247,8 @@ export default async function Landing() {
                   </div>
                 ))}
               </div>
-              {wa && <a href={wa} target="_blank" rel="noopener" className="btn-line self-start">Tanya jadwal pijat</a>}
+              {massageOnline ? <Link href={bookHref("massage")} className="btn-line self-start">Reservasi pijat</Link>
+                : wa && <a href={wa} target="_blank" rel="noopener" className="btn-line self-start">Tanya jadwal pijat</a>}
             </div>
           )}
         </section>

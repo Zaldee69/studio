@@ -16,13 +16,14 @@ import { buildIcs } from "@/lib/domain/ics";
 import { addDays } from "@/lib/domain/schedule";
 import { track } from "@/lib/funnel";
 import { bookOnline, type BookedAppt } from "./actions";
+import { ONLINE_CATS, type OnlineCat } from "@/lib/domain/category";
 
 // supabase-js (~250 KB) & form masuk dimuat setelah halaman tampil — hanya dipakai di efek & langkah "Masuk".
 const db = () => import("@/lib/supabase/client").then((m) => m.createClient());
 const CustomerAuth = dynamic(() => import("@/components/customer-auth").then((m) => m.CustomerAuth));
 
 export type { Cust };
-type Cat = "barbershop" | "nail";
+type Cat = OnlineCat;
 type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string };
 type Staff = { id: string; name: string; category: Cat; photo: string | null };
 type Shop = { name: string; address: string; mapsUrl: string | null; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
@@ -41,7 +42,9 @@ const PRIMARY: Record<(typeof FLOW)[number], [string, string]> = {
 const CAT: Record<Cat, { label: string; world: string; staffTitle: string; staffSub: string }> = {
   barbershop: { label: "Barbershop", world: "Barbershop", staffTitle: "Kapster barbershop", staffSub: "Barber" },
   nail: { label: "Nail Art", world: "Nail Art", staffTitle: "Nail artist", staffSub: "Nail artist" },
+  massage: { label: "Pijat", world: "Pijat & refleksi", staffTitle: "Terapis pijat", staffSub: "Terapis" },
 };
+const noPick = (): Record<Cat, string> => ({ barbershop: "", nail: "", massage: "" });
 
 const fmtUtc = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("id-ID", { ...o, timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
 const longDate = (d: string) => formatTanggal(d + "T12:00:00+07:00");
@@ -84,12 +87,13 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const validIds = initIds.filter((id) => known.has(id));
   const rawPick: Record<string, string> = reschedule?.pick ?? init.pick;
   const staffOk = (c: Cat) => (staff.some((s) => s.id === rawPick[c] && s.category === c) ? rawPick[c] : "");
-  const stalePick = (["barbershop", "nail"] as const).some((c) => rawPick[c] && !staffOk(c));
+  const stalePick = ONLINE_CATS.some((c) => rawPick[c] && !staffOk(c));
   const rescheduleBlocked = !!reschedule && validIds.length < initIds.length;
   const [view, setView] = useState<View>(() => reschedule ? "waktu" : isView(init.step) && validIds.length ? init.step : "layanan");
   const [cat, setCat] = useState<Cat>(init.cat);
+  const bundleOpen = openCats.includes("barbershop") && openCats.includes("nail"); // diskon paket hanya barbershop + nail
   const [sel, setSel] = useState<string[]>(validIds);
-  const [pick, setPick] = useState<Record<Cat, string>>(() => ({ barbershop: staffOk("barbershop"), nail: staffOk("nail") }));
+  const [pick, setPick] = useState<Record<Cat, string>>(() => ({ barbershop: staffOk("barbershop"), nail: staffOk("nail"), massage: staffOk("massage") }));
   const [notice] = useState(() => !reschedule && (validIds.length < initIds.length || stalePick)
     ? "Sebagian pilihan dari tautan sebelumnya sudah tidak tersedia, jadi kami kosongkan. Silakan periksa pilihan Anda." : "");
   const [together, setTogether] = useState(reschedule?.together ?? init.together);
@@ -133,7 +137,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
     if (!together) q.set("mode", "berurutan");
     if (view === "waktu" || view === "konfirmasi") q.set("tgl", date);
     if (time) q.set("jam", time);
-    if (cat === "nail") q.set("kategori", "nail");
+    if (cat !== "barbershop") q.set("kategori", cat);
     if (reschedule) q.set("ulang", reschedule.groupId);
     window.history.replaceState(null, "", `/booking?${q}`);
   }, [view, sel, pick, together, date, time, cat, reschedule]);
@@ -141,7 +145,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   // ---------- turunan ----------
   const svcById = new Map(services.map((s) => [s.id, s]));
   const chosen = sel.map((id) => svcById.get(id)).filter((s): s is Svc => !!s);
-  const cats = (["barbershop", "nail"] as const).filter((c) => chosen.some((s) => s.category === c));
+  const cats = ONLINE_CATS.filter((c) => chosen.some((s) => s.category === c));
   const bothCats = cats.length === 2;
   const subtotal = chosen.reduce((a, s) => a + s.price, 0);
   // estimasi = hitungan kasir: booking baru dalam periode promo → promo online (tidak ditumpuk dengan paket)
@@ -237,7 +241,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
       total: formatRupiah(total), rescheduled: !!reschedule,
     });
     resetReq();
-    setSel([]); setPick({ barbershop: "", nail: "" }); setTime(""); setNote(""); setGuest({ name: "", wa: "" });
+    setSel([]); setPick(noPick()); setTime(""); setNote(""); setGuest({ name: "", wa: "" });
     go("selesai");
     window.history.replaceState(null, "", "/booking");
   }
@@ -357,7 +361,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 {promoNow && <div role="note" className="rounded-xl bg-rose/45 px-4 py-3 text-sm leading-relaxed text-cream">
                   <b className="font-semibold">Diskon {shop.promo.pct}% untuk booking online.</b> Berlaku untuk booking lewat website sampai {formatTanggal(`${shop.promo.end}T12:00:00+07:00`)}. Potongan langsung saat bayar di studio — tidak perlu kode promo.
                 </div>}
-                {openCats.length > 1 && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
+                {bundleOpen && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
                   <span className="font-serif text-lg italic text-gold">Paket barbershop + nail</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
                 </div>}
               </section>
@@ -404,14 +408,14 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           {/* STEP 2: STAF */}
           {view === "staf" && (
             <>
-              <h2 className={h2}>Pilih <i className="text-gold">kapster</i> &amp; nail artist</h2>
+              <h2 className={h2}>Pilih <i className="text-gold">{cats.length === 1 ? CAT[cats[0]].staffTitle.toLowerCase() : "staf"}</i></h2>
               {bothCats && (
                 <div className="flex flex-col gap-3">
                   <span className="lux-label">Layanan ini untuk…</span>
                   <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
                     {[
-                      { v: true, title: "Berdua, bersamaan", desc: "Mis. pasangan — barbershop & nail dimulai di jam yang sama" },
-                      { v: false, title: "Saya sendiri, berurutan", desc: "Layanan nail dimulai setelah barbershop selesai" },
+                      { v: true, title: "Berdua, bersamaan", desc: `Mis. pasangan — ${cats.map((c) => CAT[c].label.toLowerCase()).join(" & ")} dimulai di jam yang sama` },
+                      { v: false, title: "Saya sendiri, berurutan", desc: `Layanan ${CAT[cats[1]]?.label.toLowerCase()} dimulai setelah ${CAT[cats[0]]?.label.toLowerCase()} selesai` },
                     ].map((m) => (
                       <button key={m.title} aria-pressed={together === m.v} onClick={() => { setTogether(m.v); setTime(""); resetReq(); }}
                         className={`flex min-h-[80px] flex-col gap-1 px-4 py-3.5 text-left ${opt(together === m.v)}`}>
@@ -485,7 +489,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                       <span>{REASON_MSG[slotRes.reason ?? ""] ?? <>Maaf, jam di tanggal ini sudah penuh untuk pilihan Anda. Coba tanggal lain atau pilih &quot;Siapa saja&quot;.</>}</span>
                       {/* data layanan di halaman ini sudah usang (tab lama) → muat ulang dari awal */}
                       {(slotRes.reason === "services" || slotRes.reason === "capacity") && <button onClick={() => { window.history.replaceState(null, "", "/booking"); window.location.reload(); }} className="btn-line">Pilih ulang layanan</button>}
-                      {slotRes.reason === "staff" && <button onClick={() => { setPick({ barbershop: "", nail: "" }); go("staf"); }} className="btn-line">Pilih staf lain</button>}
+                      {slotRes.reason === "staff" && <button onClick={() => { setPick(noPick()); go("staf"); }} className="btn-line">Pilih staf lain</button>}
                       {slotRes.next && (
                         <button onClick={() => { setDate(slotRes.next!); setTime(""); }} className="btn-line">
                           Tanggal terdekat: {longDate(slotRes.next)}
@@ -652,7 +656,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 <span>Estimasi {est.discountLabel.toLowerCase()}</span><span>−{formatRupiah(discount)}</span>
               </div>
             )}
-            {lines.length > 0 && discount === 0 && openCats.length > 1 && (
+            {lines.length > 0 && discount === 0 && bundleOpen && cats.some((c) => c === "barbershop" || c === "nail") && (
               <div className="text-xs font-light italic leading-normal text-dust">
                 Tambah layanan {cats.includes("barbershop") ? "nail" : "barbershop"} untuk hemat {shop.bundlePct}%.
               </div>

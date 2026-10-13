@@ -311,13 +311,13 @@ isOneToOne: false
                   ]
                 },"commission_week_pays": {
                   Row: {
-                    "amount": number,"commission_retail": number,"commission_service": number,"month": string,"paid_at": string | null,"paid_by": string | null,"paid_method": string | null,"revenue_net": number,"service_count": number,"staff_id": string,"week_start": string
+                    "amount": number,"commission_retail": number,"commission_service": number,"month": string,"paid_at": string | null,"paid_by": string | null,"paid_method": string | null,"revenue_net": number,"service_count": number,"staff_id": string,"subsidy": number,"week_start": string
                   }
                   Insert: {
-                    "amount": number,"commission_retail": number,"commission_service": number,"month": string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"revenue_net": number,"service_count": number,"staff_id": string,"week_start": string
+                    "amount": number,"commission_retail": number,"commission_service": number,"month": string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"revenue_net": number,"service_count": number,"staff_id": string,"subsidy"?: number,"week_start": string
                   }
                   Update: {
-                    "amount"?: number,"commission_retail"?: number,"commission_service"?: number,"month"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"revenue_net"?: number,"service_count"?: number,"staff_id"?: string,"week_start"?: string
+                    "amount"?: number,"commission_retail"?: number,"commission_service"?: number,"month"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"revenue_net"?: number,"service_count"?: number,"staff_id"?: string,"subsidy"?: number,"week_start"?: string
                   }
                   Relationships: [
                     {
@@ -1301,13 +1301,13 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"home_resource_id": string | null,"id": string,"name": string,"photo_path": string | null,"sort": number
+                    "active": boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"home_resource_id": string | null,"id": string,"name": string,"photo_path": string | null,"sort": number
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"home_resource_id"?: string | null,"id"?: string,"name": string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"photo_path"?: string | null,"sort"?: number
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"photo_path"?: string | null,"sort"?: number
                   }
                   Relationships: [
                     {
@@ -2019,7 +2019,7 @@ isOneToOne: false
                            },
 "commission_week":
 { Args: { "p_week": string }; Returns: {
-              "amount": number,"category": Database["public"]['Enums']["staff_category"],"closed": boolean,"commission_retail": number,"commission_service": number,"paid_at": string,"paid_method": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string
+              "amount": number,"category": Database["public"]['Enums']["staff_category"],"closed": boolean,"commission_retail": number,"commission_service": number,"paid_at": string,"paid_method": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number
             }[]
                            },
 "commission_week_close":
@@ -2046,6 +2046,11 @@ isOneToOne: false
                            },
 "create_time_off_admin":
 { Args: { "p_all_day": boolean,"p_end": string,"p_reason": string,"p_staff_id": string,"p_start": string }; Returns: string
+                           },
+"daily_net_subsidy":
+{ Args: { "p_from": string,"p_to": string }; Returns: {
+              "days": number,"month": string,"staff_id": string,"subsidy": number
+            }[]
                            },
 "daily_resource_minutes":
 { Args: { "p_from": string,"p_to": string }; Returns: {

@@ -42,7 +42,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
       weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
       ratio={st?.commission_pct ?? 40} minPay={st?.min_monthly_pay ?? 0} />;
   } else if (tab === "aturan") {
-    const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, active").order("sort");
+    const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, daily_min_pay, active").order("sort");
     body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} minPay={st?.min_monthly_pay ?? 0} basis={st?.commission_basis === "gross" ? "gross" : "net"} staff={staff ?? []} />;
   } else if (tab === "peringkat") {
     const byYear = sp.periode === "tahun";

@@ -11,13 +11,14 @@ import { itemCommission } from "@/lib/domain/commission";
 import { createClient } from "@/lib/supabase/client";
 import { CAT } from "./shared";
 
-type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; active: boolean };
+type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; daily_min_pay: number | null; active: boolean };
 
 /** Aturan komisi: rasio global, override per staf, komisi ritel, ambang gaji minimum. Berlaku untuk periode yang belum ditutup. */
 export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ratio: number; retailPct: number; minPay: number; basis: "net" | "gross"; staff: StaffRule[] }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
   const [f, setF] = useState({ ratio, retail: String(retailPct), minPay: String(minPay), basis });
   const [ov, setOv] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.commission_pct_override == null ? "" : String(s.commission_pct_override)])));
+  const [dm, setDm] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.daily_min_pay ? s.daily_min_pay.toLocaleString("id-ID") : ""])));
   async function save() {
     const supabase = createClient();
     const retail = Number(f.retail.replace(",", ".")), min = Number(f.minPay.replace(/\D/g, ""));
@@ -26,9 +27,10 @@ export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ra
     if (error) return toast(error.message, "error");
     for (const s of staff) {
       const v = ov[s.id].trim() === "" ? null : Number(ov[s.id]);
-      if (v !== s.commission_pct_override) {
+      const d = Number(dm[s.id].replace(/\D/g, "")) || null;
+      if (v !== s.commission_pct_override || d !== s.daily_min_pay) {
         if (v !== null && !(Number.isInteger(v) && v >= 0 && v <= 100)) return toast(`Override ${s.name} harus 0–100`, "error");
-        const r = await supabase.from("staff").update({ commission_pct_override: v }).eq("id", s.id);
+        const r = await supabase.from("staff").update({ commission_pct_override: v, daily_min_pay: d }).eq("id", s.id);
         if (r.error) return toast(r.error.message, "error");
       }
     }
@@ -67,14 +69,18 @@ export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ra
         </div>
       </section>
       <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-5">
-        <b>Rasio khusus per staf</b>
-        <span className="text-xs text-muted">Kosongkan untuk memakai rasio global.</span>
+        <b>Aturan khusus per staf</b>
+        <span className="text-xs text-muted">Rasio: kosongkan untuk memakai rasio global. Jaring harian: bila diisi, di hari staf melayani ≥1 layanan
+          dan komisinya di bawah angka ini, toko menutup selisihnya — dibayar bersama komisi mingguan dan menggantikan jaring pengaman bulanan.</span>
         {staff.filter((s) => s.active).map((s) => (
           <div key={s.id} className="flex items-center gap-3 border-t border-[#EEEEEA] py-1.5">
             <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
             <label htmlFor={`ov-${s.id}`} className="flex-1 text-sm font-semibold">{s.name}</label>
             <input id={`ov-${s.id}`} inputMode="numeric" placeholder={`${f.ratio}`} className="input w-24" value={ov[s.id]} onChange={(e) => setOv({ ...ov, [s.id]: e.target.value })} />
             <span className="text-sm text-muted">%</span>
+            <label htmlFor={`dm-${s.id}`} className="sr-only">Jaring harian {s.name}</label>
+            <input id={`dm-${s.id}`} inputMode="numeric" placeholder="Jaring harian" className="input w-32" value={dm[s.id]}
+              onChange={(e) => { const n = Number(e.target.value.replace(/\D/g, "")); setDm({ ...dm, [s.id]: n ? n.toLocaleString("id-ID") : "" }); }} />
           </div>
         ))}
         <button disabled={!online} className="btn-ink mt-2 h-12">Simpan aturan komisi</button>

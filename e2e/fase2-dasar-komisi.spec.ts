@@ -18,3 +18,25 @@ test("dasar komisi harga normal: tersimpan & rumus diperbarui", async ({ page })
     sql(`update settings set commission_basis = '${orig.b}'`);
   }
 });
+
+// Jaring harian per staf: isi → tersimpan (format rupiah); kosongkan → nonaktif.
+test("jaring harian per staf: tersimpan & bisa dinonaktifkan", async ({ page }) => {
+  const [s] = sql<{ id: string; name: string }>(`select id, name from staff where active order by sort limit 1`);
+  try {
+    await login(page, "manager");
+    await page.goto("/manajer/sdm?tab=aturan");
+    const input = page.getByLabel(`Jaring harian ${s.name}`);
+    await input.fill("75000");
+    await expect(input).toHaveValue("75.000");
+    await page.getByRole("button", { name: /Simpan/ }).first().click();
+    await expect(page.getByText("Aturan komisi disimpan")).toBeVisible();
+    expect(sql<{ d: number }>(`select daily_min_pay as d from staff where id = '${s.id}'`)[0].d).toBe(75000);
+    await page.reload();
+    await input.fill("");
+    await page.getByRole("button", { name: /Simpan/ }).first().click();
+    await expect(page.getByText("Aturan komisi disimpan")).toBeVisible();
+    expect(sql<{ d: number | null }>(`select daily_min_pay as d from staff where id = '${s.id}'`)[0].d).toBeNull();
+  } finally {
+    sql(`update staff set daily_min_pay = null where id = '${s.id}'`);
+  }
+});

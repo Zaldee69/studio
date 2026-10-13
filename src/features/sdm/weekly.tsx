@@ -13,10 +13,10 @@ import { CAT, shiftWeek, weekLabel } from "./shared";
 
 export type WeekRow = {
   staff_id: string; staff_name: string; category: Cat; service_count: number; revenue_net: number;
-  commission_service: number; commission_retail: number; amount: number; closed: boolean; paid_at: string | null; paid_method: string | null;
+  commission_service: number; commission_retail: number; subsidy: number; amount: number; closed: boolean; paid_at: string | null; paid_method: string | null;
 };
 
-/** Komisi mingguan (Senin–Minggu): tutup minggu → bayar per staf. Subsidi gaji minimum & penyesuaian diselesaikan bulanan. */
+/** Komisi mingguan (Senin–Minggu): tutup minggu → bayar per staf. Subsidi jaring harian ikut mingguan; jaring bulanan & penyesuaian diselesaikan bulanan. */
 export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week: string; thisWeek: string; rows: WeekRow[]; reopenReason: string | null }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline(); const confirm = useConfirm();
   const [paying, setPaying] = useState<WeekRow | null>(null);
@@ -44,8 +44,8 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
   }
   function exportCsv() {
     downloadText(`komisi-mingguan-${week}.csv`, toCsv([
-      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "Komisi jasa", "Komisi ritel", "Total komisi", "Dibayar", "Metode"],
-      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.commission_service, r.commission_retail,
+      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Total", "Dibayar", "Metode"],
+      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.commission_service, r.commission_retail, r.subsidy,
         r.amount, r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
   }
@@ -69,15 +69,15 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
       <p className="text-sm text-muted">
         Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
-        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan komisi yang sudah ditutup mingguan.
+        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini.
       </p>
 
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         {!rows.length ? <Empty>{future ? "Minggu ini belum dimulai." : "Tidak ada komisi di minggu ini."}</Empty> : (
-          <table className="w-full min-w-[820px] text-sm tabular">
+          <table className="w-full min-w-[920px] text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">
-              {["Staf", "Layanan", "Pendapatan", "Komisi jasa", "Komisi ritel", "Total komisi", "Pembayaran"].map((h, i) =>
-                <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < 6 ? "text-right" : ""}`}>{h}</th>)}
+              {["Staf", "Layanan", "Pendapatan", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Total", "Pembayaran"].map((h, i) =>
+                <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < 7 ? "text-right" : ""}`}>{h}</th>)}
             </tr></thead>
             <tbody>
               {rows.map((r) => (
@@ -92,6 +92,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
                   <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td>
                   <td className="pr-2 text-right">{formatRupiah(r.commission_service)}</td>
                   <td className="pr-2 text-right">{formatRupiah(r.commission_retail)}</td>
+                  <td className="pr-2 text-right">{r.subsidy ? formatRupiah(r.subsidy) : "—"}</td>
                   <td className="pr-2 text-right text-base font-bold">{formatRupiah(r.amount)}</td>
                   <td className="py-2 pr-2">
                     {!r.closed ? <span className="text-xs text-muted">Belum final</span>
@@ -106,6 +107,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.revenue_net, 0))}</td>
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.commission_service, 0))}</td>
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.commission_retail, 0))}</td>
+                <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.subsidy, 0))}</td>
                 <td className="pr-2 text-right text-base">{formatRupiah(total)}</td><td />
               </tr>
             </tbody>

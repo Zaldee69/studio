@@ -9,7 +9,7 @@ import { mondayOf, shiftWeek, weekLabel } from "@/features/sdm/shared";
 const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 
 /** Komisi saya: dari commission_for_period (sama dengan layar SDM & slip gaji), rincian tanpa HPP. */
-export function KomisiKapster({ ratio, minPay, retailPct, gross }: { ratio: number; minPay: number; retailPct: number; gross?: boolean }) {
+export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin }: { ratio: number; minPay: number; retailPct: number; gross?: boolean; dailyMin?: number | null }) {
   const cur = jktDate().slice(0, 7);
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(Date.UTC(+cur.slice(0, 4), +cur.slice(5, 7) - 1 - i, 1));
@@ -93,7 +93,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross }: { ratio: numb
           <span className="text-[13px] text-[#D6D6D0] tabular">
             Komisi jasa {formatRupiah(s.commission_service)}
             {s.commission_retail > 0 && ` + ritel ${formatRupiah(s.commission_retail)}`}
-            {s.subsidy > 0 && ` + subsidi jaring pengaman ${formatRupiah(s.subsidy)}`}
+            {s.subsidy > 0 && ` + subsidi jaring ${dailyMin ? "harian" : "pengaman"} ${formatRupiah(s.subsidy)}`}
             {s.adjustments !== 0 && ` ${s.adjustments > 0 ? "+" : "−"} penyesuaian ${formatRupiah(Math.abs(s.adjustments))}`}
           </span>
         )}
@@ -111,7 +111,8 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross }: { ratio: numb
       </div>
       {s && s.subsidy > 0 && (
         <div className="rounded-xl bg-card px-3.5 py-3 text-sm leading-normal tabular">
-          Kurang <b>{formatRupiah(s.subsidy)}</b> lagi untuk mencapai ambang {formatRupiah(minPay)} dari komisi sendiri. Sampai itu tercapai, toko menutup selisihnya.
+          {dailyMin ? <>Jaring harian {formatRupiah(dailyMin)}: di hari Anda melayani dan komisinya di bawah itu, toko menutup selisihnya — bulan ini <b>{formatRupiah(s.subsidy)}</b>, dibayar bersama komisi mingguan.</>
+            : <>Kurang <b>{formatRupiah(s.subsidy)}</b> lagi untuk mencapai ambang {formatRupiah(minPay)} dari komisi sendiri. Sampai itu tercapai, toko menutup selisihnya.</>}
         </div>
       )}
       <span className="text-[13px] leading-normal text-muted">

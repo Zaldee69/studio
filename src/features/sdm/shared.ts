@@ -5,7 +5,7 @@ export const shiftMonth = (m: string, d: number) => new Date(Date.UTC(+m.slice(0
 
 // Minggu komisi Senin–Minggu (tanggal "YYYY-MM-DD", tanpa jam — aman dari zona waktu).
 const day = (d: string) => new Date(`${d}T00:00:00Z`);
-const plusDays = (d: string, n: number) => { const t = day(d); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+export const plusDays = (d: string, n: number) => { const t = day(d); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
 /** Senin di minggu tanggal itu. */
 export const mondayOf = (d: string) => plusDays(d, -((day(d).getUTCDay() + 6) % 7));
 export const shiftWeek = (monday: string, n: number) => plusDays(monday, 7 * n);

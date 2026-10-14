@@ -41,3 +41,32 @@ test("tutup minggu → tandai dibayar → gaji bulanan: dibayar mingguan & sisa 
     sql(`update staff set active = false where id = '${id}'`);
   }
 });
+
+// Kasbon dipotong di komisi mingguan + slip gaji mingguan (cetak/PDF & WhatsApp).
+test("kasbon dipotong mingguan → slip gaji mingguan", async ({ page }) => {
+  const offset = 40 + Math.floor(Math.random() * 40);
+  const [{ w }] = sql<{ w: string }>(`select (date '2020-01-06' + ${offset} * 7)::text as w`);
+  const name = `Kasbon ${uniq()}`;
+  const [{ id }] = sql<{ id: string }>(`insert into staff (name, category, commission_pct_override) values ('${name}', 'barbershop', 50) returning id`);
+  sql(`with t as (insert into transactions (subtotal, total, paid_amount, payment_method, created_at)
+         values (100000, 100000, 100000, 'cash', jkt(date '${w}' + 2, '10:00')) returning id)
+       insert into transaction_items (transaction_id, staff_id, name, category, price, net_amount) select t.id, '${id}', 'Potong', 'barbershop', 100000, 100000 from t`);
+  sql(`insert into expenses (date, category, description, amount, source, staff_id) values (date '${w}' + 1, 'kasbon', 'uji', 20000, 'laci', '${id}')`);
+  try {
+    await login(page, "manager");
+    await page.goto(`/manajer/sdm?tab=mingguan&minggu=${w}`);
+    const row = page.getByRole("row", { name: new RegExp(name) });
+    await expect(row).toContainText("−Rp20.000");
+    await expect(row).toContainText("Rp30.000");
+    await row.getByRole("link", { name: "Slip" }).click();
+    const slip = page.getByRole("article");
+    await expect(slip).toContainText("Slip gaji mingguan");
+    await expect(slip).toContainText("Potongan kasbon−Rp20.000");
+    await expect(slip).toContainText("DibayarRp30.000");
+    await expect(slip).toContainText("Potong");
+    await expect(page.getByRole("button", { name: "Cetak / PDF" })).toBeVisible();
+  } finally {
+    sql(`delete from expenses where staff_id = '${id}'`);
+    sql(`update staff set active = false where id = '${id}'`);
+  }
+});

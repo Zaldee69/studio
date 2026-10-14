@@ -8,4 +8,6 @@ export function createPublicClient() {
   });
 }
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(/\/$/, "");
+// Tanpa NEXT_PUBLIC_SITE_URL di Vercel → domain produksi proyek (bukan localhost: canonical/sitemap salah = SEO rusak).
+const vercelProd = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_PROJECT_PRODUCTION_URL;
+export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || (vercelProd ? `https://${vercelProd}` : "http://localhost:3000")).replace(/\/$/, "");

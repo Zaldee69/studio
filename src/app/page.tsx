@@ -18,16 +18,24 @@ import { SITE_URL } from "@/lib/supabase/public";
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { s, photos } = await loadSite();
+  const { s, photos, services } = await loadSite();
   const hero = photos.find((p) => p.kind === "hero");
-  const title = `${s.shop_name} — Barbershop, Nail Art & Lashes`;
+  // judul & deskripsi memuat layanan + kota: yang dicari orang ("barbershop depok", "nail art cimanggis")
+  const lines = Object.entries(LINE_LABEL).filter(([c]) => !COMING_SOON.includes(c) && services.some((x) => x.category === c)).map(([, l]) => l);
+  const what = lines.length > 1 ? `${lines.slice(0, -1).join(", ")} & ${lines.at(-1)}` : lines[0] ?? "Barbershop";
+  const city = cityOf(s.shop_address);
+  const title = `${s.shop_name} — ${what}${city ? ` di ${city}` : ""}`;
+  const description = `${what} di ${s.shop_address || city || "studio kami"}. ${s.tagline ?? ""} Lihat harga & booking online.`.replace(/\s+/g, " ").trim();
   return {
-    title: { absolute: title }, description: s.tagline + (s.shop_address ? ` · ${s.shop_address}` : ""),
+    title: { absolute: title }, description,
     alternates: { canonical: "/" },
-    openGraph: { title, description: s.hero_text ?? undefined, type: "website", locale: "id_ID", ...(hero ? { images: [photoUrl(hero.path)!] } : {}) },
+    openGraph: { title, description, type: "website", locale: "id_ID", ...(hero ? { images: [photoUrl(hero.path)!] } : {}) },
   };
 }
 
+const LINE_LABEL: Record<string, string> = { barbershop: "Barbershop", nail: "Nail Art", massage: "Pijat" };
+/** "…, Cimanggis, Kota Depok, Jawa Barat" → "Depok" */
+const cityOf = (addr?: string | null) => addr?.split(",").map((t) => t.trim()).find((t) => /^(Kota|Kabupaten|Kab\.)\s/i.test(t))?.replace(/^(Kota|Kabupaten|Kab\.)\s+/i, "");
 const rk = (n: number) => (n >= 1_000_000 ? `${(Math.round(n / 100_000) / 10).toLocaleString("id-ID")} jt` : `${Math.round(n / 1000)}rb`);
 const jam = (t?: string | null) => (t ?? "").slice(0, 5).replace(":", ".");
 /** 6281234567890 → +62 812-3456-7890 */
@@ -116,7 +124,8 @@ export default async function Landing() {
     "@context": "https://schema.org", "@type": ["HairSalon", "NailSalon", "BeautySalon"], name: s.shop_name, description: s.tagline, url: SITE_URL,
     ...(hero ? { image: photoUrl(hero.path) } : {}),
     ...(s.shop_whatsapp ? { telephone: `+${s.shop_whatsapp}` } : {}),
-    ...(s.shop_address ? { address: { "@type": "PostalAddress", streetAddress: s.shop_address, addressCountry: "ID" } } : {}),
+    ...(s.shop_address ? { address: { "@type": "PostalAddress", streetAddress: s.shop_address, addressLocality: cityOf(s.shop_address), addressCountry: "ID" } } : {}),
+    ...(s.maps_url ? { hasMap: s.maps_url } : {}),
     ...(prices.length ? { priceRange: `${formatRupiah(Math.min(...prices))}–${formatRupiah(Math.max(...prices))}` } : {}),
     openingHoursSpecification: hours.filter((h) => !h.closed).map((h) => ({
       "@type": "OpeningHoursSpecification", dayOfWeek: `https://schema.org/${DAY_URL[h.weekday]}`, opens: h.open_time.slice(0, 5), closes: h.close_time.slice(0, 5),

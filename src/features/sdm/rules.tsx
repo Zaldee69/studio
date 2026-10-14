@@ -14,16 +14,16 @@ import { CAT } from "./shared";
 type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; daily_min_pay: number | null; active: boolean };
 
 /** Aturan komisi: rasio global, override per staf, komisi ritel, ambang gaji minimum. Berlaku untuk periode yang belum ditutup. */
-export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ratio: number; retailPct: number; minPay: number; basis: "net" | "gross"; staff: StaffRule[] }) {
+export function CommissionRules({ ratio, retailPct, minPay, basis, deductHpp, staff }: { ratio: number; retailPct: number; minPay: number; basis: "net" | "gross"; deductHpp: boolean; staff: StaffRule[] }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
-  const [f, setF] = useState({ ratio, retail: String(retailPct), minPay: String(minPay), basis });
+  const [f, setF] = useState({ ratio, retail: String(retailPct), minPay: String(minPay), basis, hpp: deductHpp });
   const [ov, setOv] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.commission_pct_override == null ? "" : String(s.commission_pct_override)])));
   const [dm, setDm] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.daily_min_pay ? s.daily_min_pay.toLocaleString("id-ID") : ""])));
   async function save() {
     const supabase = createClient();
     const retail = Number(f.retail.replace(",", ".")), min = Number(f.minPay.replace(/\D/g, ""));
     if (!(retail >= 0 && retail <= 100) || !(min >= 0)) return toast("Cek angka komisi ritel & gaji minimum", "error");
-    const { error } = await supabase.from("settings").update({ commission_pct: f.ratio, retail_commission_pct: retail, min_monthly_pay: min, commission_basis: f.basis }).eq("id", true);
+    const { error } = await supabase.from("settings").update({ commission_pct: f.ratio, retail_commission_pct: retail, min_monthly_pay: min, commission_basis: f.basis, commission_deduct_hpp: f.hpp }).eq("id", true);
     if (error) return toast(error.message, "error");
     for (const s of staff) {
       const v = ov[s.id].trim() === "" ? null : Number(ov[s.id]);
@@ -36,12 +36,12 @@ export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ra
     }
     toast("Aturan komisi disimpan"); router.refresh();
   }
-  const ex = itemCommission(162000, 12000, f.ratio);
+  const ex = itemCommission(162000, f.hpp ? 12000 : 0, f.ratio);
   return (
     <form onSubmit={(e) => { e.preventDefault(); save(); }} className="grid gap-4 min-[1000px]:grid-cols-2">
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
         <div className="flex flex-col gap-2">
-          <label htmlFor="cr-ratio" className="label">Rasio komisi global: <b className="text-lg text-ink">{f.ratio}%</b> dari margin (harga {f.basis === "gross" ? "normal" : "bersih"} − HPP)</label>
+          <label htmlFor="cr-ratio" className="label">Rasio komisi global: <b className="text-lg text-ink">{f.ratio}%</b> dari harga {f.basis === "gross" ? "normal" : "bersih"}{f.hpp && " − HPP"}</label>
           <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-accent" />
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
@@ -57,15 +57,19 @@ export function CommissionRules({ ratio, retailPct, minPay, basis, staff }: { ra
           </div>
           <span className="text-xs text-muted">Berlaku untuk transaksi setelah disimpan; komisi transaksi sebelumnya tidak berubah.</span>
         </fieldset>
+        <label className="flex min-h-11 items-center gap-3 text-sm">
+          <input type="checkbox" className="size-5 accent-accent" checked={f.hpp} onChange={(e) => setF({ ...f, hpp: e.target.checked })} />
+          <span><b>Potong HPP bahan habis pakai dari komisi</b><span className="block text-xs text-muted">Berlaku juga untuk transaksi lama di periode yang belum ditutup.</span></span>
+        </label>
         <div className="grid grid-cols-2 gap-3">
           <Field label={`Komisi ritel (% harga ${f.basis === "gross" ? "normal" : "bersih"})`} htmlFor="cr-retail"><input id="cr-retail" inputMode="decimal" className="input" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
           <Field label="Jaring pengaman / bulan (Rp)" htmlFor="cr-min"><input id="cr-min" inputMode="numeric" className="input" value={f.minPay} onChange={(e) => setF({ ...f, minPay: e.target.value })} /></Field>
         </div>
         <div className="rounded-[12px] bg-paper p-3.5 text-sm leading-relaxed">
-          <b>Cara hitung:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} dikurangi HPP bahan (tidak pernah minus).
+          <b>Cara hitung:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} {f.hpp ? "dikurangi HPP bahan (tidak pernah minus)" : "(HPP bahan tidak dipotong)"}.
           {Number(f.retail) > 0 && <> Produk ritel yang ia jual menambah <b>{f.retail}%</b> dari harga {f.basis === "gross" ? "normal" : "bersih"}.</>}
           {" "}Jika total komisi sebulan di bawah <b>{formatRupiah(Number(f.minPay.replace(/\D/g, "")) || 0)}</b>, toko menambah selisihnya (subsidi).
-          Bonus/potongan manual ditambahkan setelah subsidi. Contoh: Gel Polish net Rp162.000, HPP Rp12.000 → komisi <b>{formatRupiah(ex)}</b>.
+          Bonus/potongan manual ditambahkan setelah subsidi. Contoh: Gel Polish net Rp162.000{f.hpp && ", HPP Rp12.000"} → komisi <b>{formatRupiah(ex)}</b>.
         </div>
       </section>
       <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-5">

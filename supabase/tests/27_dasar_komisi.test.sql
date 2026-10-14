@@ -1,6 +1,7 @@
 begin;
 \ir helpers.psql
-select plan(6);
+select plan(8);
+select tests.su(); update settings set commission_deduct_hpp = true; -- tes ini menguji komisi dipotong HPP
 
 -- Dasar komisi: harga setelah diskon (default) vs harga normal (diskon ditanggung toko); disimpan per baris saat checkout.
 select tests.su();
@@ -31,6 +32,13 @@ select is((select commission from commission_lines(date_trunc('month', jkt_today
           (select round(greatest(0, :p1 - hpp) * pct / 100.0)::bigint from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it2'),
           'komisi dari harga normal − HPP (diskon ditanggung toko)');
 select is((select commission_base from transaction_items where id = :'it1'), null, 'transaksi sebelum perubahan tetap memakai harga bersih');
+
+-- HPP tidak dipotong (default saat ini): komisi = harga × rasio, berlaku juga untuk transaksi lama; HPP tetap tercatat
+update settings set commission_deduct_hpp = false;
+select is((select commission from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1'),
+          (select round(:n1 * pct / 100.0)::bigint from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1'),
+          'tanpa potong HPP: komisi transaksi lama ikut dihitung ulang dari harga bersih');
+select ok((select hpp from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1') > 0, 'HPP tetap tercatat untuk laporan');
 
 select * from finish();
 rollback;

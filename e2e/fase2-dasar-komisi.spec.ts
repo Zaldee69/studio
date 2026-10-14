@@ -8,7 +8,7 @@ test("dasar komisi harga normal: tersimpan & rumus diperbarui", async ({ page })
     await login(page, "manager");
     await page.goto("/manajer/sdm?tab=aturan");
     await page.getByRole("radio", { name: /Harga normal/ }).click();
-    await expect(page.getByText(/dari harga normal \(sebelum diskon & promo\) dikurangi HPP/)).toBeVisible();
+    await expect(page.getByText(/dari harga normal \(sebelum diskon & promo\) \(HPP bahan tidak dipotong\)/)).toBeVisible();
     await page.getByRole("button", { name: /Simpan/ }).first().click();
     await expect(page.getByText("Aturan komisi disimpan")).toBeVisible();
     expect(sql<{ b: string }>(`select commission_basis as b from settings`)[0].b).toBe("gross");

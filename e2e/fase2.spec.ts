@@ -166,8 +166,9 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip 1.300.000 di
     const tx = await sell([{ service: "Potong Rambut", staff: STAFF.andi }, { service: "Gel Polish Tangan", staff: STAFF.sari }]);
     const potong = await hppOf(tx, "Potong Rambut"), gel = await hppOf(tx, "Gel Polish Tangan");
     expect([potong.net, gel.net]).toEqual([67500, 162000]); // diskon 25.500 → 7.500 / 18.000
-    const andi = Math.round((67500 - potong.hpp) * 0.4), sari = Math.round((162000 - gel.hpp) * 0.4);
-    expect(sari).toBe(60000);
+    // komisi tidak dipotong HPP (settings.commission_deduct_hpp = false, default)
+    const andi = Math.round(67500 * 0.4), sari = Math.round(162000 * 0.4);
+    expect(sari).toBe(64800);
 
     await login(page, "manager");
     await page.goto("/manajer/sdm?tab=bulanan");

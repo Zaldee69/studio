@@ -1,6 +1,7 @@
 begin;
 \ir helpers.psql
 select plan(31);
+select tests.su(); update settings set commission_deduct_hpp = true; -- tes ini menguji komisi dipotong HPP
 
 create table tests.v (k text primary key, v text);
 grant all on tests.v to anon, authenticated;

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
+import { formatRupiah } from "@/lib/domain/format";
 import { savePublicSettings, saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
 import { getProfile } from "@/lib/auth";
@@ -17,7 +18,7 @@ export const metadata = { title: "Pengaturan" };
 
 const TABS = [
   ["umum", "Umum"], ["layanan", "Layanan"], ["gaya", "Katalog gaya"], ["kursi", "Kursi & meja"],
-  ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["keamanan", "Keamanan"],
+  ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["voucher", "Voucher"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["keamanan", "Keamanan"],
 ] as const;
 
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
@@ -115,6 +116,35 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
   } else if (tab === "deposit") {
     const { data } = await supabase.from("deposit_packages").select("*").order("amount_paid");
     body = <CrudTable table="deposit_packages" rows={data ?? []} />;
+  } else if (tab === "voucher") {
+    const [{ data }, { data: usage }] = await Promise.all([
+      supabase.from("vouchers").select("*").order("created_at", { ascending: false }),
+      supabase.rpc("voucher_usage"),
+    ]);
+    const u = new Map((usage ?? []).map((x) => [x.voucher_id, x]));
+    body = (
+      <div className="space-y-4">
+        <p className="text-sm text-muted">
+          Kode voucher dimasukkan pelanggan saat booking online. Potongan dihitung saat bayar di kasir dan <b>tidak ditumpuk</b> dengan
+          diskon paket/promo — yang terbesar yang dipakai. Kuota terhitung dari booking yang tidak dibatalkan.
+        </p>
+        {!!data?.length && (
+          <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">
+            <table className="w-full min-w-[520px] text-sm tabular">
+              <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Kode</th><th className="text-right font-semibold">Dipesan</th>
+                <th className="text-right font-semibold">Dipakai saat bayar</th><th className="text-right font-semibold">Total potongan</th></tr></thead>
+              <tbody>{data.map((v) => (
+                <tr key={v.id} className="border-t border-line"><td className="py-2 font-semibold">{v.code}{!v.active && <span className="ml-2 text-xs text-muted">nonaktif</span>}</td>
+                  <td className="text-right">{u.get(v.id)?.reserved ?? 0}{v.quota ? ` / ${v.quota}` : ""}</td>
+                  <td className="text-right">{u.get(v.id)?.redeemed ?? 0}</td>
+                  <td className="text-right">{formatRupiah(u.get(v.id)?.discount_total ?? 0)}</td></tr>
+              ))}</tbody>
+            </table>
+          </div>
+        )}
+        <CrudTable table="vouchers" rows={data ?? []} />
+      </div>
+    );
   } else if (tab === "akun") {
     const me = await getProfile();
     const [{ data: profiles }, { data: staff }, { data: signups }] = await Promise.all([

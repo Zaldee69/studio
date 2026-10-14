@@ -65,6 +65,22 @@ export const TABLES = {
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },
     ],
   },
+  vouchers: {
+    label: "Voucher", order: "created_at", create: true, remove: false,
+    fields: [
+      { name: "code", label: "Kode (huruf/angka/-)", type: "text", w: "9rem" },
+      { name: "kind", label: "Jenis", type: "select", options: [["pct", "Persen (%)"], ["amount", "Nominal (Rp)"]], w: "8rem" },
+      { name: "value", label: "Nilai (% / Rp)", type: "int", min: 1, w: "7rem" },
+      { name: "category", label: "Berlaku untuk", type: "select", options: CATEGORY, nullable: true, w: "9rem" },
+      { name: "min_spend", label: "Min. belanja (Rp)", type: "money", w: "8rem" },
+      { name: "quota", label: "Kuota (kosong = tak terbatas)", type: "int", min: 1, nullable: true, w: "7rem" },
+      { name: "once_per_customer", label: "1× per pelanggan", type: "bool", w: "6rem" },
+      { name: "starts_on", label: "Mulai", type: "date", nullable: true, w: "9rem" },
+      { name: "ends_on", label: "Sampai", type: "date", nullable: true, w: "9rem" },
+      { name: "note", label: "Catatan", type: "text", nullable: true, w: "12rem" },
+      { name: "active", label: "Aktif", type: "bool", w: "4rem" },
+    ],
+  },
   reviews: {
     label: "Ulasan asli", order: "sort", create: true, remove: true,
     fields: [

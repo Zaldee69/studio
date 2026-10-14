@@ -14,7 +14,13 @@ export interface CartLine {
   appointmentId?: string | null;
   /** layanan dari booking yang dibuat online dalam periode promo (lihat promoEligible) */
   promo?: boolean;
+  /** voucher booking online milik booking baris ini (berlaku bila kategori cocok & bukan ritel) */
+  voucher?: Voucher | null;
 }
+
+export type Voucher = { id: string; code: string; kind: "pct" | "amount"; value: number; category: Category | null; min_spend: number; active: boolean };
+const voucherFits = (l: CartLine, v: Voucher) =>
+  l.category !== "retail" && l.voucher?.id === v.id && (v.category == null || v.category === l.category);
 
 export type OnlinePromo = { pct: number; start: string | null; end: string | null };
 
@@ -72,15 +78,20 @@ export function calcCart(
   const promoBase = lines.filter((l) => l.promo && l.category !== "retail").reduce((a, l) => a + l.price, 0);
   const promo = Math.round((promoBase * (opts.promoPct ?? 0)) / 10000) * 100;
   const usePromo = promo > bundle; // tidak ditumpuk: pakai yang lebih besar
-  const discount = usePromo ? promo : bundle;
+  // voucher booking online (cermin checkout(): voucher pertama yang berlaku, dibanding diskon lain, pakai yang terbesar)
+  const v = lines.find((l) => l.voucher?.active && voucherFits(l, l.voucher))?.voucher ?? null;
+  const vBase = v ? lines.filter((l) => voucherFits(l, v)).reduce((a, l) => a + l.price, 0) : 0;
+  const vDisc = v && vBase >= v.min_spend ? (v.kind === "pct" ? Math.round((vBase * v.value) / 10000) * 100 : Math.min(v.value, vBase)) : 0;
+  const useVoucher = vDisc > (usePromo ? promo : bundle);
+  const discount = useVoucher ? vDisc : usePromo ? promo : bundle;
   const total = subtotal - discount;
   const depositUsed = opts.useDeposit ? Math.min(Math.max(opts.depositBalance ?? 0, 0), total) : 0;
   const paymentMethod: PayMethod =
     depositUsed > 0 && depositUsed < total ? `deposit_${opts.method}` : depositUsed > 0 ? "deposit" : opts.method;
   return {
     subtotal, discount, total, depositUsed, paymentMethod,
-    discountLabel: usePromo ? `Promo booking online ${opts.promoPct}%` : discount ? `Diskon paket ${opts.bundlePct}%` : "",
-    shares: allocateDiscount(lines, discount, usePromo),
+    discountLabel: useVoucher ? `Voucher ${v!.code}` : usePromo ? `Promo booking online ${opts.promoPct}%` : discount ? `Diskon paket ${opts.bundlePct}%` : "",
+    shares: useVoucher ? allocateDiscount(lines.map((l) => ({ ...l, promo: voucherFits(l, v!) })), discount, true) : allocateDiscount(lines, discount, usePromo),
     paid: total - depositUsed,
   };
 }

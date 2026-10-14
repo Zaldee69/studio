@@ -187,13 +187,13 @@ isOneToOne: false
                   ]
                 },"booking_groups": {
                   Row: {
-                    "client_request_id": string | null,"code": string,"created_at": string,"created_by": string | null,"customer_id": string | null,"id": string,"rescheduled_from": string | null,"source": Database["public"]['Enums']["appt_source"]
+                    "client_request_id": string | null,"code": string,"created_at": string,"created_by": string | null,"customer_id": string | null,"id": string,"rescheduled_from": string | null,"source": Database["public"]['Enums']["appt_source"],"voucher_id": string | null
                   }
                   Insert: {
-                    "client_request_id"?: string | null,"code": string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"]
+                    "client_request_id"?: string | null,"code": string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
                   }
                   Update: {
-                    "client_request_id"?: string | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"]
+                    "client_request_id"?: string | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -225,6 +225,12 @@ isOneToOne: false
       columns: ["rescheduled_from"]
 isOneToOne: false
       referencedRelation: "booking_groups"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "booking_groups_voucher_id_fkey"
+      columns: ["voucher_id"]
+isOneToOne: false
+      referencedRelation: "vouchers"
       referencedColumns: ["id"]
     }
                   ]
@@ -1638,13 +1644,13 @@ isOneToOne: false
                   ]
                 },"transactions": {
                   Row: {
-                    "cash_part": number,"cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"refund_date": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null
+                    "cash_part": number,"cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"refund_date": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null,"voucher_id": string | null
                   }
                   Insert: {
-                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null,"voucher_id"?: string | null
                   }
                   Update: {
-                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null,"voucher_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1695,7 +1701,26 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "staff"
       referencedColumns: ["id"]
+    },{
+      foreignKeyName: "transactions_voucher_id_fkey"
+      columns: ["voucher_id"]
+isOneToOne: false
+      referencedRelation: "vouchers"
+      referencedColumns: ["id"]
     }
+                  ]
+                },"vouchers": {
+                  Row: {
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"] | null,"code": string,"created_at": string,"ends_on": string | null,"id": string,"kind": string,"min_spend": number,"note": string,"once_per_customer": boolean,"quota": number | null,"starts_on": string | null,"value": number
+                  }
+                  Insert: {
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code": string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind": string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value": number
+                  }
+                  Update: {
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code"?: string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind"?: string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value"?: number
+                  }
+                  Relationships: [
+                    
                   ]
                 }
           }
@@ -2542,6 +2567,17 @@ isOneToOne: false
                            },
 "void_transaction":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
+                           },
+"voucher_check":
+{ Args: { "p_code": string,"p_customer"?: string,"p_service_ids": (string)[] }; Returns: Json
+                           },
+"voucher_preview":
+{ Args: { "p_code": string,"p_ip"?: string,"p_service_ids": (string)[] }; Returns: Json
+                           },
+"voucher_usage":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "discount_total": number,"redeemed": number,"reserved": number,"voucher_id": string
+            }[]
                            }
           }
           Enums: {

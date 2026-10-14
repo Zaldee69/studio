@@ -113,7 +113,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const lines: CartLine[] = items.map((i) => {
     const s = svc.get(i.serviceId)!;
     return { serviceId: s.id, name: s.name, category: s.category, price: s.price, staffId: i.staffId || null, appointmentId: i.appointmentId,
-      promo: s.category !== "retail" && promoEligible(apptOf(i.appointmentId), master.shop.promo) };
+      promo: s.category !== "retail" && promoEligible(apptOf(i.appointmentId), master.shop.promo), voucher: apptOf(i.appointmentId)?.group?.voucher ?? null };
   });
   const k = calcCart(lines, { bundlePct: master.shop.bundlePct, promoPct: master.shop.promo.pct, method, useDeposit: useDeposit && bal > 0, depositBalance: bal });
   // <1000px keranjang ada di bawah katalog → bar ringkas melayang selama keranjang belum terlihat

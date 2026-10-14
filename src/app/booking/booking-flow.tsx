@@ -15,7 +15,7 @@ import { dayWindow, type DayHours } from "@/lib/domain/hours";
 import { buildIcs } from "@/lib/domain/ics";
 import { addDays } from "@/lib/domain/schedule";
 import { track } from "@/lib/funnel";
-import { bookOnline, type BookedAppt } from "./actions";
+import { bookOnline, previewVoucher, type BookedAppt, type VoucherPreview } from "./actions";
 import { ONLINE_CATS, type OnlineCat } from "@/lib/domain/category";
 
 // supabase-js (~250 KB) & form masuk dimuat setelah halaman tampil — hanya dipakai di efek & langkah "Masuk".
@@ -101,6 +101,10 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const [time, setTime] = useState(init.time ?? "");
   const [guest, setGuest] = useState({ name: "", wa: "" });
   const [note, setNote] = useState("");
+  // voucher: hasil cek berlaku untuk pilihan layanan saat dicek (selKey); pilihan berubah → cek ulang
+  const [vInput, setVInput] = useState("");
+  const [vch, setVch] = useState<{ key: string; r: VoucherPreview } | null>(null);
+  const [vBusy, setVBusy] = useState(false);
   const [consent, setConsent] = useState(false);
   const [captcha, setCaptcha] = useState<string | null>(null);
   const [err, setErr] = useState("");
@@ -152,7 +156,10 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const promoNow = promoActive(shop.promo) && !reschedule;
   const est = calcCart(chosen.map((s) => ({ serviceId: s.id, name: s.name, category: s.category, price: s.price, promo: promoNow })),
     { bundlePct: shop.bundlePct, promoPct: promoNow ? shop.promo.pct : 0, method: "cash" });
-  const discount = est.discount;
+  const vOk = vch && vch.key === sel.join(",") && vch.r.ok ? vch.r : null;
+  const useV = !!vOk && !reschedule && vOk.discount > est.discount; // tidak ditumpuk: pakai yang terbesar (sama dengan kasir)
+  const discount = useV ? vOk!.discount : est.discount;
+  const discountLabel = useV ? `potongan voucher ${vOk!.code}` : est.discountLabel.toLowerCase();
   const total = subtotal - discount;
   const staffPick = Object.fromEntries(Object.entries(pick).filter(([, v]) => v));
   const previewKey = view === "konfirmasi" && time ? JSON.stringify([date, time, sel, staffPick, together]) : "";
@@ -224,6 +231,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
       date, time, service_ids: sel, staff_pick: staffPick, together, notes: note.trim(), client_request_id: reqId.current,
       ...(cust ? {} : { name: guest.name.trim(), whatsapp: guest.wa, consent, captcha_token: captcha ?? undefined }),
       ...(reschedule ? { reschedule_group: reschedule.groupId } : {}),
+      ...(vOk && !reschedule ? { voucher_code: vOk.code } : {}),
     });
     setSending(false);
     if (!r.ok) {
@@ -241,7 +249,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
       total: formatRupiah(total), rescheduled: !!reschedule,
     });
     resetReq();
-    setSel([]); setPick(noPick()); setTime(""); setNote(""); setGuest({ name: "", wa: "" });
+    setSel([]); setPick(noPick()); setTime(""); setNote(""); setGuest({ name: "", wa: "" }); setVInput(""); setVch(null);
     go("selesai");
     window.history.replaceState(null, "", "/booking");
   }
@@ -522,7 +530,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 {summaryLines(false)}
                 {discount > 0 && (
                   <div className="flex justify-between text-sm tabular-nums text-gold">
-                    <span>Estimasi {est.discountLabel.toLowerCase()}</span><span>−{formatRupiah(discount)}</span>
+                    <span>Estimasi {discountLabel}</span><span>−{formatRupiah(discount)}</span>
                   </div>
                 )}
                 <div className="flex items-baseline justify-between border-t border-rule pt-3 tabular-nums">
@@ -564,6 +572,22 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                     </label>
                     <Turnstile onToken={setCaptcha} />
                   </>
+                )}
+                {!reschedule && (
+                  <div className="flex flex-col gap-2">
+                    <label htmlFor="b-voucher" className="lux-label">Kode voucher (opsional)</label>
+                    <div className="flex gap-2">
+                      <input id="b-voucher" autoComplete="off" value={vInput} maxLength={20} placeholder="Mis. HEMAT20"
+                        onChange={(e) => { setVInput(e.target.value.toUpperCase()); setVch(null); }} className="lux-input uppercase" />
+                      <button type="button" disabled={!vInput.trim() || vBusy} className="btn-line h-12 shrink-0"
+                        onClick={async () => { setVBusy(true); const r = await previewVoucher(vInput, sel); setVBusy(false); setVch({ key: sel.join(","), r }); }}>
+                        {vBusy ? "Mengecek…" : "Pakai"}</button>
+                    </div>
+                    {vch && vch.key === sel.join(",") && (vch.r.ok
+                      ? <span role="status" className="text-sm text-cream">Voucher {vch.r.code} ({vch.r.label}) berlaku — potongan {formatRupiah(vch.r.discount)}
+                          {!useV && est.discount > 0 ? `, tapi ${est.discountLabel.toLowerCase()} lebih besar sehingga itu yang dipakai` : ""}. Dipotong saat bayar di studio.</span>
+                      : <span role="alert" className="text-sm text-[#9B2C22]">{vch.r.message}</span>)}
+                  </div>
                 )}
                 <div className="flex flex-col gap-2">
                   <label htmlFor="b-note" className="lux-label">Catatan untuk kami (opsional)</label>
@@ -653,7 +677,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             <div className="flex flex-col gap-3">{summaryLines(true)}</div>
             {discount > 0 && (
               <div className="flex justify-between text-sm tabular-nums text-gold">
-                <span>Estimasi {est.discountLabel.toLowerCase()}</span><span>−{formatRupiah(discount)}</span>
+                <span>Estimasi {discountLabel}</span><span>−{formatRupiah(discount)}</span>
               </div>
             )}
             {lines.length > 0 && discount === 0 && bundleOpen && cats.some((c) => c === "barbershop" || c === "nail") && (

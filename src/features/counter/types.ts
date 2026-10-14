@@ -1,6 +1,6 @@
 import type { DayHours } from "@/lib/domain/hours";
 import type { ApptStatus } from "@/lib/domain/status";
-import type { OnlinePromo, PayMethod } from "@/lib/domain/cart";
+import type { OnlinePromo, PayMethod, Voucher } from "@/lib/domain/cart";
 
 import type { Cat } from "@/lib/domain/category";
 export type { Cat };
@@ -26,7 +26,7 @@ export type DayAppt = {
   resource_id: string; staff_id: string | null; customer_id: string | null;
   arrived_at: string | null; service_started_at: string | null; service_ended_at: string | null;
   change_request: string | null; change_requested_at: string | null;
-  booking_group_id: string | null; group: { code: string } | null; guest_name: string | null;
+  booking_group_id: string | null; group: { code: string; voucher: Voucher | null } | null; guest_name: string | null;
   customer: Customer | null;
   appointment_services: { service_id: string }[];
 };
@@ -40,7 +40,7 @@ export type TxRow = {
     appointment: { guest_name: string | null } | null }[];
 };
 
-export const APPT_SELECT = "id, created_at, start_at, end_at, duration_min, status, source, notes, cancel_reason, resource_id, staff_id, customer_id, arrived_at, service_started_at, service_ended_at, change_request, change_requested_at, booking_group_id, guest_name, group:booking_groups(code), customer:customers(id, name, whatsapp, notes), appointment_services(service_id)";
+export const APPT_SELECT = "id, created_at, start_at, end_at, duration_min, status, source, notes, cancel_reason, resource_id, staff_id, customer_id, arrived_at, service_started_at, service_ended_at, change_request, change_requested_at, booking_group_id, guest_name, group:booking_groups(code, voucher:vouchers(id, code, kind, value, category, min_spend, active)), customer:customers(id, name, whatsapp, notes), appointment_services(service_id)";
 export const TX_SELECT = "id, created_at, customer_id, subtotal, discount_amount, discount_label, total, deposit_used, paid_amount, payment_method, cash_received, cashier_id, voided_at, void_reason, tip_amount, tip_staff_id, cash_part, customer:customers(name, whatsapp), transaction_items(id, name, category, price, discount_share, net_amount, staff_id, appointment_id, appointment:appointments(guest_name))";
 
 export type TimeOffRow = { id: string; staff_id: string; start_at: string; end_at: string; all_day: boolean; reason: string; status: "pending" | "approved" | "rejected" | "cancelled" };

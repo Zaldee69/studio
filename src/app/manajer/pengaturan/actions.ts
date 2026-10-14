@@ -15,6 +15,10 @@ function friendly(e: { code?: string; message: string }): string {
   if (e.message.includes("staff_needs_link")) return "Akun kapster aktif wajib ditautkan ke staf.";
   if (e.code === "23505") return "Data dengan nilai yang sama sudah ada.";
   if (e.code === "23503") return "Masih dipakai data lain — nonaktifkan saja.";
+  if (e.message.includes("vouchers_code_check")) return "Kode voucher: 3–20 huruf/angka/tanda minus, tanpa spasi.";
+  if (e.message.includes("vouchers_check1")) return "Tanggal sampai harus setelah tanggal mulai.";
+  if (e.message.includes("vouchers_check")) return "Voucher persen maksimal 100.";
+  if (e.code === "23505" && e.message.includes("vouchers")) return "Kode voucher sudah dipakai.";
   if (e.code === "23514") return "Nilai tidak valid (cek durasi/jam/angka).";
   if (e.code === "42501") return "Akses ditolak.";
   return e.message;

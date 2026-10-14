@@ -43,8 +43,8 @@ export const card = (page: Page, name: string) => page.getByRole("button", { nam
 // ---------- Akses API langsung (setup data & cek angka) ----------
 // ponytail: PostgREST langsung (tanpa realtime supabase-js yang butuh WebSocket bawaan Node 22)
 try { process.loadEnvFile(".env.local"); } catch {}
-const SB = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const svcKey = process.env.SUPABASE_SECRET_KEY!;
+export const SB = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+export const svcKey = process.env.SUPABASE_SECRET_KEY!;
 /** Klien service role (melewati RLS) — hanya untuk menyiapkan/membersihkan data tes. */
 export const admin = new PostgrestClient(`${SB}/rest/v1`, { headers: { apikey: svcKey, Authorization: `Bearer ${svcKey}` } });
 
@@ -92,8 +92,9 @@ export async function mailLink(to: string) {
 
 /** Akun tim baru via Auth admin API (sudah terkonfirmasi & aktif) — untuk tes yang mengubah pengaturan akun. */
 export async function createTeamUser(email: string, role: "manager" | "cashier") {
+  const { data: st } = await admin.from("settings").select("invite_code").single(); // berganti setiap akun tim diaktifkan
   const r = await fetch(`${SB}/auth/v1/admin/users`, { method: "POST", headers: { apikey: svcKey, Authorization: `Bearer ${svcKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password: PW, email_confirm: true, user_metadata: { signup: "team", invite_code: "GB-2026", role: "cashier", full_name: "Tes MFA" } }) });
+    body: JSON.stringify({ email, password: PW, email_confirm: true, user_metadata: { signup: "team", invite_code: st?.invite_code, role: "cashier", full_name: "Tes MFA" } }) });
   const u = await r.json();
   if (!u.id) throw new Error(JSON.stringify(u));
   await admin.from("profiles").update({ role, active: true }).eq("id", u.id);

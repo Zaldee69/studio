@@ -3,6 +3,9 @@ import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
 import { savePublicSettings, saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
+import { getProfile } from "@/lib/auth";
+import { PendingAccounts } from "./pending-accounts";
+import { RemoveAccountForm } from "./remove-account";
 import { PriceRelease } from "./price-release";
 import { ClosuresForm, HoursForm, OutboundLog, PhotoManager } from "./public-page";
 import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
@@ -105,27 +108,26 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     const { data } = await supabase.from("staff").select("id, name").eq("active", true).order("sort");
     body = <StationSettings staff={data ?? []} />;
   } else if (tab === "keamanan") {
-    body = <MfaSettings />;
+    const { data: st } = await supabase.from("settings").select("manager_mfa_required").single();
+    body = <MfaSettings required={!!st?.manager_mfa_required} />;
   } else if (tab === "gaya") {
     body = <HairstyleCatalog />;
   } else if (tab === "deposit") {
     const { data } = await supabase.from("deposit_packages").select("*").order("amount_paid");
     body = <CrudTable table="deposit_packages" rows={data ?? []} />;
   } else if (tab === "akun") {
-    const [{ data: profiles }, { data: staff }] = await Promise.all([
+    const me = await getProfile();
+    const [{ data: profiles }, { data: staff }, { data: signups }] = await Promise.all([
       supabase.from("profiles").select("*").neq("role", "customer").order("active").order("created_at"),
       supabase.from("staff").select("id, name").order("sort"),
+      supabase.rpc("team_signups"),
     ]);
-    const pending = (profiles ?? []).filter((p) => !p.active).length;
     body = (
       <div className="space-y-6">
-        {pending > 0 && (
-          <p role="status" className="rounded-lg bg-st-booked p-4 text-sm">
-            {pending} akun baru menunggu aktivasi. Centang <b>Aktif</b> (kapster: pilih <b>Tautan staf</b> dulu) lalu Simpan.
-          </p>
-        )}
+        <PendingAccounts rows={signups ?? []} staff={opt(staff)} />
         <CrudTable table="profiles" rows={profiles ?? []} options={{ staff: opt(staff) }} />
         <ResetPasswordForm users={(profiles ?? []).map((p) => [p.id, `${p.full_name} · ${p.email}`])} />
+        <RemoveAccountForm users={(profiles ?? []).filter((p) => p.id !== me?.id).map((p) => [p.id, `${p.full_name} · ${p.email}`])} />
         <p className="text-sm text-muted">Akun pelanggan dikelola di modul Pelanggan (tahap berikutnya).</p>
       </div>
     );

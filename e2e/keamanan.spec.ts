@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { createTeamUser, login, mailLink, PW, totp, uniq } from "./helpers";
+import { createTeamUser, login, mailLink, PW, sql, totp, uniq } from "./helpers";
 
 const AUTH = /^sb-.*-auth-token(\.\d+)?$/;
 /** Ubah isi sesi di cookie (meniru pengguna yang memalsukan cookie-nya sendiri). */
@@ -31,7 +31,7 @@ test("1 · daftar tim → wajib konfirmasi email → akun menunggu aktivasi mana
   await page.fill("#email", email);
   await page.fill("#password", "pendek");
   await page.selectOption("#role", "cashier");
-  await page.fill("#invite_code", "GB-2026");
+  await page.fill("#invite_code", sql<{ c: string }>("select invite_code as c from settings")[0].c); // berganti tiap aktivasi
   await page.click("button[type=submit]");
   await expect(page.locator("form [role=alert]")).toContainText("huruf dan angka");
   await page.fill("#password", "rahasia123");

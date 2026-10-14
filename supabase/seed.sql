@@ -102,3 +102,6 @@ insert into sop_tool_groups (name, sort) values
   ('Gunting & clipper blade', 1), ('Alat cukur', 2), ('Pusher & nipper', 3), ('Alat pedicure', 4);
 
 -- Tugas perawatan & katalog gaya contoh: lihat migration 20261008000001_data_awal_perawatan_gaya.sql
+
+-- Data uji lokal: akun manajer contoh tanpa verifikasi 2 langkah (produksi: wajib, bawaan migration).
+update settings set manager_mfa_required = false;

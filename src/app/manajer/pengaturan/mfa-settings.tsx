@@ -10,7 +10,7 @@ type Enroll = { id: string; qr: string; secret: string };
 const factorId = async () => (await createClient().auth.mfa.listFactors()).data?.totp[0]?.id ?? null;
 
 /** Verifikasi 2 langkah (TOTP: Google Authenticator, 1Password, dsb.) untuk akun yang sedang masuk. */
-export function MfaSettings() {
+export function MfaSettings({ required = false }: { required?: boolean }) {
   const toast = useToast();
   const confirm = useConfirm();
   const [active, setActive] = useState<string | null | undefined>(undefined); // id faktor terverifikasi
@@ -51,6 +51,11 @@ export function MfaSettings() {
   return (
     <section aria-labelledby="mfa-h" className="max-w-xl space-y-4 rounded-2xl border border-line bg-card p-6">
       <h2 id="mfa-h" className="font-display text-xl font-bold">Verifikasi 2 langkah</h2>
+      {required && active === null && (
+        <p role="alert" className="rounded-lg bg-[#FBF3DE] p-3 text-sm text-[#5A4300]">
+          <b>Wajib untuk manajer.</b> Aktifkan verifikasi 2 langkah dulu — halaman manajer lain terkunci sampai ini selesai.
+        </p>
+      )}
       <p className="text-sm text-muted">
         Akun manajer bisa melihat semua keuangan dan mengatur akun tim. Dengan verifikasi 2 langkah, masuk butuh kata sandi
         <b> dan</b> kode 6 digit dari aplikasi autentikator di HP — sandi yang bocor saja tidak cukup.
@@ -58,7 +63,7 @@ export function MfaSettings() {
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
           <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-bold text-[#144D2A]">Aktif</span>
-          <button onClick={disable} className="btn-ghost h-11">Matikan</button>
+          {!required && <button onClick={disable} className="btn-ghost h-11">Matikan</button>}
         </div>
       ) : enroll ? (
         <form onSubmit={verify} className="space-y-3">

@@ -7,6 +7,12 @@ import { STATION_ACTIVE, STATION_COOKIE, STATION_IDLE_S } from "@/features/stasi
 
 // Refresh sesi Supabase + redirect per peran. Otorisasi data yang sebenarnya = RLS + requireRole() di layout.
 export async function proxy(request: NextRequest) {
+  // Tautan konfirmasi email yang jatuh ke Site URL (redirect tujuan belum diizinkan di Supabase Auth) → tetap diproses.
+  // ponytail: satu-satunya emailRedirectTo di aplikasi adalah daftar akun tim, jadi diasumsikan "untuk=tim".
+  const code = request.nextUrl.searchParams.get("code");
+  if (request.nextUrl.pathname === "/" && code) {
+    return NextResponse.redirect(new URL(`/auth/konfirmasi?untuk=tim&code=${encodeURIComponent(code)}`, request.url), 303);
+  }
   let response = NextResponse.next({ request });
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,6 +62,11 @@ export async function proxy(request: NextRequest) {
   // Punya verifikasi 2 langkah tapi baru masuk dengan sandi → RLS belum mengenali perannya; minta kode dulu.
   // aal dari klaim JWT terverifikasi (getClaims), bukan getAuthenticatorAssuranceLevel() yang membaca cookie.
   if (p.mfa_enabled && jwt?.claims.aal !== "aal2") return path === "/login" ? response : go("/login?mfa=1");
+  // Manajer wajib verifikasi 2 langkah (settings.manager_mfa_required): sebelum aktif, hanya Pengaturan yang bisa dibuka.
+  if (p.role === "manager" && !p.mfa_enabled && area === "manager" && !path.startsWith("/manajer/pengaturan")) {
+    const { data: st } = await supabase.from("settings").select("manager_mfa_required").single();
+    if (st?.manager_mfa_required) return go("/manajer/pengaturan?tab=keamanan");
+  }
   if (path === "/login") return p.role === "customer" ? go("/akun") : go(homeFor(p.role));
   if (area !== p.role) return go(homeFor(p.role));
   return response;

@@ -142,6 +142,37 @@ export async function resetPassword(_: SaveState, fd: FormData): Promise<SaveSta
   return { ok: "Sandi diganti. Sampaikan ke pemilik akun." };
 }
 
+/** Hapus akun tim. Tanpa riwayat → dihapus permanen; punya riwayat (transaksi, tutup kasir, dll.) → dikunci permanen
+ *  (tidak bisa masuk; proxy menolak akun nonaktif seketika) agar riwayat & laporan tetap utuh. */
+export async function removeTeamAccount(userId: string): Promise<SaveState> {
+  try { return await removeTeamAccountImpl(userId); } catch (e) {
+    log("error", "team_account_remove_failed", { target: userId, error: e instanceof Error ? e.message : String(e) });
+    return { error: "Gagal menghapus akun. Coba lagi." };
+  }
+}
+async function removeTeamAccountImpl(userId: string): Promise<SaveState> {
+  const me = await getProfile();
+  if (me?.role !== "manager" || !me.active) return { error: "Akses ditolak." };
+  if (!z.guid().safeParse(userId).success) return { error: "Akun tidak valid." };
+  if (userId === me.id) return { error: "Tidak bisa menghapus akun sendiri." };
+  const admin = createAdminClient();
+  const { data: p } = await admin.from("profiles").select("role, full_name").eq("id", userId).single();
+  if (!p || p.role === "customer") return { error: "Akun tim tidak ditemukan." };
+  const del = await admin.auth.admin.deleteUser(userId);
+  if (!del.error) {
+    log("info", "team_account_deleted", { by: me.id, target: userId });
+    revalidatePath("/manajer/pengaturan");
+    return { ok: `Akun ${p.full_name} dihapus.` };
+  }
+  // masih dirujuk riwayat → kunci permanen
+  const ban = await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
+  if (ban.error) return { error: ban.error.message };
+  await admin.from("profiles").update({ active: false, staff_id: null }).eq("id", userId);
+  log("info", "team_account_locked", { by: me.id, target: userId, reason: del.error.message });
+  revalidatePath("/manajer/pengaturan");
+  return { ok: `Akun ${p.full_name} punya riwayat transaksi, jadi dikunci permanen (tidak bisa masuk). Riwayatnya tetap utuh.` };
+}
+
 export async function saveSopSettings(_: SaveState, fd: FormData): Promise<SaveState> {
   const r = parseFields(SOP_GROUPS.flatMap((g) => g.fields), fd);
   if (!r.success) return { error: r.error.issues[0].message };

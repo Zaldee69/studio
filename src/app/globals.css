@@ -16,23 +16,23 @@
   --color-st-service: #fbefe8;
   --color-st-completed: #faeeee;
   --color-st-paid: #eef4ed;
-  /* publik — warm minimalism D'Pras Studio (dokumen strategi brand: charcoal/deep olive, beige, sage, dusty rose,
-     warm brown). Nama token warisan desain gelap lama: lux = latar, cream = teks utama, gold = aksen.
-     Aksen & teks sekunder digelapkan dari kode brand agar kontras teks ≥ 4.5:1 di atas latar beige. */
-  --color-lux: #f7f2ea;
-  --color-lux-2: #efe6d9;
-  --color-lux-3: #e8d9c5;
-  --color-rule: #e2d6c4;
-  --color-rule-2: #cdbfaa;
-  --color-gold: #765434;
-  --color-gold-hi: #6b4c2f;
-  --color-cream: #242923;
-  --color-sand: #474c43;
-  --color-dust: #555c4d;
-  --color-stone: #5a5b50;
-  --color-ash: #8c8a7c;
-  --color-sage: #a9b19c;
-  --color-rose: #d7b0ad;
+  /* publik — monokrom ala Fresha (pilihan pemilik 14/10/2026: terang, maskulin, tanpa pastel): putih, hitam, abu dingin.
+     Nama token warisan desain gelap lama: lux = latar, cream = teks utama, gold = aksen (di palet ini = hitam).
+     Teks sekunder ≥ 4.5:1 di atas putih & #F5F5F5. */
+  --color-lux: #ffffff;
+  --color-lux-2: #f5f5f5;
+  --color-lux-3: #f2f2f2;
+  --color-rule: #dee3e7;
+  --color-rule-2: #bfbfbf;
+  --color-gold: #0d0d0d;
+  --color-gold-hi: #262626;
+  --color-cream: #0d0d0d;
+  --color-sand: #404040;
+  --color-dust: #626262;
+  --color-stone: #6e6e6e;
+  --color-ash: #8c939d;
+  --color-sage: #a4adba;
+  --color-rose: #dee3e7;
 
   --font-display: var(--font-bricolage), system-ui, sans-serif;
   --font-sans: var(--font-jakarta), system-ui, sans-serif;
@@ -80,7 +80,7 @@ select:not([multiple]):not([size]) {
 /* Publik: tombol pil & isian membulat, huruf kapital berjarak */
 @utility eyebrow { @apply text-xs font-medium uppercase tracking-[0.32em] text-gold; }
 @utility btn-gold {
-  @apply inline-flex h-14 items-center justify-center rounded-full bg-cream px-8 text-[13px] font-semibold uppercase tracking-[0.18em] text-lux transition hover:bg-[#3a4137] disabled:cursor-not-allowed disabled:bg-rule-2 disabled:text-stone;
+  @apply inline-flex h-14 items-center justify-center rounded-full bg-cream px-8 text-[13px] font-semibold uppercase tracking-[0.18em] text-lux transition hover:bg-gold-hi disabled:cursor-not-allowed disabled:bg-rule-2 disabled:text-stone;
 }
 @utility btn-line {
   @apply inline-flex h-11 items-center justify-center rounded-full border border-cream px-5 text-xs font-semibold uppercase tracking-[0.18em] text-cream transition hover:bg-cream hover:text-lux;

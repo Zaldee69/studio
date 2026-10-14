@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: BRAND },
 };
 
-export const viewport: Viewport = { themeColor: "#242923" };
+export const viewport: Viewport = { themeColor: "#0D0D0D" };
 
 // dev server yang tersambung ke Supabase cloud (npm run dev:prod) → penanda agar tidak salah mengubah data asli
 const PROD_DB_IN_DEV = process.env.NODE_ENV === "development" && !/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");

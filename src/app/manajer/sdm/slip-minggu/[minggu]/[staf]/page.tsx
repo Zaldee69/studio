@@ -61,9 +61,6 @@ export default async function SlipMinggu({ params }: PageProps<"/manajer/sdm/sli
             ))}</tbody>
           </table>
         </section>
-        <div className="mt-6 grid grid-cols-2 gap-8 text-center text-xs">
-          <span className="border-t border-ink pt-1">Diterima ({r.staff_name})</span><span className="border-t border-ink pt-1">Manajer</span>
-        </div>
       </article>
     </div>
   );

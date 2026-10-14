@@ -1,7 +1,7 @@
 // Sama dengan check constraint expenses.category / expenses.source (migration 20261011000002 & 000003).
 // 'kasbon' = uang muka gaji: wajib pilih staf, otomatis jadi potongan gaji bulan itu.
 export const EXPENSE_CAT = {
-  sewa: "Sewa tempat", listrik_air: "Listrik & air", internet_pulsa: "Internet & pulsa", perlengkapan: "Perlengkapan",
+  sewa: "Sewa tempat", ipl: "IPL & iuran lingkungan", listrik_air: "Listrik & air", internet_pulsa: "Internet & pulsa", perlengkapan: "Perlengkapan",
   kebersihan: "Kebersihan", konsumsi: "Konsumsi", pemasaran: "Pemasaran", transportasi: "Transportasi",
   perbaikan: "Perbaikan kecil", pajak_izin: "Pajak & izin", kasbon: "Kasbon staf", lainnya: "Lainnya",
 } as const;

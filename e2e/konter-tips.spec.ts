@@ -32,7 +32,7 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   await page.getByLabel("Metode bayar").selectOption("qris");
   await page.getByLabel("Staf").selectOption({ label: staffName });
   await page.getByLabel("Layanan").selectOption("Cukur Jenggot");
-  await expect(page.getByText(/^1 dari \d+$/)).toBeVisible();
+  await expect(page.getByText(/^1 (dari \d+|transaksi)$/)).toBeVisible();
   await page.getByLabel("Metode bayar").selectOption("cash");
   await expect(page.getByText("Tidak ada transaksi yang cocok dengan filter.")).toBeVisible();
 });
@@ -55,4 +55,24 @@ test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak 
   await page.goto("/kasir/kasir?tab=riwayat");
   await page.getByLabel("Metode bayar").selectOption("transfer");
   await expect(page.getByRole("button", { name: /Transaksi .* Rp45\.000/ }).first()).toBeVisible();
+});
+
+test("bayar campuran: sebagian tunai + sisanya QRIS → struk & riwayat", async ({ page }) => {
+  const ref = `MIX${uniq()}`.toUpperCase();
+  await login(page, "cashier");
+  const cart = page.getByRole("region", { name: "Keranjang" });
+  await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
+  await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await cart.getByRole("radio", { name: "QRIS" }).click();
+  await cart.getByLabel("No. referensi QRIS").fill(ref);
+  await cart.getByLabel("Sebagian dibayar tunai (opsional)").fill("5000");
+  await expect(cart).toContainText(/Terima Rp5\.000 tunai ke laci, sisanya Rp[\d.]+ lewat QRIS/);
+  await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
+  await expect(cart).toContainText("Pembayaran tercatat");
+  await expect(cart).toContainText("· TunaiRp5.000");
+  const [t] = sql<{ cash_part: number; paid_amount: number }>(`select cash_part, paid_amount from transactions where qris_ref = '${ref}'`);
+  expect(Number(t.cash_part)).toBe(5000);
+  await page.goto("/kasir/kasir?tab=riwayat");
+  await page.getByLabel("Metode bayar").selectOption("qris");
+  await expect(page.getByText("QRIS + tunai").first()).toBeVisible();
 });

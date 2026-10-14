@@ -1,21 +1,22 @@
 // Rekap harian kasir. Cermin cash_summary() di SQL (yang disimpan saat tutup kasir).
 import type { PayMethod } from "./cart";
 
-export interface TxRow { total: number; paid_amount: number; deposit_used: number; discount_amount: number; payment_method: PayMethod; voided_at: string | null }
+export interface TxRow { total: number; paid_amount: number; deposit_used: number; discount_amount: number; payment_method: PayMethod; voided_at: string | null; cash_part?: number }
 export interface TopupRow { amount_paid: number; amount_credited: number; method: PayMethod }
 
 export function dailySummary(txs: TxRow[], topups: TopupRow[]) {
   const ok = txs.filter((t) => !t.voided_at);
   const sum = (rows: TxRow[], f: (t: TxRow) => number) => rows.reduce((a, t) => a + f(t), 0);
-  const cashSales = sum(ok.filter((t) => t.payment_method === "cash" || t.payment_method === "deposit_cash"), (t) => t.paid_amount);
+  // bayar campuran: cash_part = bagian tunai dari transaksi QRIS/transfer
+  const cashSales = sum(ok, (t) => (t.payment_method === "cash" || t.payment_method === "deposit_cash" ? t.paid_amount : t.cash_part ?? 0));
   const topupCash = topups.filter((t) => t.method === "cash").reduce((a, t) => a + t.amount_paid, 0);
   return {
     txCount: ok.length,
     grossTotal: sum(ok, (t) => t.total),
     discountTotal: sum(ok, (t) => t.discount_amount),
     cashSales,
-    qrisSales: sum(ok.filter((t) => t.payment_method === "qris" || t.payment_method === "deposit_qris"), (t) => t.paid_amount),
-    transferSales: sum(ok.filter((t) => t.payment_method === "transfer" || t.payment_method === "deposit_transfer"), (t) => t.paid_amount),
+    qrisSales: sum(ok.filter((t) => t.payment_method === "qris" || t.payment_method === "deposit_qris"), (t) => t.paid_amount - (t.cash_part ?? 0)),
+    transferSales: sum(ok.filter((t) => t.payment_method === "transfer" || t.payment_method === "deposit_transfer"), (t) => t.paid_amount - (t.cash_part ?? 0)),
     depositUsed: sum(ok, (t) => t.deposit_used),
     topupCash,
     topupQris: topups.filter((t) => t.method === "qris").reduce((a, t) => a + t.amount_paid, 0),

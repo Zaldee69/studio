@@ -1,0 +1,36 @@
+# Backup database produksi mingguan (Supabase paket gratis tidak punya backup harian).
+# Repo ini PUBLIK → dump dienkripsi (AES-256, gpg) sebelum disimpan sebagai artifact (90 hari).
+# Secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL     — connection string Postgres (Supabase → Connect → Session pooler), termasuk password
+#   BACKUP_PASSPHRASE   — kata sandi enkripsi; simpan juga di tempat aman (tanpa ini backup tidak bisa dibuka)
+# Memulihkan: unduh artifact → gpg -d backup.tar.gz.gpg | tar xz → psql "<db-url>" -f roles.sql -f schema.sql -f data.sql
+# Catatan: file di Storage (foto, nota) tidak ikut — hanya database.
+name: Backup DB mingguan
+on:
+  schedule:
+    - cron: "0 19 * * 6" # Minggu 02:00 WIB
+  workflow_dispatch:
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Cek secrets
+        env: { DB_URL: "${{ secrets.SUPABASE_DB_URL }}", PASS: "${{ secrets.BACKUP_PASSPHRASE }}" }
+        run: test -n "$DB_URL" && test -n "$PASS" || { echo "Isi secrets SUPABASE_DB_URL & BACKUP_PASSPHRASE"; exit 1; }
+      - uses: supabase/setup-cli@v1
+        with: { version: 2.118.0 }
+      - name: Dump & enkripsi
+        env: { DB_URL: "${{ secrets.SUPABASE_DB_URL }}", PASS: "${{ secrets.BACKUP_PASSPHRASE }}" }
+        run: |
+          supabase db dump --db-url "$DB_URL" --role-only -f roles.sql
+          supabase db dump --db-url "$DB_URL" -f schema.sql
+          supabase db dump --db-url "$DB_URL" --data-only --use-copy -f data.sql
+          tar czf - roles.sql schema.sql data.sql | gpg --batch --yes --pinentry-mode loopback --symmetric --cipher-algo AES256 --passphrase "$PASS" -o backup.tar.gz.gpg
+          rm roles.sql schema.sql data.sql
+          ls -lh backup.tar.gz.gpg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: backup.tar.gz.gpg
+          retention-days: 90

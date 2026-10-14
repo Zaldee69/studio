@@ -286,13 +286,13 @@ isOneToOne: false
                   ]
                 },"cash_closings": {
                   Row: {
-                    "cashier_id": string | null,"created_at": string,"date": string,"deposit_out": number,"difference": number | null,"expected_cash": number,"id": string,"note": string,"physical_cash": number,"summary": NonNullable<Json>
+                    "cashier_id": string | null,"created_at": string,"date": string,"denominations": Json | null,"deposit_out": number,"difference": number | null,"expected_cash": number,"id": string,"note": string,"physical_cash": number,"summary": NonNullable<Json>
                   }
                   Insert: {
-                    "cashier_id"?: string | null,"created_at"?: string,"date": string,"deposit_out"?: number,"difference"?: never,"expected_cash": number,"id"?: string,"note"?: string,"physical_cash": number,"summary": NonNullable<Json>
+                    "cashier_id"?: string | null,"created_at"?: string,"date": string,"denominations"?: Json | null,"deposit_out"?: number,"difference"?: never,"expected_cash": number,"id"?: string,"note"?: string,"physical_cash": number,"summary": NonNullable<Json>
                   }
                   Update: {
-                    "cashier_id"?: string | null,"created_at"?: string,"date"?: string,"deposit_out"?: number,"difference"?: never,"expected_cash"?: number,"id"?: string,"note"?: string,"physical_cash"?: number,"summary"?: NonNullable<Json>
+                    "cashier_id"?: string | null,"created_at"?: string,"date"?: string,"denominations"?: Json | null,"deposit_out"?: number,"difference"?: never,"expected_cash"?: number,"id"?: string,"note"?: string,"physical_cash"?: number,"summary"?: NonNullable<Json>
                   }
                   Relationships: [
                     {
@@ -459,15 +459,28 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"expenses": {
+                },"expense_templates": {
                   Row: {
-                    "adjustment_id": string | null,"amount": number,"category": string,"created_at": string,"created_by": string | null,"date": string,"description": string,"id": string,"receipt_path": string | null,"source": string,"staff_id": string | null,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                    "active": boolean,"amount": number,"category": string,"created_at": string,"day_of_month": number,"description": string,"id": string,"source": string
                   }
                   Insert: {
-                    "adjustment_id"?: string | null,"amount": number,"category": string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description": string,"id"?: string,"receipt_path"?: string | null,"source": string,"staff_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "active"?: boolean,"amount": number,"category": string,"created_at"?: string,"day_of_month": number,"description": string,"id"?: string,"source": string
                   }
                   Update: {
-                    "adjustment_id"?: string | null,"amount"?: number,"category"?: string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description"?: string,"id"?: string,"receipt_path"?: string | null,"source"?: string,"staff_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                    "active"?: boolean,"amount"?: number,"category"?: string,"created_at"?: string,"day_of_month"?: number,"description"?: string,"id"?: string,"source"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"expenses": {
+                  Row: {
+                    "adjustment_id": string | null,"amount": number,"category": string,"created_at": string,"created_by": string | null,"date": string,"description": string,"id": string,"receipt_path": string | null,"source": string,"staff_id": string | null,"template_id": string | null,"void_reason": string | null,"voided_at": string | null,"voided_by": string | null
+                  }
+                  Insert: {
+                    "adjustment_id"?: string | null,"amount": number,"category": string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description": string,"id"?: string,"receipt_path"?: string | null,"source": string,"staff_id"?: string | null,"template_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
+                  }
+                  Update: {
+                    "adjustment_id"?: string | null,"amount"?: number,"category"?: string,"created_at"?: string,"created_by"?: string | null,"date"?: string,"description"?: string,"id"?: string,"receipt_path"?: string | null,"source"?: string,"staff_id"?: string | null,"template_id"?: string | null,"void_reason"?: string | null,"voided_at"?: string | null,"voided_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -499,6 +512,12 @@ isOneToOne: false
       columns: ["staff_id"]
 isOneToOne: false
       referencedRelation: "staff"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "expenses_template_id_fkey"
+      columns: ["template_id"]
+isOneToOne: false
+      referencedRelation: "expense_templates"
       referencedColumns: ["id"]
     }
                   ]
@@ -1205,13 +1224,13 @@ isOneToOne: false
                   ]
                 },"settings": {
                   Row: {
-                    "aov_target_barbershop": number,"aov_target_nail": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
+                    "aov_target_barbershop": number,"aov_target_nail": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"cash_tolerance": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
                   }
                   Insert: {
-                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Update: {
-                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "aov_target_barbershop"?: number,"aov_target_nail"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Relationships: [
                     
@@ -1606,13 +1625,13 @@ isOneToOne: false
                   ]
                 },"transactions": {
                   Row: {
-                    "cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"refund_date": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null
+                    "cash_part": number,"cash_received": number | null,"cashier_id": string | null,"created_at": string,"customer_id": string | null,"deposit_used": number,"discount_amount": number,"discount_label": string,"id": string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref": string | null,"refund_date": string | null,"subtotal": number,"tip_amount": number,"tip_staff_id": string | null,"total": number,"void_reason": string | null,"voided_at": string | null
                   }
                   Insert: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount": number,"payment_method": Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal": number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total": number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Update: {
-                    "cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
+                    "cash_part"?: number,"cash_received"?: number | null,"cashier_id"?: string | null,"created_at"?: string,"customer_id"?: string | null,"deposit_used"?: number,"discount_amount"?: number,"discount_label"?: string,"id"?: string,"paid_amount"?: number,"payment_method"?: Database["public"]['Enums']["pay_method"],"qris_ref"?: string | null,"refund_date"?: string | null,"subtotal"?: number,"tip_amount"?: number,"tip_staff_id"?: string | null,"total"?: number,"void_reason"?: string | null,"voided_at"?: string | null
                   }
                   Relationships: [
                     {
@@ -1930,7 +1949,7 @@ isOneToOne: false
           }
           Functions: {
             "add_expense":
-{ Args: { "p_amount": number,"p_category": string,"p_date": string,"p_description": string,"p_receipt_path"?: string,"p_source": string,"p_staff_id"?: string }; Returns: string
+{ Args: { "p_amount": number,"p_category": string,"p_date": string,"p_description": string,"p_receipt_path"?: string,"p_source": string,"p_staff_id"?: string,"p_template_id"?: string }; Returns: string
                            },
 "adjust_stock":
 { Args: { "p_item_id": string,"p_note"?: string,"p_qty": number,"p_reason": string }; Returns: number
@@ -2342,11 +2361,17 @@ isOneToOne: false
 "public_staff_off":
 { Args: { "p_date": string }; Returns: string[]
                            },
+"purge_logs":
+{ Args: Record<PropertyKey, never>; Returns: Json
+                           },
 "receive_stock":
 { Args: { "p_attachment_path"?: string,"p_invoice_no"?: string,"p_item_id": string,"p_note"?: string,"p_paid_from"?: string,"p_qty": number,"p_supplier_id"?: string,"p_unit_cost": number }; Returns: Json
                            },
 "record_sop_stage":
 { Args: { "p_group_id": string,"p_note"?: string,"p_on_behalf_staff"?: string,"p_photo_path"?: string,"p_shift"?: number,"p_stage": Database["public"]['Enums']["sop_stage"] }; Returns: string
+                           },
+"recurring_expense_reminders":
+{ Args: { "p_today"?: string }; Returns: number
                            },
 "refresh_analytics":
 { Args: { "p_force"?: boolean }; Returns: undefined
@@ -2380,7 +2405,7 @@ isOneToOne: false
             }[]
                            },
 "save_cash_closing":
-{ Args: { "p_date": string,"p_deposit_out"?: number,"p_note"?: string,"p_physical_cash": number }; Returns: string
+{ Args: { "p_date": string,"p_denoms"?: Json,"p_deposit_out"?: number,"p_note"?: string,"p_physical_cash": number }; Returns: string
                            },
 "save_push_subscription":
 { Args: { "p_auth": string,"p_endpoint": string,"p_p256dh": string }; Returns: undefined

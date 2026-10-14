@@ -19,6 +19,7 @@ import { TopupModal } from "./topup-modal";
 import { apptName } from "@/lib/domain/guest";
 
 // staffLocked: item dari booking yang sudah ada kapsternya — komisi mengikuti booking (dicek juga di server)
+const PAIR_COLORS = ["#7A4E9C", "#2F6F8F", "#A0522D", "#3E7B4F", "#9C3D5E"];
 type Item = { key: string; serviceId: string; staffId: string; appointmentId: string | null; fromUpsell?: boolean; staffLocked?: boolean };
 const uid = () => Math.random().toString(36).slice(2, 10);
 const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\D/g, "")) || 0);
@@ -39,6 +40,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [method, setMethod] = useState<BaseMethod>("cash");
   const [qrisRef, setQrisRef] = useState(""); // No. referensi QRIS / transfer (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
+  const [cashPart, setCashPart] = useState(""); // bayar campuran: sebagian tunai
   const [tip, setTip] = useState(""); // tips QRIS (titipan staf, diserahkan tunai dari laci)
   const [tipPick, setTipPick] = useState("");
   const [dismissed, setDismissed] = useState<string[]>([]);
@@ -64,6 +66,21 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
   // ---------- keranjang ----------
   const inCart = new Set(items.map((i) => i.appointmentId).filter(Boolean));
+  // Pasangan/rombongan: booking satu kode (booking_group) atau pelanggan sama dengan ≥2 tagihan → tanda huruf & warna sama
+  const groups = new Map<string, { tag: string; color: string; ids: string[] }>();
+  {
+    const by = new Map<string, string[]>();
+    for (const a of unpaid) {
+      const k = a.booking_group_id ?? (a.customer_id ? `c:${a.customer_id}` : null);
+      if (k) by.set(k, [...(by.get(k) ?? []), a.id]);
+    }
+    let n = 0;
+    for (const ids of by.values()) if (ids.length > 1) {
+      const g = { tag: String.fromCharCode(65 + (n % 26)), color: PAIR_COLORS[n++ % PAIR_COLORS.length], ids };
+      ids.forEach((id) => groups.set(id, g));
+    }
+  }
+  const missingPartners = unpaid.filter((a) => !inCart.has(a.id) && groups.get(a.id)?.ids.some((id) => inCart.has(id)));
   function toggleAppt(a: DayAppt) {
     setDone(null);
     if (inCart.has(a.id)) {
@@ -74,7 +91,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       if (customer && customer.id === a.customer?.id && !others.some((x) => x.customer?.id === customer.id)) setCustomer(null);
       return;
     }
-    setItems([...items, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id }))]);
+    setItems((prev) => [...prev, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id }))]);
     if (!customer && a.customer) setCustomer(a.customer);
   }
   async function addService(id: string, fromUpsell = false) {
@@ -121,11 +138,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const nonCash = method !== "cash" && k.paid > 0; // QRIS / transfer: wajib No. referensi, boleh tips
   const refLabel = method === "transfer" ? "transfer" : "QRIS";
   const tipAmt = nonCash ? num(tip) ?? 0 : 0;
+  const cashAmt = nonCash ? num(cashPart) ?? 0 : 0;
+  const nonCashAmt = k.paid - cashAmt;
   const tipStaffIds = [...new Set(lines.map((l) => l.staffId).filter(Boolean))] as string[];
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setTip(""); setTipPick(""); setDismissed([]); setError("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError("");
   }
 
   async function pay() {
@@ -133,13 +152,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     if (!items.length) return;
     if (missingStaff) return setError("Pilih kapster/nail artist untuk setiap layanan (dasar komisi).");
     if (shortCash) return setError("Uang diterima kurang dari tagihan.");
+    if (cashAmt >= k.paid && cashAmt > 0) return setError(`Bagian tunai harus kurang dari tagihan — kalau lunas tunai, pilih Tunai.`);
     if (nonCash && qrisRef.replace(/[\s-]/g, "").length < 4) return setError(`Isi No. referensi ${refLabel} dari bukti bayar.`);
     setPaying(true);
     const supabase = createClient();
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
-      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null,
+      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
     if (error) { setPaying(false); return setError(error.message); }
@@ -154,7 +174,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     reset();
     // struk langsung tercetak (+ laci terbuka untuk tunai) bila printer Bluetooth tersambung
     if (printerReady() && printerSettings().autoPrint) {
-      printReceipt(receipt, receipt.method === "cash" && receipt.paid > 0)
+      printReceipt(receipt, (receipt.method === "cash" && receipt.paid > 0) || !!receipt.cashPart)
         .catch((e) => toast(`Struk belum tercetak: ${e instanceof Error ? e.message : e}. Coba tombol Cetak struk.`, "error"));
     }
   }
@@ -180,6 +200,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     <span className="flex w-full items-center gap-1.5 text-[13px] font-bold">
                       <span className="size-2 shrink-0 rounded-full" style={{ background: S.dot }} title={S.label} />
                       <span className="flex-1 truncate">{apptName(a)}</span>
+                      {groups.get(a.id) && <span className="shrink-0 rounded px-1.5 text-[11px] font-bold text-white" style={{ background: groups.get(a.id)!.color }}
+                        title={`Datang bersama (${groups.get(a.id)!.ids.length} orang)`} aria-label={`Rombongan ${groups.get(a.id)!.tag}, ${groups.get(a.id)!.ids.length} orang`}>👥 {groups.get(a.id)!.tag}</span>}
                       <span className="text-xs font-semibold text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
                     <span className="w-full truncate text-xs text-[#4A4C46]">
@@ -188,6 +210,12 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   </button>
                 );
               })}
+            </div>
+          )}
+          {!!missingPartners.length && (
+            <div role="note" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+              <span className="flex-1">Datang bersama: <b>{missingPartners.map(apptName).join(", ")}</b> belum masuk tagihan.</span>
+              <button onClick={() => missingPartners.forEach((a) => toggleAppt(a))} className="h-9 rounded-lg bg-ink px-3 text-xs font-bold text-white">Tambahkan juga</button>
             </div>
           )}
         </section>
@@ -316,6 +344,16 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     placeholder={method === "transfer" ? "mis. No. Ref / 4 digit terakhir rekening pengirim" : "mis. 4 digit terakhir No. Ref"}
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">{method === "transfer" ? "Cek dana sudah masuk di mutasi rekening toko sebelum dicatat. " : "Dari bukti bayar di HP pelanggan / notifikasi bank. "}Satu nomor hanya untuk satu transaksi.</span>
+                  <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor="cash-part" className="flex-1 text-[13px] font-bold">Sebagian dibayar tunai (opsional)</label>
+                      <input id="cash-part" inputMode="numeric" placeholder="0" className="input h-11 w-32 text-right tabular"
+                        value={cashPart ? Number(cashPart).toLocaleString("id-ID") : ""} onChange={(e) => setCashPart(e.target.value.replace(/\D/g, ""))} />
+                    </div>
+                    {cashAmt > 0 && (cashAmt < k.paid
+                      ? <span className="text-xs text-muted">Terima {formatRupiah(cashAmt)} tunai ke laci, sisanya <b className="text-ink">{formatRupiah(nonCashAmt)}</b> lewat {refLabel}.</span>
+                      : <span className="text-xs text-[#A12A2A]">Bagian tunai harus kurang dari tagihan — kalau lunas tunai, pilih Tunai.</span>)}
+                  </div>
                   {tipStaffIds.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
                       <div className="flex items-center gap-2">
@@ -330,7 +368,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                             {tipStaffIds.map((id) => <option key={id} value={id}>{master.staff.find((s) => s.id === id)?.name ?? "Staf"}</option>)}
                           </select>
                         </div>
-                        <div className="flex justify-between text-[15px] font-bold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(k.paid + tipAmt)}</span></div>
+                        <div className="flex justify-between text-[15px] font-bold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(nonCashAmt + tipAmt)}</span></div>
                         <span className="text-xs text-muted">Tips bukan omzet. Serahkan {formatRupiah(tipAmt)} tunai dari laci ke staf sekarang — kas diharapkan ikut berkurang.</span>
                       </>}
                     </div>

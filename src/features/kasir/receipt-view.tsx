@@ -23,7 +23,7 @@ export function toReceipt(tx: TxRow, shop: Shop, staffName: (id: string | null) 
     subtotal: tx.subtotal, discount: tx.discount_amount, discountLabel: tx.discount_label, depositUsed: tx.deposit_used,
     paid: tx.paid_amount, method: tx.payment_method, cashReceived: tx.cash_received, balanceAfter,
     whatsapp: tx.customer?.whatsapp ?? null, voided: tx.voided_at ? tx.void_reason : null,
-    tip: tx.tip_amount, tipStaff: tx.tip_amount ? staffName(tx.tip_staff_id) ?? null : null,
+    cashPart: tx.cash_part, tip: tx.tip_amount, tipStaff: tx.tip_amount ? staffName(tx.tip_staff_id) ?? null : null,
   };
 }
 
@@ -95,8 +95,10 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
       </div>
       <div className="flex flex-col gap-1">
         {row(`Dibayar (${METHOD_LABEL[r.method]})`, formatRupiah(r.paid), "font-semibold")}
+        {!!r.cashPart && row("· Tunai", formatRupiah(r.cashPart))}
+        {!!r.cashPart && row(`· ${METHOD_LABEL[r.method]}`, formatRupiah(r.paid - r.cashPart))}
         {!!r.tip && row(`Tips untuk ${r.tipStaff ?? "staf"}`, formatRupiah(r.tip))}
-        {!!r.tip && row("Total QRIS", formatRupiah(r.paid + r.tip), "font-semibold")}
+        {!!r.tip && row("Total QRIS", formatRupiah(r.paid - (r.cashPart ?? 0) + r.tip), "font-semibold")}
         {r.cashReceived != null && row("Uang diterima", formatRupiah(r.cashReceived))}
         {change != null && row("Kembalian", formatRupiah(change), "font-semibold")}
         {r.balanceAfter != null && (r.depositUsed > 0 || r.balanceAfter > 0) && row("Sisa saldo deposit", formatRupiah(r.balanceAfter), "text-[#5A5A5A]")}

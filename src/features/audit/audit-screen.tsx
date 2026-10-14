@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 
 type Overview = {
   unpaid: { id: string; customer: string; staff: string | null; start_at: string; since: string | null }[];
+  cash_tolerance?: number;
   closings: { date: string; count: number; cashier: string | null; first_diff: number; last_diff: number; expected: number }[];
   voids: { id: string; created_at: string; voided_at: string; total: number; reason: string; cashier: string | null; by: string | null }[];
   cancels: { at: string; by: string; customer: string; from: ApptStatus; to: ApptStatus; reason: string | null }[];
@@ -65,7 +66,8 @@ export function AuditScreen() {
   }, `${from}:${page}`);
   const pages = Math.max(1, Math.ceil((log?.total ?? 0) / LOG_PAGE));
 
-  const diffDays = o?.closings.filter((c) => c.last_diff !== 0 || c.count > 1) ?? [];
+  const tol = o?.cash_tolerance ?? 0; // selisih ≤ toleransi = pembulatan/receh
+  const diffDays = o?.closings.filter((c) => Math.abs(c.last_diff) > tol || c.count > 1) ?? [];
   const qrisTotal = o?.qris.filter((q) => !q.voided).reduce((n, q) => n + q.amount, 0) ?? 0;
 
   return (
@@ -104,8 +106,8 @@ export function AuditScreen() {
           <Section id="kas" title="Tutup kasir" count={diffDays.length} tone="warn">
             <Table head={["Tanggal", "Kasir", "Kas diharapkan", "Selisih hitungan kasir", "Selisih akhir", "Penutupan"]} rows={o.closings.map((c) => [
               formatTanggal(`${c.date}T12:00:00+07:00`), c.cashier ?? "—", formatRupiah(c.expected),
-              <span key="f" className={c.first_diff ? "font-bold text-danger" : ""}>{formatRupiah(c.first_diff)}</span>,
-              <span key="l" className={c.last_diff ? "font-bold text-danger" : ""}>{formatRupiah(c.last_diff)}</span>,
+              <span key="f" className={Math.abs(c.first_diff) > tol ? "font-bold text-danger" : ""}>{formatRupiah(c.first_diff)}</span>,
+              <span key="l" className={Math.abs(c.last_diff) > tol ? "font-bold text-danger" : ""}>{formatRupiah(c.last_diff)}</span>,
               c.count > 1 ? <span key="n" className="font-bold text-[#8A5A00]">{c.count}× (ada koreksi)</span> : "1×"])} />
           </Section>
 

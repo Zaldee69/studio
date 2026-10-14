@@ -108,7 +108,8 @@ export function receiptEscpos(r: Receipt, o: { paper: Paper; voided?: string | n
   if (r.depositUsed > 0) p.lr("Potong saldo deposit", `-${rp(r.depositUsed)}`);
   p.rule("=").cmd(CMD.bold(true)).cmd(CMD.size(1, 2)).lr("TOTAL", rp(r.paid + r.depositUsed)).cmd(CMD.size(1, 1)).cmd(CMD.bold(false)).rule("=");
   p.lr(`Dibayar (${METHOD_LABEL[r.method]})`, rp(r.paid));
-  if (r.tip) p.lr(`Tips untuk ${r.tipStaff ?? "staf"}`, rp(r.tip)).lr("Total QRIS", rp(r.paid + r.tip));
+  if (r.cashPart) p.lr("  Tunai", rp(r.cashPart)).lr(`  ${METHOD_LABEL[r.method]}`, rp(r.paid - r.cashPart));
+  if (r.tip) p.lr(`Tips untuk ${r.tipStaff ?? "staf"}`, rp(r.tip)).lr("Total QRIS", rp(r.paid - (r.cashPart ?? 0) + r.tip));
   if (r.cashReceived != null) p.lr("Uang diterima", rp(r.cashReceived));
   if (change != null) p.cmd(CMD.bold(true)).lr("Kembalian", rp(change)).cmd(CMD.bold(false));
   if (r.balanceAfter != null && (r.depositUsed > 0 || r.balanceAfter > 0)) p.lr("Sisa saldo deposit", rp(r.balanceAfter));

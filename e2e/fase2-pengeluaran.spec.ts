@@ -33,3 +33,29 @@ test("kasir catat pengeluaran laci → manajer lihat & batalkan", async ({ page,
     sql(`delete from expenses where description = '${desc}'`);
   }
 });
+
+// Pengeluaran rutin bulanan: tambah templat → "Catat" (form terisi) → status "Dicatat".
+test("pengeluaran rutin: tambah IPL → catat dari templat → dicatat bulan ini", async ({ page }) => {
+  const name = `IPL ${uniq()}`;
+  try {
+    await login(page, "manager");
+    await page.goto("/manajer/pengeluaran");
+    const rutin = page.getByRole("region", { name: "Pengeluaran rutin bulanan" });
+    await rutin.getByRole("button", { name: "+ Tambah rutin" }).click();
+    await page.getByLabel("Kategori").selectOption("ipl");
+    await page.getByLabel("Keterangan").fill(name);
+    await page.getByLabel("Perkiraan jumlah (Rp)").fill("75000");
+    await page.getByLabel("Jatuh tempo tiap tanggal").fill("1");
+    await page.getByRole("button", { name: "Simpan" }).click();
+    await expect(page.getByText("Pengeluaran rutin ditambahkan")).toBeVisible();
+    const row = rutin.locator("div", { hasText: name }).last();
+    await row.getByRole("button", { name: /Catat/ }).click();
+    await expect(page.getByLabel("Keterangan")).toHaveValue(name);
+    await expect(page.getByLabel("Jumlah (Rp)")).toHaveValue("75.000");
+    await page.getByRole("button", { name: "Simpan" }).click();
+    await expect(rutin.locator("div", { hasText: name }).last()).toContainText("Dicatat");
+  } finally {
+    sql(`update expenses set voided_at = now(), void_reason = 'e2e' where description = '${name}'`);
+    sql(`update expense_templates set active = false where description = '${name}'`);
+  }
+});

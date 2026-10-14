@@ -10,7 +10,10 @@ import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import type { Master } from "../counter/types";
 
-type Full = Omit<ClosingSummary, "voided"> & { voided: (ClosingSummary["voided"][number] & { id: string })[]; blind: false };
+type Full = Omit<ClosingSummary, "voided"> & { voided: (ClosingSummary["voided"][number] & { id: string })[]; blind: false; tolerance?: number };
+// hitung per pecahan: lembar uang kertas + total koin (Rp)
+const DENOMS = [100000, 50000, 20000, 10000, 5000, 2000, 1000];
+const rb = (n: number) => `${n / 1000}rb`;
 // Kasir sebelum menutup tanggal itu: server hanya mengirim jumlah transaksi & void (tutup kasir buta)
 type Blind = { blind: true; tx_count: number; voided: Full["voided"] };
 type Summary = Full | Blind;
@@ -23,6 +26,8 @@ export function Closing({ master }: { master: Master }) {
   const [physical, setPhysical] = useState("");
   const [note, setNote] = useState("");
   const [deposit, setDeposit] = useState(""); // disetor / diambil dari laci saat tutup (opsional)
+  const [byDenom, setByDenom] = useState(false);
+  const [counts, setCounts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const printer = usePrinter();
 
@@ -32,14 +37,18 @@ export function Closing({ master }: { master: Master }) {
     return data as unknown as Summary;
   }, date);
   const { data: closings } = useRealtimeTable(["cash_closings"], async () => {
-    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note, deposit_out, cashier_id")
+    const { data } = await createClient().from("cash_closings").select("id, created_at, expected_cash, physical_cash, difference, note, deposit_out, cashier_id, denominations")
       .eq("date", date).order("created_at", { ascending: false });
     return data ?? [];
   }, date);
 
-  const phys = physical === "" ? null : Number(physical);
+  const denomTotal = DENOMS.reduce((a, d) => a + d * Number(counts[d] || 0), 0) + Number(counts.coins || 0);
+  const phys = byDenom ? (Object.values(counts).some(Boolean) ? denomTotal : null) : physical === "" ? null : Number(physical);
+  const denoms = byDenom ? Object.fromEntries(Object.entries(counts).filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Number(v)])) : null;
   const dep = Number(deposit || 0);
   const diff = s && !s.blind && phys != null ? phys - s.expected_cash : null;
+  const tol = s && !s.blind ? s.tolerance ?? 0 : 0;
+  const inTol = (d: number) => Math.abs(d) <= tol; // selisih kecil = pembulatan/receh, tidak ditandai merah
   const [names, setNames] = useState<Map<string, string>>(new Map()); // siapa yang menutup
   useEffect(() => {
     createClient().from("team_names").select("id, full_name").then(({ data }) => setNames(new Map((data ?? []).map((r) => [r.id!, r.full_name!]))));
@@ -49,11 +58,11 @@ export function Closing({ master }: { master: Master }) {
   async function save() {
     if (phys == null) return;
     setSaving(true);
-    const { error } = await createClient().rpc("save_cash_closing", { p_date: date, p_physical_cash: phys, p_note: note, p_deposit_out: dep });
+    const { error } = await createClient().rpc("save_cash_closing", { p_date: date, p_physical_cash: phys, p_note: note, p_deposit_out: dep, p_denoms: denoms ?? undefined });
     setSaving(false);
     if (error) return toast(error.message, "error");
     toast("Tutup kasir tersimpan");
-    setPhysical(""); setNote(""); setDeposit(""); refresh();
+    setPhysical(""); setNote(""); setDeposit(""); setCounts({}); refresh();
   }
 
   async function printSlip() {
@@ -120,7 +129,9 @@ export function Closing({ master }: { master: Master }) {
             {closings.length > 1 && <span className="font-normal text-muted">{i === 0 ? " · terakhir (dipakai laporan)" : " · digantikan penutupan sesudahnya"}</span>}</b>
           {row("Kas diharapkan saat ditutup", c.expected_cash)}
           {row("Uang di laci", c.physical_cash)}
-          {row("Selisih", c.difference ?? 0, true)}
+          {row(`Selisih${c.difference && inTol(c.difference) ? " (dalam toleransi)" : ""}`, c.difference ?? 0, true)}
+          {c.denominations && <p className="text-xs text-muted">Per pecahan: {Object.entries(c.denominations as Record<string, number>).sort(([a], [b]) => (a === "coins" ? 1 : b === "coins" ? -1 : +b - +a))
+            .map(([k, v]) => (k === "coins" ? `koin ${formatRupiah(v)}` : `${rb(+k)}×${v}`)).join(" · ")}</p>}
           {!!c.deposit_out && row("Disetor ke brankas / owner", -c.deposit_out)}
           {row("Sisa di laci untuk besok", c.physical_cash - c.deposit_out)}
           {c.note && <p className="text-muted">Catatan: {c.note}</p>}
@@ -157,13 +168,37 @@ export function Closing({ master }: { master: Master }) {
 
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
-        <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci saat ini — uang hari ini & sisa kemarin — sebelum disetor.">
-          <input id="cl-phys" inputMode="numeric" className="input text-right text-lg tabular"
-            value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
-        </Field>
+        <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold">
+          <input type="checkbox" className="size-5 accent-accent" checked={byDenom} onChange={(e) => setByDenom(e.target.checked)} />
+          Hitung per pecahan (disarankan)
+        </label>
+        {byDenom ? (
+          <div className="flex flex-col gap-1.5 rounded-[10px] bg-paper p-3 tabular">
+            {DENOMS.map((d) => (
+              <div key={d} className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
+                <label htmlFor={`dn-${d}`} className="font-bold">{rb(d)}</label>
+                <input id={`dn-${d}`} inputMode="numeric" placeholder="0 lembar" aria-label={`Jumlah lembar ${rb(d)}`} className="input h-10 text-right"
+                  value={counts[d] ?? ""} onChange={(e) => setCounts({ ...counts, [d]: e.target.value.replace(/\D/g, "") })} />
+                <span className="w-24 text-right text-muted">{formatRupiah(d * Number(counts[d] || 0))}</span>
+              </div>
+            ))}
+            <div className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
+              <label htmlFor="dn-coins" className="font-bold">Koin</label>
+              <input id="dn-coins" inputMode="numeric" placeholder="total Rp" className="input h-10 text-right"
+                value={counts.coins ? Number(counts.coins).toLocaleString("id-ID") : ""} onChange={(e) => setCounts({ ...counts, coins: e.target.value.replace(/\D/g, "") })} />
+              <span className="w-24" />
+            </div>
+            <div className="flex justify-between border-t border-line pt-2 text-base font-bold"><span>Total uang di laci</span><span>{formatRupiah(denomTotal)}</span></div>
+          </div>
+        ) : (
+          <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci saat ini — uang hari ini & sisa kemarin — sebelum disetor. Termasuk koin.">
+            <input id="cl-phys" inputMode="numeric" className="input text-right text-lg tabular"
+              value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
+          </Field>
+        )}
         {diff != null && (
-          <div className={`rounded-[10px] px-3 py-2.5 text-[15px] font-bold tabular ${diff === 0 ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
-            Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : diff > 0 ? "· lebih" : "· kurang"}
+          <div className={`rounded-[10px] px-3 py-2.5 text-[15px] font-bold tabular ${inTol(diff) ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
+            Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : inTol(diff) ? `· dalam toleransi ${formatRupiah(tol)}` : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}
         <Field label="Disetor ke brankas / owner (Rp, opsional)" htmlFor="cl-dep" hint="Pemindahan uang, bukan biaya. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">

@@ -126,7 +126,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
               <span className="flex min-w-0 flex-col">
                 {t.voided_at
                   ? <><b className="text-[#A12A2A]">Void</b><span className="truncate text-[11px] text-muted" title={t.void_reason ?? ""}>{t.void_reason}</span></>
-                  : <><span>{METHOD_LABEL[t.payment_method]}</span>{t.deposit_used > 0 && <span className="text-[11px] text-muted">deposit {formatRupiah(t.deposit_used)}</span>}</>}
+                  : <><span>{METHOD_LABEL[t.payment_method]}{t.cash_part > 0 && " + tunai"}</span>{t.deposit_used > 0 && <span className="text-[11px] text-muted">deposit {formatRupiah(t.deposit_used)}</span>}</>}
               </span>
               <span className="hidden truncate text-muted min-[1100px]:block">{names.get(t.cashier_id ?? "") ?? "—"}</span>
             </button>

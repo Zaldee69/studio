@@ -51,7 +51,8 @@ async function register(p: Page, name: string, wa62 = "62" + randomWa().slice(1)
   await p.fill("#c-code", await wa.code(wa62));
   await p.getByRole("button", { name: "Masuk", exact: true }).click();
   const named = p.getByLabel("Nama");
-  if (await named.isVisible().catch(() => false)) {
+  await expect(named.or(p.getByText("Saldo deposit", { exact: true })).first()).toBeVisible(); // akun baru: form nama muncul setelah masuk
+  if (await p.getByRole("button", { name: "Simpan & lanjut" }).isVisible()) {
     await named.fill(name);
     await p.getByRole("button", { name: "Simpan & lanjut" }).click();
   }

@@ -23,6 +23,8 @@ export const TABLES = {
       { name: "name", label: "Nama", type: "text", w: "14rem" },
       { name: "category", label: "Kategori", type: "select", options: [...CATEGORY, ["retail", "Ritel"]], w: "9rem" },
       { name: "price", label: "Harga (Rp)", type: "money", w: "8rem" },
+      { name: "next_price", label: "Harga berikutnya", type: "money", nullable: true, w: "8rem" },
+      { name: "release_action", label: "Saat rilis", type: "select", options: [["launch", "Muncul"], ["retire", "Pensiun"]], nullable: true, w: "7rem" },
       { name: "duration_min", label: "Durasi (mnt)", type: "int", min: 0, max: 600, w: "6rem" },
       { name: "upsell_service_id", label: "Saran upsell", type: "select", options: "services", nullable: true, w: "12rem" },
       { name: "stock_item_id", label: "Item stok (ritel)", type: "select", options: "retailItems", nullable: true, w: "11rem" },

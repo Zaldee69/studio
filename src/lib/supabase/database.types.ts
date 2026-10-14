@@ -975,6 +975,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"price_releases": {
+                  Row: {
+                    "changes": NonNullable<Json>,"id": string,"released_at": string,"released_by": string | null
+                  }
+                  Insert: {
+                    "changes": NonNullable<Json>,"id"?: string,"released_at"?: string,"released_by"?: string | null
+                  }
+                  Update: {
+                    "changes"?: NonNullable<Json>,"id"?: string,"released_at"?: string,"released_by"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profiles": {
                   Row: {
                     "active": boolean,"created_at": string,"customer_id": string | null,"email": string | null,"full_name": string,"id": string,"mfa_enabled": boolean,"phone": string | null,"role": Database["public"]['Enums']["app_role"],"staff_id": string | null
@@ -1169,13 +1182,13 @@ isOneToOne: false
                   ]
                 },"services": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"name": string,"needs_pedicure": boolean,"online_bookable": boolean,"price": number,"public_description": string,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"name": string,"needs_pedicure": boolean,"next_price": number | null,"online_bookable": boolean,"price": number,"public_description": string,"release_action": string | null,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"name": string,"needs_pedicure"?: boolean,"online_bookable"?: boolean,"price": number,"public_description"?: string,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"name": string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price": number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"name"?: string,"needs_pedicure"?: boolean,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"name"?: string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -2378,6 +2391,9 @@ isOneToOne: false
                            },
 "register_station":
 { Args: { "p_name": string,"p_token_hash": string }; Returns: string
+                           },
+"release_prices":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "request_schedule_change":
 { Args: { "p_id": string,"p_message": string }; Returns: undefined

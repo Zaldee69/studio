@@ -3,6 +3,7 @@ import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
 import { savePublicSettings, saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
+import { PriceRelease } from "./price-release";
 import { ClosuresForm, HoursForm, OutboundLog, PhotoManager } from "./public-page";
 import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
 import { MfaSettings } from "./mfa-settings";
@@ -27,7 +28,12 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       supabase.from("services").select("*").order("sort"),
       supabase.from("inventory_items").select("id, name").eq("kind", "retail").order("name"),
     ]);
-    body = <CrudTable table="services" rows={services ?? []} options={{ services: opt(services), retailItems: opt(items) }} />;
+    body = (
+      <div className="flex flex-col gap-4">
+        <PriceRelease services={services ?? []} />
+        <CrudTable table="services" rows={services ?? []} options={{ services: opt(services), retailItems: opt(items) }} />
+      </div>
+    );
   } else if (tab === "kursi" || tab === "staf") {
     const [{ data }, { data: open }, { data: res }] = await Promise.all([
       tab === "kursi" ? supabase.from("resources").select("*").order("sort") : supabase.from("staff").select("*").order("sort"),

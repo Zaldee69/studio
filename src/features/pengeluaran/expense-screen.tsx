@@ -179,7 +179,11 @@ function AddForm({ manager, lim, staff, prefill, onDone }: {
     });
     setBusy(false);
     if (error) return toast(error.message, "error");
-    toast(`Pengeluaran ${formatRupiah(amount)} tercatat`);
+    // manajer mencatat pengeluaran laci ke tanggal yang sudah ditutup → kas diharapkan berubah, tutup ulang agar selisih terkoreksi
+    const { data: closed } = f.source === "laci" ? await supabase.from("cash_closings").select("id").eq("date", f.date).limit(1) : { data: null };
+    toast(closed?.length
+      ? `Pengeluaran ${formatRupiah(amount)} tercatat. Kasir ${formatTanggal(`${f.date}T12:00:00+07:00`)} sudah ditutup — tutup ulang di menu Kasir → Tutup kasir (tanggal itu) agar selisihnya terkoreksi.`
+      : `Pengeluaran ${formatRupiah(amount)} tercatat`);
     onDone();
   }
 

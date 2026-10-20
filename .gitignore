@@ -48,3 +48,7 @@ next-env.d.ts
 
 # gambar antara pratinjau gaya (HAIR_DEBUG_DIR) — berisi foto pelanggan, jangan di-commit
 .debug-gaya/
+
+# Skill Claude berisi konteks bisnis internal (repo publik) — jangan di-commit
+.claude/skills/
+.claude/agents/

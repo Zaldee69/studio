@@ -321,11 +321,12 @@ export default async function Landing() {
                 <span className="eyebrow">Para ahli kami</span>
                 <h2 className={h2}>Tim di balik hasilnya</h2>
               </div>
-              <div className="grid w-full grid-cols-2 gap-6 min-[900px]:grid-cols-3 min-[1200px]:grid-cols-6">
+              {/* flex-wrap + justify-center: tim sedikit tetap di tengah, kartu tidak menyusut */}
+              <div className="flex w-full flex-wrap justify-center gap-6">
                 {team.map((t) => (
-                  <div key={t.id} className="flex flex-col items-center gap-3 text-center">
+                  <div key={t.id} className="flex w-[calc(50%-12px)] flex-col items-center gap-3 text-center min-[900px]:w-60">
                     <div className="relative flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux">
-                      {t.photo_path ? <Image src={photoUrl(t.photo_path)!} alt={t.name ?? ""} fill sizes="(min-width: 1200px) 170px, (min-width: 900px) 30vw, 45vw" className="object-cover" />
+                      {t.photo_path ? <Image src={photoUrl(t.photo_path)!} alt={t.name ?? ""} fill sizes="(min-width: 900px) 240px, 45vw" className="object-cover" />
                         : <span aria-hidden="true" className="font-serif text-[54px] italic text-gold">{t.name?.charAt(0)}</span>}
                     </div>
                     <span className="font-serif text-[22px] font-medium">{t.name}</span>

@@ -208,7 +208,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
 
 export function OutboundLog({ rows }: { rows: Msg[] }) {
   const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEFEB] text-[#4A4C46]" };
-  const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1", alert: "Notifikasi owner" };
+  const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1", alert: "Notifikasi owner", test: "Tes WA" };
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">Pesan keluar ke pelanggan</h2>

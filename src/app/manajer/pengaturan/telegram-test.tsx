@@ -30,3 +30,30 @@ export function TelegramTest() {
     </section>
   );
 }
+
+/** Kirim WA tes lewat jalur yang sama dengan konfirmasi booking (Wablas). */
+export function WhatsAppTest() {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const [phone, setPhone] = useState("");
+  async function send(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await createClient().rpc("send_test_wa", { p_phone: phone });
+    setBusy(false);
+    if (error) return toast(error.message, "error");
+    toast("WA tes masuk antrean. Cek WhatsApp dalam 1 menit; bila tidak masuk, lihat alasannya di Pesan keluar (tab Halaman publik).");
+  }
+  return (
+    <section aria-labelledby="wa-h" className="mt-6 max-w-xl space-y-3 rounded-2xl border border-line bg-card p-6">
+      <h2 id="wa-h" className="font-display text-xl font-bold">Notifikasi WhatsApp</h2>
+      <p className="text-sm text-muted">Konfirmasi booking, pengingat H-1, kode masuk, dan blast dikirim lewat Wablas (WABLAS_URL, WABLAS_TOKEN,
+        WABLAS_SECRET_KEY). Tes memakai 1 dari kuota harian Wablas; maksimal 3 tes per 10 menit.</p>
+      <form onSubmit={send} className="flex flex-wrap gap-2">
+        <input type="tel" inputMode="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08…"
+          aria-label="Nomor WhatsApp tujuan tes" className="input h-11 min-w-0 flex-1" />
+        <button disabled={busy} className="btn-ghost h-11">Kirim WA tes</button>
+      </form>
+    </section>
+  );
+}

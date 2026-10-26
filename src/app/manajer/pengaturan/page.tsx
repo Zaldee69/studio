@@ -13,7 +13,7 @@ import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
 import { MfaSettings } from "./mfa-settings";
 import { StationSettings } from "./station-settings";
 import { HairstyleCatalog } from "./hairstyle-catalog";
-import { TelegramTest } from "./telegram-test";
+import { TelegramTest, WhatsAppTest } from "./telegram-test";
 
 export const metadata = { title: "Pengaturan" };
 
@@ -165,7 +165,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     );
   } else {
     const { data } = await supabase.from("settings").select("*").single();
-    body = <><SettingsForm values={data ?? {}} /><TelegramTest /></>;
+    body = <><SettingsForm values={data ?? {}} /><TelegramTest /><WhatsAppTest /></>;
   }
 
   return (

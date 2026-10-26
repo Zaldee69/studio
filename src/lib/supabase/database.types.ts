@@ -2499,6 +2499,9 @@ isOneToOne: false
 "send_test_alert":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"send_test_wa":
+{ Args: { "p_phone": string }; Returns: undefined
+                           },
 "service_hpp":
 { Args: { "sid": string }; Returns: number
                            },

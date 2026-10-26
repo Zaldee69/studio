@@ -61,6 +61,13 @@ describe("blast promosi (CRM)", () => {
     expect(wa).toHaveBeenCalledWith("6281300000001", "Hai Dodi, diskon 10%!");
     expect(finished.p).toMatchObject({ status: "sent" });
   });
+  it("WA tes manajer dikirim apa adanya lewat jalur prioritas (seperti konfirmasi booking)", async () => {
+    const wa = vi.fn(async () => {});
+    const { s, finished } = store([{ id: "t", channel: "whatsapp", to_address: "6281300000003", template: "test", booking_group_id: null, attempts: 0, body: "Tes WhatsApp" }]);
+    await processQueue(s, { email: null, whatsapp: wa });
+    expect(wa).toHaveBeenCalledWith("6281300000003", "Tes WhatsApp", { priority: true });
+    expect(finished.t).toMatchObject({ status: "sent" });
+  });
   it("kode masuk (otp) dikirim segera (flag instant)", async () => {
     const wa = vi.fn(async () => {});
     const { s } = store([{ id: "o", channel: "whatsapp", to_address: "6281300000002", template: "otp", booking_group_id: null, attempts: 0, body: "Kode masuk: 123456" }]);

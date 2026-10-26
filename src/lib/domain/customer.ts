@@ -6,8 +6,13 @@ export function isChurn(lastVisitAt: Date | string | null, churnWeeks: number, n
   return now.getTime() - new Date(lastVisitAt).getTime() > churnWeeks * 7 * DAY;
 }
 
-/** Tautan follow-up wa.me dengan {nama} = nama depan. */
+/** Nama depan untuk sapaan; "" bila nama belum diketahui (kontak WA impor tanpa nama tersimpan sebagai "No Name"). */
+export function firstName(name: string): string {
+  const n = name.trim();
+  return /^no name$/i.test(n) ? "" : (n.split(/\s+/)[0] ?? "");
+}
+
+/** Tautan follow-up wa.me dengan {nama} = nama depan ("Kak" bila nama belum diketahui). */
 export function followupLink(whatsapp: string, template: string, name: string): string {
-  const first = name.trim().split(/\s+/)[0] ?? "";
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(template.replaceAll("{nama}", first))}`;
+  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(template.replaceAll("{nama}", firstName(name) || "Kak"))}`;
 }

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { processQueue, type Queued, type Store } from "./dispatch";
 import { render } from "./templates";
+import { firstName, followupLink } from "../domain/customer";
 
 const g = { code: "GB-7K3Q", customerName: "Rina Wati", startAt: "2026-10-03T03:30:00Z", services: ["Potong Rambut", "Gel Polish"], staff: ["Andi", "Sari"],
   categories: ["barbershop", "nail"], total: 135000, voucher: null,
@@ -30,6 +31,12 @@ describe("notifikasi", () => {
     expect(r.text).toContain("kabari kami lewat pesan ini, ya.");
     expect(render("reminder_h1", g, "email").text).toContain("kabari kami lewat WhatsApp wa.me/6281200000000, ya.");
     expect(r.html).toContain("&lt;Rina&gt;");
+  });
+  it("kontak impor tanpa nama (\"No Name\") disapa \"Kak\", bukan \"Kak No\"", () => {
+    expect(render("booking_confirmed", { ...g, customerName: "No Name" }).text).toMatch(/^Halo Kak,\n/);
+    expect(firstName(" no name ")).toBe("");
+    expect(decodeURIComponent(followupLink("6281", "Halo {nama}!", "No Name"))).toContain("Halo Kak!");
+    expect(decodeURIComponent(followupLink("6281", "Halo {nama}!", "Budi Santoso"))).toContain("Halo Budi!");
   });
   it("kirim, lewati kanal nonaktif, retry lalu gagal", async () => {
     const email = vi.fn(async () => {});

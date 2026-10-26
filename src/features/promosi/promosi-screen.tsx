@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { Empty, useToast } from "@/components/ui";
 import { CAT_NAME, CATS } from "@/lib/domain/category";
+import { firstName } from "@/lib/domain/customer";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { cleanSegment, describeSegment, PRESETS, type Segment } from "@/lib/domain/segment";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -70,7 +71,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
   const dirty = draft.id ? (() => { const c = data?.campaigns.find((x) => x.id === draft.id);
     return !c || c.name !== draft.name || c.message !== draft.message || JSON.stringify(cleanSegment(c.segment)) !== segKey; })() : true;
   const lastSend = sendsOf(draft.id)[0];
-  const first = count?.names[0]?.trim().split(" ")[0] ?? "Rina";
+  const first = count?.names[0] != null ? firstName(count.names[0]) || "Kak" : "Rina";
 
   function open(c: Campaign | null, copy = false) {
     setDraft(c ? { id: copy ? null : c.id, name: copy ? `${c.name} (salinan)` : c.name, message: c.message, segment: c.segment } : blank(bookingUrl));

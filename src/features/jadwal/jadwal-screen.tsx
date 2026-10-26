@@ -14,6 +14,7 @@ import type { Customer, DayAppt, Master, TimeOffRow } from "../counter/types";
 import { BookingDrawer } from "./booking-drawer";
 import { BookingForm, type FormInit } from "./booking-form";
 import { apptName } from "@/lib/domain/guest";
+import { firstName } from "@/lib/domain/customer";
 import Link from "next/link";
 import { floorStaff, staffNow } from "./now";
 import { WalkInForm } from "./walk-in";
@@ -115,8 +116,8 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
     refresh();
     // diterima → konfirmasi otomatis dari antrean pesan (tanpa wa.me agar tidak dobel); ditolak → kabari dari WA kasir
     if (!accept && r.whatsapp) {
-      const first = (r.customer_name ?? "").split(" ")[0];
-      const msg = `Halo Kak ${first},\nmohon maaf, jadwal ${formatTanggal(r.start_at)} pukul ${formatJam(r.start_at)} ternyata belum bisa kami layani${reason ? ` karena ${reason}` : ""}.`
+      const first = firstName(r.customer_name ?? "");
+      const msg = `Halo Kak${first ? ` ${first}` : ""},\nmohon maaf, jadwal ${formatTanggal(r.start_at)} pukul ${formatJam(r.start_at)} ternyata belum bisa kami layani${reason ? ` karena ${reason}` : ""}.`
         + `\n\nKakak bisa memilih jam lain di ${location.host}/booking, atau balas pesan ini dan kami bantu carikan waktu yang pas.`;
       window.open(`https://wa.me/${r.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
     }

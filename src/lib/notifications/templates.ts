@@ -1,3 +1,4 @@
+import { firstName } from "../domain/customer";
 import { formatJam, formatRupiah, formatTanggal } from "../domain/format";
 
 export type Template = "booking_confirmed" | "booking_pending" | "reminder_h1";
@@ -19,7 +20,7 @@ const and = (xs: string[]) => (xs.length > 1 ? `${xs.slice(0, -1).join(", ")} da
  * kecuali ajakan membalas: balasan WA dibaca tim, balasan email belum tentu → arahkan ke WA studio.
  */
 export function render(t: Template, g: GroupInfo, via: "whatsapp" | "email" = "whatsapp"): Rendered {
-  const first = g.customerName.trim().split(/\s+/)[0] ?? "";
+  const first = firstName(g.customerName);
   const hi = `Halo Kak${first ? ` ${first}` : ""},`;
   const day = formatTanggal(g.startAt), time = formatJam(g.startAt);
   const svc = and(g.services), staff = and(g.staff);

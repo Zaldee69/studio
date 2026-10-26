@@ -1711,13 +1711,13 @@ isOneToOne: false
                   ]
                 },"vouchers": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["service_category"] | null,"code": string,"created_at": string,"ends_on": string | null,"id": string,"kind": string,"min_spend": number,"note": string,"once_per_customer": boolean,"quota": number | null,"starts_on": string | null,"value": number
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"] | null,"code": string,"created_at": string,"ends_on": string | null,"id": string,"kind": string,"min_spend": number,"note": string,"once_per_customer": boolean,"quota": number | null,"starts_on": string | null,"value": number,"weekdays": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code": string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind": string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value": number
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code": string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind": string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value": number,"weekdays"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code"?: string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind"?: string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value"?: number
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code"?: string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind"?: string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value"?: number,"weekdays"?: string | null
                   }
                   Relationships: [
                     
@@ -2614,15 +2614,24 @@ isOneToOne: false
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
 "voucher_check":
+{ Args: { "p_code": string,"p_customer"?: string,"p_date"?: string,"p_service_ids": (string)[] }; Returns: Json
+                           },
+"voucher_check_kasir":
 { Args: { "p_code": string,"p_customer"?: string,"p_service_ids": (string)[] }; Returns: Json
                            },
+"voucher_days_label":
+{ Args: { "w": string }; Returns: string
+                           },
 "voucher_preview":
-{ Args: { "p_code": string,"p_ip"?: string,"p_service_ids": (string)[] }; Returns: Json
+{ Args: { "p_code": string,"p_date"?: string,"p_ip"?: string,"p_service_ids": (string)[] }; Returns: Json
                            },
 "voucher_usage":
 { Args: Record<PropertyKey, never>; Returns: {
               "discount_total": number,"redeemed": number,"reserved": number,"voucher_id": string
             }[]
+                           },
+"voucher_uses":
+{ Args: { "p_customer"?: string,"p_voucher": string }; Returns: number
                            }
           }
           Enums: {

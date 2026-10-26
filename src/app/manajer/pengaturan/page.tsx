@@ -126,13 +126,14 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = (
       <div className="space-y-4">
         <p className="text-sm text-muted">
-          Kode voucher dimasukkan pelanggan saat booking online. Potongan dihitung saat bayar di kasir dan <b>tidak ditumpuk</b> dengan
-          diskon paket/promo — yang terbesar yang dipakai. Kuota terhitung dari booking yang tidak dibatalkan.
+          Kode voucher dimasukkan pelanggan saat booking online, atau oleh kasir untuk pelanggan walk-in. Potongan dihitung saat bayar
+          dan <b>tidak ditumpuk</b> dengan diskon paket/promo — yang terbesar yang dipakai. &quot;Hari berlaku&quot; dicek terhadap tanggal jadwal
+          (booking) atau hari ini (kasir). Kuota terhitung dari booking yang tidak dibatalkan + pemakaian di kasir.
         </p>
         {!!data?.length && (
           <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">
             <table className="w-full min-w-[520px] text-sm tabular">
-              <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Kode</th><th className="text-right font-semibold">Dipesan</th>
+              <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Kode</th><th className="text-right font-semibold">Kuota terpakai</th>
                 <th className="text-right font-semibold">Dipakai saat bayar</th><th className="text-right font-semibold">Total potongan</th></tr></thead>
               <tbody>{data.map((v) => (
                 <tr key={v.id} className="border-t border-line"><td className="py-2 font-semibold">{v.code}{!v.active && <span className="ml-2 text-xs text-muted">nonaktif</span>}</td>

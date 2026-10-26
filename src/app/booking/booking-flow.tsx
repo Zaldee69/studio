@@ -101,7 +101,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const [time, setTime] = useState(init.time ?? "");
   const [guest, setGuest] = useState({ name: "", wa: "" });
   const [note, setNote] = useState("");
-  // voucher: hasil cek berlaku untuk pilihan layanan saat dicek (selKey); pilihan berubah → cek ulang
+  // voucher: hasil cek berlaku untuk pilihan layanan + tanggal saat dicek (vKey); salah satunya berubah → cek ulang
   const [vInput, setVInput] = useState("");
   const [vch, setVch] = useState<{ key: string; r: VoucherPreview } | null>(null);
   const [vBusy, setVBusy] = useState(false);
@@ -156,7 +156,8 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const promoNow = promoActive(shop.promo) && !reschedule;
   const est = calcCart(chosen.map((s) => ({ serviceId: s.id, name: s.name, category: s.category, price: s.price, promo: promoNow })),
     { bundlePct: shop.bundlePct, promoPct: promoNow ? shop.promo.pct : 0, method: "cash" });
-  const vOk = vch && vch.key === sel.join(",") && vch.r.ok ? vch.r : null;
+  const vKey = `${sel.join(",")}|${date}`; // hari berlaku voucher dicek terhadap tanggal jadwal
+  const vOk = vch && vch.key === vKey && vch.r.ok ? vch.r : null;
   const useV = !!vOk && !reschedule && vOk.discount > est.discount; // tidak ditumpuk: pakai yang terbesar (sama dengan kasir)
   const discount = useV ? vOk!.discount : est.discount;
   const discountLabel = useV ? `potongan voucher ${vOk!.code}` : est.discountLabel.toLowerCase();
@@ -580,11 +581,11 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                       <input id="b-voucher" autoComplete="off" value={vInput} maxLength={20} placeholder="Mis. HEMAT20"
                         onChange={(e) => { setVInput(e.target.value.toUpperCase()); setVch(null); }} className="lux-input uppercase" />
                       <button type="button" disabled={!vInput.trim() || vBusy} className="btn-line h-12 shrink-0"
-                        onClick={async () => { setVBusy(true); const r = await previewVoucher(vInput, sel); setVBusy(false); setVch({ key: sel.join(","), r }); }}>
+                        onClick={async () => { setVBusy(true); const r = await previewVoucher(vInput, sel, date); setVBusy(false); setVch({ key: vKey, r }); }}>
                         {vBusy ? "Mengecek…" : "Pakai"}</button>
                     </div>
-                    {vch && vch.key === sel.join(",") && (vch.r.ok
-                      ? <span role="status" className="text-sm text-cream">Voucher {vch.r.code} ({vch.r.label}) berlaku — potongan {formatRupiah(vch.r.discount)}
+                    {vch && vch.key === vKey && (vch.r.ok
+                      ? <span role="status" className="text-sm text-cream">Voucher {vch.r.code} ({vch.r.label}{vch.r.days ? `, khusus ${vch.r.days}` : ""}) berlaku — potongan {formatRupiah(vch.r.discount)}
                           {!useV && est.discount > 0 ? `, tapi ${est.discountLabel.toLowerCase()} lebih besar sehingga itu yang dipakai` : ""}. Dipotong saat bayar di studio.</span>
                       : <span role="alert" className="text-sm text-[#9B2C22]">{vch.r.message}</span>)}
                   </div>

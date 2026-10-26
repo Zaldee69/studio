@@ -34,15 +34,16 @@ export type BookResult =
  * Booking online: tamu wajib persetujuan privasi + captcha (bila TURNSTILE_SECRET_KEY diisi).
  * Identitas pelanggan diambil dari sesi di server — tidak pernah dari klien. RPC book_online hanya bisa dipanggil server.
  */
-export type VoucherPreview = { ok: true; code: string; label: string; discount: number } | { ok: false; message: string };
+export type VoucherPreview = { ok: true; code: string; label: string; discount: number; days?: string | null } | { ok: false; message: string };
 
-/** Cek kode voucher untuk layanan yang dipilih (sebelum booking). Dibatasi per IP di database. */
-export async function previewVoucher(code: string, serviceIds: string[]): Promise<VoucherPreview> {
-  const r = z.object({ code: z.string().trim().min(1).max(20), ids: z.array(z.guid()).min(1).max(10) }).safeParse({ code, ids: serviceIds });
+/** Cek kode voucher untuk layanan & tanggal jadwal yang dipilih (sebelum booking). Dibatasi per IP di database. */
+export async function previewVoucher(code: string, serviceIds: string[], date: string): Promise<VoucherPreview> {
+  const r = z.object({ code: z.string().trim().min(1).max(20), ids: z.array(z.guid()).min(1).max(10), date: z.iso.date() })
+    .safeParse({ code, ids: serviceIds, date });
   if (!r.success) return { ok: false, message: "Isi kode voucher" };
   const h = await headers();
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "";
-  const { data, error } = await createAdminClient().rpc("voucher_preview", { p_code: r.data.code, p_service_ids: r.data.ids, p_ip: ip });
+  const { data, error } = await createAdminClient().rpc("voucher_preview", { p_code: r.data.code, p_service_ids: r.data.ids, p_ip: ip, p_date: r.data.date });
   if (error) { log("error", "voucher_preview_failed", { error: error.message }); return { ok: false, message: "Gagal mengecek voucher. Coba lagi." }; }
   return data as unknown as VoucherPreview;
 }

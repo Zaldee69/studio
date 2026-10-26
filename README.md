@@ -438,8 +438,10 @@ Semua opsional — tanpa kunci, fiturnya dilewati dan aplikasi tetap jalan.
   1. Dashboard Wablas → hubungkan perangkat (scan QR) → *Device → Settings*: salin **token** dan buat **secret key**
      (dikirim ke WA admin). Catat domain server API yang tertera di dashboard.
   2. Vercel: `WABLAS_TOKEN`, `WABLAS_SECRET_KEY`, dan `WABLAS_URL` (default `https://wablas.com`) → Redeploy.
-  Sebelum diisi, pesan WA tercatat *dilewati*, verifikasi nomor WA akun nonaktif (pelanggan diminta menghubungi
-  studio), dan kasir tetap bisa mengirim manual lewat tombol WhatsApp di Jadwal. Format lain: `src/lib/notifications/adapters.ts`.
+  Sebelum diisi, pesan WA tercatat *dilewati* — termasuk konfirmasi saat kasir **menerima** booking mode tinjau (Jadwal
+  hanya membuka wa.me saat menolak) — dan verifikasi nomor WA akun nonaktif (pelanggan diminta menghubungi studio).
+  Format lain: `src/lib/notifications/adapters.ts`.
+  3. Dashboard Wablas: kosongkan **IP whitelist** (IP server Vercel berubah-ubah) dan **webhook** bila tidak dipakai.
 
 Pesan gagal dicoba ulang maksimal 3× (jeda 5, 10 menit). Status tiap pesan: Pengaturan → Halaman publik → Pesan keluar ke pelanggan.
 

@@ -9,8 +9,8 @@ insert into customers (id, name, whatsapp) values ('00000000-0000-0000-00ee-0000
 -- hook pengirim kode
 select is(kirim_kode_wa('{"user": {"phone": "6281355550001"}, "sms": {"otp": "482913"}}'), '{}'::jsonb, 'hook menerima kode');
 select is((select body from outbound_messages where template = 'otp' and to_address = '6281355550001'),
-          'Kode masuk ' || (select shop_name from settings) || ': 482913. Berlaku 10 menit. Jangan bagikan kode ini kepada siapa pun, termasuk staf '
-          || (select shop_name from settings) || '.', 'kode masuk antrean WhatsApp');
+          'Kode masuk ' || (select shop_name from settings) || E': 482913\nBerlaku 10 menit. Demi keamanan akun Kakak, jangan berikan kode ini kepada siapa pun, termasuk staf kami.',
+          'kode masuk antrean WhatsApp');
 select is(kirim_kode_wa('{"user": {"phone": "12"}, "sms": {"otp": "1"}}') -> 'error' ->> 'http_code', '400', 'nomor tidak valid ditolak');
 select ok(not has_function_privilege('authenticated', 'kirim_kode_wa(jsonb)', 'execute'), 'hanya Supabase Auth yang boleh memanggil hook');
 

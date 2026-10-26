@@ -3,7 +3,8 @@ import { processQueue, type Queued, type Store } from "./dispatch";
 import { render } from "./templates";
 
 const g = { code: "GB-7K3Q", customerName: "Rina Wati", startAt: "2026-10-03T03:30:00Z", services: ["Potong Rambut", "Gel Polish"], staff: ["Andi", "Sari"],
-  shop: { name: "D'Pras Barbershop", address: "Jl. Contoh 1", whatsapp: "6281200000000" } };
+  categories: ["barbershop", "nail"], total: 135000, voucher: null,
+  shop: { name: "D'Pras Barbershop", address: "Jl. Contoh 1", whatsapp: "6281200000000", maps: "https://maps.app.goo.gl/x" } };
 
 function store(rows: Queued[]) {
   const finished: Record<string, Parameters<Store["finish"]>[1]> = {};
@@ -14,14 +15,21 @@ const q = (id: string, channel: "email" | "whatsapp", attempts = 0, group = "g1"
   ({ id, channel, to_address: channel === "email" ? "rina@x.id" : "6281234567890", template: "booking_confirmed", booking_group_id: group, attempts });
 
 describe("notifikasi", () => {
-  it("template memuat kode, waktu WIB, layanan, staf; HTML di-escape", () => {
+  it("template: kursi/meja, staf, total & voucher, Maps; ajakan membalas per kanal; HTML di-escape", () => {
+    const c = render("booking_confirmed", g).text;
+    expect(c).toContain("Halo Kak Rina,\nkursi dan meja Kakak sudah kami siapkan untuk Sabtu, 3 Okt 2026 pukul 10.30, Potong Rambut dan Gel Polish bersama Andi dan Sari.");
+    expect(c).toContain("cukup sebutkan nama atau tunjukkan kode booking GB-7K3Q. Totalnya Rp135.000, dibayar di studio");
+    expect(c).toContain("📍 Jl. Contoh 1\nhttps://maps.app.goo.gl/x");
+    expect(render("booking_confirmed", { ...g, categories: ["barbershop"], total: 45000, voucher: "SENKAM", staff: [] }).text)
+      .toMatch(/kursi Kakak .*Gel Polish\.\n[\s\S]*Totalnya Rp45\.000 setelah voucher SENKAM,/);
+    expect(render("booking_pending", g).text).toContain("segera mengabari Kakak di nomor ini.");
+
     const r = render("reminder_h1", { ...g, customerName: "<Rina>" });
     expect(r.subject).toBe("Pengingat: besok di D'Pras Barbershop");
-    expect(r.text).toContain("Kode booking: GB-7K3Q");
-    expect(r.text).toContain("pukul 10.30 WIB");
-    expect(r.text).toContain("Kapster/nail artist: Andi, Sari");
+    expect(r.text).toContain("besok pukul 10.30 Andi dan Sari sudah menunggu Kakak untuk Potong Rambut dan Gel Polish.");
+    expect(r.text).toContain("kabari kami lewat pesan ini, ya.");
+    expect(render("reminder_h1", g, "email").text).toContain("kabari kami lewat WhatsApp wa.me/6281200000000, ya.");
     expect(r.html).toContain("&lt;Rina&gt;");
-    expect(render("booking_pending", g).text).toContain("sedang dikonfirmasi toko");
   });
   it("kirim, lewati kanal nonaktif, retry lalu gagal", async () => {
     const email = vi.fn(async () => {});

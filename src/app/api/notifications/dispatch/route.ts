@@ -3,6 +3,8 @@ import { processQueue, type Queued } from "@/lib/notifications/dispatch";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 import { BRAND } from "@/lib/brand";
+import { calcCart, promoEligible, type Voucher } from "@/lib/domain/cart";
+import { mapsUrl } from "@/lib/domain/format";
 
 // Dipanggil DB (pg_net) saat ada pesan baru dan oleh pg_cron tiap 5 menit untuk retry.
 // Blast promosi bisa ratusan pesan → proses batch 25 berulang sampai antrean habis / mendekati batas waktu fungsi.
@@ -30,16 +32,27 @@ export async function POST(req: Request) {
       },
       async group(id) {
         const [{ data: g }, { data: s }] = await Promise.all([
-          db.from("booking_groups").select("code, customer:customers(name), appointments(start_at, status, staff:staff(name), appointment_services(service:services(name)))").eq("id", id).single(),
-          db.from("settings").select("shop_name, shop_address, shop_whatsapp").single(),
+          db.from("booking_groups").select(`code, customer:customers(name), voucher:vouchers(id, code, kind, value, category, min_spend, active),
+            appointments(start_at, created_at, source, status, staff:staff(name), appointment_services(service:services(id, name, category, price)))`).eq("id", id).single(),
+          db.from("settings").select("shop_name, shop_address, shop_whatsapp, maps_url, bundle_pct, online_promo_pct, online_promo_start, online_promo_end").single(),
         ]);
         const appts = (g?.appointments ?? []).filter((a) => a.status !== "cancelled");
         if (!g || !appts.length) return null;
+        // total = hitungan kasir (sama dengan baris booking di POS).
+        // ponytail: harga saat pesan dikirim — booking sebelum rilis harga untuk jadwal sesudahnya masih menampilkan harga lama
+        const promo = { pct: s?.online_promo_pct ?? 0, start: s?.online_promo_start ?? null, end: s?.online_promo_end ?? null };
+        const voucher = g.voucher as Voucher | null;
+        const lines = appts.flatMap((a) => a.appointment_services.flatMap(({ service: v }) => (v ? [{
+          serviceId: v.id, name: v.name, category: v.category, price: v.price, promo: v.category !== "retail" && promoEligible(a, promo), voucher,
+        }] : [])));
+        const cart = calcCart(lines, { bundlePct: s?.bundle_pct ?? 0, promoPct: promo.pct, method: "cash" });
+        const address = s?.shop_address ?? "";
         return {
           code: g.code, customerName: g.customer?.name ?? "", startAt: appts.map((a) => a.start_at).sort()[0],
-          services: appts.flatMap((a) => a.appointment_services.map((x) => x.service?.name ?? "")).filter(Boolean),
-          staff: appts.map((a) => a.staff?.name ?? "").filter(Boolean),
-          shop: { name: s?.shop_name ?? BRAND, address: s?.shop_address ?? "", whatsapp: s?.shop_whatsapp ?? "" },
+          services: lines.map((l) => l.name), staff: [...new Set(appts.map((a) => a.staff?.name ?? "").filter(Boolean))],
+          categories: [...new Set(lines.map((l) => l.category))],
+          total: cart.total, voucher: voucher && cart.discountLabel === `Voucher ${voucher.code}` ? voucher.code : null,
+          shop: { name: s?.shop_name ?? BRAND, address, whatsapp: s?.shop_whatsapp ?? "", maps: address ? mapsUrl(address, s?.maps_url) : "" },
         };
       },
       async finish(id, patch) {

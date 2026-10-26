@@ -26,7 +26,7 @@ export async function processQueue(store: Store, adapters: Adapters, now = new D
       if (m.channel === "telegram") await adapters.telegram!(m.body ?? "");
       else if (m.template === "otp") await adapters.whatsapp!(m.to_address, m.body ?? "", { instant: true, priority: true }); // kode: kirim segera
       else if (raw) await adapters.whatsapp!(m.to_address, m.body ?? ""); // promo: ikut jeda perangkat
-      else if (m.channel === "email") await adapters.email!(m.to_address, render(m.template as Template, g!));
+      else if (m.channel === "email") await adapters.email!(m.to_address, render(m.template as Template, g!, "email"));
       else await adapters.whatsapp!(m.to_address, render(m.template as Template, g!).text, { priority: true });
       await store.finish(m.id, { status: "sent", attempts: m.attempts + 1, last_error: null });
       out.sent++;

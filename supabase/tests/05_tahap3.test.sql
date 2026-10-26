@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(46);
+select plan(47);
 
 create table tests.v (k text primary key, v text);
 grant all on tests.v to anon, authenticated;
@@ -124,7 +124,11 @@ select ok(exists (select 1 from outbound_messages where booking_group_id = (test
 update settings set online_booking_mode = 'auto';
 
 -- ---------- Pengingat H-1, izin, funnel ----------
-select tests.book(tests.req(jkt_today() + 1, '15:00', 'Manicure Basic', jsonb_build_object('actor', tests.rina())));
+select tests.put('h1', tests.book(tests.req(jkt_today() + 1, '15:00', 'Manicure Basic', jsonb_build_object('actor', tests.rina())))::text);
+select enqueue_reminders();
+select ok(not exists (select 1 from outbound_messages where template = 'reminder_h1' and booking_group_id = (tests.get('h1')::jsonb ->> 'group_id')::uuid),
+  'booking dibuat hari ini untuk besok → cukup konfirmasi, tanpa pengingat');
+update booking_groups set created_at = now() - interval '1 day' where id = (tests.get('h1')::jsonb ->> 'group_id')::uuid;
 select ok(enqueue_reminders() >= 1, 'pengingat H-1 diantrekan untuk booking besok');
 select is(enqueue_reminders(), 0, 'pengingat tidak dobel');
 insert into staff_time_off (staff_id, start_at, end_at, status) values (tests.staff_andi(), jkt(jkt_today() + 7, '00:00'), jkt(jkt_today() + 8, '00:00'), 'approved');

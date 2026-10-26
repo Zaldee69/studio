@@ -113,11 +113,11 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
     const r = data as { code: string; customer_name: string; whatsapp: string | null; start_at: string };
     toast(accept ? `Booking ${r.code} diterima` : `Booking ${r.code} ditolak`);
     refresh();
-    if (r.whatsapp) {
+    // diterima → konfirmasi otomatis dari antrean pesan (tanpa wa.me agar tidak dobel); ditolak → kabari dari WA kasir
+    if (!accept && r.whatsapp) {
       const first = (r.customer_name ?? "").split(" ")[0];
-      const msg = accept
-        ? `Halo ${first}, booking ${r.code} di ${master.shop.name} untuk ${formatTanggal(r.start_at)} ${formatJam(r.start_at)} sudah kami konfirmasi. Sampai jumpa!`
-        : `Halo ${first}, mohon maaf booking ${r.code} untuk ${formatTanggal(r.start_at)} ${formatJam(r.start_at)} belum bisa kami terima${reason ? ` (${reason})` : ""}. Silakan pilih jam lain di situs kami atau balas pesan ini.`;
+      const msg = `Halo Kak ${first},\nmohon maaf, jadwal ${formatTanggal(r.start_at)} pukul ${formatJam(r.start_at)} ternyata belum bisa kami layani${reason ? ` karena ${reason}` : ""}.`
+        + `\n\nKakak bisa memilih jam lain di ${location.host}/booking, atau balas pesan ini dan kami bantu carikan waktu yang pas.`;
       window.open(`https://wa.me/${r.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
     }
   }

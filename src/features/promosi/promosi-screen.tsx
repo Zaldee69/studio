@@ -108,7 +108,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     const { data: r, error } = await createClient().rpc("send_campaign", { p_campaign: id });
     setBusy(false);
     if (error) return toast(error.message, "error");
-    toast(`Campaign dikirim ke ${(r as { recipients: number }).recipients} pelanggan`);
+    toast(`Campaign masuk antrean untuk ${(r as { recipients: number }).recipients} pelanggan · dikirim sesuai batas blast per hari (Pengaturan → Umum)`);
     refresh();
   }
   async function archive(c: Campaign) {

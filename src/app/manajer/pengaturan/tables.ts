@@ -189,6 +189,7 @@ export const SETTINGS_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "bundle_pct", label: "Diskon paket barbershop + nail (%)", type: "int", min: 10, max: 15 },
     { name: "churn_weeks", label: "Churn setelah (minggu)", type: "int", min: 1, max: 52 },
     { name: "wa_followup_template", label: "Template follow-up WA ({nama} = nama depan)", type: "textarea" },
+    { name: "blast_daily_limit", label: "Batas blast promosi per hari (sisanya dikirim besok 10.00)", type: "int", min: 1, max: 1000 },
   ] },
   { title: "Laci kas", fields: [
     { name: "drawer_start_date", label: "Saldo awal laci berlaku mulai tanggal", type: "date", nullable: true },

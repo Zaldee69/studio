@@ -17,6 +17,9 @@ export async function POST(req: Request) {
   const db = createAdminClient();
   const started = Date.now();
   const result = { sent: 0, skipped: 0, failed: 0, retry: 0 };
+  // blast promosi melewati batas harian (Pengaturan) → dipindah ke besok 10.00 sebelum antrean diambil
+  const { error: deferErr } = await db.rpc("defer_promo_over_limit");
+  if (deferErr) log("error", "notify_defer_failed", { error: deferErr.message });
   for (;;) {
     const r = await processQueue({
       async claim(limit) {

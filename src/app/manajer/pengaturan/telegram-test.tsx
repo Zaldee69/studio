@@ -18,10 +18,14 @@ export function TelegramTest() {
   return (
     <section aria-labelledby="tg-h" className="mt-6 max-w-xl space-y-3 rounded-2xl border border-line bg-card p-6">
       <h2 id="tg-h" className="font-display text-xl font-bold">Notifikasi Telegram</h2>
-      <p className="text-sm text-muted">
-        Dikirim ke owner/manajer saat selisih tutup kasir melewati batas di atas dan tiap 08.00 bila kasir kemarin belum ditutup.
-        Bot &amp; penerima diatur di server (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID).
-      </p>
+      <p className="text-sm text-muted">Dikirim ke owner/manajer. Bot &amp; penerima diatur di server (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID).</p>
+      <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+        <li>Langsung: transaksi dibatalkan/refund, kasbon baru, pengeluaran besar atau kasbon salah kategori, transaksi tercatat terlambat,
+          akun tim baru/diaktifkan, perubahan harga layanan, pengaturan uang, aturan bayaran staf, dan voucher.</li>
+        <li>Tiap tutup kasir: ringkasan harian (omzet, pelanggan per staf, pengeluaran, kasbon, selisih).</li>
+        <li>08.00: kasir kemarin belum ditutup, komisi sudah ditutup tapi belum dibayar; Senin: ringkasan minggu lalu.</li>
+        <li>15.00: staf yang belum dapat pelanggan.</li>
+      </ul>
       <button onClick={send} disabled={busy} className="btn-ghost h-11">Kirim pesan tes</button>
     </section>
   );

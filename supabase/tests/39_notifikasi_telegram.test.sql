@@ -23,14 +23,15 @@ select (cash_summary(jkt_today()) ->> 'expected_cash')::bigint as exp \gset
 select tests.login(tests.kasir());
 select save_cash_closing(jkt_today(), :exp - 20000, '', 0);
 select tests.su();
-select is((select count(*) from outbound_messages where template = 'alert'), 0::bigint, 'selisih −20.000 (< batas 50.000) → tanpa notifikasi');
+select is((select count(*) from outbound_messages where template = 'alert' and body like '📊 Tutup kasir%KURANG Rp20.000%'), 1::bigint,
+  'tutup kasir → ringkasan harian; selisih −20.000 (< batas 50.000) tanpa tanda ⚠️');
 
 select tests.login(tests.mgr());
 select save_cash_closing(jkt_today(), :exp - 488000, '', 0);
 select tests.su();
-select is((select count(*) from outbound_messages where template = 'alert' and channel = 'telegram' and status = 'queued'), 1::bigint,
-  'selisih −488.000 → 1 notifikasi Telegram masuk antrean');
-select ok((select body from outbound_messages where template = 'alert') like '%(tutup ulang)%KURANG Rp488.000%Catatan: (kosong)%',
+select is((select count(*) from outbound_messages where template = 'alert' and channel = 'telegram' and status = 'queued' and body like '⚠️ SELISIH%'), 1::bigint,
+  'selisih −488.000 → ringkasan bertanda ⚠️ SELISIH masuk antrean Telegram');
+select ok(exists (select 1 from outbound_messages where template = 'alert' and body like '%(tutup ulang)%⚠️ KURANG Rp488.000%Catatan: (kosong)%'),
   'isi notifikasi: tutup ulang, kurang Rp488.000, catatan kosong');
 
 delete from outbound_messages where template = 'alert';

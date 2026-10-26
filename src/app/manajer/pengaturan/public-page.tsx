@@ -208,7 +208,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
 
 export function OutboundLog({ rows }: { rows: Msg[] }) {
   const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEFEB] text-[#4A4C46]" };
-  const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1" };
+  const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1", alert: "Notifikasi owner" };
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">Pesan keluar ke pelanggan</h2>
@@ -217,7 +217,7 @@ export function OutboundLog({ rows }: { rows: Msg[] }) {
         <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-2 text-[13px] tabular">
           <span className="w-32 text-muted">{formatTanggal(m.created_at).split(",")[1]} {formatJam(m.created_at)}</span>
           <span className="w-28">{T[m.template] ?? m.template}</span>
-          <span className="w-20 uppercase text-muted">{m.channel === "email" ? "Email" : "WA"}</span>
+          <span className="w-20 uppercase text-muted">{m.channel === "email" ? "Email" : m.channel === "telegram" ? "Telegram" : "WA"}</span>
           <span className="min-w-32 flex-1 truncate">{m.to_address}</span>
           <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${tone[m.status]}`}>{{ sent: "Terkirim", queued: "Antre", sending: "Mengirim", failed: "Gagal", skipped: "Dilewati" }[m.status]}</span>
           {m.last_error && <span className="w-full text-xs text-muted">{m.last_error}</span>}

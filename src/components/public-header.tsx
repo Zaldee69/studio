@@ -1,11 +1,26 @@
 import Link from "next/link";
 import { BRAND, BRAND_INITIALS } from "@/lib/brand";
 
-/** Logo gaya Landing (lingkaran inisial + wordmark serif). */
+/** Ikon logo "Pintu Studio": lengkung pintu + monogram DP. Geometri sama dengan file logo resmi (sistem brand). */
+export function LogoMark({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 200 240" aria-hidden="true" className={className}>
+      <g fill="none" stroke="currentColor">
+        <path d="M24 214 V100 A76 76 0 0 1 176 100 V214" strokeWidth="5" />
+        <path d="M34 214 V100 A66 66 0 0 1 166 100 V214" strokeWidth="2" />
+        <path d="M10 216.5 H190" strokeWidth="5" />
+      </g>
+      <path d="M100 89 l6 8 l-6 8 l-6 -8 z" fill="currentColor" />
+      <text x="100" y="175" textAnchor="middle" fill="currentColor" fontSize="70" fontWeight="700" letterSpacing="1" className="font-serif">{BRAND_INITIALS}</text>
+    </svg>
+  );
+}
+
+/** Logo gaya Landing (ikon pintu + wordmark serif). */
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <span className="flex items-center gap-3 text-cream">
-      <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-gold font-serif text-[17px] italic text-gold">{BRAND_INITIALS}</span>
+      <LogoMark className="h-11 w-auto shrink-0 text-gold" />
       <span className={`whitespace-nowrap font-serif text-xl font-medium tracking-[0.02em] min-[420px]:text-2xl ${compact ? "hidden min-[900px]:inline" : ""}`}>
         {BRAND}
       </span>

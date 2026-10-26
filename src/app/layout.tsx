@@ -8,7 +8,7 @@ import { BRAND } from "@/lib/brand";
 // ponytail: font aplikasi tim tidak di-preload — halaman publik (Cormorant + Manrope) tidak ikut mengunduhnya lebih dulu
 const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], preload: false });
 const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], preload: false });
-const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: ["400", "500", "600"] });
+const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 // teks publik: Manrope (dokumen brand). Kelas `font-jost` dipertahankan agar halaman publik tidak perlu diubah.
 const manrope = Manrope({ variable: "--font-jost-v", subsets: ["latin"] });
 

@@ -9,7 +9,10 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#FFFFFF",
     theme_color: "#0D0D0D",
-    // ponytail: ikon placeholder SVG; ganti dengan PNG 192/512 dari desainer
-    icons: [{ src: "/icons/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],
+    // logo "Pintu Studio" (sumber: src/app/icon.svg)
+    icons: [
+      { src: "/icons/dpras-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/icons/dpras-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+    ],
   };
 }

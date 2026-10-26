@@ -60,6 +60,34 @@ describe("blast promosi (CRM)", () => {
   });
 });
 
+describe("notifikasi kritis (Telegram)", () => {
+  const alert = (id: string): Queued => ({ id, channel: "telegram", to_address: "ops", template: "alert", booking_group_id: null, attempts: 0, body: "⚠️ Selisih tutup kasir" });
+  it("alert dikirim apa adanya ke Telegram; tanpa konfigurasi → dilewati dengan alasan jelas", async () => {
+    const tg = vi.fn(async () => {});
+    const r1 = store([alert("t")]);
+    expect(await processQueue(r1.s, { email: null, whatsapp: null, telegram: tg })).toEqual({ sent: 1, skipped: 0, failed: 0, retry: 0 });
+    expect(tg).toHaveBeenCalledWith("⚠️ Selisih tutup kasir");
+    const r2 = store([alert("u")]);
+    await processQueue(r2.s, { email: null, whatsapp: null, telegram: null });
+    expect(r2.finished.u).toMatchObject({ status: "skipped", last_error: "Telegram belum dikonfigurasi" });
+  });
+  it("adapter: kirim ke semua chat di TELEGRAM_CHAT_ID; ok:false dianggap gagal", async () => {
+    const { sendTelegramAdapter } = await import("./adapters");
+    vi.stubEnv("TELEGRAM_BOT_TOKEN", "123:abc"); vi.stubEnv("TELEGRAM_CHAT_ID", "111, -222");
+    const calls: [string, RequestInit][] = [];
+    let reply: { ok: boolean; description?: string } = { ok: true };
+    vi.stubGlobal("fetch", async (url: string, init: RequestInit) => { calls.push([url, init]); return new Response(JSON.stringify(reply), { status: reply.ok ? 200 : 400 }); });
+    const send = sendTelegramAdapter()!;
+    await send("Halo");
+    expect(calls.map((c) => [c[0], JSON.parse(String(c[1].body)).chat_id])).toEqual([
+      ["https://api.telegram.org/bot123:abc/sendMessage", "111"], ["https://api.telegram.org/bot123:abc/sendMessage", "-222"]]);
+    reply = { ok: false, description: "Bad Request: chat not found" };
+    await expect(send("x")).rejects.toThrow(/chat not found/);
+    vi.unstubAllEnvs(); vi.unstubAllGlobals();
+    expect(sendTelegramAdapter()).toBeNull(); // tanpa kredensial = nonaktif
+  });
+});
+
 describe("adapter WhatsApp (Wablas)", () => {
   it("POST form ke /api/send-message dengan Authorization token.secret; status:false (HTTP 200) dianggap gagal", async () => {
     const { sendWhatsAppAdapter } = await import("./adapters");

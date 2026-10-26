@@ -192,6 +192,7 @@ export const SETTINGS_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "drawer_start_date", label: "Saldo awal laci berlaku mulai tanggal", type: "date", nullable: true },
     { name: "drawer_start_balance", label: "Saldo awal laci pada tanggal itu (Rp)", type: "money" },
     { name: "cash_tolerance", label: "Toleransi selisih tutup kasir (Rp) — selisih sekecil ini tidak ditandai merah", type: "money" },
+    { name: "alert_cash_diff", label: "Kirim notifikasi Telegram bila selisih tutup kasir ≥ (Rp)", type: "money" },
   ] },
   { title: "SDM & komisi", fields: [
     { name: "commission_pct", label: "Komisi default (%)", type: "int", min: 0, max: 100 },

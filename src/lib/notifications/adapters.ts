@@ -3,6 +3,7 @@ export type EmailMsg = { subject: string; text: string; html: string };
 export type Adapters = {
   email: ((to: string, m: EmailMsg) => Promise<void>) | null;
   whatsapp: ((to: string, text: string, opts?: { instant?: boolean; priority?: boolean }) => Promise<void>) | null;
+  telegram?: ((text: string) => Promise<void>) | null;
 };
 
 async function ok(r: Response) {
@@ -43,4 +44,24 @@ export function sendWhatsAppAdapter(): ((to: string, text: string, opts?: { inst
   };
 }
 
-export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter() });
+/**
+ * Telegram (notifikasi kritis untuk owner/manajer): TELEGRAM_BOT_TOKEN dari @BotFather, TELEGRAM_CHAT_ID = id chat/grup
+ * penerima (pisahkan koma untuk beberapa). Dikirim ke semua penerima; gagal di salah satu → dicoba ulang (antrean).
+ */
+export function sendTelegramAdapter(): Adapters["telegram"] {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chats = (process.env.TELEGRAM_CHAT_ID ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!token || !chats.length) return null;
+  return async (text) => {
+    for (const chat_id of chats) {
+      const r = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id, text, disable_web_page_preview: true }),
+      });
+      const json = (await r.json().catch(() => null)) as { ok?: boolean; description?: string } | null;
+      if (!r.ok || json?.ok !== true) throw new Error(`Telegram ${r.status}: ${(json?.description ?? "").slice(0, 200)}`);
+    }
+  };
+}
+
+export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter(), telegram: sendTelegramAdapter() });

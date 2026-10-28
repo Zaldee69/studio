@@ -25,40 +25,41 @@ begin
   where name in ('Callus remover', 'Foot scrub', 'Gel base/top', 'Gel warna', 'Remover', 'Krim hair spa', 'Cat rambut',
                  'Kapas & tisu', 'Cuticle Oil', 'Pomade Matte', 'Shampoo Anti-Ketombe');
 
-  -- 3) Bahan nyata: harga per satuan (Rp). Yang sudah ada diperbarui (tercatat di cost_changes), yang belum ada ditambah.
-  create temp table real_items (name text, unit text, cost numeric, rename_from text) on commit drop;
+  -- 3) Bahan nyata: harga per satuan (Rp), ambang reorder (pemakaian harian × ±7 hari kirim+cadangan) & isi kemasan
+  --    (min_order_qty — saran Daftar belanja dibulatkan ke kelipatannya). Yang sudah ada diperbarui (tercatat di cost_changes), yang belum ada ditambah.
+  create temp table real_items (name text, unit text, cost numeric, rename_from text, reorder_at numeric default 0, pack numeric) on commit drop;
   insert into real_items values
-    ('Neck strip', 'pcs', 200, null),
-    ('Pisau cukur', 'pcs', 1300, null),
-    ('Sampo', 'ml', 25, 'Shampoo salon'),
-    ('Busa cukur', 'ml', 257, null),
-    ('Bedak leher', 'g', 100, null),
-    ('Tonik rambut', 'ml', 543, null),
-    ('Clay Gatsby', 'g', 381, null),
-    ('Krim creambath', 'ml', 77, null),
-    ('Masker wajah', 'g', 421, null),
-    ('Pewarna rambut hitam', 'tube', 25000, null),
-    ('Oksidan 20 vol', 'ml', 60, null),
-    ('Oksidan 40 vol', 'ml', 60, null),
-    ('Bubuk bleaching', 'g', 180, null),
-    ('Obat keriting & penetral', 'aplikasi', 15000, null),
-    ('Sarung tangan', 'pasang', 938, null),
-    ('Minyak pijat Anjelina', 'ml', 90.2, null),
-    ('Krim pijat Anjelina', 'g', 34.7, null),
-    ('Alas pijat / tisu', 'lembar', 200, null),
-    ('Lanset bekam', 'pcs', 350, null),
-    ('Lilin ear candle', 'pcs', 5000, null);
+    ('Neck strip', 'pcs', 200, null, 60, 100),
+    ('Pisau cukur', 'pcs', 1300, null, 60, 100),
+    ('Sampo', 'ml', 25, 'Shampoo salon', 300, 1000),
+    ('Busa cukur', 'ml', 257, null, 100, 175),
+    ('Bedak leher', 'g', 100, null, 50, 150),
+    ('Tonik rambut', 'ml', 543, null, 100, 140),
+    ('Clay Gatsby', 'g', 381, null, 80, 80),
+    ('Krim creambath', 'ml', 77, null, 150, 500),
+    ('Masker wajah', 'g', 421, null, 50, 100),
+    ('Pewarna rambut hitam', 'tube', 25000, null, 0, null),
+    ('Oksidan 20 vol', 'ml', 60, null, 0, null),
+    ('Oksidan 40 vol', 'ml', 60, null, 0, null),
+    ('Bubuk bleaching', 'g', 180, null, 0, null),
+    ('Obat keriting & penetral', 'aplikasi', 15000, null, 0, null),
+    ('Sarung tangan', 'pasang', 938, null, 10, 50),
+    ('Minyak pijat Anjelina', 'ml', 90.2, null, 150, 1000),
+    ('Krim pijat Anjelina', 'g', 34.7, null, 700, 1000),
+    ('Alas pijat / tisu', 'lembar', 200, null, 30, 100),
+    ('Lanset bekam', 'pcs', 350, null, 30, 100),
+    ('Lilin ear candle', 'pcs', 5000, null, 0, null);
 
   update inventory_items i set name = r.name from real_items r where r.rename_from is not null and i.name = r.rename_from and i.kind = 'consumable';
   insert into cost_changes (item_id, before, after, reason)
     select i.id, i.unit_cost, r.cost, reason from inventory_items i join real_items r on r.name = i.name
     where i.kind = 'consumable' and i.unit_cost is distinct from r.cost;
   perform set_config('app.via_cost', 'on', true);
-  update inventory_items i set unit_cost = r.cost, unit = r.unit, active = true
+  update inventory_items i set unit_cost = r.cost, unit = r.unit, active = true, reorder_at = r.reorder_at, min_order_qty = r.pack
     from real_items r where r.name = i.name and i.kind = 'consumable';
   perform set_config('app.via_cost', 'off', true);
-  insert into inventory_items (name, kind, unit, unit_cost)
-    select r.name, 'consumable', r.unit, r.cost from real_items r
+  insert into inventory_items (name, kind, unit, unit_cost, reorder_at, min_order_qty)
+    select r.name, 'consumable', r.unit, r.cost, r.reorder_at, r.pack from real_items r
     where not exists (select 1 from inventory_items i where i.name = r.name and i.kind = 'consumable');
 
   -- 4) Resep per layanan (takaran per pelanggan). Layanan yang tidak ada di database ini dilewati.

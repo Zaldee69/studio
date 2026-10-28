@@ -23,7 +23,8 @@ export function TelegramTest() {
         <li>Langsung: transaksi dibatalkan/refund, kasbon baru, pengeluaran besar atau kasbon salah kategori, transaksi tercatat terlambat,
           akun tim baru/diaktifkan, perubahan harga layanan, pengaturan uang, aturan bayaran staf, dan voucher.</li>
         <li>Tiap tutup kasir: ringkasan harian (omzet, pelanggan per staf, pengeluaran, kasbon, selisih).</li>
-        <li>08.00: kasir kemarin belum ditutup, komisi sudah ditutup tapi belum dibayar; Senin: ringkasan minggu lalu.</li>
+        <li>Stok bahan turun melewati ambang reorder (sekali per bahan sampai ditangani).</li>
+        <li>08.00: kasir kemarin belum ditutup, komisi sudah ditutup tapi belum dibayar, bahan yang perlu dipesan; Senin: ringkasan minggu lalu.</li>
         <li>15.00: staf yang belum dapat pelanggan.</li>
       </ul>
       <button onClick={send} disabled={busy} className="btn-ghost h-11">Kirim pesan tes</button>

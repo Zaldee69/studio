@@ -19,7 +19,13 @@ export function firstName(name: string): string {
   return /^no name$/i.test(n) ? "" : (n.split(/\s+/)[0] ?? "");
 }
 
-/** Tautan follow-up wa.me dengan {nama} = nama depan ("Kak" bila nama belum diketahui). */
+/** Isi {nama} = nama depan ("Kak" bila belum diketahui); "Kak {nama}" tanpa nama → "Kak", bukan "Kak Kak". Sama dengan fill_nama() di DB. */
+export function fillNama(text: string, name: string): string {
+  const f = firstName(name);
+  return text.replaceAll("Kak {nama}", f ? `Kak ${f}` : "Kak").replaceAll("{nama}", f || "Kak");
+}
+
+/** Tautan follow-up wa.me dari template follow-up. */
 export function followupLink(whatsapp: string, template: string, name: string): string {
-  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(template.replaceAll("{nama}", firstName(name) || "Kak"))}`;
+  return `https://wa.me/${whatsapp}?text=${encodeURIComponent(fillNama(template, name))}`;
 }

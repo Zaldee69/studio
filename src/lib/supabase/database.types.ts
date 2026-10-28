@@ -2240,6 +2240,9 @@ isOneToOne: false
               "petty_cash_limit": number,"receipt_required_above": number
             }[]
                            },
+"fill_nama":
+{ Args: { "p_name": string,"p_text": string }; Returns: string
+                           },
 "fmt_jam":
 { Args: { "t": string }; Returns: string
                            },

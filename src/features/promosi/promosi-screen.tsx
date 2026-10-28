@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { Empty, useToast } from "@/components/ui";
 import { CAT_NAME, CATS } from "@/lib/domain/category";
-import { firstName } from "@/lib/domain/customer";
+import { fillNama, firstName } from "@/lib/domain/customer";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { cleanSegment, describeSegment, PRESETS, type Segment } from "@/lib/domain/segment";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -71,7 +71,8 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
   const dirty = draft.id ? (() => { const c = data?.campaigns.find((x) => x.id === draft.id);
     return !c || c.name !== draft.name || c.message !== draft.message || JSON.stringify(cleanSegment(c.segment)) !== segKey; })() : true;
   const lastSend = sendsOf(draft.id)[0];
-  const first = count?.names[0] != null ? firstName(count.names[0]) || "Kak" : "Rina";
+  const sample = count?.names[0] ?? "Rina";
+  const first = firstName(sample) || "Kak";
 
   function open(c: Campaign | null, copy = false) {
     setDraft(c ? { id: copy ? null : c.id, name: copy ? `${c.name} (salinan)` : c.name, message: c.message, segment: c.segment } : blank(bookingUrl));
@@ -234,7 +235,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               <div className="flex flex-col gap-1.5 rounded-[12px] bg-[#E5DDD5] p-3">
                 <span className="text-[11px] font-semibold text-[#54656F]">Pratinjau di WhatsApp {first}</span>
                 <div aria-label="Pratinjau pesan" className="max-w-[320px] self-start whitespace-pre-wrap rounded-[10px] rounded-tl-none bg-white px-3 py-2 text-[13px] leading-snug shadow-sm">
-                  {draft.message.replaceAll("{nama}", first) + footer(shop)}
+                  {fillNama(draft.message, sample) + footer(shop)}
                 </div>
               </div>
             </div>

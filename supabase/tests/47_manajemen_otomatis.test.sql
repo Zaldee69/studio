@@ -22,7 +22,7 @@ select is(auto_followup(), 0, 'ajak potong lagi: mati bawaan');
 update settings set auto_followup_on = true;
 select is(auto_followup(), 1, 'ajak potong lagi: hanya yang baru lewat batas & belum punya booking');
 select ok(exists (select 1 from outbound_messages where customer_id = (select id from ids where k = 'lama') and template = 'promo'
-                  and body like 'Halo Budi!%' and send_id is not null), 'pesan memakai template follow-up dengan nama depan');
+                  and body like 'Halo Kak Budi, sudah sebulan%SENKAMWA%' and send_id is not null), 'pesan memakai template follow-up dengan nama depan');
 select ok(exists (select 1 from followup_events where customer_id = (select id from ids where k = 'lama')), 'tercatat sebagai follow-up (laporan)');
 select is(auto_followup(), 0, 'tidak disapa ulang dalam jendela follow-up');
 

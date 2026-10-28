@@ -392,13 +392,13 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"deleted_at": string | null,"email": string | null,"id": string,"name": string,"notes": string,"whatsapp": string | null
+                    "created_at": string,"created_by": string | null,"deleted_at": string | null,"email": string | null,"id": string,"name": string,"notes": string,"source": string | null,"whatsapp": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"whatsapp"?: string | null
+                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -566,13 +566,13 @@ isOneToOne: false
                   ]
                 },"funnel_events": {
                   Row: {
-                    "created_at": string,"id": number,"session_id": string,"step": string
+                    "created_at": string,"id": number,"session_id": string,"source": string | null,"step": string
                   }
                   Insert: {
-                    "created_at"?: string,"id"?: never,"session_id": string,"step": string
+                    "created_at"?: string,"id"?: never,"session_id": string,"source"?: string | null,"step": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: never,"session_id"?: string,"step"?: string
+                    "created_at"?: string,"id"?: never,"session_id"?: string,"source"?: string | null,"step"?: string
                   }
                   Relationships: [
                     
@@ -2045,6 +2045,9 @@ isOneToOne: false
               "customer_id": string,"name": string,"whatsapp": string
             }[]
                            },
+"campaign_report":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
 "cancel_booking_admin":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
@@ -2585,7 +2588,7 @@ isOneToOne: false
 { Args: { "p_amount_credited"?: number,"p_amount_paid"?: number,"p_customer_id": string,"p_method": string,"p_package_id"?: string,"p_qris_ref"?: string }; Returns: string
                            },
 "track_funnel":
-{ Args: { "p_session": string,"p_step": string }; Returns: undefined
+{ Args: { "p_session": string,"p_source"?: string,"p_step": string }; Returns: undefined
                            },
 "tx_items_text":
 { Args: { "p_tx": string }; Returns: string

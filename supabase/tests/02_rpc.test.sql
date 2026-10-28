@@ -111,7 +111,7 @@ select tests.book(jkt_today() + 1, '10:00', array[tests.svc('Potong Rambut')], '
 select tests.book(jkt_today() + 1, '10:00', array[tests.svc('Potong Rambut')], '{}', true, 'Tamu D', '081144444444');
 select is(tests.book(jkt_today() + 1, '10:00', array[tests.svc('Potong Rambut')], '{}', true, 'Tamu E', '081155555555') ->> 'code',
           'slot_taken', 'kursi barber penuh → ditolak');
-select is((select source::text from appointments a join customers c on c.id = a.customer_id where c.whatsapp = '6281111111111'),
+select is((select a.source::text from appointments a join customers c on c.id = a.customer_id where c.whatsapp = '6281111111111'),
           'online', 'no. WA dinormalisasi, source = online');
 
 -- berdua bersamaan: barber + pedicure → 2 appointment, nail di kursi pedicure

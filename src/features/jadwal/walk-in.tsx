@@ -7,6 +7,7 @@ import { formatJam, formatRupiah } from "@/lib/domain/format";
 import { findConflicts } from "@/lib/domain/schedule";
 import { createClient } from "@/lib/supabase/client";
 import { CustomerCombobox } from "../counter/customer-combobox";
+import { NewCustomer } from "../counter/new-customer";
 import type { Cat, Customer, DayAppt, Master, TimeOffRow } from "../counter/types";
 import { floorStaff, staffNow } from "./now";
 
@@ -29,6 +30,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
   const [sel, setSel] = useState<string[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [guest, setGuest] = useState("");
+  const [adding, setAdding] = useState(false);
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -117,6 +119,13 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
           </Field>
         )}
       </div>
+      {!customer && (adding ? (
+        <div className="rounded-xl border border-line">
+          <NewCustomer online={online} onClose={() => setAdding(false)} onSaved={(c) => { setCustomer(c); setAdding(false); toast(`${c.name} ditambahkan`); }} />
+        </div>
+      ) : (
+        <button type="button" onClick={() => setAdding(true)} className="btn-ghost h-11 self-start rounded-[10px]">+ Pelanggan baru (dengan no. WA)</button>
+      ))}
 
       {conflicts && (
         <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#F9E6E6] p-3 text-sm text-[#6E1616]">

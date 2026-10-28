@@ -13,6 +13,7 @@ import { CustomerCombobox } from "../counter/customer-combobox";
 import { useDayAppointments, useDayTimeOff } from "../counter/hooks";
 import type { Cat, Customer, DayAppt, Master } from "../counter/types";
 import { apptName } from "@/lib/domain/guest";
+import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 
 export type FormInit = {
   date: string; startMin: number; resourceId: string;
@@ -44,6 +45,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const [customer, setCustomer] = useState<Customer | null>(edit?.customer ?? init.customer ?? null);
   const [newName, setNewName] = useState("");
   const [newWa, setNewWa] = useState("");
+  const [custSource, setCustSource] = useState<CustomerSource | "">("");
   const [guestName, setGuestName] = useState(""); // nama panggilan walk-in — hanya di booking, bukan data pelanggan
   const [sel, setSel] = useState<string[]>(edit?.appointment_services.map((s) => s.service_id) ?? []);
   const [pair, setPair] = useState<Pair>({ sel: [], resourceId: null, staffPick: null });
@@ -190,6 +192,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     if (pair.sel.length && (!pairResource || !pairStaff)) return setError(`Belum ada kursi/meja atau staf ${CAT_NAME[pairCat]} aktif untuk booking kedua.`);
     if (!customer && newWa.trim() && !waNorm) return setError("No. WhatsApp belum valid.");
     if (!customer && waNorm && !newName.trim() && !existingOwner) return setError("Isi nama pelanggan (atau kosongkan No. WhatsApp untuk walk-in).");
+    if (!edit && !customer && waNorm && !existingOwner && !custSource) return setError("Pilih tahu D'Pras dari mana.");
     setSaving(true);
     const supabase = createClient();
     const force = hasConflict;
@@ -208,6 +211,11 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     if (error) { setSaving(false); return setError(error.message); }
     const r = data as { saved: boolean; conflicts: Conflict[]; customer_existing?: boolean; customer_id?: string | null };
     if (!r.saved) { setSaving(false); setServerConflicts(r.conflicts); return; } // bentrok baru dari perangkat lain → minta konfirmasi
+    // pelanggan baru dari form ini → simpan "tahu dari mana" (laporan campaign); pelanggan lama tidak diubah
+    if (!edit && r.customer_id && !r.customer_existing && custSource) {
+      const { error: srcErr } = await supabase.from("customers").update({ source: custSource }).eq("id", r.customer_id);
+      if (srcErr) toast(`Booking disimpan, tapi sumber pelanggan belum tersimpan: ${srcErr.message}`, "error");
+    }
 
     let pairMsg = "";
     if (!edit && pair.sel.length && pairResource && pairStaff) {
@@ -276,9 +284,17 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 <input id="f-wa" className="input tabular" inputMode="tel" placeholder="08…" value={newWa} onChange={(e) => setNewWa(e.target.value)} />
               </Field>
               {waNorm && !existingOwner && (
-                <Field label="Nama pelanggan" htmlFor="f-name">
-                  <input id="f-name" className="input" autoComplete="off" required value={newName} onChange={(e) => setNewName(e.target.value)} />
-                </Field>
+                <>
+                  <Field label="Nama pelanggan" htmlFor="f-name">
+                    <input id="f-name" className="input" autoComplete="off" required value={newName} onChange={(e) => setNewName(e.target.value)} />
+                  </Field>
+                  <Field label="Tahu D'Pras dari mana?" htmlFor="f-src">
+                    <select id="f-src" className="input" value={custSource} onChange={(e) => setCustSource(e.target.value as CustomerSource)}>
+                      <option value="">— Pilih —</option>
+                      {CUSTOMER_SOURCES.filter(([v]) => v !== "web").map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </Field>
+                </>
               )}
               {!waNorm && (
                 <Field label="Nama panggilan (opsional)" htmlFor="f-guest" hint="Untuk memanggil & membedakan walk-in di jadwal dan struk.">

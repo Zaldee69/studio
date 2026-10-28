@@ -6,6 +6,13 @@ export function isChurn(lastVisitAt: Date | string | null, churnWeeks: number, n
   return now.getTime() - new Date(lastVisitAt).getTime() > churnWeeks * 7 * DAY;
 }
 
+/** "Tahu D'Pras dari mana?" — kolom customers.source (web = booking online, diisi otomatis). */
+export const CUSTOMER_SOURCES = [
+  ["instagram", "Instagram"], ["google_maps", "Google Maps"], ["whatsapp", "WhatsApp / pesan promo"], ["teman", "Teman / keluarga"],
+  ["lewat", "Lewat depan studio"], ["web", "Website"], ["lainnya", "Lainnya"],
+] as const;
+export type CustomerSource = (typeof CUSTOMER_SOURCES)[number][0];
+
 /** Nama depan untuk sapaan; "" bila nama belum diketahui (kontak WA impor tanpa nama tersimpan sebagai "No Name"). */
 export function firstName(name: string): string {
   const n = name.trim();

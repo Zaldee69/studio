@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
-import { CAT_STYLE, CatChip, Empty, useOnline, useToast } from "@/components/ui";
+import { CAT_STYLE, CatChip, Empty, Sheet, useOnline, useToast } from "@/components/ui";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine, type Voucher } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
@@ -11,6 +11,7 @@ import { STATUS } from "@/lib/domain/status";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import { CustomerCombobox } from "../counter/customer-combobox";
+import { NewCustomer } from "../counter/new-customer";
 import { TX_SELECT, useDayAppointments } from "../counter/hooks";
 import type { Customer, DayAppt, Master, SvcCat, TxRow } from "../counter/types";
 import { printerReady, printerSettings } from "@/lib/printer";
@@ -36,6 +37,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     ? initialAppt.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: initialAppt.staff_id ?? "", appointmentId: initialAppt.id }))
     : []);
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
+  const [newCust, setNewCust] = useState(false);
   const [useDeposit, setUseDeposit] = useState(false);
   const [method, setMethod] = useState<BaseMethod>("cash");
   const [qrisRef, setQrisRef] = useState(""); // No. referensi QRIS / transfer (wajib, dicek unik di server)
@@ -283,9 +285,17 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 <div className="min-w-0 flex-1">
                   <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); setVMsg(""); }} emptyLabel="Pelanggan umum (walk-in)" />
                 </div>
-                <button onClick={() => setTopup(true)} disabled={!customer || !online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</button>
+                {customer
+                  ? <button onClick={() => setTopup(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</button>
+                  : <button onClick={() => setNewCust(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</button>}
               </div>
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
+              {/* pengingat (tidak menghalangi bayar): nomor WA pelanggan = dasar promo, pengingat & laporan campaign */}
+              {!customer && items.length > 0 && (
+                <p role="status" className="rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
+                  Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.
+                </p>
+              )}
               {items.length > 0 && (kasirV ? (
                 <div className="flex min-h-11 items-center gap-2 rounded-[10px] border border-accent bg-[#ECEEE8] px-3 text-[13px]">
                   <span className="flex-1">Voucher <b>{kasirV.code}</b> ({posV!.label}){!k.discountLabel.startsWith("Voucher") && " — diskon lain lebih besar, voucher tidak dipakai"}</span>
@@ -448,6 +458,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
         </button>
       )}
 
+      <Sheet open={newCust} onClose={() => setNewCust(false)} label="Pelanggan baru" width={480}>
+        <NewCustomer online={online} onClose={() => setNewCust(false)}
+          onSaved={(c) => { setNewCust(false); setCustomer(c); setUseDeposit(false); setVMsg(""); toast(`${c.name} ditambahkan`); }} />
+      </Sheet>
       {customer && (
         <TopupModal customer={customer} balance={bal} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)}
           onDone={(nb) => { setBalance(nb); setTopup(false); }} />

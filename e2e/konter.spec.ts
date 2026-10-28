@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { formatRupiah } from "../src/lib/domain/format";
-import { card, login, newSession, randomWa, resetTodayClosings, slotHour, uniq } from "./helpers";
+import { card, login, newSession, randomWa, resetTodayClosings, slotHour, sql, uniq } from "./helpers";
 
 test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + kembalian → Lunas di tab lain", async ({ page, browser }, info) => {
   const h = slotHour(info);
@@ -48,10 +48,11 @@ test("2 · pasangan: barber + nail → satu tagihan, diskon, deposit + QRIS, sal
   await page.goto("/kasir/jadwal");
 
   await page.getByRole("button", { name: `Booking baru Kursi Barber 2 ${h}:00` }).click();
-  await page.fill("#f-wa", wa); await page.fill("#f-name", name);
+  await page.fill("#f-wa", wa); await page.fill("#f-name", name); await page.selectOption("#f-src", "teman");
   await page.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   await page.getByRole("button", { name: "Simpan booking" }).click();
   await expect(card(page, name)).toBeVisible();
+  await expect.poll(() => sql<{ source: string }>(`select source from customers where name = '${name}'`)[0]?.source).toBe("teman");
 
   await page.getByRole("button", { name: `Booking baru Meja Manicure 2 ${h}:00` }).click();
   await page.fill("#f-wa", wa); // nama tidak ditanya: WA lama
@@ -90,7 +91,7 @@ test("3 · bentrok: booking tumpang tindih → peringatan → Tetap simpan → b
   await page.getByRole("button", { name: "Booking baru", exact: true }).click();
   await page.selectOption("#f-res", { label: "Kursi Barber 1" });
   await page.selectOption("#f-start", { label: "10:15" }); // Rina 10:00–10:45 (seed)
-  await page.fill("#f-wa", randomWa()); await page.fill("#f-name", name);
+  await page.fill("#f-wa", randomWa()); await page.fill("#f-name", name); await page.selectOption("#f-src", "instagram");
   await page.getByRole("button", { name: /^Cukur Jenggot ·/ }).click();
   await expect(page.getByRole("dialog").getByRole("alert").filter({ hasText: "Jadwal bentrok" })).toContainText(/Jadwal bentrok:.*Rina/);
   await page.getByRole("button", { name: "Tetap simpan" }).click();

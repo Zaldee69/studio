@@ -12,7 +12,7 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
 
   await kasir.goto("/kasir/jadwal");
   await kasir.getByRole("button", { name: `Booking baru Meja Manicure 3 ${h}:00` }).click();
-  await kasir.fill("#f-wa", randomWa()); await kasir.fill("#f-name", name); // tanpa WA = walk-in tanpa nama
+  await kasir.fill("#f-wa", randomWa()); await kasir.fill("#f-name", name); await kasir.selectOption("#f-src", "lewat"); // tanpa WA = walk-in tanpa nama
   await kasir.getByRole("button", { name: /^Manicure Basic ·/ }).click();
   await kasir.selectOption("#f-staff", { label: "Sari" });
   await kasir.getByRole("button", { name: "Simpan booking" }).click();

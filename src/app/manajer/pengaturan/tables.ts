@@ -119,6 +119,7 @@ export const TABLES = {
       { name: "role", label: "Peran", type: "select", w: "9rem",
         options: [["manager", "Manajer"], ["cashier", "Kasir"], ["staff", "Kapster"], ["customer", "Pelanggan"]] },
       { name: "staff_id", label: "Tautan staf", type: "select", options: "staff", nullable: true, w: "10rem" },
+      { name: "phone", label: "No. WA (rapor capster)", type: "text", nullable: true, w: "10rem" },
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },
     ],
   },
@@ -190,6 +191,8 @@ export const SETTINGS_GROUPS: { title: string; fields: Field[] }[] = [
     { name: "churn_weeks", label: "Churn setelah (minggu)", type: "int", min: 1, max: 52 },
     { name: "wa_followup_template", label: "Template follow-up WA ({nama} = nama depan)", type: "textarea" },
     { name: "blast_daily_limit", label: "Batas blast promosi per hari (sisanya dikirim besok 10.00)", type: "int", min: 1, max: 1000 },
+    { name: "auto_followup_on", label: "Kirim template follow-up otomatis ke pelanggan yang baru melewati batas churn (tiap hari 10.00)", type: "bool" },
+    { name: "google_review_url", label: "Link ulasan Google (diisi = WA minta ulasan otomatis, sekali per pelanggan, 2–24 jam setelah bayar)", type: "text", nullable: true },
   ] },
   { title: "Laci kas", fields: [
     { name: "drawer_start_date", label: "Saldo awal laci berlaku mulai tanggal", type: "date", nullable: true },

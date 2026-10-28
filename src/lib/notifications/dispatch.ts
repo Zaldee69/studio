@@ -1,7 +1,7 @@
 import type { Adapters } from "./adapters";
 import { render, type GroupInfo, type Template } from "./templates";
 
-export type Queued = { id: string; channel: "email" | "whatsapp" | "telegram"; to_address: string; template: Template | "promo" | "otp" | "alert" | "test"; booking_group_id: string | null; attempts: number; body?: string | null };
+export type Queued = { id: string; channel: "email" | "whatsapp" | "telegram"; to_address: string; template: Template | "promo" | "otp" | "alert" | "test" | "staff_report"; booking_group_id: string | null; attempts: number; body?: string | null };
 export type Store = {
   claim(limit: number): Promise<Queued[]>;                          // ambil 'queued' yang jatuh tempo → 'sending'
   group(id: string): Promise<GroupInfo | null>;
@@ -16,8 +16,8 @@ export async function processQueue(store: Store, adapters: Adapters, now = new D
   const out = { sent: 0, skipped: 0, failed: 0, retry: 0 };
   for (const m of await store.claim(25)) {
     const send = m.channel === "email" ? adapters.email : m.channel === "telegram" ? adapters.telegram : adapters.whatsapp;
-    // promo (CRM), otp (kode masuk), alert (Telegram owner) & test (tes WA manajer): teks sudah jadi, tanpa data booking
-    const raw = m.template === "promo" || m.template === "otp" || m.template === "alert" || m.template === "test";
+    // promo (CRM), otp (kode masuk), alert (Telegram owner), test (tes WA manajer) & staff_report (rapor capster): teks sudah jadi
+    const raw = m.template === "promo" || m.template === "otp" || m.template === "alert" || m.template === "test" || m.template === "staff_report";
     const g = raw ? null : m.booking_group_id ? await store.group(m.booking_group_id) : null;
     if (!raw && !g) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: "Booking tidak ditemukan" }); out.skipped++; continue; }
     if (!send) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: `${CHANNEL_NAME[m.channel]} belum dikonfigurasi` }); out.skipped++; continue; }

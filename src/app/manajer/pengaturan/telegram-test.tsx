@@ -26,6 +26,7 @@ export function TelegramTest() {
         <li>Stok bahan turun melewati ambang reorder (sekali per bahan sampai ditangani).</li>
         <li>08.00: kasir kemarin belum ditutup, komisi sudah ditutup tapi belum dibayar, bahan yang perlu dipesan; Senin: ringkasan minggu lalu.</li>
         <li>15.00: staf yang belum dapat pelanggan.</li>
+        <li>Senin 08.20: notulen rapat tim AI (dibuka dengan rapor tindakan minggu sebelumnya). Kamis 16.00: cek tengah minggu potong Sen–Kam vs target.</li>
       </ul>
       <button onClick={send} disabled={busy} className="btn-ghost h-11">Kirim pesan tes</button>
     </section>

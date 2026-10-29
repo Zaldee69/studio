@@ -1,0 +1,6 @@
+# Pelajaran — sistem & data
+
+- **[29 Okt 2026] Database lokal mengirim notifikasi sungguhan** — Jadwal otomatis DB lokal mengirim "kasir belum ditutup" ke Telegram owner, dan E2E booking mengirim WA ke nomor acak. → Pengaman sudah dipasang (Supabase lokal: WA hanya ke `NOTIFY_TEST_WA`, Telegram bertanda LOKAL); sebelum menjalankan E2E atau uji pengiriman, pastikan pengaman aktif. Sumber: insiden 28–29 Okt. Status: berlaku.
+- **[29 Okt 2026] View `customer_stats` kosong untuk cron/server** — View dibatasi peran login; fungsi otomatis menghitung 0 pelanggan "perlu follow-up". → Fungsi tanpa login menghitung langsung dari tabel. Sumber: bug saat membangun otomasi. Status: berlaku.
+- **[28 Okt 2026] Migrasi bisa sudah jalan di prod lebih cepat dari dugaan** — 0004–0006 sudah di prod saat masih diedit. → Sebelum mengubah migrasi yang ada, cek `supabase_migrations.schema_migrations` di prod; bila sudah jalan, buat migrasi baru. Sumber: data prod. Status: berlaku.
+- **[29 Okt 2026] Data pelanggan di transaksi sangat jarang** — 48 dari 50 transaksi pijat tanpa pelanggan; "pernah transaksi" hanya 5 dari 202 kontak. → Jangan menyimpulkan retensi/kenal-tidaknya pelanggan dari data ini. Sumber: data prod. Status: berlaku sampai pelanggan tercatat ≥60%.

@@ -9,7 +9,7 @@ import { mondayOf, shiftWeek, weekLabel } from "@/features/sdm/shared";
 const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 
 /** Komisi saya: dari commission_for_period (sama dengan layar SDM & slip gaji), rincian tanpa HPP. */
-export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deductHpp }: { ratio: number; minPay: number; retailPct: number; gross?: boolean; dailyMin?: number | null; deductHpp?: boolean }) {
+export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deductHpp, payMonthly }: { ratio: number; minPay: number; retailPct: number; gross?: boolean; dailyMin?: number | null; deductHpp?: boolean; payMonthly?: boolean }) {
   const cur = jktDate().slice(0, 7);
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(Date.UTC(+cur.slice(0, 4), +cur.slice(5, 7) - 1 - i, 1));
@@ -54,7 +54,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
   return (
     <>
       <h1 className="font-display text-[26px] font-bold">Komisi saya</h1>
-      <section aria-label="Komisi mingguan" className="flex flex-col rounded-[18px] bg-card px-4 py-2">
+      {!payMonthly && <section aria-label="Komisi mingguan" className="flex flex-col rounded-[18px] bg-card px-4 py-2">
         <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Komisi mingguan · dibayar per minggu (Senin–Minggu)</span>
         {[[thisWeek, wk?.now, "Minggu ini · berjalan"], ...(wk?.prev && !wk.prev.closed ? [[lastWeek, wk.prev, "Menunggu ditutup manajer"]] : [])].map(([w, r, note]) => (
           <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
@@ -69,7 +69,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
             <b>{formatRupiah(c.amount)}</b>
           </div>
         ))}
-      </section>
+      </section>}
 
       <div className="flex flex-wrap items-center gap-2.5">
         <h2 className="flex-1 font-display text-xl font-bold">Gaji bulanan</h2>
@@ -91,7 +91,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
         <b className="font-display text-[40px] tracking-tight tabular">{s ? formatRupiah(s.total_pay) : "…"}</b>
         {s && (
           <span className="text-[13px] text-[#D6D6D0] tabular">
-            Komisi jasa {formatRupiah(s.commission_service)}
+            {s.base_salary > 0 && `Gaji pokok ${formatRupiah(s.base_salary)} + `}Komisi jasa {formatRupiah(s.commission_service)}
             {s.commission_retail > 0 && ` + ritel ${formatRupiah(s.commission_retail)}`}
             {s.subsidy > 0 && ` + subsidi jaring ${dailyMin ? "harian" : "pengaman"} ${formatRupiah(s.subsidy)}`}
             {s.adjustments !== 0 && ` ${s.adjustments > 0 ? "+" : "−"} penyesuaian ${formatRupiah(Math.abs(s.adjustments))}`}
@@ -116,7 +116,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
         </div>
       )}
       <span className="text-[13px] leading-normal text-muted">
-        Komisi per layanan = (harga {gross ? "normal, sebelum diskon/promo" : "bersih"}{deductHpp && " − HPP bahan"}) × {s?.commission_pct ?? ratio}%.{retailPct > 0 && ` Produk ritel yang Anda jual: ${retailPct}% dari harga ${gross ? "normal" : "bersih"}.`}
+        Komisi per layanan = (harga {gross ? "normal, sebelum diskon/promo" : "bersih"}{deductHpp && " − HPP bahan"}) × {s?.commission_pct ?? ratio}%.{retailPct > 0 && ` Produk ritel yang Anda jual: ${retailPct}% dari harga ${gross ? "normal" : "bersih"}.`}{payMonthly && " Gaji dan komisi dibayar sekali di akhir bulan."}
       </span>
       {!!data?.adj.length && (
         <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">

@@ -69,7 +69,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
       <p className="text-sm text-muted">
         Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
-        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dipotong dari bayaran minggu ini (sisanya minggu berikutnya).
+        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dipotong dari bayaran minggu ini (sisanya minggu berikutnya). Staf yang dibayar bulanan (Pengaturan → Staf) tidak muncul di sini; semuanya masuk Gaji bulanan.
       </p>
 
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">

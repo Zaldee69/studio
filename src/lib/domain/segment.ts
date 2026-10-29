@@ -2,7 +2,7 @@
 import { CAT_NAME, type Cat } from "./category";
 import { formatRupiah } from "./format";
 
-export type Segment = { inactive_weeks?: number; categories?: string[]; min_visits?: number; min_spend?: number; online?: boolean };
+export type Segment = { inactive_weeks?: number; categories?: string[]; min_visits?: number; min_spend?: number; online?: boolean; waitlist?: "nail" | "lashes" };
 
 /** Segmen dalam kalimat biasa, mis. "Pelanggan yang terakhir datang ≥ 8 minggu lalu dan pernah memakai Pijat". */
 export function describeSegment(s: Segment): string {
@@ -13,6 +13,7 @@ export function describeSegment(s: Segment): string {
   if (s.min_spend) parts.push(`total belanja ≥ ${formatRupiah(s.min_spend)}`);
   if (s.online === true) parts.push("pernah booking online");
   if (s.online === false) parts.push("belum pernah booking online");
+  if (s.waitlist) parts.push(`masuk daftar tunggu ${s.waitlist === "nail" ? "Nail Art" : "Lashes"}`);
   return parts.length ? `Pelanggan yang ${parts.join(" dan ")}` : "Semua pelanggan yang punya WhatsApp";
 }
 
@@ -22,6 +23,8 @@ export const PRESETS: { label: string; segment: Segment }[] = [
   { label: "Lama tidak datang", segment: { inactive_weeks: 8 } },
   { label: "Pelanggan setia", segment: { min_visits: 5 } },
   { label: "Belum pernah booking online", segment: { online: false } },
+  { label: "Daftar tunggu Nail Art", segment: { waitlist: "nail" } },
+  { label: "Daftar tunggu Lashes", segment: { waitlist: "lashes" } },
 ];
 
 /** Hapus nilai kosong agar segmen tersimpan rapi (dan sama persis dengan preset). */

@@ -13,7 +13,7 @@ import { CAT, monthLabel, shiftMonth } from "./shared";
 
 export type PayRow = {
   staff_id: string; staff_name: string; category: Cat; commission_pct: number; service_count: number;
-  revenue_net: number; hpp_total: number; commission_service: number; commission_retail: number; subsidy: number;
+  revenue_net: number; hpp_total: number; base_salary: number; commission_service: number; commission_retail: number; subsidy: number;
   adjustments: number; total_pay: number; closed: boolean; paid_at: string | null; paid_method: string | null;
 };
 export type Period = { status: "open" | "closed"; closed_at: string | null; reopen_reason: string | null } | null;
@@ -37,6 +37,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
   const future = month > current;
   const wk = (r: PayRow) => weekly[r.staff_id] ?? 0;
   const hasWeekly = rows.some((r) => wk(r) !== 0);
+  const hasBase = rows.some((r) => r.base_salary > 0);
   const rest = (r: PayRow) => r.total_pay - wk(r);   // sisa dibayar akhir bulan (negatif = kelebihan bayar mingguan → dipotong)
 
   async function close() {
@@ -51,9 +52,9 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
   }
   function exportCsv() {
     downloadText(`rekap-gaji-${month}.csv`, toCsv([
-      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "HPP", "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", "Total gaji",
+      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "HPP", "Gaji pokok", "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", "Total gaji",
         "Dibayar mingguan", "Sisa akhir bulan", "Dibayar", "Metode"],
-      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.hpp_total, r.commission_service, r.commission_retail,
+      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.hpp_total, r.base_salary, r.commission_service, r.commission_retail,
         r.subsidy, r.adjustments, r.total_pay, wk(r), rest(r), r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
   }
@@ -92,7 +93,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         <table className="w-full min-w-[1100px] text-sm tabular">
           <thead><tr className="text-left text-xs text-muted">
-            {["Staf", "Layanan", "Pendapatan", "HPP", "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", hasWeekly ? "Total gaji" : "Total dibayar",
+            {["Staf", "Layanan", "Pendapatan", "HPP", ...(hasBase ? ["Gaji pokok"] : []), "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", hasWeekly ? "Total gaji" : "Total dibayar",
               ...(hasWeekly ? ["Dibayar mingguan", "Sisa akhir bulan"] : []), "Status bayar"].map((h, i, all) =>
               <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
           </tr></thead>
@@ -108,6 +109,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
                 <td className="pr-2 text-right">{r.service_count}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.hpp_total)}</td>
+                {hasBase && <td className="pr-2 text-right">{r.base_salary ? formatRupiah(r.base_salary) : "—"}</td>}
                 <td className="pr-2 text-right">{formatRupiah(r.commission_service)}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.commission_retail)}</td>
                 <td className="pr-2 text-right">{r.subsidy ? formatRupiah(r.subsidy) : "—"}</td>
@@ -126,7 +128,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
             ))}
             <tr className="border-t-2 border-ink font-bold">
               <td className="py-2.5 pr-2">Total</td><td className="pr-2 text-right">{sum("service_count")}</td><td className="pr-2 text-right">{formatRupiah(rev)}</td>
-              <td className="pr-2 text-right">{formatRupiah(hpp)}</td><td className="pr-2 text-right">{formatRupiah(sum("commission_service"))}</td>
+              <td className="pr-2 text-right">{formatRupiah(hpp)}</td>{hasBase && <td className="pr-2 text-right">{formatRupiah(sum("base_salary"))}</td>}<td className="pr-2 text-right">{formatRupiah(sum("commission_service"))}</td>
               <td className="pr-2 text-right">{formatRupiah(sum("commission_retail"))}</td><td className="pr-2 text-right">{formatRupiah(sum("subsidy"))}</td>
               <td className="pr-2 text-right">{signed(sum("adjustments"))}</td><td className="pr-2 text-right text-base">{formatRupiah(sum("total_pay"))}</td>
               {hasWeekly && <><td className="pr-2 text-right">−{formatRupiah(rows.reduce((a, r) => a + wk(r), 0))}</td>

@@ -201,7 +201,7 @@ export default async function Landing() {
               <h2 className={h2}>{w.title}</h2>
               <span className="text-xs font-semibold uppercase tracking-[0.28em] text-dust">{w.sub}</span>
               <p className="max-w-[360px] text-base leading-[1.7] text-sand">{w.text}</p>
-              {w.soon ? <span className="rounded-full bg-rose/50 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-cream">Segera hadir</span>
+              {w.soon ? <Link href={`/daftar-tunggu?minat=${w.cat}`} className="btn-line h-12 px-[26px]">Segera hadir · Daftar tunggu</Link>
                 // kategori tanpa kursi/meja atau staf aktif: tanpa tombol reservasi
                 : (!online || bookable.includes(w.cat)) && (
                   <Link href={bookHref(w.cat)} className="btn-line h-12 px-[26px]">{online ? `Reservasi ${w.title}` : bookLabel}</Link>
@@ -235,7 +235,7 @@ export default async function Landing() {
               </div>
             ))}
           </div>
-          <p className="text-center text-sm text-stone"><b className="font-semibold text-cream">{soon("nail") ? "Nail Art & Lashes" : "Lashes"}</b> · menu & harga menyusul — segera hadir.</p>
+          <p className="text-center text-sm text-stone"><b className="font-semibold text-cream">{soon("nail") ? "Nail Art & Lashes" : "Lashes"}</b> · menu & harga menyusul — segera hadir. <Link href="/daftar-tunggu" className="font-semibold text-cream underline">Daftar tunggu →</Link></p>
           <div className="flex justify-center"><Link href={bookHref()} className="btn-gold">{online ? "Reservasi online" : bookLabel}</Link></div>
           {!!extra.length && (
             <div id="tambahan" className="flex flex-col gap-4 rounded-3xl border border-rule bg-lux-2 p-6 min-[900px]:p-8">

@@ -965,13 +965,13 @@ isOneToOne: false
                   ]
                 },"payroll_snapshots": {
                   Row: {
-                    "adjustments": number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note": string,"paid_at": string | null,"paid_by": string | null,"paid_method": string | null,"period_id": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
+                    "adjustments": number,"base_salary": number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note": string,"paid_at": string | null,"paid_by": string | null,"paid_method": string | null,"period_id": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
                   }
                   Insert: {
-                    "adjustments": number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"period_id": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
+                    "adjustments": number,"base_salary"?: number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"period_id": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
                   }
                   Update: {
-                    "adjustments"?: number,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct"?: number,"commission_retail"?: number,"commission_service"?: number,"hpp_total"?: number,"note"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"period_id"?: string,"revenue_net"?: number,"service_count"?: number,"staff_id"?: string,"staff_name"?: string,"subsidy"?: number,"total_pay"?: number
+                    "adjustments"?: number,"base_salary"?: number,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct"?: number,"commission_retail"?: number,"commission_service"?: number,"hpp_total"?: number,"note"?: string,"paid_at"?: string | null,"paid_by"?: string | null,"paid_method"?: string | null,"period_id"?: string,"revenue_net"?: number,"service_count"?: number,"staff_id"?: string,"staff_name"?: string,"subsidy"?: number,"total_pay"?: number
                   }
                   Relationships: [
                     {
@@ -1352,13 +1352,13 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"home_resource_id": string | null,"id": string,"name": string,"photo_path": string | null,"sort": number
+                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"photo_path"?: string | null,"sort"?: number
+                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number
                   }
                   Relationships: [
                     {
@@ -1735,6 +1735,43 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"waitlist": {
+                  Row: {
+                    "created_at": string,"customer_id": string,"interest": string,"source": string | null
+                  }
+                  Insert: {
+                    "created_at"?: string,"customer_id": string,"interest": string,"source"?: string | null
+                  }
+                  Update: {
+                    "created_at"?: string,"customer_id"?: string,"interest"?: string,"source"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "waitlist_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customer_stats"
+      referencedColumns: ["customer_id"]
+    },{
+      foreignKeyName: "waitlist_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "customers"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "waitlist_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "my_customer"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "waitlist_customer_id_fkey"
+      columns: ["customer_id"]
+isOneToOne: false
+      referencedRelation: "staff_customer_card"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -2108,7 +2145,7 @@ isOneToOne: false
                            },
 "commission_for_period":
 { Args: { "p_month": string,"p_staff_id"?: string }; Returns: {
-              "adjustments": number,"category": Database["public"]['Enums']["staff_category"],"closed": boolean,"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note": string,"paid_at": string,"paid_method": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
+              "adjustments": number,"base_salary": number,"category": Database["public"]['Enums']["staff_category"],"closed": boolean,"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"note": string,"paid_at": string,"paid_method": string,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
             }[]
                            },
 "commission_items":
@@ -2123,7 +2160,7 @@ isOneToOne: false
                            },
 "commission_live":
 { Args: { "p_month": string }; Returns: {
-              "adjustments": number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
+              "adjustments": number,"base_salary": number,"category": Database["public"]['Enums']["staff_category"],"commission_pct": number,"commission_retail": number,"commission_service": number,"hpp_total": number,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string,"subsidy": number,"total_pay": number
             }[]
                            },
 "commission_week":
@@ -2284,6 +2321,9 @@ isOneToOne: false
                            },
 "jkt_today":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"join_waitlist":
+{ Args: { "p": Json }; Returns: (string)[]
                            },
 "kick_ai_weekly":
 { Args: Record<PropertyKey, never>; Returns: undefined

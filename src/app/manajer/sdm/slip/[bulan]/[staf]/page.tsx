@@ -28,7 +28,8 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
   const paidWeekly = Number(wk?.closed_amount ?? 0);
   const pay = r.total_pay - paidWeekly;
   const lines: [string, string][] = [
-    ["Layanan", String(r.service_count)], ["Pendapatan jasa bersih", formatRupiah(r.revenue_net)], ["Komisi jasa", formatRupiah(r.commission_service)],
+    ["Layanan", String(r.service_count)], ["Pendapatan jasa bersih", formatRupiah(r.revenue_net)],
+    ...(r.base_salary ? [["Gaji pokok", formatRupiah(r.base_salary)] as [string, string]] : []), ["Komisi jasa", formatRupiah(r.commission_service)],
     ...(r.commission_retail ? [["Komisi ritel", formatRupiah(r.commission_retail)] as [string, string]] : []),
     ...(r.subsidy ? [["Subsidi jaring pengaman", formatRupiah(r.subsidy)] as [string, string]] : []),
     ...(adj ?? []).map((a) => [`${a.kind === "deduction" ? "Potongan" : a.kind === "bonus" ? "Bonus" : "Koreksi"}: ${a.reason}`, signed(a.amount)] as [string, string]),

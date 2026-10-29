@@ -2676,9 +2676,6 @@ isOneToOne: false
 "voucher_check":
 { Args: { "p_code": string,"p_customer"?: string,"p_date"?: string,"p_service_ids": (string)[] }; Returns: Json
                            },
-"voucher_check_kasir":
-{ Args: { "p_code": string,"p_customer"?: string,"p_service_ids": (string)[] }; Returns: Json
-                           },
 "voucher_days_label":
 { Args: { "w": string }; Returns: string
                            },

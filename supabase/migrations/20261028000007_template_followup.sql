@@ -21,5 +21,5 @@ begin
 end $$;
 
 update settings set wa_followup_template =
-  'Halo Kak {nama}, sudah sebulan sejak kunjungan terakhir Kakak di D''Pras Studio. Bila rambut sudah waktunya dirapikan, kami siap menyambut Kakak. Khusus Senin–Kamis, tunjukkan kode SENKAMWA untuk potongan Rp5.000. Balas pesan ini bila ingin kami bantu atur jadwalnya.'
+  'Halo Kak {nama}, sudah sebulan sejak kunjungan terakhir Kakak di D''Pras Studio. Bila rambut sudah waktunya dirapikan, kami siap menyambut Kakak. Khusus Senin–Kamis, masukkan kode SENKAMWA saat booking di dprasstudio.com untuk potongan Rp5.000. Balas pesan ini bila ingin kami bantu atur jadwalnya.'
 where wa_followup_template = 'Halo {nama}! Sudah cukup lama nih belum mampir ke D''Pras Barbershop. Minggu ini masih ada slot kosong — mau kami bantu booking?';

@@ -1,9 +1,9 @@
 begin;
 \ir helpers.psql
-select plan(14);
+select plan(8);
 
 -- Voucher Senin–Kamis (rapat 26 Okt): hari dicek terhadap tanggal jadwal (booking) / hari ini (kasir);
--- kasir bisa memasukkan kode untuk walk-in; 1× per pelanggan & kuota ikut menghitung pemakaian kasir.
+-- sejak 28 Okt kode voucher hanya lewat booking online (kasir ditolak).
 select tests.su();
 update settings set online_promo_pct = 0;
 select extract(isodow from jkt_today())::int as dow \gset
@@ -28,31 +28,12 @@ select is(book_online(jsonb_build_object('date', :'sabtu', 'time', '10:00', 'ser
   'name', 'Uji Senkam', 'whatsapp', '081299991009', 'voucher_code', 'SENKAM', 'client_request_id', 'vch-hari-0001')) ->> 'code',
   'voucher', 'booking Sabtu dengan voucher Senin–Kamis ditolak');
 
--- ---------- kasir ----------
+-- ---------- kasir (28 Okt: voucher hanya lewat booking online) ----------
 select tests.login(tests.kasir());
-select ok((voucher_check_kasir('BUKANHARIINI', array[:'potong'::uuid]) ->> 'message') like 'Voucher ini hanya berlaku hari %', 'kasir: di luar hari berlaku ditolak');
-select ok((voucher_check_kasir('HARIINI', array[:'potong'::uuid]) ->> 'message') like 'Voucher ini 1× per pelanggan%', 'kasir: 1× per pelanggan butuh data pelanggan');
-select throws_like(format($$ select checkout(jsonb_build_object('method', 'cash', 'voucher_code', 'HARIINI',
+select throws_like(format($$ select checkout(jsonb_build_object('method', 'cash', 'voucher_code', 'HARIINI', 'customer_id', '00000000-0000-0000-00ef-000000000001',
   'items', jsonb_build_array(jsonb_build_object('service_id', '%s', 'staff_id', '%s')))) $$, :'potong', tests.staff_andi()),
-  '%1× per pelanggan%', 'checkout walk-in tanpa pelanggan ditolak');
-select checkout(jsonb_build_object('method', 'cash', 'voucher_code', 'hariini', 'customer_id', '00000000-0000-0000-00ef-000000000001',
-  'items', jsonb_build_array(jsonb_build_object('service_id', :'potong', 'staff_id', tests.staff_andi())))) as tx1 \gset
-select tests.su();
-select results_eq(format($$ select discount_amount, discount_label, voucher_id = (select id from vouchers where code = 'HARIINI') from transactions where id = '%s' $$, :'tx1'),
-  $$ values (5000::bigint, 'Voucher HARIINI'::text, true) $$, 'walk-in: potongan & voucher tercatat di transaksi');
-
-select tests.login(tests.kasir());
-select is(voucher_check_kasir('HARIINI', array[:'potong'::uuid], '00000000-0000-0000-00ef-000000000001') ->> 'message',
-  'Voucher ini sudah pernah dipakai dengan nomor ini', 'pemakaian di kasir dihitung untuk 1× per pelanggan');
-select checkout(jsonb_build_object('method', 'cash', 'voucher_code', 'HARIINI', 'customer_id', '00000000-0000-0000-00ef-000000000002',
-  'items', jsonb_build_array(jsonb_build_object('service_id', :'potong', 'staff_id', tests.staff_andi()))));
-select is(voucher_check_kasir('HARIINI', array[:'potong'::uuid], '00000000-0000-0000-00ef-000000000003') ->> 'message',
-  'Kuota voucher sudah habis', 'kuota 2 habis oleh pemakaian kasir');
-select tests.login(tests.mgr());
-select is((select reserved from voucher_usage() where voucher_id = (select id from vouchers where code = 'HARIINI')), 2, 'layar manajer: kuota terpakai 2');
-
-select tests.anon();
-select throws_like($$ select voucher_check_kasir('HARIINI', array[]::uuid[]) $$, '%permission denied%', 'tamu tidak bisa memakai cek voucher kasir');
+  '%hanya berlaku lewat booking online%', 'kasir tidak bisa memasukkan kode voucher');
+select ok(not exists (select 1 from pg_proc where proname = 'voucher_check_kasir'), 'cek voucher kasir sudah tidak ada');
 
 select * from finish();
 rollback;

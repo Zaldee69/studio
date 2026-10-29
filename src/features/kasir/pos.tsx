@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CAT_STYLE, CatChip, Empty, Sheet, useOnline, useToast } from "@/components/ui";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
-import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine, type Voucher } from "@/lib/domain/cart";
+import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
 import { cashChange } from "@/lib/domain/receipt";
 import { STATUS } from "@/lib/domain/status";
@@ -52,11 +52,6 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [error, setError] = useState("");
   const [done, setDone] = useState<ReturnType<typeof toReceipt> | null>(null);
   const [topup, setTopup] = useState(false);
-  // voucher yang dimasukkan kasir (walk-in / layanan tanpa voucher booking); dicek ulang bila pelanggan berganti (1× per pelanggan)
-  const [vInput, setVInput] = useState("");
-  const [posV, setPosV] = useState<{ cust: string; v: Voucher; label: string } | null>(null);
-  const [vMsg, setVMsg] = useState("");
-  const [vBusy, setVBusy] = useState(false);
 
   const { data: dayAppts } = useDayAppointments(today);
   const unpaid = (dayAppts ?? []).filter((a) => a.status !== "paid" && a.status !== "cancelled" && a.status !== "pending_review");
@@ -116,12 +111,11 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     if (cat !== "retail") setLastStaff({ ...lastStaff, [cat]: staffId });
   };
 
-  const kasirV = posV && posV.cust === (customer?.id ?? "") ? posV.v : null;
   const apptOf = (id: string | null) => (id ? (dayAppts ?? []).find((a) => a.id === id) ?? (initialAppt?.id === id ? initialAppt : null) : null);
   const lines: CartLine[] = items.map((i) => {
     const s = svc.get(i.serviceId)!;
     return { serviceId: s.id, name: s.name, category: s.category, price: s.price, staffId: i.staffId || null, appointmentId: i.appointmentId,
-      promo: s.category !== "retail" && promoEligible(apptOf(i.appointmentId), master.shop.promo), voucher: apptOf(i.appointmentId)?.group?.voucher ?? kasirV };
+      promo: s.category !== "retail" && promoEligible(apptOf(i.appointmentId), master.shop.promo), voucher: apptOf(i.appointmentId)?.group?.voucher ?? null };
   });
   const k = calcCart(lines, { bundlePct: master.shop.bundlePct, promoPct: master.shop.promo.pct, method, useDeposit: useDeposit && bal > 0, depositBalance: bal });
   // <1000px keranjang ada di bawah katalog → bar ringkas melayang selama keranjang belum terlihat
@@ -153,17 +147,6 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
   function reset() {
     setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError("");
-    setVInput(""); setPosV(null); setVMsg("");
-  }
-
-  async function applyVoucher() {
-    setVBusy(true); setVMsg("");
-    const { data, error } = await createClient().rpc("voucher_check_kasir", {
-      p_code: vInput, p_service_ids: items.map((i) => i.serviceId), p_customer: customer?.id ?? undefined });
-    setVBusy(false);
-    const r = data as { ok: boolean; message?: string; voucher?: Voucher; label?: string; days?: string | null } | null;
-    if (error || !r?.ok || !r.voucher) { setPosV(null); return setVMsg(error?.message ?? r?.message ?? "Voucher tidak bisa dipakai"); }
-    setPosV({ cust: customer?.id ?? "", v: r.voucher, label: `${r.label}${r.days ? ` · ${r.days}` : ""}` });
   }
 
   async function pay() {
@@ -178,7 +161,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
-      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt, voucher_code: kasirV?.code ?? null,
+      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
     if (error) { setPaying(false); return setError(error.message); }
@@ -283,7 +266,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               <label htmlFor="cart-cust" className="text-xs font-bold text-muted">Pelanggan</label>
               <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
-                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); setVMsg(""); }} emptyLabel="Pelanggan umum (walk-in)" />
+                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Pelanggan umum (walk-in)" />
                 </div>
                 {customer
                   ? <button onClick={() => setTopup(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</button>
@@ -296,22 +279,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.
                 </p>
               )}
-              {items.length > 0 && (kasirV ? (
-                <div className="flex min-h-11 items-center gap-2 rounded-[10px] border border-accent bg-[#ECEEE8] px-3 text-[13px]">
-                  <span className="flex-1">Voucher <b>{kasirV.code}</b> ({posV!.label}){!k.discountLabel.startsWith("Voucher") && " — diskon lain lebih besar, voucher tidak dipakai"}</span>
-                  <button onClick={() => { setPosV(null); setVInput(""); }} className="h-11 px-2 text-xs font-semibold text-muted">Lepas</button>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <div className="flex gap-2">
-                    <input aria-label="Kode voucher" placeholder="Kode voucher (opsional)" autoComplete="off" maxLength={20} value={vInput}
-                      onChange={(e) => { setVInput(e.target.value.toUpperCase()); setVMsg(""); }} className="input h-11 min-w-0 flex-1 uppercase" />
-                    <button onClick={applyVoucher} disabled={!vInput.trim() || vBusy || !online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">
-                      {vBusy ? "Cek…" : "Pakai"}</button>
-                  </div>
-                  {vMsg && <span role="alert" className="text-xs text-[#9B2C22]">{vMsg}</span>}
-                </div>
-              ))}
+              {/* voucher hanya lewat booking online: diskonnya ikut otomatis dari booking yang dipilih */}
+              {items.length > 0 && <p className="text-xs text-muted">Kode voucher hanya berlaku lewat booking online (dprasstudio.com).</p>}
             </div>
 
             <div className="flex flex-col gap-2 px-5 py-3">
@@ -460,7 +429,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
       <Sheet open={newCust} onClose={() => setNewCust(false)} label="Pelanggan baru" width={480}>
         <NewCustomer online={online} onClose={() => setNewCust(false)}
-          onSaved={(c) => { setNewCust(false); setCustomer(c); setUseDeposit(false); setVMsg(""); toast(`${c.name} ditambahkan`); }} />
+          onSaved={(c) => { setNewCust(false); setCustomer(c); setUseDeposit(false); toast(`${c.name} ditambahkan`); }} />
       </Sheet>
       {customer && (
         <TopupModal customer={customer} balance={bal} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)}

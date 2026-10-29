@@ -1,4 +1,4 @@
-import type { Adapters } from "./adapters";
+import { SkipSend, type Adapters } from "./adapters";
 import { render, type GroupInfo, type Template } from "./templates";
 
 export type Queued = { id: string; channel: "email" | "whatsapp" | "telegram"; to_address: string; template: Template | "promo" | "otp" | "alert" | "test" | "staff_report"; booking_group_id: string | null; attempts: number; body?: string | null };
@@ -32,6 +32,7 @@ export async function processQueue(store: Store, adapters: Adapters, now = new D
       await store.finish(m.id, { status: "sent", attempts: m.attempts + 1, last_error: null });
       out.sent++;
     } catch (e) {
+      if (e instanceof SkipSend) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: e.message }); out.skipped++; continue; }
       const attempts = m.attempts + 1;
       const final = attempts >= MAX_ATTEMPTS;
       await store.finish(m.id, {

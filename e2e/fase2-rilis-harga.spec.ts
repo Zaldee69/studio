@@ -9,7 +9,7 @@ test("harga baru menunggu rilis: tampil di Pengaturan, belum di kasir", async ({
   const panel = page.getByRole("region", { name: "Harga baru menunggu rilis" });
   await expect(panel).toContainText("Fresh Groom");
   await expect(panel.getByRole("row", { name: /Potong Rambut/ })).toContainText("Dihentikan");
-  await expect(panel.getByRole("row", { name: /Essential Cut/ })).toContainText("Rp45.000");
+  await expect(panel.getByRole("row", { name: /Essential Cut/ })).toContainText("Rp50.000");
   await expect(panel.getByRole("button", { name: "Rilis harga baru" })).toBeEnabled();
   await page.goto("/manajer/kasir");
   await expect(page.getByRole("button", { name: /^Tambah Potong Rambut/ }).first()).toBeVisible();

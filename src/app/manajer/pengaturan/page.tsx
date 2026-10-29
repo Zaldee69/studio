@@ -126,9 +126,9 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = (
       <div className="space-y-4">
         <p className="text-sm text-muted">
-          Kode voucher dimasukkan pelanggan saat booking online, atau oleh kasir untuk pelanggan walk-in. Potongan dihitung saat bayar
-          dan <b>tidak ditumpuk</b> dengan diskon paket/promo — yang terbesar yang dipakai. &quot;Hari berlaku&quot; dicek terhadap tanggal jadwal
-          (booking) atau hari ini (kasir). Kuota terhitung dari booking yang tidak dibatalkan + pemakaian di kasir.
+          Kode voucher <b>hanya bisa dipakai lewat booking online</b> (dprasstudio.com); kasir tidak bisa memasukkan kode. Potongan dihitung
+          saat bayar dan <b>tidak ditumpuk</b> dengan diskon paket/promo — yang terbesar yang dipakai. &quot;Hari berlaku&quot; dicek terhadap
+          tanggal jadwal. Kuota terhitung dari booking yang tidak dibatalkan.
         </p>
         {!!data?.length && (
           <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">

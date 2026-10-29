@@ -64,4 +64,30 @@ export function sendTelegramAdapter(): Adapters["telegram"] {
   };
 }
 
-export const liveAdapters = (): Adapters => ({ email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter(), telegram: sendTelegramAdapter() });
+/** Pesan sengaja tidak dikirim (bukan gagal) → antrean menandainya "skipped", tanpa coba ulang. */
+export class SkipSend extends Error {}
+
+/**
+ * Dev/E2E memakai Supabase lokal tetapi kredensial Wablas/Telegram yang sama dengan prod: data uji tidak boleh sampai ke
+ * pelanggan atau owner. WA hanya ke NOTIFY_TEST_WA (62…, pisahkan koma; kosong = tidak ada WA), email tidak dikirim,
+ * Telegram diberi tanda supaya tidak tertukar dengan notifikasi prod.
+ */
+export function localOnly(a: Adapters, testWa = ""): Adapters {
+  const allowed = new Set(testWa.split(",").map((s) => s.trim()).filter(Boolean));
+  const wa = a.whatsapp, tg = a.telegram;
+  return {
+    email: a.email && (async () => { throw new SkipSend("Lokal: email tidak dikirim"); }),
+    whatsapp: wa && (async (to, text, opts) => {
+      if (!allowed.has(to)) throw new SkipSend(`Lokal: ${to} bukan NOTIFY_TEST_WA`);
+      return wa(to, text, opts);
+    }),
+    telegram: tg && ((text) => tg(`🧪 LOKAL (bukan prod)\n${text}`)),
+  };
+}
+
+const isLocalDb = (url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "") => /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(url);
+
+export const liveAdapters = (): Adapters => {
+  const a = { email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter(), telegram: sendTelegramAdapter() };
+  return isLocalDb() ? localOnly(a, process.env.NOTIFY_TEST_WA) : a;
+};

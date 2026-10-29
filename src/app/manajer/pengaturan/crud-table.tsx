@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { deleteRow, resetPassword, saveRow, saveSettings, type SaveState } from "./actions";
-import { SETTINGS_GROUPS, TABLES, type Field, type TableName } from "./tables";
+import { TABLES, type Field, type TableName } from "./tables";
 
 type Row = Record<string, unknown>;
 export type Options = Record<string, [string, string][]>;
@@ -80,8 +80,8 @@ export function CrudTable({ table, rows, options = {} }: { table: TableName; row
   );
 }
 
-export function SettingsForm({ values, groups = SETTINGS_GROUPS, save = saveSettings, submit = "Simpan pengaturan" }: {
-  values: Row; groups?: typeof SETTINGS_GROUPS; save?: typeof saveSettings; submit?: string;
+export function SettingsForm({ values, groups, save = saveSettings, submit = "Simpan pengaturan" }: {
+  values: Row; groups: { title: string; fields: Field[] }[]; save?: typeof saveSettings; submit?: string;
 }) {
   const [state, action, pending] = useActionState(save, undefined);
   return (
@@ -89,6 +89,7 @@ export function SettingsForm({ values, groups = SETTINGS_GROUPS, save = saveSett
       {groups.map((g) => (
         <fieldset key={g.title} className="rounded-2xl border border-line bg-card p-5">
           <legend className="px-1 font-display text-lg font-semibold">{g.title}</legend>
+          <input type="hidden" name="_g" value={g.title} />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {g.fields.map((f) => (
               <div key={f.name} className={f.type === "textarea" ? "sm:col-span-2 xl:col-span-3" : ""}>

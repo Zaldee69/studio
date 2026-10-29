@@ -6,7 +6,7 @@ test("saldo awal laci dari Pengaturan → rekap tutup kasir", async ({ page }) =
   const [orig] = sql<{ d: string | null; b: number }>(`select drawer_start_date::text as d, drawer_start_balance as b from settings`);
   try {
     await login(page, "manager");
-    await page.goto("/manajer/pengaturan");
+    await page.goto("/manajer/pengaturan?tab=keuangan");
     await page.getByLabel("Saldo awal laci berlaku mulai tanggal").fill(sql<{ d: string }>(`select jkt_today()::text as d`)[0].d);
     await page.getByLabel("Saldo awal laci pada tanggal itu (Rp)").fill("502000");
     await page.getByRole("button", { name: "Simpan pengaturan" }).click();

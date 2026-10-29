@@ -2,14 +2,14 @@ import Link from "next/link";
 import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah } from "@/lib/domain/format";
-import { savePublicSettings, saveSopSettings } from "./actions";
+import { saveSopSettings } from "./actions";
 import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
 import { getProfile } from "@/lib/auth";
 import { PendingAccounts } from "./pending-accounts";
 import { RemoveAccountForm } from "./remove-account";
 import { PriceRelease } from "./price-release";
 import { ClosuresForm, HoursForm, OutboundLog, PhotoManager } from "./public-page";
-import { PUBLIC_GROUPS, SOP_GROUPS } from "./tables";
+import { SETTINGS_GROUPS, SOP_GROUPS } from "./tables";
 import { MfaSettings } from "./mfa-settings";
 import { StationSettings } from "./station-settings";
 import { HairstyleCatalog } from "./hairstyle-catalog";
@@ -17,14 +17,30 @@ import { TelegramTest, WhatsAppTest } from "./telegram-test";
 
 export const metadata = { title: "Pengaturan" };
 
-const TABS = [
-  ["umum", "Umum"], ["layanan", "Layanan"], ["gaya", "Katalog gaya"], ["kursi", "Kursi & meja"],
-  ["publik", "Halaman publik"], ["staf", "Staf"], ["akun", "Akun & peran"], ["deposit", "Paket deposit"], ["voucher", "Voucher"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["keamanan", "Keamanan"],
+// Kelompok → sub-tab. Kunci sub-tab = ?tab=… (kunci lama tetap dipakai agar tautan lama tidak putus).
+const MENU = [
+  ["Studio", [["umum", "Profil studio"], ["jam", "Jam buka & libur"], ["kursi", "Kursi & meja"]]],
+  ["Layanan", [["layanan", "Layanan & harga"], ["voucher", "Voucher"], ["deposit", "Paket deposit"], ["gaya", "Katalog gaya"]]],
+  ["Tim", [["staf", "Staf"], ["akun", "Akun & peran"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"]]],
+  ["Pelanggan", [["booking", "Booking online"], ["pesan", "Pesan otomatis"], ["notifikasi", "Notifikasi & log"]]],
+  ["Situs", [["publik", "Konten halaman"], ["foto", "Foto"], ["ulasan", "Ulasan"], ["privasi", "Kebijakan privasi"]]],
+  ["Keuangan", [["keuangan", "Kas, komisi & stok"]]],
+  ["Keamanan", [["keamanan", "Keamanan"]]],
 ] as const;
 
+const navLink = "inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent";
+
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
-  const tab = String((await searchParams).tab ?? "umum");
+  const asked = String((await searchParams).tab ?? "umum");
+  const group = MENU.find(([, subs]) => subs.some(([k]) => k === asked)) ?? MENU[0];
+  const tab = group === MENU[0] && !group[1].some(([k]) => k === asked) ? "umum" : asked;
   const supabase = await createClient();
+  const settingsForm = async (sub: string) => {
+    const { data: st } = await supabase.from("settings").select("*").single();
+    const std = (st?.standards as { title: string; text: string }[] | null) ?? [];
+    const values = { ...st, ...Object.fromEntries(std.flatMap((x, i) => [[`std_${i + 1}_title`, x.title], [`std_${i + 1}_text`, x.text]])) };
+    return <SettingsForm values={values} groups={SETTINGS_GROUPS.filter((g) => g.tab === sub)} />;
+  };
   const opt = (rows: { id: string; name: string }[] | null) => (rows ?? []).map((r) => [r.id, r.name] as [string, string]);
 
   let body: React.ReactNode;
@@ -59,36 +75,44 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
         <CrudTable table={tab === "kursi" ? "resources" : "staff"} rows={data ?? []} options={{ resources }} />
       </div>
     );
-  } else if (tab === "publik") {
-    const [{ data: st }, { data: hours }, { data: closures }, { data: photos }, { data: staff }, { data: reviews }, { data: msgs }] = await Promise.all([
-      supabase.from("settings").select("*").single(),
+  } else if (tab === "jam") {
+    const [{ data: hours }, { data: closures }] = await Promise.all([
       supabase.from("opening_hours").select("*").order("weekday"),
       supabase.from("special_closures").select("*").order("date"),
-      supabase.from("site_photos").select("*").order("sort"),
-      supabase.from("staff").select("id, name, photo_path").eq("active", true).order("sort"),
-      supabase.from("reviews").select("*").order("sort"),
-      supabase.from("outbound_messages").select("*").order("created_at", { ascending: false }).limit(20),
     ]);
-    const std = (st?.standards as { title: string; text: string }[] | null) ?? [];
-    const values = { ...st, ...Object.fromEntries(std.flatMap((x, i) => [[`std_${i + 1}_title`, x.title], [`std_${i + 1}_text`, x.text]])) };
     body = (
-      <div className="flex flex-col gap-6">
-        <p className="rounded-lg bg-paper px-4 py-3 text-sm text-muted">Konten landing page, booking online, dan kebijakan privasi. Perubahan langsung tampil di situs publik.
-          {" "}<a href="/" target="_blank" className="font-semibold text-accent underline">Buka landing →</a></p>
-        <SettingsForm values={values} groups={PUBLIC_GROUPS} save={savePublicSettings} submit="Simpan halaman publik" />
-        <div className="grid gap-6 xl:grid-cols-2">
-          <HoursForm hours={hours ?? []} />
-          <ClosuresForm closures={closures ?? []} />
-        </div>
-        <PhotoManager photos={photos ?? []} staff={staff ?? []} />
-        <div className="flex flex-col gap-2">
-          <h2 className="font-display text-lg font-semibold">Ulasan asli</h2>
-          <p className="text-xs text-muted">Hanya ulasan nyata (nama/inisial + sumber). Bagian ulasan di landing hanya tampil bila ada ulasan aktif.</p>
-          <CrudTable table="reviews" rows={reviews ?? []} />
-        </div>
-        <OutboundLog rows={msgs ?? []} />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <HoursForm hours={hours ?? []} />
+        <ClosuresForm closures={closures ?? []} />
       </div>
     );
+  } else if (tab === "publik") {
+    body = (
+      <div className="flex flex-col gap-6">
+        <p className="rounded-lg bg-paper px-4 py-3 text-sm text-muted">Teks landing page. Perubahan langsung tampil di situs publik.
+          {" "}<a href="/" target="_blank" className="font-semibold text-accent underline">Buka landing →</a></p>
+        {await settingsForm("publik")}
+      </div>
+    );
+  } else if (tab === "foto") {
+    const [{ data: photos }, { data: staff }] = await Promise.all([
+      supabase.from("site_photos").select("*").order("sort"),
+      supabase.from("staff").select("id, name, photo_path").eq("active", true).order("sort"),
+    ]);
+    body = <PhotoManager photos={photos ?? []} staff={staff ?? []} />;
+  } else if (tab === "ulasan") {
+    const { data: reviews } = await supabase.from("reviews").select("*").order("sort");
+    body = (
+      <div className="flex flex-col gap-2">
+        <p className="text-xs text-muted">Hanya ulasan nyata (nama/inisial + sumber). Bagian ulasan di landing hanya tampil bila ada ulasan aktif.</p>
+        <CrudTable table="reviews" rows={reviews ?? []} />
+      </div>
+    );
+  } else if (tab === "notifikasi") {
+    const { data: msgs } = await supabase.from("outbound_messages").select("*").order("created_at", { ascending: false }).limit(20);
+    body = <div className="flex flex-col gap-6"><TelegramTest /><WhatsAppTest /><OutboundLog rows={msgs ?? []} /></div>;
+  } else if (tab === "booking" || tab === "pesan" || tab === "privasi" || tab === "keuangan") {
+    body = await settingsForm(tab);
   } else if (tab === "sop") {
     const [{ data: st }, { data: groups }] = await Promise.all([
       supabase.from("settings").select("sop_shifts, sop_shift_names, sop_reminder_time, sop_require_photo_autoclave").single(),
@@ -111,7 +135,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = <StationSettings staff={data ?? []} />;
   } else if (tab === "keamanan") {
     const { data: st } = await supabase.from("settings").select("manager_mfa_required").single();
-    body = <MfaSettings required={!!st?.manager_mfa_required} />;
+    body = <div className="flex flex-col gap-6"><MfaSettings required={!!st?.manager_mfa_required} />{await settingsForm("keamanan")}</div>;
   } else if (tab === "gaya") {
     body = <HairstyleCatalog />;
   } else if (tab === "deposit") {
@@ -164,21 +188,29 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       </div>
     );
   } else {
-    const { data } = await supabase.from("settings").select("*").single();
-    body = <><SettingsForm values={data ?? {}} /><TelegramTest /><WhatsAppTest /></>;
+    body = (
+      <div className="flex flex-col gap-6">
+        {await settingsForm("umum")}
+        <p className="text-sm text-muted">Jam buka diatur di <Link href="?tab=jam" className="font-semibold text-accent underline">Jam buka & libur</Link> — dipakai booking online dan jadwal kasir.</p>
+      </div>
+    );
   }
 
   return (
     <div>
       <h1 className="font-display text-3xl font-bold">Pengaturan</h1>
-      <nav aria-label="Bagian pengaturan" className="mt-4 flex gap-1 overflow-x-auto border-b border-line">
-        {TABS.map(([k, label]) => (
-          <Link key={k} href={`?tab=${k}`} aria-current={tab === k ? "page" : undefined}
-            className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent">
-            {label}
-          </Link>
+      <nav aria-label="Kelompok pengaturan" className="mt-4 flex gap-1 overflow-x-auto border-b border-line">
+        {MENU.map(([label, subs]) => (
+          <Link key={label} href={`?tab=${subs[0][0]}`} aria-current={group[0] === label ? "page" : undefined} className={navLink}>{label}</Link>
         ))}
       </nav>
+      {group[1].length > 1 && (
+        <nav aria-label={`Bagian ${group[0]}`} className="flex gap-1 overflow-x-auto border-b border-line bg-paper">
+          {group[1].map(([k, label]) => (
+            <Link key={k} href={`?tab=${k}`} aria-current={tab === k ? "page" : undefined} className={navLink}>{label}</Link>
+          ))}
+        </nav>
+      )}
       <div className="mt-6">{body}</div>
     </div>
   );

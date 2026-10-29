@@ -6,7 +6,7 @@ import { log } from "@/lib/log";
 import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { getProfile } from "@/lib/auth";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
-import { parseFields, PUBLIC_GROUPS, SETTINGS_GROUPS, SOP_GROUPS, TABLES, type TableName } from "./tables";
+import { parseFields, SETTINGS_GROUPS, SOP_GROUPS, TABLES, type TableName } from "./tables";
 
 export type SaveState = { error?: string; ok?: string } | undefined;
 
@@ -55,24 +55,6 @@ export async function refreshPublicPages(): Promise<void> {
   if (me?.role === "manager") revalidatePublic();
 }
 
-export async function savePublicSettings(_: SaveState, fd: FormData): Promise<SaveState> {
-  const r = parseFields(PUBLIC_GROUPS.flatMap((g) => g.fields), fd);
-  if (!r.success) return { error: r.error.issues[0].message };
-  const v = r.data as Record<string, unknown>;
-  if ((v.online_promo_pct as number) > 0 && (!v.online_promo_start || !v.online_promo_end || (v.online_promo_end as string) < (v.online_promo_start as string))) {
-    return { error: "Promo booking online: isi tanggal mulai & selesai (selesai tidak boleh sebelum mulai)." };
-  }
-  const standards = [1, 2, 3, 4].map((i) => ({ title: v[`std_${i}_title`], text: v[`std_${i}_text`] }));
-  const row = Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith("std_")));
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("settings")
-    .update({ ...row, standards, updated_at: new Date().toISOString() } as never).eq("id", true).select("id");
-  if (error) return { error: friendly(error).replace("cek durasi/jam/angka", "cek tautan Google Maps harus diawali https://, URL embed harus https://www.google.com/maps/embed…") };
-  if (!data?.length) return { error: "Akses ditolak." };
-  revalidatePublic();
-  return { ok: "Halaman publik diperbarui" };
-}
-
 const Hours = z.array(z.object({ weekday: z.number().int().min(0).max(6), open_time: z.string().regex(/^\d{2}:\d{2}/), close_time: z.string().regex(/^\d{2}:\d{2}/), closed: z.boolean() })).length(7);
 
 export async function saveHours(_: SaveState, fd: FormData): Promise<SaveState> {
@@ -117,13 +99,24 @@ export async function deleteRow(table: TableName, id: string): Promise<SaveState
   return { ok: "Dihapus" };
 }
 
+/** Simpan isian `settings` dari satu sub-tab: hanya kelompok yang tampil (`_g`) yang divalidasi & ditulis,
+ *  agar centang di kelompok lain tidak ikut terhapus. */
 export async function saveSettings(_: SaveState, fd: FormData): Promise<SaveState> {
-  const r = parseFields(SETTINGS_GROUPS.flatMap((g) => g.fields), fd);
+  const titles = fd.getAll("_g");
+  const groups = SETTINGS_GROUPS.filter((g) => titles.includes(g.title));
+  if (!groups.length) return { error: "Tidak ada yang disimpan." };
+  const r = parseFields(groups.flatMap((g) => g.fields), fd);
   if (!r.success) return { error: r.error.issues[0].message };
+  const v = r.data as Record<string, unknown>;
+  if ((v.online_promo_pct as number) > 0 && (!v.online_promo_start || !v.online_promo_end || (v.online_promo_end as string) < (v.online_promo_start as string))) {
+    return { error: "Promo booking online: isi tanggal mulai & selesai (selesai tidak boleh sebelum mulai)." };
+  }
+  const row: Record<string, unknown> = Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith("std_")));
+  if ("std_1_title" in v) row.standards = [1, 2, 3, 4].map((i) => ({ title: v[`std_${i}_title`], text: v[`std_${i}_text`] }));
   const supabase = await createClient();
   const { data, error } = await supabase.from("settings")
-    .update({ ...(r.data as object), updated_at: new Date().toISOString() }).eq("id", true).select("id");
-  if (error) return { error: friendly(error) };
+    .update({ ...row, updated_at: new Date().toISOString() } as never).eq("id", true).select("id");
+  if (error) return { error: "maps_url" in v ? friendly(error).replace("cek durasi/jam/angka", "tautan Google Maps harus diawali https://, URL embed harus https://www.google.com/maps/embed…") : friendly(error) };
   if (!data?.length) return { error: "Akses ditolak." };
   revalidatePath("/", "layout");
   revalidatePublic();

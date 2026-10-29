@@ -22,16 +22,16 @@ test("promo booking online 10%: diatur manajer → banner → kasir otomatis dis
   sql("update settings set online_promo_pct = 0, online_promo_start = null, online_promo_end = null");
   const m = await newSession(browser, info, "manager");
   try {
-    await m.goto("/manajer/pengaturan?tab=publik");
+    await m.goto("/manajer/pengaturan?tab=booking");
     await m.getByLabel("Diskon booking online (%) — 0 = promo mati").fill("10");
-    await m.getByRole("button", { name: "Simpan halaman publik" }).click();
+    await m.getByRole("button", { name: "Simpan pengaturan" }).click();
     await expect(m.getByText(/isi tanggal mulai & selesai/)).toBeVisible(); // promo aktif wajib punya periode
     // ponytail: formulir Pengaturan kembali ke nilai tersimpan setelah ditolak — isi ulang
     await m.getByLabel("Diskon booking online (%) — 0 = promo mati").fill("10");
     await m.getByLabel("Berlaku untuk booking yang dibuat mulai").fill(d);
     await m.getByLabel("sampai dengan").fill(d);
-    await m.getByRole("button", { name: "Simpan halaman publik" }).click();
-    await expect(m.getByText("Halaman publik diperbarui")).toBeVisible();
+    await m.getByRole("button", { name: "Simpan pengaturan" }).click();
+    await expect(m.getByText("Pengaturan tersimpan")).toBeVisible();
 
     await page.goto("/");
     await expect(page.getByRole("link", { name: /Diskon 10% untuk booking online/ })).toBeVisible();

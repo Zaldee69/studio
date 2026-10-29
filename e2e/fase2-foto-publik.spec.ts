@@ -10,7 +10,7 @@ test("unggah foto HD ke kartu Lashes → tersimpan 2400 px → tampil di landing
     .jpeg({ quality: 92 }).toBuffer();
   const m = await newSession(browser, info, "manager");
   try {
-    await m.goto("/manajer/pengaturan?tab=publik");
+    await m.goto("/manajer/pengaturan?tab=foto");
     const slot = m.locator("div.flex.items-center.gap-3", { has: m.getByText("Kartu Lashes", { exact: true }) });
     await slot.locator("input[type=file]").setInputFiles({ name: "lashes.jpg", mimeType: "image/jpeg", buffer });
     await expect(m.getByText("Foto disimpan")).toBeVisible({ timeout: 30_000 });

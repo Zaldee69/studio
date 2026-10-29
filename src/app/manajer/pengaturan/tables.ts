@@ -127,46 +127,6 @@ export const TABLES = {
 
 export type TableName = keyof typeof TABLES;
 
-// Tab "Halaman publik": konten landing + aturan booking online.
-export const PUBLIC_GROUPS: { title: string; fields: Field[] }[] = [
-  { title: "Hero & teks", fields: [
-    { name: "tagline", label: "Tagline (deskripsi SEO)", type: "text" },
-    { name: "hero_title", label: "Judul hero", type: "text" },
-    { name: "hero_title_accent", label: "Aksen miring emas", type: "text" },
-    { name: "hero_text", label: "Paragraf hero (satu kalimat)", type: "textarea" },
-    { name: "groom_text", label: "Deskripsi Barbershop", type: "textarea" },
-    { name: "bloom_text", label: "Deskripsi Nail Art", type: "textarea" },
-    { name: "founded_year", label: "Tahun berdiri (est.)", type: "int", nullable: true, min: 1900, max: 2100 },
-    { name: "maps_url", label: "Tautan Google Maps toko (dari tombol Bagikan; kosong = cari dari alamat)", type: "text", nullable: true },
-    { name: "maps_embed_url", label: "URL embed Google Maps (https://www.google.com/maps/embed?…)", type: "text", nullable: true },
-  ] },
-  { title: "Standar kami (4 poin)", fields: [1, 2, 3, 4].flatMap((i) => [
-    { name: `std_${i}_title`, label: `Poin ${i} — judul`, type: "text" as const },
-    { name: `std_${i}_text`, label: `Poin ${i} — isi`, type: "textarea" as const },
-  ]) },
-  { title: "Tampilan", fields: [
-    { name: "show_staff", label: "Tampilkan staf di landing", type: "bool" },
-    { name: "show_prices", label: "Tampilkan harga", type: "bool" },
-    { name: "online_booking_open", label: "Booking online dibuka", type: "bool" },
-  ] },
-  { title: "Promo booking online", fields: [
-    { name: "online_promo_pct", label: "Diskon booking online (%) — 0 = promo mati", type: "int", min: 0, max: 50 },
-    { name: "online_promo_start", label: "Berlaku untuk booking yang dibuat mulai", type: "date", nullable: true },
-    { name: "online_promo_end", label: "sampai dengan", type: "date", nullable: true },
-  ] },
-  { title: "Aturan booking online", fields: [
-    { name: "booking_lead_minutes", label: "Paling cepat (menit dari sekarang)", type: "int", min: 0, max: 2880 },
-    { name: "booking_buffer_minutes", label: "Jeda antar booking (menit)", type: "int", min: 0, max: 120 },
-    { name: "booking_max_days_ahead", label: "Bisa booking sampai (hari ke depan)", type: "int", min: 1, max: 90 },
-    { name: "cancel_cutoff_hours", label: "Batas batal / jadwal ulang (jam sebelum mulai)", type: "int", min: 0, max: 72 },
-    { name: "online_booking_mode", label: "Konfirmasi booking online", type: "select", options: [["auto", "Otomatis"], ["review", "Ditinjau kasir dulu"]] },
-  ] },
-  { title: "Kebijakan privasi", fields: [
-    { name: "privacy_policy", label: "Teks kebijakan privasi ({nama_toko}, {alamat}, {whatsapp} diisi otomatis; baris kosong = paragraf baru)", type: "textarea" },
-  ] },
-];
-
-// Tab "SOP": shift, pengingat, foto wajib. Nama shift disimpan ke settings.sop_shift_names (array).
 export const SOP_GROUPS: { title: string; fields: Field[] }[] = [
   { title: "Checklist sterilisasi", fields: [
     { name: "sop_shifts", label: "Jumlah shift per hari", type: "select", options: [["1", "1 shift"], ["2", "2 shift"]] },
@@ -177,50 +137,86 @@ export const SOP_GROUPS: { title: string; fields: Field[] }[] = [
   ] },
 ];
 
-export const SETTINGS_GROUPS: { title: string; fields: Field[] }[] = [
-  { title: "Toko", fields: [
+// Isian tabel `settings`, dikelompokkan per sub-tab Pengaturan. Satu formulir menyimpan hanya kelompok yang tampil
+// (judul kelompok ikut terkirim sebagai `_g`), jadi judul harus unik.
+export type SettingsGroup = { title: string; tab: string; fields: Field[] };
+export const SETTINGS_GROUPS: SettingsGroup[] = [
+  { title: "Identitas toko", tab: "umum", fields: [
     { name: "shop_name", label: "Nama toko", type: "text" },
     { name: "shop_address", label: "Alamat", type: "text", nullable: true },
     { name: "shop_whatsapp", label: "WhatsApp toko (62…)", type: "text", nullable: true },
     { name: "shop_instagram", label: "Instagram", type: "text", nullable: true },
-    { name: "open_time", label: "Jam buka", type: "time" },
-    { name: "close_time", label: "Jam tutup", type: "time" },
+    { name: "maps_url", label: "Tautan Google Maps toko (dari tombol Bagikan; kosong = cari dari alamat)", type: "text", nullable: true },
+    { name: "maps_embed_url", label: "URL embed Google Maps (https://www.google.com/maps/embed?…)", type: "text", nullable: true },
   ] },
-  { title: "Kasir & pelanggan", fields: [
-    { name: "bundle_pct", label: "Diskon paket barbershop + nail (%)", type: "int", min: 10, max: 15 },
-    { name: "churn_weeks", label: "Churn setelah (minggu)", type: "int", min: 1, max: 52 },
+  { title: "Booking online", tab: "booking", fields: [
+    { name: "online_booking_open", label: "Booking online dibuka", type: "bool" },
+    { name: "online_booking_mode", label: "Konfirmasi booking online", type: "select", options: [["auto", "Otomatis"], ["review", "Ditinjau kasir dulu"]] },
+    { name: "booking_lead_minutes", label: "Paling cepat (menit dari sekarang)", type: "int", min: 0, max: 2880 },
+    { name: "booking_buffer_minutes", label: "Jeda antar booking (menit)", type: "int", min: 0, max: 120 },
+    { name: "booking_max_days_ahead", label: "Bisa booking sampai (hari ke depan)", type: "int", min: 1, max: 90 },
+    { name: "cancel_cutoff_hours", label: "Batas batal / jadwal ulang (jam sebelum mulai)", type: "int", min: 0, max: 72 },
+  ] },
+  { title: "Promo booking online", tab: "booking", fields: [
+    { name: "online_promo_pct", label: "Diskon booking online (%) — 0 = promo mati", type: "int", min: 0, max: 50 },
+    { name: "online_promo_start", label: "Berlaku untuk booking yang dibuat mulai", type: "date", nullable: true },
+    { name: "online_promo_end", label: "sampai dengan", type: "date", nullable: true },
+  ] },
+  { title: "Pesan WhatsApp otomatis", tab: "pesan", fields: [
+    { name: "churn_weeks", label: "Pelanggan dianggap hilang setelah (minggu)", type: "int", min: 1, max: 52 },
     { name: "wa_followup_template", label: "Template follow-up WA ({nama} = nama depan)", type: "textarea" },
-    { name: "blast_daily_limit", label: "Batas blast promosi per hari (sisanya dikirim besok 10.00)", type: "int", min: 1, max: 1000 },
     { name: "auto_followup_on", label: "Kirim template follow-up otomatis ke pelanggan yang baru melewati batas churn (tiap hari 10.00)", type: "bool" },
     { name: "google_review_url", label: "Link ulasan Google (diisi = WA minta ulasan otomatis, sekali per pelanggan, 2–24 jam setelah bayar)", type: "text", nullable: true },
+    { name: "blast_daily_limit", label: "Batas blast promosi per hari (sisanya dikirim besok 10.00)", type: "int", min: 1, max: 1000 },
   ] },
-  { title: "Laci kas", fields: [
+  { title: "Teks halaman depan", tab: "publik", fields: [
+    { name: "tagline", label: "Tagline (deskripsi SEO)", type: "text" },
+    { name: "hero_title", label: "Judul hero", type: "text" },
+    { name: "hero_title_accent", label: "Aksen miring emas", type: "text" },
+    { name: "hero_text", label: "Paragraf hero (satu kalimat)", type: "textarea" },
+    { name: "groom_text", label: "Deskripsi Barbershop", type: "textarea" },
+    { name: "bloom_text", label: "Deskripsi Nail Art", type: "textarea" },
+    { name: "founded_year", label: "Tahun berdiri (est.)", type: "int", nullable: true, min: 1900, max: 2100 },
+  ] },
+  { title: "Standar kami (4 poin)", tab: "publik", fields: [1, 2, 3, 4].flatMap((i) => [
+    { name: `std_${i}_title`, label: `Poin ${i} — judul`, type: "text" as const },
+    { name: `std_${i}_text`, label: `Poin ${i} — isi`, type: "textarea" as const },
+  ]) },
+  { title: "Tampilan", tab: "publik", fields: [
+    { name: "show_staff", label: "Tampilkan staf di landing", type: "bool" },
+    { name: "show_prices", label: "Tampilkan harga", type: "bool" },
+  ] },
+  { title: "Kebijakan privasi", tab: "privasi", fields: [
+    { name: "privacy_policy", label: "Teks kebijakan privasi ({nama_toko}, {alamat}, {whatsapp} diisi otomatis; baris kosong = paragraf baru)", type: "textarea" },
+  ] },
+  { title: "Laci kas", tab: "keuangan", fields: [
     { name: "drawer_start_date", label: "Saldo awal laci berlaku mulai tanggal", type: "date", nullable: true },
     { name: "drawer_start_balance", label: "Saldo awal laci pada tanggal itu (Rp)", type: "money" },
     { name: "cash_tolerance", label: "Toleransi selisih tutup kasir (Rp) — selisih sekecil ini tidak ditandai merah", type: "money" },
     { name: "alert_cash_diff", label: "Tandai ⚠️ di notifikasi Telegram bila selisih tutup kasir ≥ (Rp)", type: "money" },
     { name: "alert_expense_min", label: "Kirim notifikasi Telegram untuk pengeluaran ≥ (Rp)", type: "money" },
   ] },
-  { title: "SDM & komisi", fields: [
+  { title: "Komisi & diskon", tab: "keuangan", fields: [
     { name: "commission_pct", label: "Komisi default (%)", type: "int", min: 0, max: 100 },
     { name: "min_monthly_pay", label: "Jaring pengaman / bulan (Rp)", type: "money" },
+    { name: "bundle_pct", label: "Diskon paket barbershop + nail (%)", type: "int", min: 10, max: 15 },
   ] },
-  { title: "Inventaris", fields: [
+  { title: "Inventaris & perawatan", tab: "keuangan", fields: [
     { name: "inventory_cost_method", label: "Harga pokok saat stok masuk", type: "select",
       options: [["weighted_avg", "Rata-rata tertimbang"], ["last", "Harga beli terakhir"]] },
     { name: "margin_warning_pct", label: "Tandai margin layanan di bawah (%)", type: "int", min: 0, max: 100 },
     { name: "usage_variance_threshold_pct", label: "Tandai selisih pemakaian di atas (%)", type: "int", min: 1, max: 100 },
     { name: "reorder_suggest_multiplier", label: "Saran beli sampai … × ambang reorder", type: "int", min: 1, max: 10 },
+    { name: "maint_default_interval_days", label: "Interval perawatan alat default (hari)", type: "int", min: 1, max: 365 },
   ] },
-  { title: "Target KPI", fields: [
+  { title: "Target KPI", tab: "keuangan", fields: [
     { name: "aov_target_barbershop", label: "Target AOV barbershop (Rp)", type: "money" },
     { name: "aov_target_nail", label: "Target AOV nail (Rp)", type: "money" },
     { name: "retail_ratio_min", label: "Rasio ritel min (%)", type: "int", min: 0, max: 100 },
     { name: "retail_ratio_max", label: "Rasio ritel maks (%)", type: "int", min: 0, max: 100 },
     { name: "utilization_target", label: "Target utilisasi (%)", type: "int", min: 0, max: 100 },
   ] },
-  { title: "Lainnya", fields: [
-    { name: "maint_default_interval_days", label: "Interval perawatan default (hari)", type: "int", min: 1, max: 365 },
+  { title: "Kode undangan tim", tab: "keamanan", fields: [
     { name: "invite_code", label: "Kode undangan tim (min. 6)", type: "text", min: 6 },
   ] },
 ];

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { login, resetTodayClosings } from "./helpers";
+import { login, resetTodayClosings, allowNoCustomer } from "./helpers";
 
 // Printer struk Bluetooth tiruan (Web Bluetooth palsu) — merekam byte ESC/POS yang dikirim aplikasi.
 async function fakePrinter(page: Page) {
@@ -40,6 +40,7 @@ test("printer Bluetooth: sambungkan → bayar tunai → struk tercetak otomatis 
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
   await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
   await cart.getByRole("radio", { name: "Tunai" }).click();
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart).toContainText("Pembayaran tercatat");
 

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { formatRupiah, jktDate } from "../src/lib/domain/format";
 import { formatUnitCost, newUnitCost } from "../src/lib/domain/inventory";
-import { admin, apiAs, login, newSession } from "./helpers";
+import { admin, apiAs, login, newSession, allowNoCustomer } from "./helpers";
 
 // Tahap 4 — Inventaris & HPP · SDM & Komisi (E1–E6). Data disiapkan lewat API (kasir asli / service role),
 // dicek lewat layar manajer. Tiap tes membersihkan jejaknya supaya proyek viewport berikutnya mulai bersih.
@@ -249,6 +249,7 @@ test("E6 · kasir menambah Hair Spa dari saran upsell → tingkat upsell Rizky d
   await page.getByLabel("Kapster untuk Potong Rambut").selectOption({ label: "Rizky" });
   await page.getByRole("button", { name: "Tambah", exact: true }).click(); // saran upsell: Hair Spa
   await expect(page.getByLabel("Kapster untuk Hair Spa")).toHaveValue(STAFF.rizky);
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /Catat pembayaran/ }).click();
   await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
 

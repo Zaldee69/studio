@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { formatRupiah } from "../src/lib/domain/format";
-import { card, login, newSession, randomWa, resetTodayClosings, slotHour, sql, uniq } from "./helpers";
+import { card, login, newSession, randomWa, resetTodayClosings, slotHour, sql, uniq, allowNoCustomer } from "./helpers";
 
 test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + kembalian → Lunas di tab lain", async ({ page, browser }, info) => {
   const h = slotHour(info);
@@ -30,6 +30,7 @@ test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + 
   await expect(page.getByRole("region", { name: "Keranjang" })).toContainText("Potong Rambut");
   await page.getByRole("button", { name: "100rb" }).click();
   await expect(page.getByText("Kembalian")).toBeVisible();
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /Catat pembayaran · Rp75\.000/ }).click();
   await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
   const receipt = page.getByRole("region", { name: "Keranjang" });
@@ -78,6 +79,7 @@ test("2 · pasangan: barber + nail → satu tagihan, diskon, deposit + QRIS, sal
   await cart.getByRole("radio", { name: "QRIS" }).click();
   await cart.getByLabel("No. referensi QRIS").fill(`E2E${uniq()}`);
   await expect(cart).toContainText("Sisa dibayarRp48.500");
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /Catat pembayaran · Rp48\.500/ }).click();
   await expect(cart).toContainText("Dibayar (Deposit + QRIS)Rp48.500");
   await expect(cart).toContainText("Potong saldo deposit−Rp100.000");
@@ -109,6 +111,7 @@ test("4 · kasir: /manajer/sdm ditolak, tidak ada void; manajer bisa void", asyn
   // transaksi ritel cepat
   await page.getByRole("tab", { name: "Ritel" }).click();
   await page.getByRole("button", { name: /Tambah Pomade Matte/ }).click();
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /Catat pembayaran/ }).click();
   await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
   await page.getByRole("tab", { name: "Riwayat transaksi" }).click();

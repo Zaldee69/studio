@@ -18,3 +18,4 @@ export function staffNow(appts: DayAppt[], offs: TimeOffRow[], staffId: string, 
   const busy = !!current || mine.some((a) => a.status === "booked" && Date.parse(a.start_at) <= now && occupiedEnd(a) > now);
   return { current, next, off, free: !off && !busy };
 }
+

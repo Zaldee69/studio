@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, sql, uniq } from "./helpers";
+import { login, sql, uniq, allowNoCustomer } from "./helpers";
 
 // Tips QRIS: satu kali scan (tagihan + tips), tips untuk staf pilihan kasir, bukan omzet; tercetak di struk.
 test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak termasuk tips; filter riwayat", async ({ page }) => {
@@ -15,6 +15,7 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   await cart.getByLabel("Tips (opsional)").fill("20000");
   await expect(cart.getByRole("combobox", { name: "Tips untuk" })).toHaveValue(/.+/); // default: staf di keranjang
   await expect(cart).toContainText(/Total scan QRIS\s*Rp\d/);
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart).toContainText("Pembayaran tercatat");
   await expect(cart).toContainText(`Tips untuk ${staffName}Rp20.000`);
@@ -44,9 +45,11 @@ test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak 
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
   await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
   await cart.getByRole("radio", { name: "Transfer" }).click();
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart.getByRole("alert")).toContainText("No. referensi transfer");
   await cart.getByLabel("No. referensi transfer").fill(ref);
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart).toContainText("Pembayaran tercatat");
   await expect(cart).toContainText("Dibayar (Transfer)");
@@ -67,6 +70,7 @@ test("bayar campuran: sebagian tunai + sisanya QRIS → struk & riwayat", async 
   await cart.getByLabel("No. referensi QRIS").fill(ref);
   await cart.getByLabel("Sebagian dibayar tunai (opsional)").fill("5000");
   await expect(cart).toContainText(/Terima Rp5\.000 tunai ke laci, sisanya Rp[\d.]+ lewat QRIS/);
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart).toContainText("Pembayaran tercatat");
   await expect(cart).toContainText("· TunaiRp5.000");

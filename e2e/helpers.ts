@@ -111,3 +111,9 @@ export function totp(secret: string, t = Date.now()) {
   const o = h[h.length - 1] & 15;
   return String((h.readUInt32BE(o) & 0x7fffffff) % 1_000_000).padStart(6, "0");
 }
+
+/** Kasir: tamu tanpa data pelanggan → centang "pelanggan tidak mau" dulu (wajib sejak 30 Okt 2026). */
+export async function allowNoCustomer(page: Page) {
+  const box = page.getByLabel("Pelanggan tidak mau memberi nama/nomor");
+  if (await box.isVisible()) await box.check();
+}

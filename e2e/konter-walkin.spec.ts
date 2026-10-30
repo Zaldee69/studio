@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, uniq } from "./helpers";
+import { login, uniq, allowNoCustomer } from "./helpers";
 
 // Walk-in sekarang: 3 ketukan → langsung "Sedang dilayani"; panel Sekarang → Selesai; kartu → Bayar ▸ → kasir.
 test("walk-in sekarang → dilayani → Selesai dari panel → Bayar", async ({ page }) => {
@@ -14,8 +14,10 @@ test("walk-in sekarang → dilayani → Selesai dari panel → Bayar", async ({ 
   await form.getByLabel("Nama panggilan (opsional)").fill(guest);
   await form.getByRole("button", { name: /^Mulai dilayani/ }).click();
   const tetap = form.getByRole("button", { name: "Tetap mulai" });
-  if (await tetap.isVisible().catch(() => false)) await tetap.click(); // sisa data uji di jam ini
-  await expect(page.getByText(`mulai dilayani ${staff}`)).toBeVisible();
+  const started = page.getByText(`mulai dilayani ${staff}`);
+  await expect(started.or(tetap)).toBeVisible(); // sisa data uji di jam ini → peringatan bentrok dulu
+  if (await tetap.isVisible()) await tetap.click();
+  await expect(started).toBeVisible();
 
   const panel = page.getByRole("region", { name: "Sekarang" });
   const tile = panel.locator("div", { has: page.getByText(staff, { exact: true }) }).filter({ hasText: guest }).first();
@@ -27,6 +29,7 @@ test("walk-in sekarang → dilayani → Selesai dari panel → Bayar", async ({ 
   const cart = page.getByRole("region", { name: "Keranjang" });
   await expect(cart).toContainText("Potong Rambut");
   await cart.getByRole("radio", { name: "Tunai" }).click();
+  await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
   await expect(cart).toContainText("Pembayaran tercatat");
   await expect(cart).toContainText(`Pelanggan${guest}`);

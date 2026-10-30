@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { card, login, newSession, randomWa, slotHour, uniq } from "./helpers";
+import { card, login, newSession, randomWa, slotHour, uniq, allowNoCustomer } from "./helpers";
 
 const row = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(name) }).filter({ hasText: name });
 
@@ -37,6 +37,7 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
   await expect(kasir.getByLabel(/siap bayar/).filter({ visible: true })).toBeVisible(); // badge menu Kasir (sidebar atau tab bar HP)
   await toast.getByRole("link", { name: "Buka di kasir" }).click();
   await expect(kasir.getByRole("region", { name: "Keranjang" })).toContainText("Manicure Basic");
+  await allowNoCustomer(kasir);
   await kasir.getByRole("button", { name: /Catat pembayaran/ }).click();
   await expect(kasir.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
 

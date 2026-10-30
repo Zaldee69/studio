@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, sql, uniq } from "./helpers";
+import { login, sql, uniq, allowNoCustomer } from "./helpers";
 
 // Pijat: kategori ketiga yang hanya lewat kasir — terapis sendiri, 2 bed, tidak tampil di booking online.
 test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; tidak ada di booking online", async ({ page }) => {
@@ -13,6 +13,7 @@ test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; tidak
     await expect(pick.getByRole("option", { name: "Andi" })).toHaveCount(0); // kapster barbershop tidak bisa dipilih
     await pick.selectOption({ label: terapis });
     await expect(page.getByText(/untuk diskon paket/)).toHaveCount(0);      // pijat tidak ikut diskon paket gabungan
+    await allowNoCustomer(page);
     await page.getByRole("button", { name: /Catat pembayaran/ }).click();
     await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
     const [it] = sql<{ category: string; price: number }>(`select ti.category, ti.price from transaction_items ti join staff s on s.id = ti.staff_id where s.name = '${terapis}'`);

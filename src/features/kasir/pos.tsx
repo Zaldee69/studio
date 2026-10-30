@@ -18,6 +18,7 @@ import { printerReady, printerSettings } from "@/lib/printer";
 import { printReceipt, ReceiptView, toReceipt } from "./receipt-view";
 import { TopupModal } from "./topup-modal";
 import { apptName } from "@/lib/domain/guest";
+import { loyalty } from "@/lib/domain/customer";
 
 // staffLocked: item dari booking yang sudah ada kapsternya — komisi mengikuti booking (dicek juga di server)
 const PAIR_COLORS = ["#7A4E9C", "#2F6F8F", "#A0522D", "#3E7B4F", "#9C3D5E"];
@@ -39,6 +40,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
   const [newCust, setNewCust] = useState(false);
   const [useDeposit, setUseDeposit] = useState(false);
+  const [noCustOk, setNoCustOk] = useState(false); // kasir menyatakan pelanggan tidak mau memberi nama/nomor
   const [method, setMethod] = useState<BaseMethod>("cash");
   const [qrisRef, setQrisRef] = useState(""); // No. referensi QRIS / transfer (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
@@ -65,6 +67,19 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     return data?.deposit_balance ?? 0;
   }, customer?.id ?? "");
   const bal = customer ? balance ?? 0 : 0;
+  // penanda pelanggan baru/jarang/langganan → tawarkan naik paket hanya ke yang baru/jarang
+  const { data: visits } = useRealtimeTable(["transactions"], async () => {
+    if (!customer) return null;
+    const { data } = await createClient().from("customer_stats").select("visit_count, last_visit_at").eq("customer_id", customer.id).maybeSingle();
+    return data;
+  }, customer?.id ?? "");
+  const tier = customer && visits !== undefined ? loyalty(visits?.visit_count ?? 0, visits?.last_visit_at ?? null) : null;
+  // transaksi hari ini yang tercatat dengan pelanggan (target ≥60% pada 30 Nov)
+  const { data: recorded } = useRealtimeTable(["transactions"], async () => {
+    const { data } = await createClient().from("transactions").select("customer_id")
+      .gte("created_at", `${jktDate()}T00:00:00+07:00`).is("voided_at", null);
+    return { total: data?.length ?? 0, withCust: (data ?? []).filter((t) => t.customer_id).length };
+  });
 
   // ---------- keranjang ----------
   const inCart = new Set(items.map((i) => i.appointmentId).filter(Boolean));
@@ -146,7 +161,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoCustOk(false);
   }
 
   async function pay() {
@@ -273,11 +288,19 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   : <button onClick={() => setNewCust(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</button>}
               </div>
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
-              {/* pengingat (tidak menghalangi bayar): nomor WA pelanggan = dasar promo, pengingat & laporan campaign */}
+              {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
+              {/* nomor WA pelanggan = dasar promo, pengingat & laporan campaign; dilewati hanya bila pelanggan menolak */}
               {!customer && items.length > 0 && (
-                <p role="status" className="rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
-                  Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.
-                </p>
+                <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
+                  <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
+                  <label className="flex min-h-11 items-center gap-2 font-semibold">
+                    <input type="checkbox" checked={noCustOk} onChange={(e) => setNoCustOk(e.target.checked)} className="size-5 accent-accent" />
+                    Pelanggan tidak mau memberi nama/nomor
+                  </label>
+                </div>
+              )}
+              {recorded && recorded.total > 0 && (
+                <p className="text-xs text-muted tabular">Tercatat dengan pelanggan hari ini: <b className={recorded.withCust / recorded.total >= 0.6 ? "text-[#1F7A45]" : "text-ink"}>{recorded.withCust} dari {recorded.total}</b> ({Math.round((recorded.withCust / recorded.total) * 100)}%) · target 60%</p>
               )}
               {/* voucher hanya lewat booking online: diskonnya ikut otomatis dari booking yang dipilih */}
               {items.length > 0 && <p className="text-xs text-muted">Kode voucher hanya berlaku lewat booking online (dprasstudio.com).</p>}
@@ -410,9 +433,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDEDE9] bg-card px-5 pb-4 pt-3 tabular">
               {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
               <div className="flex items-baseline justify-between"><span className="font-bold">Total</span><span className="font-display text-[28px] font-bold">{formatRupiah(k.total)}</span></div>
-              <button onClick={pay} disabled={!items.length || paying || !online || shortCash}
+              <button onClick={pay} disabled={!items.length || paying || !online || shortCash || (!customer && !noCustOk)}
                 className="btn-ink h-14 rounded-xl text-base">
-                {paying ? "Memproses…" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
+                {paying ? "Memproses…" : !customer && !noCustOk && items.length ? "Isi pelanggan dulu" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
               </button>
             </div>
           </>
@@ -436,5 +459,31 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           onDone={(nb) => { setBalance(nb); setTopup(false); }} />
       )}
     </div>
+  );
+}
+
+type Tier = ReturnType<typeof loyalty>;
+const TIER: Record<Tier, [string, string]> = {
+  baru: ["Pelanggan baru", "bg-[#E6F1E4] text-[#144D2A]"], jarang: ["Jarang datang", "bg-[#FBF3DE] text-[#5A4300]"],
+  langganan: ["Langganan", "bg-paper text-ink"], biasa: ["", ""],
+};
+
+/** Paket yang ditawarkan sekali ke pelanggan baru/jarang: dari Essential/Potong ke Fresh Groom. */
+function upgradeOffer(lines: { name: string; price: number }[], master: Master): string | null {
+  const base = lines.find((s) => s.name === "Essential Cut" || s.name === "Potong Rambut");
+  const fresh = master.services.find((s) => s.name === "Fresh Groom" && s.active);
+  if (!base || !fresh || lines.some((s) => /Groom$/.test(s.name))) return null;
+  return `Tawarkan sekali: Fresh Groom, tambah ${formatRupiah(fresh.price - base.price)} untuk keramas, tonik, dan handuk hangat.`;
+}
+
+function TierNote({ tier, visits, offer }: { tier: Tier; visits: number; offer: string | null }) {
+  if (tier === "biasa") return null;
+  const [label, tone] = TIER[tier];
+  return (
+    <p className="flex flex-wrap items-center gap-2 text-[13px]">
+      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${tone}`}>{label}{tier === "langganan" ? ` · ${visits}× datang` : ""}</span>
+      {tier === "langganan" ? <span className="text-muted">Layani seperti biasa, tidak perlu ditawari paket.</span>
+        : offer && <span>{offer}</span>}
+    </p>
   );
 }

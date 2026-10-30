@@ -29,3 +29,12 @@ export function fillNama(text: string, name: string): string {
 export function followupLink(whatsapp: string, template: string, name: string): string {
   return `https://wa.me/${whatsapp}?text=${encodeURIComponent(fillNama(template, name))}`;
 }
+
+export type Loyalty = "baru" | "jarang" | "langganan" | "biasa";
+/** Penanda di kasir: baru = belum pernah bayar; jarang = terakhir > 8 minggu lalu; langganan = ≥3 kunjungan & terakhir ≤ 6 minggu. */
+export function loyalty(visits: number, lastVisitAt: string | null, now: Date = new Date()): Loyalty {
+  if (!visits || !lastVisitAt) return "baru";
+  const weeks = (now.getTime() - new Date(lastVisitAt).getTime()) / (7 * DAY);
+  if (weeks > 8) return "jarang";
+  return visits >= 3 && weeks <= 6 ? "langganan" : "biasa";
+}

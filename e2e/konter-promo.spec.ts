@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, newSession, sql, uniq } from "./helpers";
+import { login, newSession, sql, uniq, allowNoCustomer } from "./helpers";
 
 // Promo booking online: manajer menyalakan di Pengaturan → banner publik → booking online dibayar di kasir dapat diskon
 // otomatis; walk-in tidak.
@@ -48,6 +48,7 @@ test("promo booking online 10%: diatur manajer → banner → kasir otomatis dis
     await page.getByRole("button", { name: new RegExp(online) }).click();
     await expect(cart).toContainText("Promo booking online 10%");
     await expect(cart).toContainText("−Rp7.500");
+    await allowNoCustomer(page);
     await page.getByRole("button", { name: /Catat pembayaran · Rp67\.500/ }).click();
     await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();
     const [tx] = sql<{ discount_amount: number; discount_label: string }>(`select t.discount_amount, t.discount_label from transactions t

@@ -10,6 +10,7 @@ import { CustomerCombobox } from "../counter/customer-combobox";
 import { NewCustomer } from "../counter/new-customer";
 import type { Cat, Customer, DayAppt, Master, TimeOffRow } from "../counter/types";
 import { floorStaff, staffNow } from "./now";
+import { walkInTurn } from "./turn";
 
 type Conflict = { customer_name: string; start_at: string; end_at: string; resource_name: string };
 
@@ -25,7 +26,10 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     .sort((a, b) => Number(b.now.free) - Number(a.now.free));
   const [staffPick, setStaffPick] = useState<string | null>(initialStaff ?? null);
   // default dihitung tiap render (data izin/jadwal bisa baru selesai dimuat): yang dipilih bila tidak izin, lalu yang kosong
-  const staffId = [staffPick, staff.find((s) => s.now.free)?.id, staff.find((s) => !s.now.off)?.id]
+  // giliran adil per kategori: walk-in paling sedikit hari ini, lalu yang paling lama menganggur
+  const turn = walkInTurn(staff.map((s) => ({ id: s.id, category: s.category, free: s.now.free })), appts);
+  const firstFree = staff.find((s) => s.now.free);
+  const staffId = [staffPick, firstFree && turn[firstFree.category], firstFree?.id, staff.find((s) => !s.now.off)?.id]
     .find((id) => id && !staff.find((s) => s.id === id)?.now.off) ?? "";
   const [sel, setSel] = useState<string[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -84,12 +88,16 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
               <button key={s.id} type="button" role="radio" aria-checked={on} disabled={s.now.off}
                 onClick={() => { setStaffPick(s.id); if (s.category !== cat) setSel([]); setConflicts(null); }}
                 className={`flex min-h-14 flex-col items-start justify-center rounded-xl border-2 px-3 text-left disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>
-                <b className="text-sm">{s.name}</b>
+                <span className="flex items-center gap-1.5"><b className="text-sm">{s.name}</b>
+                  {turn[s.category] === s.id && <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${on ? "bg-white/20" : "bg-[#E6F1E4] text-[#144D2A]"}`}>Giliran</span>}</span>
                 <span className={`text-xs ${on ? "text-white/80" : s.now.free ? "text-[#1F7A45]" : "text-muted"}`}>{CAT_NAME[s.category]} · {note}</span>
               </button>
             );
           })}
         </div>
+        {who && turn[who.category] && turn[who.category] !== who.id && (
+          <p className="text-[13px] text-muted">Giliran berikutnya: <b className="text-ink">{staff.find((s) => s.id === turn[who.category])?.name}</b>. Pilih staf lain hanya bila pelanggan memintanya.</p>
+        )}
       </fieldset>
 
       {cat && (

@@ -787,6 +787,19 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"job_applications": {
+                  Row: {
+                    "answers": NonNullable<Json>,"created_at": string,"id": string,"name": string,"note": string,"position": string,"status": string,"whatsapp": string
+                  }
+                  Insert: {
+                    "answers"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"name": string,"note"?: string,"position": string,"status"?: string,"whatsapp": string
+                  }
+                  Update: {
+                    "answers"?: NonNullable<Json>,"created_at"?: string,"id"?: string,"name"?: string,"note"?: string,"position"?: string,"status"?: string,"whatsapp"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"maintenance_logs": {
                   Row: {
                     "cost": number | null,"created_at": string,"done_by": string | null,"id": string,"note": string,"photo_path": string | null,"task_id": string,"vendor": string | null
@@ -2071,6 +2084,9 @@ isOneToOne: false
                            },
 "alert_weekly_summary":
 { Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"apply_job":
+{ Args: { "p": Json }; Returns: string
                            },
 "approve_sop_day":
 { Args: { "p_date": string,"p_shift"?: number }; Returns: undefined

@@ -184,3 +184,16 @@ export async function saveSopSettings(_: SaveState, fd: FormData): Promise<SaveS
   revalidatePath("/manajer/pengaturan"); revalidatePath("/manajer/sop");
   return { ok: "Pengaturan SOP disimpan" };
 }
+
+const AppUpdate = z.object({ id: z.guid(), status: z.enum(["baru", "dihubungi", "tes", "diterima", "ditolak"]), note: z.string().trim().max(500) });
+
+export async function updateApplication(_: SaveState, fd: FormData): Promise<SaveState> {
+  const r = AppUpdate.safeParse(Object.fromEntries(fd));
+  if (!r.success) return { error: r.error.issues[0].message };
+  const { data, error } = await (await createClient()).from("job_applications")
+    .update({ status: r.data.status, note: r.data.note }).eq("id", r.data.id).select("id");
+  if (error) return { error: friendly(error) };
+  if (!data?.length) return { error: "Akses ditolak." };
+  revalidatePath("/manajer/pengaturan");
+  return { ok: "Tersimpan" };
+}

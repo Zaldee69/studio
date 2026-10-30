@@ -14,6 +14,7 @@ import { MfaSettings } from "./mfa-settings";
 import { StationSettings } from "./station-settings";
 import { HairstyleCatalog } from "./hairstyle-catalog";
 import { TelegramTest, WhatsAppTest } from "./telegram-test";
+import { Applicants } from "./applicants";
 
 export const metadata = { title: "Pengaturan" };
 
@@ -21,7 +22,7 @@ export const metadata = { title: "Pengaturan" };
 const MENU = [
   ["Studio", [["umum", "Profil studio"], ["jam", "Jam buka & libur"], ["kursi", "Kursi & meja"]]],
   ["Layanan", [["layanan", "Layanan & harga"], ["voucher", "Voucher"], ["deposit", "Paket deposit"], ["gaya", "Katalog gaya"]]],
-  ["Tim", [["staf", "Staf"], ["akun", "Akun & peran"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"]]],
+  ["Tim", [["staf", "Staf"], ["akun", "Akun & peran"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["pelamar", "Pelamar"]]],
   ["Pelanggan", [["booking", "Booking online"], ["pesan", "Pesan otomatis"], ["notifikasi", "Notifikasi & log"]]],
   ["Situs", [["publik", "Konten halaman"], ["foto", "Foto"], ["ulasan", "Ulasan"], ["privasi", "Kebijakan privasi"]]],
   ["Keuangan", [["keuangan", "Kas, komisi & stok"]]],
@@ -130,6 +131,9 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
         </div>
       </div>
     );
+  } else if (tab === "pelamar") {
+    const { data } = await supabase.from("job_applications").select("*").order("created_at", { ascending: false }).limit(100);
+    body = <Applicants rows={data ?? []} />;
   } else if (tab === "stasiun") {
     const { data } = await supabase.from("staff").select("id, name").eq("active", true).order("sort");
     body = <StationSettings staff={data ?? []} />;

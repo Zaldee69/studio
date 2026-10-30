@@ -57,7 +57,7 @@ function Section({ id, title, children, onCsv, extra }: { id: string; title: str
   );
 }
 
-export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
+export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.ReactNode }) {
   const router = useRouter();
   const cur = d.summary.current, t = d.summary.targets, delta = d.summary.delta;
   const q = (over: Record<string, string>) => {
@@ -120,6 +120,8 @@ export function AnalyticsDashboard({ d }: { d: AnalyticsData }) {
           ))}
         </section>
       )}
+
+      {ai}
 
       <div className="grid gap-3 min-[820px]:grid-cols-3 xl:grid-cols-5">
         {cards.map((c) => (

@@ -5,12 +5,11 @@ import Anthropic from "@anthropic-ai/sdk";
 // Sekali seminggu → biaya kecil; prompt caching tidak berguna di sini.
 export const MODEL = process.env.AI_WEEKLY_MODEL || "claude-opus-5-5";
 
-const STUDIO = `D'Pras Studio: barbershop dengan layanan pijat di Ruko Emerald, Cimanggis Golf Estate, Depok. Setiap Senin tim membahas angka minggu lalu (JSON). Owner SUDAH menerima ringkasan angka pukul 08.05, jadi jangan mengulang angka; jawab apa yang terpenting, kenapa, dan apa yang harus dikerjakan siapa.
-
-Cara kerja studio (agar saran tidak salah alamat):
+/** Cara kerja studio + aturan menulis; dipakai rapat mingguan dan asisten AI Analitik. */
+export const STUDIO_RULES = `Cara kerja studio (agar saran tidak salah alamat):
 - Sumber kunjungan web (minggu_ini.web) tercatat otomatis dari link (mis. link bio Instagram); kasir tidak bisa memperbaikinya. Kunjungan banyak tapi booking sedikit → benahi isi/ajakan di Instagram, link bio, atau halaman booking (tugas owner).
 - Kasir hanya mengisi sumber untuk pelanggan baru yang didaftarkan di konter.
-- Voucher SENKAMWA/SENKAMIG (Rp5.000 Senin–Kamis) jangan diberikan ke pelanggan yang memang sudah datang di hari kerja (itu hanya mengurangi omzet). Pakai untuk memindahkan pelanggan akhir pekan ke hari kerja, atau untuk mengajak kembali pelanggan di filter "Perlu follow-up".
+- Voucher SENKAMWA (diskon 10%) dan SENKAMIG (Rp5.000), Senin–Kamis, hanya bisa dipakai lewat booking online. Jangan diberikan ke pelanggan yang memang sudah datang di hari kerja (itu hanya mengurangi omzet). Pakai untuk memindahkan pelanggan akhir pekan ke hari kerja, atau untuk mengajak kembali pelanggan di filter "Perlu follow-up".
 - Upsell tambahan (pijat/retail) ditawarkan capster di kursi; Relax/Signature Groom sudah termasuk pijat yang dikerjakan capster.
 - Fitur aplikasi: menu Pelanggan → filter "Perlu follow-up" (kirim WA dari profil), voucher, menu Inventaris.
 
@@ -21,6 +20,10 @@ Aturan:
 - Menegur capster disampaikan sebagai coaching, bukan hukuman.
 - Bila ada notulen_rapat_sebelumnya: periksa tindakan dan targetnya dengan angka minggu ini. Tindakan yang gagal jangan diulang begitu saja; cari sebabnya atau ganti caranya.
 - Bahasa Indonesia lugas dan sopan, kalimat pendek. Teks biasa Telegram: tanpa tabel, tanpa tebal/miring, tanpa #. Uang ditulis seperti Rp1.250.000; persen dibulatkan.`;
+
+const STUDIO = `D'Pras Studio: barbershop dengan layanan pijat di Ruko Emerald, Cimanggis Golf Estate, Depok. Setiap Senin tim membahas angka minggu lalu (JSON). Owner SUDAH menerima ringkasan angka pukul 08.05, jadi jangan mengulang angka; jawab apa yang terpenting, kenapa, dan apa yang harus dikerjakan siapa.
+
+${STUDIO_RULES}`;
 
 export const ROLES = [
   { name: "Keuangan", focus: "laba, omzet per lini dan HPP, rata-rata transaksi, biaya voucher, selisih kas" },
@@ -46,14 +49,14 @@ Keputusan akhir milik owner — tulis sebagai rekomendasi.`;
 
 type Turn = { role: "user" | "assistant"; content: string };
 
-async function ask(client: Anthropic, system: string, content: string | Turn[]): Promise<string> {
+export async function ask(client: Anthropic, system: string, content: string | Turn[], model = MODEL): Promise<string> {
   const res = await client.beta.messages.create({
-    model: MODEL,
+    model,
     max_tokens: 16000,
     output_config: { effort: "medium" },
     // bila model menolak (pengaman), server otomatis mencoba model cadangan dalam panggilan yang sama.
     // Haiku 5.5 dkk. tidak punya fallback (400), jadi hanya untuk model bawaan.
-    ...(MODEL === "claude-opus-5-5" && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
+    ...(model === "claude-opus-5-5" && { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
     system,
     messages: typeof content === "string" ? [{ role: "user", content }] : content,
   });

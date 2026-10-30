@@ -16,7 +16,7 @@ const getSeen = () => { try { return localStorage.getItem(SEEN_KEY) ?? new Date(
 const RECENT_MS = 2 * 60 * 1000;
 
 /**
- * Notifikasi konter (manajer & kasir) dari aplikasi kapster:
+ * Notifikasi konter (manajer & kasir) dari aplikasi capster:
  * "Budi — siap bayar (Andi)" saat status jadi completed, dan permintaan ubah jadwal. Mengembalikan jumlah "siap bayar" hari ini.
  */
 export function useCounterAlerts(base: string) {
@@ -110,7 +110,7 @@ export function useCounterAlerts(base: string) {
         if (r.change_request && fresh(r.change_requested_at) && !seen.current.has(key)) {
           seen.current.add(key);
           const d = await describe(r.id);
-          if (alive && d) toast(`${d.staff?.name ?? "Kapster"} minta ubah jadwal: ${apptName(d)} ${formatJam(d.start_at)} — “${r.change_request}”`, "ok", { label: "Buka jadwal", href: `${base}/jadwal` });
+          if (alive && d) toast(`${d.staff?.name ?? "Capster"} minta ubah jadwal: ${apptName(d)} ${formatJam(d.start_at)} — “${r.change_request}”`, "ok", { label: "Buka jadwal", href: `${base}/jadwal` });
         }
       });
     supabase.realtime.setAuth().then(() => { if (alive) channel.subscribe((status) => { if (status === "SUBSCRIBED") void catchUp(); }); });

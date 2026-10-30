@@ -88,7 +88,7 @@ export function AuditScreen() {
           <div className="grid grid-cols-2 gap-3 min-[700px]:grid-cols-4">
             {([["Selesai belum dibayar", o.unpaid.length, "#unpaid", true], ["Selisih / koreksi kas", diffDays.length, "#kas", true],
                ["Void", o.voids.length, "#void", false], ["Batal / mundur status", o.cancels.length, "#batal", false],
-               ["Ganti kapster", o.staff_changes.length, "#kapster", false], ["Top-up tanpa paket", o.manual_topups.length, "#topup", false],
+               ["Ganti capster", o.staff_changes.length, "#kapster", false], ["Top-up tanpa paket", o.manual_topups.length, "#topup", false],
                ["Pembayaran QRIS & transfer", o.qris.length, "#qris", false]] as const).map(([l, n, href, hot]) => (
               <a key={l} href={href} className={`flex flex-col gap-1 rounded-[14px] border p-4 ${hot && n ? "border-[#E8C3C4] bg-[#FFF7F7]" : "border-line bg-card"}`}>
                 <span className="text-xs font-semibold text-muted">{l}</span>
@@ -98,7 +98,7 @@ export function AuditScreen() {
           </div>
 
           <Section id="unpaid" title="Selesai dilayani tapi belum dibayar" count={o.unpaid.length} tone="danger">
-            <Table head={["Pelanggan", "Kapster", "Jadwal", "Selesai sejak", ""]} rows={o.unpaid.map((u) => [
+            <Table head={["Pelanggan", "Capster", "Jadwal", "Selesai sejak", ""]} rows={o.unpaid.map((u) => [
               <b key="c">{u.customer}</b>, u.staff ?? "—", when(u.start_at), u.since ? when(u.since) : "—",
               <Link key="l" href="/manajer/kasir" className="font-semibold text-accent underline">Kasir</Link>])} />
           </Section>
@@ -121,7 +121,7 @@ export function AuditScreen() {
               when(c.at), c.by, c.customer, `${st(c.from)} → ${st(c.to)}`, c.reason ?? "—"])} />
           </Section>
 
-          <Section id="kapster" title="Kapster / nail artist booking diganti" count={o.staff_changes.length}>
+          <Section id="capster" title="Capster / nail artist booking diganti" count={o.staff_changes.length}>
             <Table head={["Waktu", "Oleh", "Pelanggan", "Dari → ke"]} rows={o.staff_changes.map((c) => [
               when(c.at), c.by, c.customer, `${c.from ?? "—"} → ${c.to ?? "—"}`])} />
           </Section>

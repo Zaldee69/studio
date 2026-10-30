@@ -100,7 +100,7 @@ test("3 · Andi ajukan izin besok → manajer setujui → peringatan di form boo
   await pub.close();
 });
 
-test("4 · kapster membuka /kasir & /manajer → dialihkan ke /kapster", async ({ page }) => {
+test("4 · capster membuka /kasir & /manajer → dialihkan ke /kapster", async ({ page }) => {
   await login(page, "andi");
   await page.goto("/kasir/kasir");
   await expect(page).toHaveURL(/\/kapster$/);
@@ -108,7 +108,7 @@ test("4 · kapster membuka /kasir & /manajer → dialihkan ke /kapster", async (
   await expect(page).toHaveURL(/\/kapster$/);
 });
 
-test("5 · mode stasiun: manajer atur PIN & daftarkan tablet → Sari masuk dengan PIN → Ganti kapster", async ({ page }, info) => {
+test("5 · mode stasiun: manajer atur PIN & daftarkan tablet → Sari masuk dengan PIN → Ganti capster", async ({ page }, info) => {
   const pin = String(4000 + ((info.project.name.length * 97) % 5000));
   await login(page, "manager");
   await page.goto("/manajer/pengaturan?tab=stasiun");
@@ -133,7 +133,7 @@ test("5 · mode stasiun: manajer atur PIN & daftarkan tablet → Sari masuk deng
   await page.getByRole("button", { name: "Masuk" }).click();
   await page.waitForURL((u) => u.pathname === "/kapster");
   await expect(page.getByText("Halo, Sari")).toBeVisible();
-  await page.getByRole("button", { name: "Ganti kapster" }).click();
+  await page.getByRole("button", { name: "Ganti capster" }).click();
   await page.waitForURL((u) => u.pathname === "/stasiun");
   await page.goto("/kapster");
   await expect(page).toHaveURL(/\/login$/); // sesi benar-benar keluar

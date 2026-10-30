@@ -9,7 +9,7 @@ import { BRAND } from "@/lib/brand";
 
 export const metadata: Metadata = {
   title: "Reservasi online",
-  description: "Pilih layanan barbershop & nail, kapster, dan jam yang benar-benar kosong. Bayar di toko.",
+  description: "Pilih layanan barbershop & nail, capster, dan jam yang benar-benar kosong. Bayar di toko.",
   alternates: { canonical: "/booking" },
 };
 

@@ -143,7 +143,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
                   <input id="void-reason" className="input" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
-                  <p className="text-xs text-muted">Booking kembali ke &quot;Selesai/Belum Bayar&quot;, stok & saldo deposit dikembalikan.</p>
+                  <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setVoiding(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
                     <button disabled={!reason.trim() || !online} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</button>

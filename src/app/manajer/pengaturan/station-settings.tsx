@@ -7,7 +7,7 @@ import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import { registerStation } from "@/features/stasiun/actions";
 
-/** Pengaturan mode stasiun: PIN per kapster (hash di server) & daftar perangkat stasiun. */
+/** Pengaturan mode stasiun: PIN per capster (hash di server) & daftar perangkat stasiun. */
 export function StationSettings({ staff }: { staff: { id: string; name: string }[] }) {
   const toast = useToast();
   const [pins, setPins] = useState<Record<string, string>>({});
@@ -41,8 +41,8 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
-        <h2 className="font-display text-lg font-semibold">PIN kapster</h2>
-        <p className="text-sm text-muted">Dipakai untuk masuk di tablet stasiun (4–6 digit). Disimpan terenkripsi; 5× salah → terkunci 5 menit. Kapster harus punya akun aktif yang tertaut.</p>
+        <h2 className="font-display text-lg font-semibold">PIN capster</h2>
+        <p className="text-sm text-muted">Dipakai untuk masuk di tablet stasiun (4–6 digit). Disimpan terenkripsi; 5× salah → terkunci 5 menit. Capster harus punya akun aktif yang tertaut.</p>
         {staff.map((s) => {
           const st = data?.status.get(s.id);
           const locked = st?.locked;
@@ -69,7 +69,7 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
           {reg?.error && <p role="alert" className="w-full text-[13px] font-semibold text-danger">{reg.error}</p>}
           {reg?.ok && <p role="status" className="w-full text-[13px] font-semibold text-[#1F7A45]">{reg.ok}</p>}
         </form>
-        <p className="text-xs text-muted">Buka halaman ini di tablet yang akan dipakai bersama, daftarkan, lalu keluar dan buka <b>/stasiun</b>. Sesi kapster di stasiun keluar otomatis setelah 5 menit tanpa aktivitas.</p>
+        <p className="text-xs text-muted">Buka halaman ini di tablet yang akan dipakai bersama, daftarkan, lalu keluar dan buka <b>/stasiun</b>. Sesi capster di stasiun keluar otomatis setelah 5 menit tanpa aktivitas.</p>
         {data?.devices.map((d) => (
           <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-3">
             <span className="flex flex-1 flex-col"><b className="text-sm">{d.name}</b>

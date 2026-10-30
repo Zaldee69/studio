@@ -31,7 +31,7 @@ test("tutup minggu → tandai dibayar → gaji bulanan: dibayar mingguan & sisa 
     await expect(page.getByRole("columnheader", { name: "Dibayar mingguan" })).toBeVisible();
     await expect(page.getByRole("row", { name: new RegExp(name) })).toContainText("−Rp50.000");
 
-    // kapster melihat bagian komisi mingguannya sendiri
+    // capster melihat bagian komisi mingguannya sendiri
     const k = await newSession(browser, info, "andi", { width: 390, height: 844 });
     await k.goto("/kapster/komisi");
     await expect(k.getByRole("region", { name: "Komisi mingguan" })).toContainText("Minggu ini · berjalan");

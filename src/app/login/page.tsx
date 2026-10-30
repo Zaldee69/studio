@@ -14,7 +14,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="w-full max-w-sm">
         <p className="font-display text-sm font-semibold text-accent">{BRAND}</p>
         <h1 className="mt-1 font-display text-3xl font-bold">{mfa === "1" ? "Verifikasi 2 langkah" : register ? "Daftar akun tim" : "Login tim"}</h1>
-        <p className="mt-1 text-sm text-muted">Manajer, kasir, dan kapster — halaman menyesuaikan peran.</p>
+        <p className="mt-1 text-sm text-muted">Manajer, kasir, dan capster — halaman menyesuaikan peran.</p>
 
         {status === "pending" && (
           <div role="status" className="mt-6 rounded-lg bg-st-booked p-4 text-sm">

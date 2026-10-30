@@ -39,6 +39,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     : []);
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
   const [newCust, setNewCust] = useState(false);
+  const [newInit, setNewInit] = useState(""); // nama/nomor yang diketik di pencarian → isian awal pelanggan baru
   const [useDeposit, setUseDeposit] = useState(false);
   const [noCustOk, setNoCustOk] = useState(false); // kasir menyatakan pelanggan tidak mau memberi nama/nomor
   const [method, setMethod] = useState<BaseMethod>("cash");
@@ -56,7 +57,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [topup, setTopup] = useState(false);
 
   const { data: dayAppts } = useDayAppointments(today);
-  const unpaid = (dayAppts ?? []).filter((a) => a.status !== "paid" && a.status !== "cancelled" && a.status !== "pending_review");
+  const PAY_ORDER: Partial<Record<DayAppt["status"], number>> = { completed: 0, in_service: 1, arrived: 2, booked: 3 };
+  const unpaid = (dayAppts ?? []).filter((a) => a.status !== "paid" && a.status !== "cancelled" && a.status !== "pending_review")
+    .sort((a, b) => (PAY_ORDER[a.status] ?? 9) - (PAY_ORDER[b.status] ?? 9) || a.start_at.localeCompare(b.start_at));
   const { data: stock } = useRealtimeTable(["stock_moves"], async () => {
     const { data } = await createClient().from("retail_stock").select("service_id, qty");
     return new Map((data ?? []).map((r) => [r.service_id!, Number(r.qty)]));
@@ -281,11 +284,12 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               <label htmlFor="cart-cust" className="text-xs font-bold text-muted">Pelanggan</label>
               <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
-                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Pelanggan umum (walk-in)" />
+                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Cari nama / no. WA pelanggan"
+                    onCreate={(q) => { setNewInit(q); setNewCust(true); }} />
                 </div>
                 {customer
                   ? <button onClick={() => setTopup(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</button>
-                  : <button onClick={() => setNewCust(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</button>}
+                  : <button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</button>}
               </div>
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
               {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
@@ -323,7 +327,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                         </select>
                       ) : (
                         <select aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
-                          title={i.staffLocked ? "Sesuai booking. Bila kapster diganti, ubah booking di Jadwal." : undefined}
+                          title={i.staffLocked ? "Sesuai booking. Bila capster diganti, ubah booking di Jadwal." : undefined}
                           className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A4C46] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#DCDCD6]" : "border-[#D23B3B]"}`}>
                           <option value="">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -451,7 +455,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       )}
 
       <Sheet open={newCust} onClose={() => setNewCust(false)} label="Pelanggan baru" width={480}>
-        <NewCustomer online={online} onClose={() => setNewCust(false)}
+        <NewCustomer key={newInit} initial={newInit} online={online} onClose={() => setNewCust(false)}
           onSaved={(c) => { setNewCust(false); setCustomer(c); setUseDeposit(false); toast(`${c.name} ditambahkan`); }} />
       </Sheet>
       {customer && (

@@ -113,7 +113,7 @@ test("pelanggan dari booking: analisis → katalog langsung (satu grid) → pili
   expect(fake.calls.length).toBe(calls);
 });
 
-test("API: tanpa persetujuan / konsultasi orang lain / booking kapster lain ditolak", async ({ page }) => {
+test("API: tanpa persetujuan / konsultasi orang lain / booking capster lain ditolak", async ({ page }) => {
   await login(page, "andi");
   const photoPart = { photo: { name: "x.png", mimeType: "image/png", buffer: PNG_1PX } };
   expect((await page.request.post("/api/gaya/analisis", { multipart: photoPart })).status()).toBe(400);
@@ -139,5 +139,5 @@ test("foto HEIC (iPhone) diterima: dikonversi di browser → dianalisis sebagai 
 
 test("nail artist tidak punya menu Gaya", async ({ page }) => {
   await login(page, "sari");
-  await expect(page.getByRole("navigation", { name: "Menu kapster" }).filter({ visible: true }).getByRole("link", { name: "Gaya" })).toHaveCount(0);
+  await expect(page.getByRole("navigation", { name: "Menu capster" }).filter({ visible: true }).getByRole("link", { name: "Gaya" })).toHaveCount(0);
 });

@@ -1,4 +1,4 @@
-// Aplikasi kapster: urutan antrean, aksi satu ketukan, jendela koreksi, timer, estimasi komisi, izin.
+// Aplikasi capster: urutan antrean, aksi satu ketukan, jendela koreksi, timer, estimasi komisi, izin.
 // Cermin revert_my_status / advance_appointment_status / commission_items di SQL.
 import { formatJam, formatTanggal, jktDate } from "./format";
 import { nextStatus, type ApptStatus } from "./status";
@@ -21,7 +21,7 @@ export const ACTION: Partial<Record<ApptStatus, { label: string; bg: string }>> 
   in_service: { label: "Selesai → ke kasir", bg: "#1F7A45" },
 };
 
-/** Transisi yang boleh dilakukan kapster: maju satu langkah (tidak ke paid) atau mundur satu langkah. */
+/** Transisi yang boleh dilakukan capster: maju satu langkah (tidak ke paid) atau mundur satu langkah. */
 export function staffCanMove(from: ApptStatus, to: ApptStatus): boolean {
   if (to === "paid" || to === "cancelled") return false;
   return nextStatus(from) === to || nextStatus(to) === from;

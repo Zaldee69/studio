@@ -10,7 +10,7 @@ export const isOnlineCat = (c: string): c is OnlineCat => (ONLINE_CATS as readon
 export const COMING_SOON: readonly string[] = ["nail", "lashes"];
 
 export const CAT_NAME: Record<Cat, string> = { barbershop: "Barbershop", nail: "Nail Art", massage: "Pijat" };
-export const STAFF_TITLE: Record<Cat, string> = { barbershop: "Kapster", nail: "Nail artist", massage: "Terapis pijat" };
+export const STAFF_TITLE: Record<Cat, string> = { barbershop: "Capster", nail: "Nail artist", massage: "Terapis pijat" };
 /** Warna chip kategori (latar, teks). */
 export const CAT_TONE: Record<Cat, { bg: string; fg: string }> = {
   barbershop: { bg: "#E9ECE3", fg: "#3F4A33" },

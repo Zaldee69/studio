@@ -30,7 +30,7 @@ export const useKapster = () => useContext(KapsterCtx)!;
 const label = (a: MyAppt) => `${a.customer_name ?? "Walk-in"} · ${formatTanggal(a.start_at).split(",")[0]} ${formatJam(a.start_at)}`;
 
 /**
- * Data kapster: booking miliknya hari ini s.d. +7 hari (view staff_my_appointments) + izin, realtime.
+ * Data capster: booking miliknya hari ini s.d. +7 hari (view staff_my_appointments) + izin, realtime.
  * Tiap refresh dibandingkan dengan versi sebelumnya → toast + bunyi untuk booking baru/diubah/dibatalkan/lunas.
  */
 export function KapsterProvider({ me, services, children }: { me: Me; services: SvcLite[]; children: React.ReactNode }) {
@@ -73,12 +73,12 @@ export function KapsterProvider({ me, services, children }: { me: Me; services: 
     const supabase = createClient();
     let alive = true;
     const first = setTimeout(load, 0);
-    const channel = supabase.channel(`kapster:${crypto.randomUUID()}`);
+    const channel = supabase.channel(`capster:${crypto.randomUUID()}`);
     for (const table of ["appointments", "appointment_services", "staff_time_off"]) {
       channel.on("postgres_changes", { event: "*", schema: "public", table }, () => { if (alive) load(); });
     }
     supabase.realtime.setAuth().then(() => { if (alive) channel.subscribe(); });
-    // ponytail: RLS tidak mengirim event untuk booking yang dipindah ke kapster lain → refresh berkala sebagai jaring.
+    // ponytail: RLS tidak mengirim event untuk booking yang dipindah ke capster lain → refresh berkala sebagai jaring.
     const t = setInterval(() => alive && load(), 60_000);
     return () => { alive = false; clearTimeout(first); clearInterval(t); supabase.removeChannel(channel); };
   }, [load]);

@@ -25,7 +25,7 @@ export function StationLogin({ staff }: { staff: S[] }) {
             <span className="text-xs text-muted">{s.has_pin ? STAFF_TITLE[s.category] : "PIN belum diatur"}</span>
           </button>
         ))}
-        {!staff.length && <p className="col-span-full text-[#D6D6D0]">Belum ada kapster dengan akun aktif.</p>}
+        {!staff.length && <p className="col-span-full text-[#D6D6D0]">Belum ada capster dengan akun aktif.</p>}
       </div>
     );
   }

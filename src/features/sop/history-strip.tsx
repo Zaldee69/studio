@@ -4,7 +4,7 @@ import { SOP_STATUS, type SopStatus } from "@/lib/domain/kpi";
 const wd = (d: string) => new Intl.DateTimeFormat("id-ID", { weekday: "short", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
 const long = (d: string) => new Intl.DateTimeFormat("id-ID", { weekday: "long", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
 
-/** Riwayat 14 hari: strip tanggal 44×52 dengan titik status + label aksesibel. `href` null = tidak bisa dibuka (kapster). */
+/** Riwayat 14 hari: strip tanggal 44×52 dengan titik status + label aksesibel. `href` null = tidak bisa dibuka (capster). */
 export function HistoryStrip({ rows, current, href }: { rows: { date: string; status: SopStatus }[]; current?: string; href: ((d: string) => string) | null }) {
   return (
     <ol aria-label="Riwayat 14 hari" className="flex gap-1.5 overflow-x-auto pb-1">

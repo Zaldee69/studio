@@ -116,7 +116,7 @@ export function TeamAuth({ register, mfa }: { register: boolean; mfa: boolean })
             <select id="role" name="role" className="input" defaultValue="">
               <option value="" disabled>Pilih…</option>
               <option value="cashier">Kasir / front desk</option>
-              <option value="staff">Kapster / nail artist</option>
+              <option value="staff">Capster / nail artist</option>
             </select>
           </div>
           {field("invite_code", "Kode undangan", { autoComplete: "off" })}

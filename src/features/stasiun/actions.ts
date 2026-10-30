@@ -9,7 +9,7 @@ import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { STATION_ACTIVE, STATION_COOKIE, STATION_IDLE_S } from "./constants";
 
 // Mode stasiun: tablet bersama didaftarkan manajer (cookie perangkat acak, hanya hash-nya disimpan di DB).
-// Kapster masuk dengan PIN → server menukar PIN dengan sesi Supabase akun kapster itu.
+// Capster masuk dengan PIN → server menukar PIN dengan sesi Supabase akun capster itu.
 const secure = process.env.NODE_ENV === "production";
 const IDLE_S = STATION_IDLE_S;
 const hashToken = async (t: string) => createHash("sha256").update(t).digest("hex");
@@ -49,7 +49,7 @@ export async function stationLogin(_: StationState, fd: FormData): Promise<Stati
     return { error: r.reason === "locked" ? "Terlalu banyak PIN salah. Coba lagi 5 menit lagi."
       : r.reason === "wrong" ? `PIN salah. Sisa ${r.left} percobaan.`
       : r.reason === "no_pin" ? "PIN belum diatur. Minta manajer mengatur PIN di Pengaturan."
-      : r.reason === "device" ? "Perangkat stasiun tidak aktif." : "Akun kapster belum siap." };
+      : r.reason === "device" ? "Perangkat stasiun tidak aktif." : "Akun capster belum siap." };
   }
   // Tukar ke sesi tanpa kata sandi: magic link token (tidak dikirim ke email) → verifyOtp di server.
   const { data: link, error: linkErr } = await admin.auth.admin.generateLink({ type: "magiclink", email: r.email! });

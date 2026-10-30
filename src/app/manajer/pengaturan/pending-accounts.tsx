@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { removeTeamAccount } from "./actions";
 
 type Signup = { id: string; full_name: string; email: string | null; role: "cashier" | "staff" | "manager" | "customer"; signed_up_at: string; email_confirmed_at: string | null };
-const ROLE = { cashier: "Kasir", staff: "Kapster", manager: "Manajer", customer: "Pelanggan" } as const;
+const ROLE = { cashier: "Kasir", staff: "Capster", manager: "Manajer", customer: "Pelanggan" } as const;
 
 /** Akun tim menunggu persetujuan: hanya email terverifikasi yang bisa disetujui; setiap persetujuan mengganti kode undangan. */
 export function PendingAccounts({ rows, staff }: { rows: Signup[]; staff: [string, string][] }) {

@@ -49,7 +49,7 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
     }
     return { now: now.data?.[0] ?? null, prev: prev.data?.[0] ?? null, closed: [...closed.entries()].slice(0, 8) };
   }, thisWeek);
-  // Notifikasi "slip final" dianggap terbaca saat kapster membuka periode yang sudah final.
+  // Notifikasi "slip final" dianggap terbaca saat capster membuka periode yang sudah final.
   useEffect(() => { if (s?.closed) createClient().rpc("mark_notifications_read"); }, [s?.closed]);
   return (
     <>

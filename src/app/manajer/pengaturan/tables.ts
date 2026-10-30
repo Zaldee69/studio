@@ -122,7 +122,7 @@ export const TABLES = {
       { name: "full_name", label: "Nama", type: "text", w: "11rem" },
       { name: "email", label: "Email", type: "text", readonly: true, w: "14rem" },
       { name: "role", label: "Peran", type: "select", w: "9rem",
-        options: [["manager", "Manajer"], ["cashier", "Kasir"], ["staff", "Kapster"], ["customer", "Pelanggan"]] },
+        options: [["manager", "Manajer"], ["cashier", "Kasir"], ["staff", "Capster"], ["customer", "Pelanggan"]] },
       { name: "staff_id", label: "Tautan staf", type: "select", options: "staff", nullable: true, w: "10rem" },
       { name: "phone", label: "No. WA (cadangan bila No. WA staf kosong)", type: "text", nullable: true, w: "10rem" },
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },

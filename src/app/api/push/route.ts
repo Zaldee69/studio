@@ -4,7 +4,7 @@ import { errInfo, log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 import { apptName } from "@/lib/domain/guest";
 
-// Dipanggil trigger DB (pg_net) saat booking kapster dibuat / dipindah / dibatalkan → kirim Web Push ke perangkatnya.
+// Dipanggil trigger DB (pg_net) saat booking capster dibuat / dipindah / dibatalkan → kirim Web Push ke perangkatnya.
 const TITLE = { new: "Booking baru", changed: "Booking diubah", cancelled: "Booking dibatalkan" } as const;
 
 export async function POST(req: Request) {

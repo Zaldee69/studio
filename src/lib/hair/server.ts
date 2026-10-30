@@ -29,7 +29,7 @@ export const fail = (e: unknown) => {
   return json({ error: "Layanan rekomendasi sedang bermasalah. Coba lagi sebentar." }, 502);
 };
 
-/** Tim (kapster, kasir, manajer) yang aktif; fitur harus diaktifkan dengan OPENAI_API_KEY. */
+/** Tim (capster, kasir, manajer) yang aktif; fitur harus diaktifkan dengan OPENAI_API_KEY. */
 export async function requireConsultUser() {
   if (!KEY()) throw new HttpError(503, "Fitur konsultasi gaya belum diaktifkan (OPENAI_API_KEY belum diisi).");
   return requireTeam();
@@ -49,7 +49,7 @@ export async function requireTeam() {
   return p;
 }
 
-/** Booking yang boleh dipakai pengguna ini: kapster hanya booking miliknya. */
+/** Booking yang boleh dipakai pengguna ini: capster hanya booking miliknya. */
 export async function bookingFor(me: { role: string; staff_id: string | null }, appointmentId: string) {
   const { data: a } = await createAdminClient().from("appointments").select("id, customer_id, staff_id").eq("id", appointmentId).maybeSingle();
   if (!a || (me.role === "staff" && a.staff_id !== me.staff_id)) throw new HttpError(404, "Booking tidak ditemukan.");

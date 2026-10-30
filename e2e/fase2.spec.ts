@@ -246,9 +246,9 @@ test("E6 · kasir menambah Hair Spa dari saran upsell → tingkat upsell Rizky d
   await login(page, "cashier");
   await page.goto("/kasir/kasir");
   await page.getByRole("button", { name: /^Tambah Potong Rambut/ }).click();
-  await page.getByLabel("Kapster untuk Potong Rambut").selectOption({ label: "Rizky" });
+  await page.getByLabel("Capster untuk Potong Rambut").selectOption({ label: "Rizky" });
   await page.getByRole("button", { name: "Tambah", exact: true }).click(); // saran upsell: Hair Spa
-  await expect(page.getByLabel("Kapster untuk Hair Spa")).toHaveValue(STAFF.rizky);
+  await expect(page.getByLabel("Capster untuk Hair Spa")).toHaveValue(STAFF.rizky);
   await allowNoCustomer(page);
   await page.getByRole("button", { name: /Catat pembayaran/ }).click();
   await expect(page.getByRole("heading", { name: "Pembayaran tercatat" })).toBeVisible();

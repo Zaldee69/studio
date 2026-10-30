@@ -180,7 +180,7 @@ test.describe.serial("Analitik", () => {
   });
 });
 
-test("E4 · kapster mencentang 4 kelompok × 3 tahap di HP → progres manajer realtime → otorisasi → HP terkunci", async ({ page, browser }, info) => {
+test("E4 · capster mencentang 4 kelompok × 3 tahap di HP → progres manajer realtime → otorisasi → HP terkunci", async ({ page, browser }, info) => {
   test.setTimeout(120_000);
   clearSopToday();
   const g = groups();
@@ -228,7 +228,7 @@ test("E5 · batalkan Rendam tercatat undone_at; batalkan Cuci saat Rendam aktif 
   await hp.context().close();
 });
 
-test("E6 · jam 12:00 tanpa log → notifikasi ke kapster bertugas & manajer", async ({ page }) => {
+test("E6 · jam 12:00 tanpa log → notifikasi ke capster bertugas & manajer", async ({ page }) => {
   clearSopToday();
   sql(`do $$ begin
     delete from notifications where kind = 'sop_reminder';
@@ -246,7 +246,7 @@ test("E6 · jam 12:00 tanpa log → notifikasi ke kapster bertugas & manajer", a
   sql(`delete from appointments where staff_id = '${STAFF.andi}' and start_at = jkt(jkt_today(), '20:15')`);
 });
 
-test("E7 · tugas HVAC terlambat → Beranda & lonceng → manajer tandai selesai → 14 hari lagi → tambah biaya; kapster tidak melihat perawatan", async ({ page, browser }, info) => {
+test("E7 · tugas HVAC terlambat → Beranda & lonceng → manajer tandai selesai → 14 hari lagi → tambah biaya; capster tidak melihat perawatan", async ({ page, browser }, info) => {
   const name = `HVAC uji ${info.project.name}`;
   sql(`do $$ declare t uuid; begin
     insert into maintenance_tasks (name, interval_days, created_at) values ('${name}', 14, now() - interval '30 days') returning id into t;
@@ -260,7 +260,7 @@ test("E7 · tugas HVAC terlambat → Beranda & lonceng → manajer tandai selesa
     await page.getByRole("button", { name: /^Notifikasi, \d+ belum dibaca/ }).click();
     await expect(page.getByRole("dialog", { name: "Notifikasi" })).toContainText(`${name} terlambat 2 hari`);
 
-    // perawatan fasilitas khusus manajer: tab SOP kapster hanya checklist sterilisasi
+    // perawatan fasilitas khusus manajer: tab SOP capster hanya checklist sterilisasi
     const hp = await newSession(browser, info, "andi", { width: 390, height: 844 });
     await hp.goto("/kapster/sop");
     await expect(hp.getByRole("heading", { name: /SOP sterilisasi/ })).toBeVisible();

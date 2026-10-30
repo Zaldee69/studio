@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { conflictingIds, findConflicts, occupiedEnd } from "./schedule";
 
 const at = (t: string) => `2026-10-11T${t}:00+07:00`;
-// Kasus prod 11/10: potong 10.15–11.00 selesai 10.29 → walk-in 10.45 di kursi & kapster yang sama bukan bentrok.
+// Kasus prod 11/10: potong 10.15–11.00 selesai 10.29 → walk-in 10.45 di kursi & capster yang sama bukan bentrok.
 const done = { id: "1", resource_id: "k1", staff_id: "obay", start_at: at("10:15"), end_at: at("11:00"), status: "paid", service_ended_at: at("10:29") };
 const next = { id: "2", resource_id: "k1", staff_id: "obay", start_at: at("10:45"), end_at: at("11:30"), status: "booked" };
 

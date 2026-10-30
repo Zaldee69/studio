@@ -21,7 +21,7 @@ async function post(url: string, form: FormData) {
 }
 
 /**
- * Konsultasi gaya (kapster): pilih pelanggan dari booking → riwayat (potongan terakhir & rekomendasi tersimpan, tanpa AI)
+ * Konsultasi gaya (capster): pilih pelanggan dari booking → riwayat (potongan terakhir & rekomendasi tersimpan, tanpa AI)
  * → bila perlu analisis ulang dari foto → pratinjau saat diketuk → catat potongan yang dipakai. Foto hanya di memori.
  */
 export function HairConsult() {
@@ -159,7 +159,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
           <details className="rounded-[10px] border border-line p-3 text-sm" open={!stored}>
             <summary className="cursor-pointer font-semibold">Tips foto agar wajah di pratinjau tetap mirip</summary>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4A4C46]">
-              <li>Kapster yang memotret dengan <b>kamera belakang</b>, jarak ±1 meter — bukan selfie dekat.</li>
+              <li>Capster yang memotret dengan <b>kamera belakang</b>, jarak ±1 meter — bukan selfie dekat.</li>
               <li>Kepala & bahu terlihat, <b>ada ruang di atas kepala</b>; rambut tidak terpotong bingkai.</li>
               <li>Cahaya terang & merata dari depan; hindari ruangan gelap dan kilau minyak di wajah.</li>
               <li>Pelanggan <b>menatap kamera</b>, wajah lurus, ekspresi netral, mulut tertutup.</li>

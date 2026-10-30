@@ -24,7 +24,7 @@ export const daysAgo = (iso: string) => {
   return d <= 0 ? "hari ini" : d === 1 ? "kemarin" : d < 31 ? `${d} hari lalu` : `${Math.round(d / 30)} bulan lalu`;
 };
 
-/** Kartu satu gaya: pratinjau (bila ada) / foto referensi, alasan & catatan kapster, aksi. */
+/** Kartu satu gaya: pratinjau (bila ada) / foto referensi, alasan & catatan capster, aksi. */
 export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
   rec: Recommendation; big?: boolean; preview?: Preview; onPreview?: () => void; onUse?: () => void;
 }) {
@@ -66,7 +66,7 @@ export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <b className={big ? "font-display text-lg" : "text-sm"}>{rec.hair_style_name}</b>
         {rec.insight && <p className={`${big ? "text-sm" : "text-xs"} leading-relaxed`}>{rec.insight}</p>}
-        {rec.barber_note && <p className="rounded-lg bg-paper px-2.5 py-2 text-xs"><b>Catatan kapster:</b> {rec.barber_note}</p>}
+        {rec.barber_note && <p className="rounded-lg bg-paper px-2.5 py-2 text-xs"><b>Catatan capster:</b> {rec.barber_note}</p>}
         {onUse && <button type="button" onClick={onUse} className="btn-ink mt-auto h-10 rounded-[10px] text-sm">Pakai gaya ini</button>}
       </div>
     </article>

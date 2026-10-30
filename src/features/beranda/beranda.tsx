@@ -43,7 +43,7 @@ export function Beranda({ master }: { master: Master }) {
       sop: sop as { done: number; total: number; closed: boolean; approval: unknown } | null,
       tasks: ((tasks ?? []) as { name: string; status: string; days_left: number }[]).filter((t) => t.status === "overdue" || t.status === "due"),
       insight: ((ins ?? []) as { message: string; href: string }[])[0] ?? null,
-      funnel: funnel as { landing: number; booking_open: number; service: number; time: number; booked: number; online_bookings: number } | null };
+      funnel: funnel as { landing: number; booking_open: number; service_pick?: number; service: number; time: number; booked: number; online_bookings: number } | null };
   });
 
   const live = (appts ?? []).filter((a) => a.status !== "cancelled");
@@ -148,8 +148,8 @@ export function Beranda({ master }: { master: Master }) {
           <div className="flex flex-col"><span className="text-xs font-semibold text-muted">Tingkat penyelesaian booking</span>
             <b className="font-display text-[26px] tabular">{side.funnel.booking_open ? `${Math.round((side.funnel.booked / side.funnel.booking_open) * 100)}%` : "—"}</b></div>
           <ol className="flex flex-1 flex-wrap items-center gap-2 text-xs text-muted tabular" aria-label="Tahapan">
-            {([["landing", "Lihat landing"], ["booking_open", "Buka booking"], ["service", "Pilih layanan"], ["time", "Pilih jam"], ["booked", "Booking berhasil"]] as const).map(([k, l], i) => (
-              <li key={k} className="flex items-center gap-2">{i > 0 && <span aria-hidden="true">→</span>}<span className="rounded-full bg-paper px-2.5 py-1"><b className="text-ink">{side.funnel![k]}</b> {l}</span></li>
+            {([["landing", "Lihat landing"], ["booking_open", "Buka booking"], ["service_pick", "Pilih layanan"], ["service", "Lanjut ke staf"], ["time", "Pilih jam"], ["booked", "Booking berhasil"]] as const).map(([k, l], i) => (
+              <li key={k} className="flex items-center gap-2">{i > 0 && <span aria-hidden="true">→</span>}<span className="rounded-full bg-paper px-2.5 py-1"><b className="text-ink">{side.funnel![k] ?? 0}</b> {l}</span></li>
             ))}
           </ol>
         </section>

@@ -187,7 +187,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
   );
 }
 
-/** Riwayat gaya (dari menu Gaya kapster): potongan terakhir + rekomendasi tersimpan. Hanya baca. */
+/** Riwayat gaya (dari menu Gaya capster): potongan terakhir + rekomendasi tersimpan. Hanya baca. */
 function StyleHistory({ customerId, head }: { customerId: string; head: string }) {
   const { data } = useStyleHistory(customerId);
   const catalog = useCatalog();

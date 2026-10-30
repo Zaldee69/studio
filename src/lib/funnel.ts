@@ -1,7 +1,7 @@
 "use client";
 
 // Analitik ringan tanpa cookie: id sesi acak di sessionStorage, satu event per langkah per sesi.
-type Step = "landing" | "booking_open" | "service" | "time" | "booked";
+type Step = "landing" | "booking_open" | "service_pick" | "service" | "time" | "booked";
 
 function sessionId() {
   try {

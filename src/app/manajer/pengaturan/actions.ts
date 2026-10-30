@@ -12,7 +12,7 @@ export type SaveState = { error?: string; ok?: string } | undefined;
 
 // RLS sudah membatasi tulis ke manajer; pesan ramah untuk error constraint.
 function friendly(e: { code?: string; message: string }): string {
-  if (e.message.includes("staff_needs_link")) return "Akun kapster aktif wajib ditautkan ke staf.";
+  if (e.message.includes("staff_needs_link")) return "Akun capster aktif wajib ditautkan ke staf.";
   if (e.code === "23505") return "Data dengan nilai yang sama sudah ada.";
   if (e.code === "23503") return "Masih dipakai data lain — nonaktifkan saja.";
   if (e.message.includes("vouchers_code_check")) return "Kode voucher: 3–20 huruf/angka/tanda minus, tanpa spasi.";

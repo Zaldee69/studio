@@ -58,7 +58,7 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
 
   return (
     <section aria-label="Katalog lengkap"
-      // lebih lebar dari kolom halaman kapster (960px) agar 5 kolom foto tidak sempit; tetap di tengah layar
+      // lebih lebar dari kolom halaman capster (960px) agar 5 kolom foto tidak sempit; tetap di tengah layar
       className="flex w-[min(calc(100vw-1.5rem),1480px)] flex-col gap-3 self-center rounded-[14px] border border-line bg-[#F3F2EF] p-3 min-[700px]:p-5">
       <div className="text-center">
         <h2 className="font-display text-2xl font-extrabold uppercase tracking-tight min-[700px]:text-3xl">{n} model rambut</h2>

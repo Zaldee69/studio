@@ -14,7 +14,7 @@ type Group = { id: string; name: string; description: string; stages: Partial<Re
 export type SopDay = { date: string; shift: number; done: number; total: number; status: SopStatus; closed: boolean; is_today: boolean;
   approval: { by: string; at: string } | null; groups: Group[] };
 
-/** Unggah foto ke bucket privat "sop": <tanggal>/<uid>/<acak>.<ext> (kapster hanya boleh folder dirinya & hari ini). */
+/** Unggah foto ke bucket privat "sop": <tanggal>/<uid>/<acak>.<ext> (capster hanya boleh folder dirinya & hari ini). */
 export async function uploadSopPhoto(file: File, date: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

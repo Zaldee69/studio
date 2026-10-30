@@ -61,7 +61,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
 
       <dl className="grid grid-cols-2 gap-3 text-[13px] tabular">
         {[["Waktu", `${formatJam(appt.start_at)}–${formatJam(appt.end_at)} · ${appt.duration_min} mnt`], ["Tanggal", formatTanggal(appt.start_at)],
-          ["Kursi / meja", res?.name ?? "—"], ["Kapster / nail artist", staff?.name ?? "—"]].map(([k, v]) => (
+          ["Kursi / meja", res?.name ?? "—"], ["Capster / nail artist", staff?.name ?? "—"]].map(([k, v]) => (
           <div key={k} className="flex flex-col gap-0.5"><dt className="text-muted">{k}</dt><dd className="font-bold">{v}</dd></div>
         ))}
       </dl>
@@ -86,7 +86,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       )}
       {appt.change_request && !closed && (
         <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#FBF3DE] p-3 text-[13px] text-[#5A4300]">
-          <span><b>{staff?.name ?? "Kapster"} minta ubah jadwal:</b> “{appt.change_request}”</span>
+          <span><b>{staff?.name ?? "Capster"} minta ubah jadwal:</b> “{appt.change_request}”</span>
           <span className="text-xs">Pindahkan lewat <b>Ubah booking</b> — permintaan otomatis selesai.</span>
           <button onClick={onDismissRequest} className="self-start rounded-lg border border-[#E8D6A6] bg-white/60 px-3 py-2 text-xs font-bold">Tandai sudah ditangani</button>
         </div>
@@ -114,7 +114,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
                   <button key={st} aria-pressed={on} disabled={!online} onClick={() => !on && onStatus(st)}
                     className="flex h-11 items-center justify-center gap-1.5 rounded-[10px] border-2 text-[13px] font-bold disabled:opacity-50"
                     style={{ borderColor: on ? S.dot : "#E5E5E0", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#1F2320" }}>
-                    <span className="size-2 rounded-full" style={{ background: S.dot }} />{st === "booked" ? "Booked" : S.short}
+                    <span className="size-2 rounded-full" style={{ background: S.dot }} />{st === "booked" ? "Terjadwal" : S.short}
                   </button>
                 );
               })}
@@ -138,7 +138,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
           {rejecting ? (
             <form onSubmit={(e) => { e.preventDefault(); onReview(false, rejectReason.trim()); }} className="flex flex-col gap-2">
               <label htmlFor="rej-reason" className="text-xs font-bold text-muted">Alasan (dikirim ke pelanggan)</label>
-              <input id="rej-reason" className="input" autoFocus value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Mis. kapster berhalangan" />
+              <input id="rej-reason" className="input" autoFocus value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Mis. capster berhalangan" />
               <div className="flex gap-2">
                 <button type="button" onClick={() => setRejecting(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
                 <button disabled={!online} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Tolak booking</button>

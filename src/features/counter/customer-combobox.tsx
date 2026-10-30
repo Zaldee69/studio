@@ -5,8 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import type { Customer } from "./types";
 
 /** Cari pelanggan lama berdasarkan nama / no. WA; hasil muncul saat mengetik. */
-export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus }: {
+export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus, onCreate }: {
   id: string; value: Customer | null; onChange: (c: Customer | null) => void; emptyLabel: string; autoFocus?: boolean;
+  /** Tidak ditemukan → tawarkan "Tambah … sebagai pelanggan baru" dengan teks yang diketik sebagai isian awal. */
+  onCreate?: (query: string) => void;
 }) {
   const [q, setQ] = useState("");
   const [res, setRes] = useState<{ q: string; list: Customer[] }>({ q: "", list: [] });
@@ -44,7 +46,7 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus }:
   return (
     <div className="relative">
       <input id={id} role="combobox" aria-expanded={open && list.length > 0} aria-controls={listId} aria-autocomplete="list"
-        autoComplete="off" autoFocus={autoFocus} placeholder={`${emptyLabel} — ketik nama / no. WA untuk mencari`}
+        autoComplete="off" autoFocus={autoFocus} placeholder={emptyLabel}
         value={q} className="input"
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -57,7 +59,10 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus }:
       {open && term.length >= 2 && (
         <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-xl border border-line bg-card py-1 shadow-[0_12px_32px_rgba(28,27,25,0.14)]">
           {res.q !== term ? <li className="px-3 py-2.5 text-sm text-muted">Mencari…</li>
-            : !list.length ? <li className="px-3 py-2.5 text-sm text-muted">Tidak ditemukan.</li>
+            : !list.length ? (onCreate
+              ? <li role="option" aria-selected="true" onMouseDown={(e) => { e.preventDefault(); onCreate(term); setQ(""); setOpen(false); }}
+                  className="flex min-h-11 cursor-pointer items-center bg-paper px-3 py-2 text-sm"><span>Tidak ditemukan. <b>+ Tambah &ldquo;{term}&rdquo; sebagai pelanggan baru</b></span></li>
+              : <li className="px-3 py-2.5 text-sm text-muted">Tidak ditemukan.</li>)
             : list.map((c, i) => (
               <li key={c.id} role="option" aria-selected={i === hi}
                 onMouseDown={(e) => { e.preventDefault(); pick(c); }}

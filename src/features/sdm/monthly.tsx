@@ -147,7 +147,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
           <h2 className="flex-1 font-display text-xl font-bold">Tutup periode {monthLabel(month)}</h2><CloseButton onClick={() => setClosing(false)} />
         </div>
         <div className="flex flex-col gap-3 p-5">
-          <p className="text-sm text-muted">Angka dibekukan sebagai final: slip gaji terbentuk, tab Komisi kapster menampilkan <b>Final</b>, dan void transaksi bulan ini dikunci sampai periode dibuka ulang.</p>
+          <p className="text-sm text-muted">Angka dibekukan sebagai final: slip gaji terbentuk, tab Komisi capster menampilkan <b>Final</b>, dan void transaksi bulan ini dikunci sampai periode dibuka ulang.</p>
           <table className="w-full text-sm tabular">
             <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-bold">{formatRupiah(r.total_pay)}</td></tr>)}
               <tr className="border-t-2 border-ink font-bold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>

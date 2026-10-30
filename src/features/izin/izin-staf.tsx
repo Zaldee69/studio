@@ -76,7 +76,7 @@ export function IzinStaf({ master }: { master: Master }) {
                   </div>
                   {!!cf.length && (
                     <div role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
-                      <b>{cf.length} booking terdampak</b> — pindahkan ke kapster lain:
+                      <b>{cf.length} booking terdampak</b> — pindahkan ke capster lain:
                       <ul className="mt-1 list-inside list-disc">
                         {cf.map((c) => <li key={c.id} className="tabular">{c.customer_name} · {formatTanggal(c.start_at)} {formatJam(c.start_at)}</li>)}
                       </ul>

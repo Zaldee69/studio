@@ -8,8 +8,10 @@ import { createClient } from "@/lib/supabase/client";
 import type { Customer } from "./types";
 
 /** Form pelanggan baru (kasir & menu Pelanggan). "Tahu dari mana?" wajib — dasar laporan campaign. */
-export function NewCustomer({ online, onClose, onSaved }: { online: boolean; onClose: () => void; onSaved: (c: Customer) => void }) {
-  const [f, setF] = useState({ name: "", wa: "", notes: "", source: "" as CustomerSource | "" });
+export function NewCustomer({ online, onClose, onSaved, initial = "" }: { online: boolean; onClose: () => void; onSaved: (c: Customer) => void; initial?: string }) {
+  // isian awal dari pencarian kasir: angka → No. WA, selain itu → nama
+  const isNum = /^[\d\s+-]{6,}$/.test(initial.trim());
+  const [f, setF] = useState({ name: isNum ? "" : initial.trim(), wa: isNum ? initial.trim() : "", notes: "", source: "" as CustomerSource | "" });
   const [error, setError] = useState("");
   async function save() {
     setError("");

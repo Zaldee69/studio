@@ -19,12 +19,12 @@ import Link from "next/link";
 import { floorStaff, staffNow } from "./now";
 import { WalkInForm } from "./walk-in";
 
-// Pilihan tampilan (per kursi / per kapster) diingat per perangkat; server selalu "kursi" (tanpa beda hidrasi).
+// Pilihan tampilan (per kursi / per capster) diingat per perangkat; server selalu "kursi" (tanpa beda hidrasi).
 const VIEW_KEY = "jadwal-view";
 const viewSubs = new Set<() => void>();
 const subscribeView = (cb: () => void) => { viewSubs.add(cb); return () => { viewSubs.delete(cb); }; };
-const readView = (): "kursi" | "kapster" => { try { return localStorage.getItem(VIEW_KEY) === "kapster" ? "kapster" : "kursi"; } catch { return "kursi"; } };
-const pickView = (v: "kursi" | "kapster") => { try { localStorage.setItem(VIEW_KEY, v); } catch { /* opsional */ } viewSubs.forEach((f) => f()); };
+const readView = (): "kursi" | "capster" => { try { return localStorage.getItem(VIEW_KEY) === "capster" ? "capster" : "kursi"; } catch { return "kursi"; } };
+const pickView = (v: "kursi" | "capster") => { try { localStorage.setItem(VIEW_KEY, v); } catch { /* opsional */ } viewSubs.forEach((f) => f()); };
 
 const nowMinutes = () => jktMinutes(new Date());
 function useNowMin() {
@@ -65,14 +65,14 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
     ...(date === today ? appts.filter((a) => a.resource_id === resId && (a.status === "in_service" || a.status === "arrived")).map((a) => a.staff_id) : []),
     ...master.staff.filter((s) => s.active && s.home_resource_id === resId).map((s) => s.id),
   ])].map((id) => master.staff.find((s) => s.id === id)?.name).filter(Boolean).join(", ");
-  /** Kolom grid: per kursi/bed (default) atau per kapster (kartu = booking staf itu di kursi mana pun). */
-  const cols = view === "kapster"
+  /** Kolom grid: per kursi/bed (default) atau per capster (kartu = booking staf itu di kursi mana pun). */
+  const cols = view === "capster"
     ? [...floorStaff(master).map((s) => {
         const home = master.resources.find((r) => r.id === s.home_resource_id) ?? master.resources.find((r) => r.type === s.category);
         return { id: s.id, title: s.name, label: CAT_STYLE[s.category].label, tone: CAT_STYLE[s.category], sub: home?.name ?? "—",
           resourceId: home?.id ?? "", staffId: s.id as string | undefined, has: (a: DayAppt) => a.staff_id === s.id };
       }),
-      ...(appts.some((a) => !a.staff_id) ? [{ id: "-", title: "Tanpa kapster", label: "—", tone: { bg: "#EFEFEB", fg: "#4A4C46" }, sub: "",
+      ...(appts.some((a) => !a.staff_id) ? [{ id: "-", title: "Tanpa capster", label: "—", tone: { bg: "#EFEFEB", fg: "#4A4C46" }, sub: "",
         resourceId: master.resources[0]?.id ?? "", staffId: undefined, has: (a: DayAppt) => !a.staff_id }] : [])]
     : master.resources.map((r) => ({ id: r.id, title: r.name, label: r.is_pedicure ? "Pedicure" : CAT_STYLE[r.type].label, tone: CAT_STYLE[r.type],
         sub: chairStaff(r.id) || "—", resourceId: r.id, staffId: undefined as string | undefined, has: (a: DayAppt) => a.resource_id === r.id }));
@@ -177,7 +177,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
       )}
 
       <div role="radiogroup" aria-label="Tampilan jadwal" className="flex self-start rounded-[10px] bg-paper p-1">
-        {([["kursi", "Per kursi"], ["kapster", "Per kapster"]] as const).map(([v, l]) => (
+        {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
           <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
             className={`h-9 rounded-lg px-3.5 text-[13px] font-bold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
         ))}
@@ -219,7 +219,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                   {appts.filter(c.has).map((a) => (
                     <ApptCard key={a.id} a={a} master={master} top={(jktMinutes(a.start_at) - gOpen) * px} h={Math.max(((occupiedEnd(a) - Date.parse(a.start_at)) / 60_000) * px, 40)}
                       conflict={conflicts.has(a.id)} off={!!offFor(a)} selected={a.id === selId} onOpen={() => setSelId(a.id)} onQuick={() => quick(a)}
-                      payHref={`${master.base}/kasir?booking=${a.id}`} who={view === "kapster" ? master.resources.find((r) => r.id === a.resource_id)?.name : undefined} />
+                      payHref={`${master.base}/kasir?booking=${a.id}`} who={view === "capster" ? master.resources.find((r) => r.id === a.resource_id)?.name : undefined} />
                   ))}
                 </div>
               ))}
@@ -263,7 +263,7 @@ const NEXT_LABEL: Partial<Record<ApptStatus, string>> = { booked: "Datang", arri
 
 function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick, payHref, who }: {
   a: DayAppt; master: Master; top: number; h: number; conflict: boolean; off: boolean; selected: boolean; onOpen: () => void; onQuick: () => void; payHref: string;
-  who?: string; // tampilan per kapster: nama kursi menggantikan nama staf di kartu
+  who?: string; // tampilan per capster: nama kursi menggantikan nama staf di kartu
 }) {
   const S = STATUS[a.status];
   const press = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -277,7 +277,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
   return (
     <div className="absolute inset-x-1 z-[1]" style={{ top, height: h }}>
     <button
-      aria-label={`${apptName(a)}, ${formatJam(a.start_at)}–${formatJam(new Date(occupiedEnd(a)))}, ${staff}, ${S.label}${conflict ? ", bentrok" : ""}${a.change_request ? ", minta ubah jadwal" : ""}${off ? ", kapster izin" : ""}`}
+      aria-label={`${apptName(a)}, ${formatJam(a.start_at)}–${formatJam(new Date(occupiedEnd(a)))}, ${staff}, ${S.label}${conflict ? ", bentrok" : ""}${a.change_request ? ", minta ubah jadwal" : ""}${off ? ", capster izin" : ""}`}
       onClick={() => { if (!long.current) onOpen(); long.current = false; }}
       onContextMenu={(e) => { e.preventDefault(); onQuick(); }}
       onPointerDown={(e) => { if (e.pointerType !== "mouse") press.current = setTimeout(() => { long.current = true; onQuick(); }, 550); }}
@@ -294,8 +294,9 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
         {a.change_request && <span className="rounded bg-[#B25E00] px-1.5 text-[10px] font-bold text-white">Minta ubah</span>}
         {off && <span className="rounded bg-[#4A4C46] px-1.5 text-[10px] font-bold text-white">Izin</span>}
       </span>
-      <span className="truncate text-[11px] tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {who ?? staff}</span>
-      <span className="truncate text-[11px] opacity-85">{svc}</span>
+      {/* kartu pendek (≤ ±30 menit): cukup nama; jam & layanan ada di detail (audit 30 Okt) */}
+      {h >= 56 && <span className="truncate text-xs tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {who ?? staff}</span>}
+      {h >= 72 && <span className="truncate text-xs opacity-85">{svc}</span>}
     </button>
     {action && <button onClick={onQuick} aria-label={`${action} ${apptName(a)}`} className={`${pill} bg-ink text-white`}>{action} ▸</button>}
     {a.status === "completed" && <Link href={payHref} aria-label={`Bayar ${apptName(a)}`} className={`${pill} bg-[#A12A2A] text-white`}>Bayar ▸</Link>}
@@ -303,7 +304,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
   );
 }
 
-/** Ringkasan hari ini per kapster: sedang melayani / kosong / izin, berikutnya, dan tagihan yang belum dibayar. */
+/** Ringkasan hari ini per capster: sedang melayani / kosong / izin, berikutnya, dan tagihan yang belum dibayar. */
 function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
   master: Master; appts: DayAppt[]; offs: TimeOffRow[]; onStatus: (a: DayAppt, s: ApptStatus) => void; onOpen: (id: string) => void; onWalkIn: (staffId: string) => void;
 }) {

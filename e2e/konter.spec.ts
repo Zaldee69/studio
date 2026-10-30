@@ -23,7 +23,7 @@ test("1 · walk-in dari slot kosong → status sampai Selesai → bayar tunai + 
   await expect(page.getByRole("status").filter({ hasText: /disimpan/ })).toBeHidden(); // toast bisa menutupi kartu di bawah layar
   await card(page, name).click();
   for (const s of ["Datang", "Mulai", "Selesai"]) await page.getByRole("button", { name: s, exact: true }).click();
-  await expect(card(manager, name)).toHaveAccessibleName(/Selesai\/Belum Bayar/);
+  await expect(card(manager, name)).toHaveAccessibleName(/Selesai, belum bayar/);
 
   // tap 4: proses bayar, tap 5: nominal cepat, tap 6: catat pembayaran
   await page.getByRole("link", { name: "Proses bayar di Kasir" }).click();

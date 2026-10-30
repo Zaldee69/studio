@@ -9,9 +9,9 @@ import { createClient } from "@/lib/supabase/server";
 import { BRAND_INITIALS } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: { default: `${BRAND_INITIALS} Kapster`, template: `%s · ${BRAND_INITIALS} Kapster` },
+  title: { default: `${BRAND_INITIALS} Capster`, template: `%s · ${BRAND_INITIALS} Capster` },
   manifest: "/kapster.webmanifest",
-  appleWebApp: { capable: true, title: `${BRAND_INITIALS} Kapster`, statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: `${BRAND_INITIALS} Capster`, statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/kapster-192.png" },
 };
 export const viewport: Viewport = { themeColor: "#1F2320" };
@@ -25,7 +25,7 @@ export default async function KapsterLayout({ children }: LayoutProps<"/kapster"
     supabase.from("services").select("id, name, duration_min").order("sort"),
   ]);
   const me = {
-    name: p.full_name || staff?.name || "Kapster", staffId: p.staff_id!, category: staff?.category ?? "barbershop",
+    name: p.full_name || staff?.name || "Capster", staffId: p.staff_id!, category: staff?.category ?? "barbershop",
     station: !!store.get(STATION_COOKIE) && !!store.get(STATION_ACTIVE),
   };
   return (

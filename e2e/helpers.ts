@@ -21,7 +21,7 @@ export async function login(page: Page, who: keyof typeof USERS) {
   await page.waitForURL((u) => u.pathname !== "/login");
 }
 
-/** Sesi tambahan (mis. layar kasir di samping HP kapster); default ukuran laptop. */
+/** Sesi tambahan (mis. layar kasir di samping HP capster); default ukuran laptop. */
 export async function newSession(browser: Browser, info: TestInfo, who: keyof typeof USERS, viewport = { width: 1366, height: 768 }) {
   const ctx = await browser.newContext({ ...info.project.use, viewport, hasTouch: false, isMobile: false });
   const page = await ctx.newPage();

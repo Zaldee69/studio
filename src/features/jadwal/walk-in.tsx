@@ -15,8 +15,8 @@ import { walkInTurn } from "./turn";
 type Conflict = { customer_name: string; start_at: string; end_at: string; resource_name: string };
 
 /**
- * Walk-in sekarang: pilih kapster (default yang kosong) → layanan → Mulai. Booking dibuat mulai saat ini dan langsung
- * "Sedang dilayani" (tanpa Booked/Datang — pelanggannya sudah di depan kasir). Kursi: kursi milik kapster, atau yang kosong.
+ * Walk-in sekarang: pilih capster (default yang kosong) → layanan → Mulai. Booking dibuat mulai saat ini dan langsung
+ * "Sedang dilayani" (tanpa Booked/Datang — pelanggannya sudah di depan kasir). Kursi: kursi milik capster, atau yang kosong.
  */
 export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone }: {
   master: Master; appts: DayAppt[]; offs: TimeOffRow[]; initialStaff?: string | null; onClose: () => void; onDone: () => void;
@@ -44,7 +44,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
   const dur = sel.reduce((a, id) => a + (master.services.find((s) => s.id === id)?.duration_min ?? 0), 0) || 30;
   const price = sel.reduce((a, id) => a + (master.services.find((s) => s.id === id)?.price ?? 0), 0);
 
-  /** Kursi milik kapster bila kosong sekarang, selain itu kursi sekategori yang kosong, selain itu kursi milik kapster. */
+  /** Kursi milik capster bila kosong sekarang, selain itu kursi sekategori yang kosong, selain itu kursi milik capster. */
   function pickResource(startIso: string, endIso: string) {
     const pool = master.resources.filter((r) => r.type === cat)
       .sort((x, y) => Number(y.id === who?.home_resource_id) - Number(x.id === who?.home_resource_id));
@@ -119,7 +119,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
 
       <div className="grid grid-cols-1 gap-3 min-[560px]:grid-cols-2">
         <Field label="Pelanggan terdaftar (opsional)" htmlFor="wi-cust">
-          <CustomerCombobox id="wi-cust" value={customer} onChange={setCustomer} emptyLabel="Cari nama / no. WA" />
+          <CustomerCombobox id="wi-cust" value={customer} onChange={setCustomer} emptyLabel="Cari nama / no. WA pelanggan" />
         </Field>
         {!customer && (
           <Field label="Nama panggilan (opsional)" htmlFor="wi-guest">

@@ -40,7 +40,7 @@ const PRIMARY: Record<(typeof FLOW)[number], [string, string]> = {
   waktu: ["Lanjut konfirmasi", "Lanjut"], konfirmasi: ["Konfirmasi booking", "Konfirmasi"],
 };
 const CAT: Record<Cat, { label: string; world: string; staffTitle: string; staffSub: string }> = {
-  barbershop: { label: "Barbershop", world: "Barbershop", staffTitle: "Kapster barbershop", staffSub: "Barber" },
+  barbershop: { label: "Barbershop", world: "Barbershop", staffTitle: "Capster barbershop", staffSub: "Barber" },
   nail: { label: "Nail Art", world: "Nail Art", staffTitle: "Nail artist", staffSub: "Nail artist" },
   massage: { label: "Pijat", world: "Pijat & refleksi", staffTitle: "Terapis pijat", staffSub: "Terapis" },
 };
@@ -310,7 +310,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             {first(cust.name)}
           </Link>
         ) : (
-          <button onClick={openLogin} className="btn-line">Masuk</button>
+          <button onClick={openLogin} className="flex min-h-11 items-center px-2 text-sm text-dust underline-offset-4 hover:text-cream hover:underline">Masuk</button>
         )}
       />
 
@@ -355,28 +355,21 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           {notice && inFlow && <p role="status" className="border border-gold/50 bg-lux-3 px-3.5 py-3 text-sm text-sand">{notice}</p>}
           {view === "layanan" && (
             <>
-              <section className="relative flex flex-col gap-5 overflow-hidden border border-rule bg-lux-2 p-6 min-[900px]:p-10">
-                <span className="eyebrow flex items-center gap-3.5"><span className="h-px w-10 bg-gold" />Reservasi online</span>
-                <h1 className="font-serif text-[44px] font-normal leading-[0.95] min-[900px]:text-[64px]">
-                  For Every <i className="text-gold">You.</i>
-                </h1>
-                <span className="text-[15px] text-sand">Barbershop • Nail Art • Lashes{shop.address && ` · ${shop.address}`}</span>
-                <div className="flex flex-wrap gap-2">
-                  <span className="flex h-8 items-center gap-2 border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">
-                    <OpenNow hours={hours} closures={closures} />
-                  </span>
-                  <span className="flex h-8 items-center border border-rule-2 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-dust">Bayar di tempat · Tunai / QRIS</span>
-                </div>
+              {/* ringkas: daftar layanan harus terlihat di layar pertama HP (audit 30 Okt: 13 dari 16 berhenti di sini) */}
+              <div className="flex flex-col gap-3">
+                <h1 className="font-serif text-[36px] font-normal leading-none min-[900px]:text-[48px]">Pilih layanan</h1>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-dust">
+                  <OpenNow hours={hours} closures={closures} /><span aria-hidden="true">·</span><span>Bayar di tempat, tunai atau QRIS</span>
+                </p>
                 {promoNow && <div role="note" className="rounded-xl bg-rose/45 px-4 py-3 text-sm leading-relaxed text-cream">
                   <b className="font-semibold">Diskon {shop.promo.pct}% untuk booking online.</b> Berlaku untuk booking lewat website sampai {formatTanggal(`${shop.promo.end}T12:00:00+07:00`)}. Potongan langsung saat bayar di studio — tidak perlu kode promo.
                 </div>}
                 {bundleOpen && <div className="border-l border-gold bg-lux-3 px-4 py-3 text-sm font-light leading-relaxed text-sand">
                   <span className="font-serif text-lg italic text-gold">Paket barbershop + nail</span> — hemat {shop.bundlePct}% bila memesan barbershop + nail sekaligus, cocok untuk pasangan.
                 </div>}
-              </section>
+              </div>
 
               <div className="flex flex-col gap-5">
-                <h2 className={h2}>Pilih <i className="text-gold">ritual</i> Anda</h2>
                 <div role="tablist" aria-label="Kategori" className="flex gap-2">
                   {openCats.map((c) => (
                     <button key={c} role="tab" aria-selected={cat === c} onClick={() => setCat(c)}
@@ -390,7 +383,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                     const on = sel.includes(s.id);
                     return (
                       <button key={s.id} aria-pressed={on}
-                        onClick={() => { setSel(on ? sel.filter((i) => i !== s.id) : [...sel, s.id]); setTime(""); resetReq(); }}
+                        onClick={() => { if (!on) track("service_pick"); setSel(on ? sel.filter((i) => i !== s.id) : [...sel, s.id]); setTime(""); resetReq(); }}
                         className={`flex min-h-[84px] items-center gap-4 border-b border-rule px-2 py-4 text-left transition ${on ? "bg-lux-3" : "hover:bg-lux-2"}`}>
                         <span className="flex min-w-0 flex-1 flex-col gap-1">
                           <span className="flex items-baseline gap-2.5 tabular-nums">
@@ -455,7 +448,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                     })}
                   </div>
                   {pick[c] && offIds.includes(pick[c]) && (
-                    <p role="status" className="text-[13px] text-sand">{staff.find((s) => s.id === pick[c])?.name} sedang izin di {longDate(date)} — pilih kapster lain atau &quot;Siapa saja&quot;.</p>
+                    <p role="status" className="text-[13px] text-sand">{staff.find((s) => s.id === pick[c])?.name} sedang izin di {longDate(date)} — pilih capster lain atau &quot;Siapa saja&quot;.</p>
                   )}
                 </div>
               ))}

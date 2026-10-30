@@ -2,7 +2,7 @@ import { expect, test, type Browser, type Page, type TestInfo } from "@playwrigh
 import { withFakeWablas } from "./fake-wablas";
 import { admin, newSession, randomWa, uniq } from "./helpers";
 
-// Tahap 3 — wajah publik: landing → booking online → konter/HP kapster, bentrok slot, pelanggan lama, mode tinjau.
+// Tahap 3 — wajah publik: landing → booking online → konter/HP capster, bentrok slot, pelanggan lama, mode tinjau.
 // Semua di tanggal H+2/H+3 supaya tidak bergantung jam saat tes jalan.
 
 const jkt = (plusDays: number) => new Date(Date.now() + plusDays * 86_400_000).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
@@ -86,7 +86,7 @@ test("1 · landing → Reservasi Barbershop → Potong Rambut → tamu → sukse
   const cards = kasir.getByRole("button", { name: new RegExp(`^${name},`) });
   await expect(cards).toHaveCount(1);
   await expect(cards.first()).toContainText("Online");
-  // HP kapster yang ditunjuk (Andi)
+  // HP capster yang ditunjuk (Andi)
   await expect(andi.getByText(name, { exact: true })).toBeVisible();
 });
 
@@ -170,7 +170,7 @@ test("5 · mode tinjau → booking menunggu → kasir Terima → status pelangga
     await cardEl.click();
     await kasir.getByRole("button", { name: "Terima" }).click();
     await expect(kasir.getByText(/diterima/)).toBeVisible();
-    await expect(cardEl).toHaveAccessibleName(/Booked/);
+    await expect(cardEl).toHaveAccessibleName(/Terjadwal/);
 
     await p.reload();
     await expect(p.getByText(/Terjadwal/)).toBeVisible();

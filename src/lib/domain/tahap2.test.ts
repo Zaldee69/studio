@@ -4,7 +4,7 @@ import type { ApptStatus } from "./status";
 
 const a = (id: string, status: ApptStatus, hh: string) => ({ id, status, start_at: `2026-10-01T${hh}:00+07:00` });
 
-describe("kapster: pelanggan berikutnya", () => {
+describe("capster: pelanggan berikutnya", () => {
   const today = [a("1", "booked", "13:00"), a("2", "booked", "10:00"), a("3", "arrived", "11:00"), a("4", "completed", "09:00")];
   it("in_service → arrived → booked terdekat; pilihan manual menang", () => {
     expect(pickCurrent(today, null)?.id).toBe("3");
@@ -15,7 +15,7 @@ describe("kapster: pelanggan berikutnya", () => {
   });
 });
 
-describe("kapster: transisi & koreksi", () => {
+describe("capster: transisi & koreksi", () => {
   it("maju/mundur satu langkah, tidak pernah ke paid", () => {
     expect(staffCanMove("booked", "arrived")).toBe(true);
     expect(staffCanMove("in_service", "completed")).toBe(true);
@@ -42,7 +42,7 @@ describe("kapster: transisi & koreksi", () => {
   });
 });
 
-describe("kapster: komisi & izin", () => {
+describe("capster: komisi & izin", () => {
   it("estimasi komisi hari ini (zona Jakarta)", () => {
     const items = [
       { created_at: "2026-10-01T02:00:00Z", commission: 26480 },   // 09.00 WIB 1 Okt

@@ -24,7 +24,7 @@ export function MaintenanceChip({ t }: { t: Pick<Task, "status" | "days_left"> }
   return <span className="whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: s.bg, color: s.fg }}><span aria-hidden="true">{s.icon} </span>{maintenanceLabel(t.days_left)}</span>;
 }
 
-/** Kartu tugas perawatan. Manajer: ubah tugas, isi biaya/vendor, tambah & nonaktifkan. Kapster: tandai selesai saja. */
+/** Kartu tugas perawatan. Manajer: ubah tugas, isi biaya/vendor, tambah & nonaktifkan. Capster: tandai selesai saja. */
 export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?: { id: string; name: string }[] }) {
   const toast = useToast(); const online = useOnline();
   const { data, refresh } = useMaintenance();

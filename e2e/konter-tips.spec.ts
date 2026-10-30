@@ -7,7 +7,7 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
-  const staff = cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ });
+  const staff = cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ });
   await staff.selectOption({ index: 1 });
   const staffName = (await staff.locator("option:checked").innerText()).trim();
   await cart.getByRole("radio", { name: "QRIS" }).click();
@@ -43,7 +43,7 @@ test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak 
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
-  await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
   await cart.getByRole("radio", { name: "Transfer" }).click();
   await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
@@ -65,7 +65,7 @@ test("bayar campuran: sebagian tunai + sisanya QRIS → struk & riwayat", async 
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
-  await cart.getByRole("combobox", { name: /Kapster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
   await cart.getByRole("radio", { name: "QRIS" }).click();
   await cart.getByLabel("No. referensi QRIS").fill(ref);
   await cart.getByLabel("Sebagian dibayar tunai (opsional)").fill("5000");

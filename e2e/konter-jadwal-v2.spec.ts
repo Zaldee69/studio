@@ -19,13 +19,13 @@ test("form booking: kursi/kapster/jam di atas, layanan per tab + cari lintas kat
   await expect(form.getByRole("tab", { name: /Barbershop1/ })).toBeVisible(); // jumlah dipilih di tab
 });
 
-test("jadwal per kapster: kolom = staf, pilihan diingat", async ({ page }) => {
+test("jadwal per capster: kolom = staf, pilihan diingat", async ({ page }) => {
   await login(page, "cashier");
   await page.goto("/kasir/jadwal");
-  await page.getByRole("radio", { name: "Per kapster" }).click();
+  await page.getByRole("radio", { name: "Per capster" }).click();
   await expect(page.getByRole("button", { name: /^Booking baru Rizky \d\d:\d\d$/ }).first()).toBeAttached();
   await page.reload();
-  await expect(page.getByRole("radio", { name: "Per kapster", checked: true })).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Per capster", checked: true })).toBeVisible();
   await page.getByRole("radio", { name: "Per kursi" }).click();
   await expect(page.getByRole("button", { name: /^Booking baru Kursi Barber 1 \d\d:\d\d$/ }).first()).toBeAttached();
 });

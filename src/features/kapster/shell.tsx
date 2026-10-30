@@ -15,7 +15,7 @@ import { BRAND_INITIALS } from "@/lib/brand";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 const BASE_TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
-// Konsultasi gaya rambut hanya untuk kapster barbershop
+// Konsultasi gaya rambut hanya untuk capster barbershop
 const tabsFor = (cat: Cat): readonly (readonly [string, string])[] =>
   cat === "barbershop" ? [...BASE_TABS.slice(0, 2), ["/kapster/gaya", "Gaya"], ...BASE_TABS.slice(2)] : BASE_TABS;
 const IDLE_MS = 5 * 60 * 1000;
@@ -59,7 +59,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
     return d && !d.closed && d.done < d.total ? 1 : 0;
   });
   const badge = (href: string) => (href === "/kapster" ? queue : href === "/kapster/sop" ? sop ?? 0 : 0);
-  const role = me.category === "barbershop" ? "Kapster barbershop" : STAFF_TITLE[me.category];
+  const role = me.category === "barbershop" ? "Capster barbershop" : STAFF_TITLE[me.category];
 
   async function togglePush() {
     if (push) { await disablePush(); setPush(false); toast("Notifikasi push dimatikan"); return; }
@@ -75,7 +75,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
           <b className="truncate text-base">Halo, {me.name.split(" ")[0]}</b>
           <span className="truncate text-xs text-muted">{role} · {formatTanggal(new Date())}</span>
         </span>
-        <nav aria-label="Menu kapster" className="hidden gap-1 min-[900px]:flex">
+        <nav aria-label="Menu capster" className="hidden gap-1 min-[900px]:flex">
           {TABS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
               className={`relative flex h-10 items-center rounded-[10px] px-3.5 text-sm font-bold ${path === href ? "bg-[#ECEEE8] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
@@ -107,14 +107,14 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
         {me.station ? (
-          <form action={stationLogout}><button className="h-10 rounded-[10px] bg-paper px-3 text-[13px] font-bold text-ink">Ganti kapster</button></form>
+          <form action={stationLogout}><button className="h-10 rounded-[10px] bg-paper px-3 text-[13px] font-bold text-ink">Ganti capster</button></form>
         ) : (
           <form action={signOut}><button aria-label={`Keluar dari akun ${me.name}`} className="h-10 rounded-[10px] border border-line px-3 text-[13px] font-bold text-muted hover:text-ink">Keluar</button></form>
         )}
       </header>
       <OfflineBanner />
       <main className="mx-auto flex w-full max-w-[960px] flex-1 flex-col gap-4 px-4 pb-28 pt-4 min-[900px]:pb-8">{children}</main>
-      <nav aria-label="Menu kapster" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-20 grid h-[72px] border-t border-line bg-card min-[900px]:hidden">
+      <nav aria-label="Menu capster" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-20 grid h-[72px] border-t border-line bg-card min-[900px]:hidden">
         {TABS.map(([href, label]) => (
           <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
             className={`relative flex flex-col items-center justify-center gap-1 text-xs font-bold ${path === href ? "text-ink" : "text-muted"}`}>

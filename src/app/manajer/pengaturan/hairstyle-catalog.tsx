@@ -41,7 +41,7 @@ export function HairstyleCatalog() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <p className="flex-1 text-sm text-muted">Dipakai kapster di menu <b>Gaya</b>. Model hanya direkomendasikan bila aktif & punya foto referensi (utamakan foto depan + samping).</p>
+        <p className="flex-1 text-sm text-muted">Dipakai capster di menu <b>Gaya</b>. Model hanya direkomendasikan bila aktif & punya foto referensi (utamakan foto depan + samping).</p>
         <button onClick={() => setEditing("new")} className="btn-ink h-11">+ Tambah model</button>
       </div>
       {!data ? <Empty>Memuat…</Empty> : !data.length ? <Empty>Belum ada model.</Empty> : (
@@ -178,7 +178,7 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
           <textarea id="hs-points" rows={4} className="input py-2" value={points} onChange={(e) => setPoints(e.target.value)} />
         </Field>
         <Field label="Karakter gaya (pisahkan koma)" htmlFor="hs-char"><input id="hs-char" className="input" placeholder="modern, clean" value={chars} onChange={(e) => setChars(e.target.value)} /></Field>
-        <Field label="Catatan potong (opsional)" htmlFor="hs-notes" hint="Mis. guard sisi, tinggi fade — boleh dikutip di catatan kapster.">
+        <Field label="Catatan potong (opsional)" htmlFor="hs-notes" hint="Mis. guard sisi, tinggi fade — boleh dikutip di catatan capster.">
           <textarea id="hs-notes" rows={2} className="input py-2" value={f.cut_notes} onChange={(e) => set("cut_notes", e.target.value)} />
         </Field>
         <div className="grid grid-cols-2 gap-3">

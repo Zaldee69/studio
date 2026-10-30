@@ -18,7 +18,7 @@ import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 export type FormInit = {
   date: string; startMin: number; resourceId: string;
   appt?: DayAppt; customer?: Customer | null;
-  staffId?: string; // dari tampilan per kapster
+  staffId?: string; // dari tampilan per capster
 };
 type Source = "walk_in" | "whatsapp" | "admin";
 type Conflict = { id: string; start_at: string; end_at: string; customer_name: string; staff_name: string | null; resource_name: string };
@@ -275,7 +275,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       ) : (
         <>
           <Field label="Pelanggan" htmlFor="f-cust">
-            <CustomerCombobox id="f-cust" value={customer} onChange={(c) => { setCustomer(c); setServerConflicts(null); }} emptyLabel="Pelanggan baru" />
+            <CustomerCombobox id="f-cust" value={customer} onChange={(c) => { setCustomer(c); setServerConflicts(null); }} emptyLabel="Cari nama / no. WA pelanggan" />
           </Field>
           {!customer && (
             <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">

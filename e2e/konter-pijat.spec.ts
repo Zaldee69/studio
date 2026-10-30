@@ -10,7 +10,7 @@ test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; tidak
     await page.getByRole("tab", { name: "Pijat" }).click();
     await page.getByRole("button", { name: /Tambah Pijat Fullbody \+ Kop/ }).click();
     const pick = page.getByLabel("Terapis pijat untuk Pijat Fullbody + Kop");
-    await expect(pick.getByRole("option", { name: "Andi" })).toHaveCount(0); // kapster barbershop tidak bisa dipilih
+    await expect(pick.getByRole("option", { name: "Andi" })).toHaveCount(0); // capster barbershop tidak bisa dipilih
     await pick.selectOption({ label: terapis });
     await expect(page.getByText(/untuk diskon paket/)).toHaveCount(0);      // pijat tidak ikut diskon paket gabungan
     await allowNoCustomer(page);

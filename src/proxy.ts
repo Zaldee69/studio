@@ -47,7 +47,7 @@ export async function proxy(request: NextRequest) {
 
   if (!user) return area && area !== "customer" ? go("/login") : response;
 
-  // Tablet stasiun: sesi kapster hanya hidup 5 menit sejak aktivitas terakhir.
+  // Tablet stasiun: sesi capster hanya hidup 5 menit sejak aktivitas terakhir.
   if (area === "staff" && request.cookies.get(STATION_COOKIE)) {
     if (!request.cookies.get(STATION_ACTIVE)) {
       await supabase.auth.signOut();

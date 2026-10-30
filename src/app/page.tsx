@@ -419,6 +419,11 @@ export default async function Landing() {
       </main>
 
       <PublicFooter />
+      {/* HP: tombol reservasi selalu terlihat — landing ±12 layar (audit 30 Okt) */}
+      <div aria-hidden="true" className="h-20 min-[900px]:hidden" />
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-lux/95 px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] backdrop-blur min-[900px]:hidden">
+        <Link href={bookHref()} className="btn-gold w-full">{online ? "Reservasi online" : bookLabel}</Link>
+      </div>
     </div>
   );
 }

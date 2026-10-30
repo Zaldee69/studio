@@ -18,7 +18,7 @@ export interface CartLine {
   voucher?: Voucher | null;
 }
 
-export type Voucher = { id: string; code: string; kind: "pct" | "amount"; value: number; category: Category | null; min_spend: number; active: boolean };
+export type Voucher = { id: string; code: string; kind: "pct" | "amount"; value: number; category: Category | null; min_spend: number; max_discount?: number | null; active: boolean };
 const voucherFits = (l: CartLine, v: Voucher) =>
   l.category !== "retail" && l.voucher?.id === v.id && (v.category == null || v.category === l.category);
 
@@ -81,7 +81,8 @@ export function calcCart(
   // voucher booking online (cermin checkout(): voucher pertama yang berlaku, dibanding diskon lain, pakai yang terbesar)
   const v = lines.find((l) => l.voucher?.active && voucherFits(l, l.voucher))?.voucher ?? null;
   const vBase = v ? lines.filter((l) => voucherFits(l, v)).reduce((a, l) => a + l.price, 0) : 0;
-  const vDisc = v && vBase >= v.min_spend ? (v.kind === "pct" ? Math.round((vBase * v.value) / 10000) * 100 : Math.min(v.value, vBase)) : 0;
+  const vRaw = v && vBase >= v.min_spend ? (v.kind === "pct" ? Math.round((vBase * v.value) / 10000) * 100 : Math.min(v.value, vBase)) : 0;
+  const vDisc = Math.min(vRaw, v?.max_discount ?? vRaw);
   const useVoucher = vDisc > (usePromo ? promo : bundle);
   const discount = useVoucher ? vDisc : usePromo ? promo : bundle;
   const total = subtotal - discount;

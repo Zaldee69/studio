@@ -23,6 +23,10 @@ describe("voucher di keranjang kasir", () => {
   it("nominal tidak melebihi harga layanan", () => {
     expect(calc([line("barbershop", 20000, v({ kind: "amount", value: 50000 }))]).discount).toBe(20000);
   });
+  it("maks. potongan membatasi persen; kosong = tanpa batas", () => {
+    expect(calc([line("barbershop", 300000, v({ value: 10, max_discount: 10000 }))]).discount).toBe(10000);
+    expect(calc([line("barbershop", 300000, v({ value: 10, max_discount: null }))]).discount).toBe(30000);
+  });
   it("tidak ditumpuk: diskon paket lebih besar dipakai", () => {
     const r = calc([line("barbershop", 50000, v({ kind: "amount", value: 1000, category: null })), line("nail", 150000)]);
     expect(r.discountLabel).toBe("Diskon paket 10%");

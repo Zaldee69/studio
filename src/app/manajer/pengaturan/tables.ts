@@ -78,6 +78,7 @@ export const TABLES = {
       { name: "value", label: "Nilai (% / Rp)", type: "int", min: 1, w: "7rem" },
       { name: "category", label: "Berlaku untuk", type: "select", options: CATEGORY, nullable: true, w: "9rem" },
       { name: "min_spend", label: "Min. belanja (Rp)", type: "money", w: "8rem" },
+      { name: "max_discount", label: "Maks. potongan (Rp, kosong = tanpa batas)", type: "money", nullable: true, min: 1, w: "8rem" },
       { name: "quota", label: "Kuota (kosong = tak terbatas)", type: "int", min: 1, nullable: true, w: "7rem" },
       { name: "once_per_customer", label: "1× per pelanggan", type: "bool", w: "6rem" },
       { name: "weekdays", label: "Hari berlaku (— = semua hari)", type: "select", nullable: true, w: "9rem",

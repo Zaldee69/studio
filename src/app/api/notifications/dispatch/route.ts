@@ -35,7 +35,7 @@ export async function POST(req: Request) {
       },
       async group(id) {
         const [{ data: g }, { data: s }] = await Promise.all([
-          db.from("booking_groups").select(`code, customer:customers(name), voucher:vouchers(id, code, kind, value, category, min_spend, active),
+          db.from("booking_groups").select(`code, customer:customers(name), voucher:vouchers(id, code, kind, value, category, min_spend, max_discount, active),
             appointments(start_at, created_at, source, status, staff:staff(name), appointment_services(service:services(id, name, category, price)))`).eq("id", id).single(),
           db.from("settings").select("shop_name, shop_address, shop_whatsapp, maps_url, bundle_pct, online_promo_pct, online_promo_start, online_promo_end").single(),
         ]);

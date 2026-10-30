@@ -1,6 +1,6 @@
 # Buku pelajaran D'Pras
 
-Tempat semua skill (dpras-bisnis, rapat-manajemen, dpras-digital-marketing, dpras-uiux) dan agen rapat (dpras-cfo, dpras-operasional,
+Tempat semua skill (dpras-bisnis, rapat-manajemen, dpras-digital-marketing, dpras-uiux, tim-socmed) dan agen rapat (dpras-cfo, dpras-operasional,
 dpras-marketing, dpras-sdm) **belajar dari pengalaman dan data lapangan**. Dibaca sebelum bekerja, ditambah setelah ada
 pelajaran. Tujuannya sederhana: kesalahan yang sama tidak terulang, dan yang terbukti berhasil dipakai lagi.
 
@@ -13,6 +13,7 @@ pelajaran. Tujuannya sederhana: kesalahan yang sama tidak terulang, dan yang ter
 | `sdm.md` | Staf, rekrutmen, upah dari sisi staf, komunikasi dengan staf |
 | `sistem.md` | Aplikasi, data, notifikasi, otomasi |
 | `uiux.md` | Tampilan & pengalaman pengguna aplikasi/situs: koreksi owner, keluhan pengguna, hasil perbaikan |
+| `konten.md` | Konten & media sosial: hasil seri/eksperimen, pola hook & jam tayang, konten yang dikoreksi owner |
 
 ## Kapan menulis
 1. **Owner mengoreksi atau menolak** sesuatu (kalimat, angka, rekomendasi, desain) → tulis apa yang ditolak, alasannya,

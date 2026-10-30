@@ -1737,13 +1737,13 @@ isOneToOne: false
                   ]
                 },"vouchers": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["service_category"] | null,"code": string,"created_at": string,"ends_on": string | null,"id": string,"kind": string,"min_spend": number,"note": string,"once_per_customer": boolean,"quota": number | null,"starts_on": string | null,"value": number,"weekdays": string | null
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"] | null,"code": string,"created_at": string,"ends_on": string | null,"id": string,"kind": string,"max_discount": number | null,"min_spend": number,"note": string,"once_per_customer": boolean,"quota": number | null,"starts_on": string | null,"value": number,"weekdays": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code": string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind": string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value": number,"weekdays"?: string | null
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code": string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind": string,"max_discount"?: number | null,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value": number,"weekdays"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code"?: string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind"?: string,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value"?: number,"weekdays"?: string | null
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"] | null,"code"?: string,"created_at"?: string,"ends_on"?: string | null,"id"?: string,"kind"?: string,"max_discount"?: number | null,"min_spend"?: number,"note"?: string,"once_per_customer"?: boolean,"quota"?: number | null,"starts_on"?: string | null,"value"?: number,"weekdays"?: string | null
                   }
                   Relationships: [
                     

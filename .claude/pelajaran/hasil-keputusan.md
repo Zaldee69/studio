@@ -6,6 +6,7 @@ lewat, lalu pindahkan pelajarannya ke file bidang. Urutkan menurut tanggal evalu
 | Evaluasi | Keputusan (tanggal) | Ukuran & ambang | Hasil (angka + tanggal cek) | Pelajaran ditulis di |
 | --- | --- | --- | --- | --- |
 | 5 Nov 2026 | Blast WA batch 1 (50 kontak), kirim 2 Nov bila uji booking lolos (rapat 29 Okt) | booking `?src=wa` dalam 72 jam ≥1; blokir/laporan <3% | | |
+| 6 Nov 2026 | Laporan awal strategi November untuk owner, data Sen–Kam 2–5 Nov (permintaan 30 Okt) | `campaign_report('2026-11-02','2026-11-05')` + funnel + blast + voucher per kode; IG Insights 7 hari & ulasan Google dari owner; halaman Artifact + PDF | | konten.md |
 | 9 Nov 2026 | Layanan tambahan pilihan C: Masker 25K, Hot Towel Shave 35K, nama berbasis manfaat (28 Okt) | tambahan/naik paket ≥10% transaksi hari kerja; tunggu akhir pekan ≤15 mnt; stok tidak minus | | |
 | 9 Nov 2026 | Target Sen–Kam ≥5,5 potong/hari — cek tengah (campaign Pilihan C, 26 Okt) | potong Sen–Kam per hari | | |
 | 13 Nov 2026 | E1 strategi konten: status WA "jadwal tanpa antre" Sen–Kam sebelum 10.00 (usulan tim socmed 30 Okt) | booking dari chat dengan catatan "status" rata-rata ≥0,5/hari selama 2–12 Nov | | konten.md |

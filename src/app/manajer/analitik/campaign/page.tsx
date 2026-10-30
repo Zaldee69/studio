@@ -9,7 +9,7 @@ type Report = {
   from: string; to: string;
   cuts: { senkam_days: number; senkam_cuts: number; weekend_days: number; weekend_cuts: number; total: number; upgrade: number };
   weekly: { week: string; tx: number; with_customer: number }[];
-  vouchers: { code: string; quota: number | null; used_total: number; tx: number; discount: number }[];
+  vouchers: { code: string; quota: number | null; used_total: number; tx: number; discount: number; net?: number; commission?: number; studio?: number }[];
   new_customers: { source: string; n: number }[];
   web: { source: string; visits: number; booked: number }[];
 };
@@ -85,15 +85,15 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
           </div>
           <Table title="Pelanggan tercatat per minggu" head={["Minggu mulai", "Transaksi", "Dengan pelanggan", "Persen"]}
             rows={r.weekly.map((w) => [formatTanggal(w.week), w.tx, w.with_customer, pct(w.with_customer, w.tx)])} empty="Belum ada transaksi." />
-          <Table title="Voucher dipakai di periode ini" head={["Kode", "Transaksi", "Total potongan", "Terpakai / kuota (semua waktu)"]}
-            rows={r.vouchers.map((v) => [v.code, v.tx, formatRupiah(v.discount), `${v.used_total}${v.quota ? ` / ${v.quota}` : ""}`])} empty="Belum ada voucher terpakai." />
+          <Table title="Voucher dipakai di periode ini (komisi dari harga normal → potongan ditanggung studio)" head={["Kode", "Transaksi", "Total potongan", "Omzet bersih", "Komisi", "Bagian studio", "Terpakai / kuota (semua waktu)"]}
+            rows={r.vouchers.map((v) => [v.code, v.tx, formatRupiah(v.discount), formatRupiah(v.net ?? 0), formatRupiah(v.commission ?? 0), formatRupiah(v.studio ?? 0), `${v.used_total}${v.quota ? ` / ${v.quota}` : ""}`])} empty="Belum ada voucher terpakai." />
           <Table title="Pelanggan baru: tahu dari mana" head={["Sumber", "Pelanggan baru"]}
             rows={r.new_customers.map((x) => [SRC[x.source] ?? x.source, x.n])} empty="Belum ada pelanggan baru." />
           <Table title="Pengunjung website per sumber" head={["Sumber", "Kunjungan", "Booking", "Konversi"]}
             rows={r.web.map((x) => [SRC[x.source] ?? x.source, x.visits, x.booked, pct(x.booked, x.visits)])} empty="Belum ada kunjungan tercatat." />
           <p className="text-xs text-muted">
             Supaya sumber website terbaca jelas, pakai tautan bertanda: bio Instagram <b>dprasstudio.com/?src=ig</b>, Google Business <b>dprasstudio.com/?src=maps</b>,
-            blast WhatsApp <b>dprasstudio.com/booking?src=wa</b>. Kunjungan sebelum fitur ini aktif tercatat &quot;Tidak diketahui&quot;.
+            blast WhatsApp <b>dprasstudio.com/?src=wa</b> (tautan langsung ke /booking?src=… juga tercatat). Kunjungan sebelum fitur ini aktif tercatat &quot;Tidak diketahui&quot;.
           </p>
         </>
       )}

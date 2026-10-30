@@ -128,7 +128,8 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
     if (view === "layanan" && v === "staf") track("service");
     setView(v); setErr(""); window.scrollTo({ top: 0 });
   };
-  useEffect(() => { track("booking_open"); }, []);
+  // masuk langsung ke /booking?src=… → sumber tetap tercatat; datang dari beranda → landing sudah ada (diabaikan)
+  useEffect(() => { track("landing"); track("booking_open"); }, []);
 
   // ---------- state langkah di URL (bisa di-refresh / dibagikan) ----------
   useEffect(() => {

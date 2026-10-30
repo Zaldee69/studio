@@ -113,13 +113,13 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null,"occupied_until": string | null
+                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"requested_staff": boolean | null,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null,"occupied_until": string | null
                   }
                   Insert: {
-                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min": number,"end_at": string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"resource_id": string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
+                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min": number,"end_at": string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id": string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
                   }
                   Update: {
-                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min"?: number,"end_at"?: string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"resource_id"?: string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at"?: string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
+                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min"?: number,"end_at"?: string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id"?: string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at"?: string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
                   }
                   Relationships: [
                     {
@@ -2355,7 +2355,7 @@ isOneToOne: false
                            },
 "kpi_aov_daily":
 { Args: { "p_category"?: string,"p_from": string,"p_staff_id"?: string,"p_to": string }; Returns: {
-              "aov_barbershop": number,"aov_nail": number,"day": string,"omzet": number,"tx_barbershop": number,"tx_nail": number
+              "aov_barbershop": number,"aov_massage": number,"aov_nail": number,"day": string,"omzet": number,"tx_barbershop": number,"tx_massage": number,"tx_nail": number
             }[]
                            },
 "kpi_aov_drivers":
@@ -2389,6 +2389,9 @@ isOneToOne: false
                            },
 "kpi_period":
 { Args: { "p_category"?: string,"p_from": string,"p_staff"?: string,"p_to": string }; Returns: Json
+                           },
+"kpi_queue":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
 "kpi_retail":
 { Args: { "p_from": string,"p_staff_id"?: string,"p_to": string }; Returns: Json
@@ -2442,6 +2445,9 @@ isOneToOne: false
                            },
 "mark_notifications_read":
 { Args: { "p_ids"?: (string)[] }; Returns: undefined
+                           },
+"mark_walk_in_turn":
+{ Args: { "p_id": string,"p_requested": boolean }; Returns: undefined
                            },
 "month_bounds":
 { Args: { "p_month": string }; Returns: Record<string, unknown>

@@ -15,24 +15,31 @@ type Period = Record<string, number | null>;
 export type AnalyticsData = {
   periode: string; from: string; to: string; label: string; prevLabel: string; category: string; staff: string; monthForReport: string;
   summary: { current: Period; previous: Period; delta: Period; targets: { aov_barbershop: number; aov_nail: number; retail_min: number; retail_max: number; utilization: number; min_tx: number } };
-  daily: { day: string; aov_barbershop: number | null; aov_nail: number | null; tx_barbershop: number; tx_nail: number; omzet: number }[];
+  daily: { day: string; aov_barbershop: number | null; aov_nail: number | null; aov_massage: number | null; tx_barbershop: number; tx_nail: number; tx_massage: number; omzet: number }[];
   drivers: { category: string; tx_count: number; avg_services: number | null; upsell_rate: number | null; bundle_pct: number | null }[];
   util: { resource_id: string; name: string; type: "barbershop" | "nail"; sold_minutes: number; planned_minutes: number; available_minutes: number; pct: number | null; pct_planned: number | null; n_actual: number; planned_vs_actual_avg: number | null }[];
   heat: { weekday: number; hour: number; minutes_avg: number; closed: boolean }[];
   duration: { service_id: string; name: string; planned_min: number; actual_avg: number; diff_avg: number; n: number }[];
   retail: { retail_revenue: number; service_revenue: number; ratio: number | null; min: number; max: number; top: { name: string; qty: number; revenue: number }[] };
   mix: { mix: { category: "barbershop" | "nail" | "massage" | "retail"; revenue: number; share: number | null }[]; weekly: { week: string; barbershop: number; nail: number; massage?: number; retail: number }[] };
-  customers: { new_customers: number; returning: number; return_rate: number | null; return_eligible: number; return_back: number; churn_count: number; followup_sent: number; followup_converted: number; followup_rate: number | null; window_days: number };
+  customers: { new_customers: number; returning: number; return_rate: number | null; return_eligible: number; return_back: number; churn_count: number; followup_sent: number; followup_converted: number; followup_rate: number | null; window_days: number;
+    recorded: { tx: number; with_customer: number }; recorded_daily: { day: string; tx: number; with_customer: number }[]; recorded_by_cashier: { name: string; tx: number; with_customer: number }[] };
   online: { landing: number; booking_open: number; booked: number; share_online: number | null; cancel_rate: number | null; no_show_rate: number | null; online_appts: number; all_appts: number; no_show: number };
+  queue?: { walk_ins: number; queued: number; wait_median: number | null; wait_p90: number | null; wait_median_weekend: number | null; wait_p90_weekend: number | null;
+    walk_aways: number; by_staff: { name: string; walk_ins: number; requested: number; turn: number }[] };
   insights: { code: string; message: string; href: string }[];
   staffList: { id: string; name: string }[];
   settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
     insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number };
 };
 
+type Cat = "barbershop" | "nail" | "massage";
 const PERIODS = [["hari", "Hari ini"], ["7", "7 hari"], ["30", "30 hari"], ["bulan", "Bulan ini"], ["lalu", "Bulan lalu"]] as const;
 const pctOr = (v: number | null | undefined, suffix = "%") => (v === null || v === undefined ? "—" : `${pct1(v)}${suffix}`);
 const money = (v: number | null | undefined) => (v === null || v === undefined ? "—" : formatRupiah(Math.round(v)));
+const weekTotal = (w: AnalyticsData["mix"]["weekly"][number]) => w.barbershop + (w.massage ?? 0) + w.nail + w.retail;
+const rec = (r: { tx: number; with_customer: number }) => (r.tx ? (r.with_customer * 100) / r.tx : null);
+const mnt = (v: number | null | undefined) => (v === null || v === undefined ? "—" : `${Math.round(v)} mnt`);
 const dm = (d: string) => `${Number(d.slice(8))}/${Number(d.slice(5, 7))}`;
 const csv = (name: string, rows: (string | number | null)[][]) => downloadText(`${name}.csv`, toCsv(rows));
 
@@ -69,7 +76,10 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
   const retailSt = bandStatus(cur.retail_ratio ?? null, t.retail_min, t.retail_max);
   const aovSt = (k: "barbershop" | "nail") => targetStatus(cur[`aov_${k}`] ?? null, k === "barbershop" ? t.aov_barbershop : t.aov_nail);
   const utilSt = targetStatus(cur.utilization_avg ?? null, t.utilization);
-  const cats = (d.category ? [d.category] : ["barbershop", "nail"]) as ("barbershop" | "nail")[];
+  // tanpa filter: kategori jasa yang ada transaksinya di periode (nail masih daftar tunggu → tidak tampil kosong)
+  const cats = (d.category ? [d.category] : (["barbershop", "massage", "nail"] as const).filter((k) => Number(cur[`tx_${k}`] ?? 0) > 0)) as Cat[];
+  if (!cats.length) cats.push("barbershop");
+  const tgt = cats.filter((k): k is "barbershop" | "nail" => k !== "massage"); // pijat belum punya target AOV
   const [planned, setPlanned] = useState(false);
   const drv = (c: string) => d.drivers.find((x) => x.category === c);
 
@@ -79,6 +89,8 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
       chip: aovSt("barbershop"), sub: `target ${formatRupiah(t.aov_barbershop)} · ${cur.tx_barbershop ?? 0} tx` }] : []),
     ...(cats.includes("nail") ? [{ href: "#aov", title: "AOV Nail", value: money(cur.aov_nail), delta: delta.aov_nail,
       chip: aovSt("nail"), sub: `target ${formatRupiah(t.aov_nail)} · ${cur.tx_nail ?? 0} tx` }] : []),
+    ...(cats.includes("massage") ? [{ href: "#aov", title: "AOV Pijat", value: money(cur.aov_massage), delta: delta.aov_massage,
+      chip: null, sub: `${cur.tx_massage ?? 0} tx` }] : []),
     ...(!d.category ? [{ href: "#ritel", title: "Rasio ritel", value: pctOr(cur.retail_ratio), delta: delta.retail_ratio, chip: retailSt, band: true, sub: `pita ${t.retail_min}–${t.retail_max}%` }] : []),
     { href: "#utilisasi", title: "Utilisasi rata-rata", value: pctOr(cur.utilization_avg), delta: delta.utilization_avg, chip: utilSt, sub: `target ${t.utilization}%` },
   ];
@@ -101,7 +113,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
           <input type="hidden" name="periode" value="kustom" />
           <input type="date" name="dari" aria-label="Dari" defaultValue={d.from} className="input h-11 w-40" />
           <input type="date" name="sampai" aria-label="Sampai" defaultValue={d.to} className="input h-11 w-40" />
-          <select name="kategori" aria-label="Kategori" defaultValue={d.category} className="input h-11 w-36"><option value="">Semua</option><option value="barbershop">Barbershop</option><option value="nail">Nail</option></select>
+          <select name="kategori" aria-label="Kategori" defaultValue={d.category} className="input h-11 w-36"><option value="">Semua</option><option value="barbershop">Barbershop</option><option value="nail">Nail</option><option value="massage">Pijat</option></select>
           <select name="staf" aria-label="Staf" defaultValue={d.staff} className="input h-11 w-36"><option value="">Semua staf</option>{d.staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
           <button className="btn-ink h-11">Terapkan</button>
         </form>
@@ -138,18 +150,18 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         ))}
       </div>
 
-      <Section id="aov" title="AOV harian per kategori" onCsv={() => csv(`aov-harian-${d.from}_${d.to}`, [["Tanggal", "AOV Barbershop", "Tx Barbershop", "AOV Nail", "Tx Nail", "Omzet"],
-        ...d.daily.map((r) => [r.day, r.aov_barbershop, r.tx_barbershop, r.aov_nail, r.tx_nail, r.omzet])])}>
-        <Legend items={[...cats.map((k) => ({ label: CAT_LABEL[k], color: COLOR[k] })), ...cats.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"}`, color: COLOR[k], dashed: true }))]} />
+      <Section id="aov" title="AOV harian per kategori" onCsv={() => csv(`aov-harian-${d.from}_${d.to}`, [["Tanggal", "AOV Barbershop", "Tx Barbershop", "AOV Pijat", "Tx Pijat", "AOV Nail", "Tx Nail", "Omzet"],
+        ...d.daily.map((r) => [r.day, r.aov_barbershop, r.tx_barbershop, r.aov_massage, r.tx_massage, r.aov_nail, r.tx_nail, r.omzet])])}>
+        <Legend items={[...cats.map((k) => ({ label: CAT_LABEL[k], color: COLOR[k] })), ...tgt.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"}`, color: COLOR[k], dashed: true }))]} />
         <LineChart labels={d.daily.map((r) => dm(r.day))} ariaLabel="AOV harian per kategori"
           series={cats.map((k) => ({ key: k, label: CAT_LABEL[k], color: COLOR[k], values: d.daily.map((r) => r[`aov_${k}`]) }))}
-          targets={cats.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"} ${rb(k === "barbershop" ? t.aov_barbershop : t.aov_nail)}`, value: k === "barbershop" ? t.aov_barbershop : t.aov_nail, color: COLOR[k] }))}
+          targets={tgt.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"} ${rb(k === "barbershop" ? t.aov_barbershop : t.aov_nail)}`, value: k === "barbershop" ? t.aov_barbershop : t.aov_nail, color: COLOR[k] }))}
           tooltip={(i) => { const r = d.daily[i]; return (
             <><b className="block">{r.day}</b>{cats.map((k) => <span key={k} className="block">{CAT_LABEL[k]}: <b>{money(r[`aov_${k}`])}</b> · {r[`tx_${k}`]} tx</span>)}<span className="block">Omzet {formatRupiah(r.omzet)}</span></>); }} />
         <div className="grid gap-2 min-[820px]:grid-cols-2">
-          {cats.map((k) => { const x = drv(k); return (
+          {cats.filter((k) => drv(k)).map((k) => { const x = drv(k); return (
             <div key={k} className="grid grid-cols-3 gap-2 rounded-[12px] bg-paper p-3 text-center text-xs tabular">
-              <span className="col-span-3 text-left text-xs font-bold" style={{ color: k === "nail" ? COLOR.nail : COLOR.barbershop }}>Penggerak {CAT_LABEL[k]}</span>
+              <span className="col-span-3 text-left text-xs font-bold" style={{ color: COLOR[k] }}>Penggerak {CAT_LABEL[k]}</span>
               <span>Layanan/transaksi<b className="block text-lg">{x?.avg_services == null ? "—" : x.avg_services.toLocaleString("id-ID", { maximumFractionDigits: 2 })}</b></span>
               <span>Tingkat upsell<b className="block text-lg">{pctOr(x?.upsell_rate)}</b></span>
               <span>% bundle<b className="block text-lg">{pctOr(x?.bundle_pct)}</b></span>
@@ -219,7 +231,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         </Section>
       )}
 
-      <Section id="omzet" title="Omzet per kategori" onCsv={() => csv(`omzet-kategori-${d.from}_${d.to}`, [["Minggu mulai", "Barbershop", "Nail", "Ritel"], ...d.mix.weekly.map((w) => [w.week, w.barbershop, w.nail, w.retail])])}>
+      <Section id="omzet" title="Omzet per kategori" onCsv={() => csv(`omzet-kategori-${d.from}_${d.to}`, [["Minggu mulai", "Barbershop", "Pijat", "Nail", "Ritel", "Total"], ...d.mix.weekly.map((w) => [w.week, w.barbershop, w.massage ?? 0, w.nail, w.retail, weekTotal(w)])])}>
         <div className="flex h-7 gap-[2px] overflow-hidden rounded-md" role="img" aria-label={d.mix.mix.map((m) => `${CAT_LABEL[m.category]} ${pctOr(m.share)}`).join(", ")}>
           {d.mix.mix.filter((m) => m.revenue > 0).map((m) => <div key={m.category} style={{ width: `${m.share}%`, background: COLOR[m.category] }} />)}
         </div>
@@ -228,21 +240,46 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
             {CAT_LABEL[m.category]} <b>{formatRupiah(m.revenue)}</b> <span className="text-muted">({pctOr(m.share)})</span></li>)}
         </ul>
         <StackedWeekly weeks={d.mix.weekly} />
-        <DataTable caption="Omzet mingguan" head={["Minggu", "Barbershop", "Nail", "Ritel", "Total"]}
-          rows={d.mix.weekly.map((w) => [w.week, formatRupiah(w.barbershop), formatRupiah(w.nail), formatRupiah(w.retail), formatRupiah(w.barbershop + w.nail + w.retail)])} />
+        <DataTable caption="Omzet mingguan" head={["Minggu", "Barbershop", "Pijat", "Nail", "Ritel", "Total"]}
+          rows={d.mix.weekly.map((w) => [w.week, formatRupiah(w.barbershop), formatRupiah(w.massage ?? 0), formatRupiah(w.nail), formatRupiah(w.retail), formatRupiah(weekTotal(w))])} />
       </Section>
 
       <Section id="pelanggan" title="Pelanggan" extra={<Link href="/manajer/pelanggan?filter=follow" className="flex min-h-11 items-center text-xs font-semibold text-accent underline">Lihat daftar follow-up →</Link>}>
-        <div className="grid gap-3 min-[820px]:grid-cols-5">
+        <div className="grid gap-3 min-[820px]:grid-cols-3 xl:grid-cols-6">
           {[["Pelanggan baru", String(d.customers.new_customers), "transaksi pertama di periode"],
             ["Pelanggan kembali", String(d.customers.returning), "pernah datang sebelumnya"],
             [`Tingkat kembali ${d.customers.window_days} hari`, pctOr(d.customers.return_rate), `${d.customers.return_back} dari ${d.customers.return_eligible} (pengamatan ≥ ${d.customers.window_days} hari)`],
             ["Churn", String(d.customers.churn_count), "belum kembali lewat batas"],
-            ["Efektivitas follow-up", pctOr(d.customers.followup_rate), `${d.customers.followup_sent} dikirimi → ${d.customers.followup_converted} datang`]].map(([k, v, s]) => (
+            ["Efektivitas follow-up", pctOr(d.customers.followup_rate), `${d.customers.followup_sent} dikirimi → ${d.customers.followup_converted} datang`],
+            ["Transaksi dengan pelanggan", pctOr(rec(d.customers.recorded)), `${d.customers.recorded.with_customer} dari ${d.customers.recorded.tx} · target 40% (8 Nov) → 60% (30 Nov)`]].map(([k, v, s]) => (
             <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
           ))}
         </div>
+              {!!d.customers.recorded_daily.length && (
+          <DataTable caption="Pencatatan pelanggan per hari" head={["Tanggal", "Transaksi", "Dengan pelanggan", "%"]}
+            rows={[...d.customers.recorded_daily].reverse().map((r) => [r.day, r.tx, r.with_customer, pctOr(rec(r))])} />
+        )}
+        {!!d.customers.recorded_by_cashier.length && (
+          <p className="text-xs text-muted tabular">Per pencatat: {d.customers.recorded_by_cashier.map((c) => `${c.name} ${c.with_customer}/${c.tx} (${pctOr(rec(c))})`).join(" · ")}</p>
+        )}
       </Section>
+
+      {d.queue && (
+        <Section id="antrean" title="Antrean walk-in">
+          <div className="grid gap-3 min-[820px]:grid-cols-4">
+            {[["Tunggu (median · p90)", `${mnt(d.queue.wait_median)} · ${mnt(d.queue.wait_p90)}`, `${d.queue.queued} dari ${d.queue.walk_ins} walk-in sempat menunggu`],
+              ["Tunggu Sabtu–Minggu", `${mnt(d.queue.wait_median_weekend)} · ${mnt(d.queue.wait_p90_weekend)}`, "target median ≤15 mnt · p90 ≤25 mnt"],
+              ["Pulang sebelum dilayani", String(d.queue.walk_aways), "dicatat dari laci booking"],
+              ["Diminta pelanggan", pctOr(rec({ tx: d.queue.by_staff.reduce((a, s) => a + s.requested + s.turn, 0), with_customer: d.queue.by_staff.reduce((a, s) => a + s.requested, 0) })), "walk-in yang memilih staf di luar giliran"]].map(([k, v, s]) => (
+              <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
+            ))}
+          </div>
+          {!!d.queue.by_staff.length && (
+            <DataTable caption="Walk-in per staf (khusus manajer)" head={["Staf", "Walk-in", "Diminta pelanggan", "Sesuai giliran", "Belum tercatat"]}
+              rows={d.queue.by_staff.map((s) => [s.name, s.walk_ins, s.requested, s.turn, s.walk_ins - s.requested - s.turn])} />
+          )}
+        </Section>
+      )}
 
       <Section id="online" title="Booking online" onCsv={() => csv(`booking-online-${d.from}_${d.to}`, [["Langkah", "Sesi"], ["Lihat landing", d.online.landing], ["Mulai booking", d.online.booking_open], ["Terkonfirmasi", d.online.booked],
         [], ["Porsi online %", d.online.share_online == null ? "" : pct1(d.online.share_online)], ["Pembatalan %", d.online.cancel_rate == null ? "" : pct1(d.online.cancel_rate)], ["No-show %", d.online.no_show_rate == null ? "" : pct1(d.online.no_show_rate)]])}>

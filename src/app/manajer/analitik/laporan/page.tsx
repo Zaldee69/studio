@@ -59,7 +59,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
   const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: pv.rev_massage ?? null };
   // AOV per transaksi per kategori (definisi yang sama dengan target AOV); kategori lain belum punya AOV & target
-  const aovCat: Record<string, [number | null, number | null]> = { barbershop: [s.aov_barbershop, t.aov_barbershop || null], nail: [s.aov_nail, t.aov_nail || null] };
+  const aovCat: Record<string, [number | null, number | null]> = { barbershop: [s.aov_barbershop, t.aov_barbershop || null], nail: [s.aov_nail, t.aov_nail || null], massage: [s.aov_massage ?? null, null] };
   const cats = f.by_category.filter((c) => c.items > 0 || (prevCat[c.category] ?? 0) > 0);
   const staff = r.staff.filter((st) => st.active || st.tx > 0);
 
@@ -166,12 +166,17 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
 
         <section aria-labelledby="h-d">
           <H id="h-d">D. Ringkasan keuangan</H>
+          {!!x.hpp_items && (x.hpp_items_filled ?? 0) < x.hpp_items * 0.8 && (
+            <p className="keep mb-2 rounded-[8px] bg-[#FBF3DE] px-3 py-2 text-[12px] text-[#5A4300]">
+              HPP baru terisi di {x.hpp_items_filled ?? 0} dari {x.hpp_items} item jasa — margin dan laba di bawah masih terlalu tinggi sampai resep bahan & stok lengkap (target ≥80%).
+            </p>
+          )}
           <div className="grid gap-4 min-[700px]:grid-cols-2 print:grid-cols-2">
             <table className="w-full border-collapse text-[12px]">
               <thead><tr><th className={th}>Laba/rugi operasional {fullPayroll ? "" : "(estimasi)"}</th><th className={`${th} text-right`}>Rp</th></tr></thead>
               <tbody>
                 {([["Omzet bersih", f.net, true], ["− Bahan & harga pokok barang (HPP)", -f.hpp, false],
-                   [fullPayroll ? "− Gaji & komisi staf (termasuk kasbon)" : "− Komisi staf (estimasi)", -labor, false],
+                   [fullPayroll ? "− Gaji & komisi staf (termasuk kasbon)" : "− Upah staf (estimasi)", -labor, false],
                    ["= Margin kontribusi", contribution, true],
                    ...opexRows.map((e) => [`− ${EXPENSE_CAT[e.category]}`, -e.amount, false]),
                    ...(f.maintenance_cost ? [["− Perawatan fasilitas", -f.maintenance_cost, false]] : []),
@@ -205,7 +210,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           </div>
           <p className="mt-1 text-[11px] text-muted">
             {fullPayroll ? "Biaya staf = gaji & komisi bulan penuh (termasuk subsidi gaji minimum & penyesuaian) + kasbon yang sudah dipotong dari gaji."
-              : "Komisi staf = estimasi dari transaksi periode ini, sebelum subsidi gaji minimum & penyesuaian (diselesaikan akhir bulan)."}
+              : `Upah staf = estimasi komisi dari transaksi periode ini ${m(x.commission_est)} + jaring harian ${m(x.subsidy_est ?? 0)} + gaji pokok prorata ${m(x.base_salary_est ?? 0)}; jaring bulanan & penyesuaian diselesaikan akhir bulan.`}
             {" "}Laba/rugi operasional belum memperhitungkan pajak, penyusutan, bunga, dan biaya tetap yang tidak dicatat di aplikasi — bukan laba bersih.
             {!!f.payments.tips_qris && ` Tips non-tunai ${m(f.payments.tips_qris)} adalah titipan staf (masuk via QRIS/transfer, diserahkan tunai) — tidak dihitung di atas.`}
             {" "}Saldo deposit pelanggan {m(f.deposit.balance_end)} adalah kewajiban layanan yang belum dipakai.

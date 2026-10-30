@@ -14,6 +14,9 @@ import type { PayMethod } from "@/lib/domain/cart";
 import { apptName } from "@/lib/domain/guest";
 
 /** Laci detail booking: status satu langkah, bayar, ubah, batalkan. */
+/** Alasan pembatalan yang dihitung Analitik sebagai "pulang sebelum dilayani" (kpi_queue). */
+export const WALK_AWAY = "Pulang sebelum dilayani";
+
 export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdit, onStatus, onCancel, onDismissRequest, onReview, onNoShow }: {
   appt: DayAppt; master: Master; conflict: boolean; offLabel: string | null; onClose: () => void; onEdit: () => void;
   onStatus: (s: ApptStatus) => void; onCancel: (reason: string) => Promise<boolean>; onDismissRequest: () => void;
@@ -159,6 +162,10 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       <div className="flex-1" />
       {canNoShow && !cancelling && (
         <button onClick={async () => { if (await confirm({ title: "Tandai pelanggan tidak datang?", description: "Kursi & jadwal staf di jam ini dilepas.", confirmLabel: "Tidak datang", tone: "danger" })) onNoShow(); }} disabled={!online} className="btn-ghost h-11 rounded-[10px]">Tidak datang</button>
+      )}
+      {appt.status === "arrived" && appt.source === "walk_in" && !cancelling && (
+        <button onClick={async () => { if (await confirm({ title: "Pelanggan pulang sebelum dilayani?", description: "Antrean dilepas dan dicatat sebagai pelanggan yang pergi karena menunggu.", confirmLabel: "Pulang sebelum dilayani", tone: "danger" })) onCancel(WALK_AWAY); }}
+          disabled={!online} className="btn-ghost h-11 rounded-[10px]">Pulang sebelum dilayani</button>
       )}
       {!closed && (cancelling ? (
         <form className="flex flex-col gap-2 rounded-[10px] border border-line p-3"

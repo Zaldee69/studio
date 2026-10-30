@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
   table(ws, [`Laba/rugi operasional${fv.fullPayroll ? "" : " (estimasi)"}`, "Rp"], [
     ["Omzet kotor (harga normal)", f.gross], ["Diskon paket & promo", -f.discount], ["  termasuk promo booking online", -(f.discount_promo ?? 0)], ["Omzet bersih", f.net],
     ["Bahan & harga pokok barang (HPP)", -f.hpp],
-    [fv.fullPayroll ? "Gaji & komisi staf (termasuk kasbon)" : "Komisi staf (estimasi, sebelum subsidi gaji minimum)", -fv.labor],
+    [fv.fullPayroll ? "Gaji & komisi staf (termasuk kasbon)" : "Upah staf (estimasi: komisi + jaring harian + gaji pokok prorata)", -fv.labor],
     ["Margin kontribusi", fv.contribution],
     ...fv.opexRows.map((e) => [`Pengeluaran: ${EXPENSE_CAT[e.category]}`, -e.amount]),
     ["Perawatan fasilitas", -f.maintenance_cost],

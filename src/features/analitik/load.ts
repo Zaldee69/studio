@@ -28,7 +28,7 @@ export function resolvePeriod(p: { periode?: string; dari?: string; sampai?: str
 /** Semua bagian Analitik dari fungsi kpi_* yang sama (dipakai layar & laporan PDF). */
 export async function loadAnalytics(p: { periode?: string; dari?: string; sampai?: string; kategori?: string; staf?: string }): Promise<AnalyticsData> {
   const { periode, from, to } = resolvePeriod(p);
-  const category = p.kategori === "barbershop" || p.kategori === "nail" ? p.kategori : "";
+  const category = p.kategori === "barbershop" || p.kategori === "nail" || p.kategori === "massage" ? p.kategori : "";
   const staff = /^[0-9a-f-]{36}$/.test(p.staf ?? "") ? p.staf! : "";
   const args = { p_from: from, p_to: to, p_category: category || undefined, p_staff_id: staff || undefined };
   const supabase = await createClient();
@@ -47,7 +47,7 @@ export async function loadAnalytics(p: { periode?: string; dari?: string; sampai
     daily: num(x.daily as AnalyticsData["daily"]), drivers: num(x.drivers as AnalyticsData["drivers"]),
     util: num(x.util as AnalyticsData["util"]), heat: num(x.heat as AnalyticsData["heat"]),
     duration: num(x.duration as AnalyticsData["duration"]), retail: x.retail as AnalyticsData["retail"],
-    mix: x.mix as AnalyticsData["mix"], customers: x.customers as AnalyticsData["customers"],
+    mix: x.mix as AnalyticsData["mix"], customers: x.customers as AnalyticsData["customers"], queue: x.queue as AnalyticsData["queue"],
     online: x.online as AnalyticsData["online"], insights: x.insights as AnalyticsData["insights"],
     staffList: staffList.data ?? [], settings: Object.fromEntries(Object.entries(st.data ?? {}).map(([k, v]) => [k, Number(v)])) as AnalyticsData["settings"],
   };

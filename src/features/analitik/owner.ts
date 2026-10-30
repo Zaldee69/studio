@@ -10,7 +10,7 @@ import type { AnalyticsData } from "./dashboard";
 type N = number | null;
 export type OwnerSummary = {
   from: string; to: string; net: number; gross: number; discount: number; hpp: number; margin: number; margin_pct: N;
-  tx_count: number; aov: N; aov_barbershop: N; aov_nail: N; rev_barbershop: number; rev_nail: number; rev_massage?: number; rev_retail: number;
+  tx_count: number; aov: N; aov_barbershop: N; aov_nail: N; aov_massage?: N; rev_barbershop: number; rev_nail: number; rev_massage?: number; rev_retail: number;
   retail_ratio: N; utilization: N; void_count: number; topup_paid: number;
   new_customers: number; returning: number; return_rate: N; no_show_rate: N; online_share: N; sop_compliance: N;
 };
@@ -53,7 +53,7 @@ export type OwnerQuery = { periode?: string; nilai?: string; dari?: string; samp
 /** Periode dari URL (+ ?bulan=YYYY-MM lama) → owner_report (satu RPC, khusus manajer). */
 type Charts = { daily: AnalyticsData["daily"]; mix: AnalyticsData["mix"] };
 export type OwnerExtra = { bookings: number; bookings_paid: number; bookings_cancelled: number; bookings_no_show: number; bookings_walk_in: number;
-  commission_est: number; commission_weekly_paid: number; cash_days: number; cash_days_closed: number; cash_days_unclosed: number;
+  commission_est: number; subsidy_est?: number; base_salary_est?: number; hpp_items?: number; hpp_items_filled?: number; commission_weekly_paid: number; cash_days: number; cash_days_closed: number; cash_days_unclosed: number;
   cash_diff_total: number; cash_diff_abs: number; campaign_sends: number; campaign_recipients: number; stock_purchases?: number; payroll_paid?: number };
 export type Issue = { masalah: string; bukti: string; dampak: string; akar: string; tindakan: string; pj: string; tenggat: string };
 export type Decision = { keputusan: string; alasan: string; opsi: string; rekomendasi: string; biaya: string; risiko: string; tenggat: string };
@@ -88,7 +88,7 @@ export async function loadOwnerReport(q: OwnerQuery): Promise<{ p: OwnerPeriod; 
 /**
  * Angka keuangan laporan owner (PDF & Excel memakai fungsi yang sama → angka tidak bisa berbeda).
  * Kasbon = uang muka gaji (bukan biaya operasional); gaji bulanan sudah dipotong kasbon → biaya staf = gaji + kasbon.
- * Periode tanpa gaji bulan penuh (mis. mingguan): biaya staf = estimasi komisi dari transaksi periode itu.
+ * Periode tanpa gaji bulan penuh (mis. mingguan): biaya staf = estimasi komisi + jaring harian + gaji pokok prorata (belum termasuk jaring bulanan).
  */
 export function ownerFinanceView(r: OwnerReport, x: OwnerExtra, weekly: boolean) {
   const f = r.finance;
@@ -97,7 +97,7 @@ export function ownerFinanceView(r: OwnerReport, x: OwnerExtra, weekly: boolean)
   const opexRows = f.expenses_by_category.filter((e) => e.category !== "kasbon");
   const opex = f.expenses_total - kasbon + f.maintenance_cost;
   const fullPayroll = !weekly && r.payroll.complete;
-  const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est;
+  const labor = fullPayroll ? r.payroll.total_pay + kasbon : x.commission_est + (x.subsidy_est ?? 0) + (x.base_salary_est ?? 0);
   const contribution = f.net - f.hpp - labor;
   const operating = contribution - opex;
   const cashIn = { cash: f.payments.cash, qris: f.payments.qris, transfer: f.payments.transfer ?? 0, topup: f.deposit.topup_paid };

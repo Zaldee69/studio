@@ -17,6 +17,8 @@ type Conflict = { customer_name: string; start_at: string; end_at: string; resou
 /**
  * Walk-in sekarang: pilih capster (default yang kosong) → layanan → Mulai. Booking dibuat mulai saat ini dan langsung
  * "Sedang dilayani" (tanpa Booked/Datang — pelanggannya sudah di depan kasir). Kursi: kursi milik capster, atau yang kosong.
+ * Staf masih melayani → "Antre": booking mulai setelah layanan staf itu, status "Datang" (jam datang tercatat); kasir menekan
+ * Mulai saat pelanggan duduk → waktu tunggu = mulai − datang (Analitik → Antrean walk-in).
  */
 export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone }: {
   master: Master; appts: DayAppt[]; offs: TimeOffRow[]; initialStaff?: string | null; onClose: () => void; onDone: () => void;
@@ -51,23 +53,28 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     return (pool.find((r) => !findConflicts(appts, { resourceId: r.id, staffId: null, start: startIso, end: endIso }).length) ?? pool[0])?.id;
   }
 
-  async function start(force = false) {
+  async function start(force = false, queue = false) {
     if (!who || !sel.length) return;
     setBusy(true);
     const now = new Date(); now.setSeconds(0, 0);
-    const startIso = now.toISOString(), endIso = new Date(now.getTime() + dur * 60_000).toISOString();
+    const at = queue && who.now.current ? Math.max(now.getTime(), Date.parse(who.now.current.end_at)) : now.getTime();
+    const startIso = new Date(at).toISOString(), endIso = new Date(at + dur * 60_000).toISOString();
     const supabase = createClient();
     const { data, error } = await supabase.rpc("create_booking_admin", {
       p_resource_id: pickResource(startIso, endIso)!, p_staff_id: who.id, p_start_at: startIso, p_service_ids: sel,
-      p_customer_id: customer?.id, p_source: "walk_in", p_force: force, p_guest_name: customer ? undefined : guest.trim() || undefined,
+      p_customer_id: customer?.id, p_source: "walk_in", p_force: force || queue, p_guest_name: customer ? undefined : guest.trim() || undefined,
     });
     if (error) { setBusy(false); return toast(error.message, "error"); }
     const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[] };
     if (!r.saved) { setBusy(false); return setConflicts(r.conflicts); }
-    const st = await supabase.rpc("set_appointment_status", { p_id: r.appointment_id!, p_status: "in_service" });
+    // giliran vs diminta pelanggan (bukti adil pembagian walk-in); tanpa staf kosong sekategori = tidak diketahui
+    const turnId = turn[who.category];
+    if (turnId) await supabase.rpc("mark_walk_in_turn", { p_id: r.appointment_id!, p_requested: turnId !== who.id });
+    const st = await supabase.rpc("set_appointment_status", { p_id: r.appointment_id!, p_status: queue ? "arrived" : "in_service" });
     setBusy(false);
+    const name = customer?.name ?? (guest.trim() || "Walk-in");
     if (st.error) toast(`Booking dibuat, tapi status belum diubah: ${st.error.message}`, "error");
-    else toast(`${customer?.name ?? (guest.trim() || "Walk-in")} mulai dilayani ${who.name}`);
+    else toast(queue ? `${name} masuk antrean ${who.name} — tekan Mulai saat duduk` : `${name} mulai dilayani ${who.name}`);
     onDone();
   }
 
@@ -144,7 +151,12 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
         </div>
       )}
 
-      <button onClick={() => start()} disabled={!sel.length || !who || busy || !online} className="btn-ink h-14 rounded-xl text-base">
+      {who?.now.current && !conflicts && (
+        <button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="btn-ink h-14 rounded-xl text-base">
+          {busy ? "Menyimpan…" : `Antre · ${who.name} selesai ±${formatJam(who.now.current.end_at)}`}
+        </button>
+      )}
+      <button onClick={() => start()} disabled={!sel.length || !who || busy || !online} className={`${who?.now.current ? "btn-ghost" : "btn-ink"} h-14 rounded-xl text-base`}>
         {busy ? "Menyimpan…" : sel.length ? `Mulai dilayani · ${dur} mnt · ${formatRupiah(price)}` : "Pilih layanan"}
       </button>
     </div>

@@ -1365,13 +1365,13 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number
+                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number,"whatsapp": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number
+                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"whatsapp"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number
+                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -2094,6 +2094,9 @@ isOneToOne: false
 "appt_interval":
 { Args: { "a": Database["public"]['Tables']["appointments"]['Row'],"p_now": string }; Returns: Record<string, unknown>
                            },
+"appt_line":
+{ Args: { "p_id": string,"p_with_date"?: boolean }; Returns: string
+                           },
 "appt_minutes":
 { Args: { "a": Database["public"]['Tables']["appointments"]['Row'],"p_now": string }; Returns: number
                            },
@@ -2662,6 +2665,9 @@ isOneToOne: false
               "notes": string,"services": string,"start_at": string
             }[]
                            },
+"staff_daily_schedule":
+{ Args: Record<PropertyKey, never>; Returns: number
+                           },
 "staff_leaderboard":
 { Args: { "p_from": string,"p_to": string }; Returns: {
               "avg_per_service": number,"category": Database["public"]['Enums']["staff_category"],"of_count": number,"rank": number,"revenue_net": number,"service_count": number,"staff_id": string,"staff_name": string
@@ -2671,6 +2677,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "has_pin": boolean,"locked_until": string,"staff_id": string,"updated_at": string
             }[]
+                           },
+"staff_wa":
+{ Args: { "p_staff": string }; Returns: string
                            },
 "staff_weekly_report":
 { Args: Record<PropertyKey, never>; Returns: number

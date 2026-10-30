@@ -16,7 +16,7 @@ export async function processQueue(store: Store, adapters: Adapters, now = new D
   const out = { sent: 0, skipped: 0, failed: 0, retry: 0 };
   for (const m of await store.claim(25)) {
     const send = m.channel === "email" ? adapters.email : m.channel === "telegram" ? adapters.telegram : adapters.whatsapp;
-    // promo (CRM), otp (kode masuk), alert (Telegram owner), test (tes WA manajer) & staff_report (rapor capster): teks sudah jadi
+    // promo (CRM), otp (kode masuk), alert (Telegram owner), test (tes WA manajer) & staff_report (pesan ke staf: booking, jadwal pagi, rapor): teks sudah jadi
     const raw = m.template === "promo" || m.template === "otp" || m.template === "alert" || m.template === "test" || m.template === "staff_report";
     const g = raw ? null : m.booking_group_id ? await store.group(m.booking_group_id) : null;
     if (!raw && !g) { await store.finish(m.id, { status: "skipped", attempts: m.attempts, last_error: "Booking tidak ditemukan" }); out.skipped++; continue; }

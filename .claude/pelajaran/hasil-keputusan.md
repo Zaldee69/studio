@@ -14,4 +14,5 @@ lewat, lalu pindahkan pelajarannya ke file bidang. Urutkan menurut tanggal evalu
 | 30 Nov 2026 | Target Sen–Kam ≥5,5 potong/hari; pelanggan tercatat ≥60% (26 Okt) | potong Sen–Kam per hari; % transaksi dengan pelanggan | | |
 | 30 Nov 2026 | Jaring harian Obay Rp100 rb berakhir (19 Okt) | potong Sen–Kam ≥5/hari | | |
 | 31 Des 2026 | Pilot Langganan Rapi Desember, ≤20 pelanggan, Rp115 rb = 2× Fresh, komisi dari harga normal (rapat 30 Okt; jalan hanya bila tercatat ≥60% pada 30 Nov) | ≥1,7 kunjungan terpakai/pelanggan/bulan; ≥60% memperpanjang; tunggu akhir pekan ≤15 mnt | | |
+| 14 hari setelah deploy perbaikan audit | Perbaikan audit UI/UX 30 Okt: booking langkah 1 diringkas, langkah "pilih layanan" diukur, bilah reservasi di HP, kasir tambah pelanggan dari pencarian | buka booking → pilih layanan ≥50% (sebelumnya 3/16 = 19%); booking online ≥5/minggu; transaksi tercatat ≥40% (8 Nov) | | uiux.md |
 | Akhir kontrak Nicko (3 bln) | Capster PKWT 3 bulan, gaji 3 jt + 30% setelah HPP + retail 10% + makan siang (29 Okt) | waktu potong ≤35 mnt, komplain ≤2, hadir ≥95%; layanan/bulan ≥98 agar biaya tertutup | | |

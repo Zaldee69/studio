@@ -25,7 +25,7 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
   await expect(cur).toContainText(name);
   // 3 ketukan
   await cur.getByRole("button", { name: "Pelanggan datang" }).click();
-  await expect(card(kasir, name)).toHaveAccessibleName(/Datang\/Menunggu/); // konter melihat "datang"
+  await expect(card(kasir, name)).toHaveAccessibleName(/Datang, menunggu/); // konter melihat "datang"
   await cur.getByRole("button", { name: "Mulai layanan" }).click();
   await expect(cur.getByRole("timer")).toBeVisible();
   await cur.getByRole("button", { name: "Selesai → ke kasir" }).click();

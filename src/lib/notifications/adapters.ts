@@ -89,5 +89,8 @@ const isLocalDb = (url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "") => /^https?
 
 export const liveAdapters = (): Adapters => {
   const a = { email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter(), telegram: sendTelegramAdapter() };
-  return isLocalDb() ? localOnly(a, process.env.NOTIFY_TEST_WA) : a;
+  if (!isLocalDb()) return a;
+  const guarded = localOnly(a, process.env.NOTIFY_TEST_WA);
+  // E2E memakai Wablas tiruan di 127.0.0.1 (pesan tidak keluar ke internet) → WA tidak perlu dibatasi ke nomor uji
+  return isLocalDb(process.env.WABLAS_URL) ? { ...guarded, whatsapp: a.whatsapp } : guarded;
 };

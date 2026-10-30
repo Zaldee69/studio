@@ -6,7 +6,7 @@ export const STATUS: Record<ApptStatus, { label: string; short: string; bg: stri
   booked: { label: "Terjadwal", short: "Terjadwal", bg: "#FBF6E8", dot: "#B08A2E", fg: "#5C4A1A", bd: "#E8DDC0" },
   arrived: { label: "Datang, menunggu", short: "Datang", bg: "#EEF3F7", dot: "#4F7A9A", fg: "#24435A", bd: "#C9D7E2" },
   in_service: { label: "Sedang dilayani", short: "Mulai", bg: "#FBEFE8", dot: "#C0683A", fg: "#6B3416", bd: "#EBCDBB" },
-  completed: { label: "Selesai, belum bayar", short: "Belum bayar", bg: "#FAEEEE", dot: "#B5474A", fg: "#6B2427", bd: "#E8C3C4" },
+  completed: { label: "Selesai, belum bayar", short: "Selesai", bg: "#FAEEEE", dot: "#B5474A", fg: "#6B2427", bd: "#E8C3C4" },
   paid: { label: "Lunas", short: "Lunas", bg: "#EEF4ED", dot: "#5E8A5A", fg: "#2C4A2A", bd: "#C9DBC6" },
   no_show: { label: "Tidak datang", short: "Tak datang", bg: "#F6F1F1", dot: "#8A5A5A", fg: "#4F2E2E", bd: "#DCCACA" },
   cancelled: { label: "Batal", short: "Batal", bg: "#F3F3F1", dot: "#9A9C95", fg: "#55574F", bd: "#DEDED9" },

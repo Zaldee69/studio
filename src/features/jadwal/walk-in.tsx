@@ -10,7 +10,7 @@ import { CustomerCombobox } from "../counter/customer-combobox";
 import { NewCustomer } from "../counter/new-customer";
 import type { Cat, Customer, DayAppt, Master, TimeOffRow } from "../counter/types";
 import { floorStaff, staffNow } from "./now";
-import { walkInTurn } from "./turn";
+import { queueStart, walkInTurn } from "./turn";
 
 type Conflict = { customer_name: string; start_at: string; end_at: string; resource_name: string };
 
@@ -38,6 +38,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
   const [guest, setGuest] = useState("");
   const [adding, setAdding] = useState(false);
   const [conflicts, setConflicts] = useState<Conflict[] | null>(null);
+  const [queueConflict, setQueueConflict] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const who = staff.find((s) => s.id === staffId);
@@ -57,16 +58,16 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     if (!who || !sel.length) return;
     setBusy(true);
     const now = new Date(); now.setSeconds(0, 0);
-    const at = queue && who.now.current ? Math.max(now.getTime(), Date.parse(who.now.current.end_at)) : now.getTime();
+    const at = queue ? queueStart(appts, who.id, now.getTime(), dur) : now.getTime();
     const startIso = new Date(at).toISOString(), endIso = new Date(at + dur * 60_000).toISOString();
     const supabase = createClient();
     const { data, error } = await supabase.rpc("create_booking_admin", {
       p_resource_id: pickResource(startIso, endIso)!, p_staff_id: who.id, p_start_at: startIso, p_service_ids: sel,
-      p_customer_id: customer?.id, p_source: "walk_in", p_force: force || queue, p_guest_name: customer ? undefined : guest.trim() || undefined,
+      p_customer_id: customer?.id, p_source: "walk_in", p_force: force && !queue, p_guest_name: customer ? undefined : guest.trim() || undefined,
     });
     if (error) { setBusy(false); return toast(error.message, "error"); }
     const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[] };
-    if (!r.saved) { setBusy(false); return setConflicts(r.conflicts); }
+    if (!r.saved) { setBusy(false); setQueueConflict(queue); return setConflicts(r.conflicts); }
     // giliran vs diminta pelanggan (bukti adil pembagian walk-in); tanpa staf kosong sekategori = tidak diketahui
     const turnId = turn[who.category];
     if (turnId) await supabase.rpc("mark_walk_in_turn", { p_id: r.appointment_id!, p_requested: turnId !== who.id });
@@ -146,14 +147,15 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
         <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#F9E6E6] p-3 text-sm text-[#6E1616]">
           <b>Masih ada jadwal di jam ini:</b>
           {conflicts.map((c, i) => <span key={i}>{c.customer_name} {formatJam(c.start_at)}–{formatJam(c.end_at)} · {c.resource_name}</span>)}
-          <span className="text-xs">Kalau pelanggan sebelumnya sudah selesai, tandai Selesai dulu — atau tetap mulai.</span>
-          <button onClick={() => start(true)} disabled={busy || !online} className="btn self-start rounded-[10px] bg-[#6E1616] px-4 text-white">Tetap mulai</button>
+          {!queueConflict && <span className="text-xs">Kalau pelanggan sebelumnya sudah selesai, tandai Selesai dulu — atau tetap mulai.</span>}
+          {queueConflict ? <span className="text-xs">Antrean tidak boleh menimpa booking — pilih capster lain atau tunggu sampai booking itu selesai.</span>
+            : <button onClick={() => start(true)} disabled={busy || !online} className="btn self-start rounded-[10px] bg-[#6E1616] px-4 text-white">Tetap mulai</button>}
         </div>
       )}
 
       {who?.now.current && !conflicts && (
         <button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="btn-ink h-14 rounded-xl text-base">
-          {busy ? "Menyimpan…" : `Antre · ${who.name} selesai ±${formatJam(who.now.current.end_at)}`}
+          {busy ? "Menyimpan…" : `Antre · mulai ±${formatJam(new Date(queueStart(appts, who.id, Date.parse(who.now.current.end_at), dur)))} bersama ${who.name}`}
         </button>
       )}
       <button onClick={() => start()} disabled={!sel.length || !who || busy || !online} className={`${who?.now.current ? "btn-ghost" : "btn-ink"} h-14 rounded-xl text-base`}>

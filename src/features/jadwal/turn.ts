@@ -16,3 +16,17 @@ export function walkInTurn(staff: { id: string; category: string; free: boolean 
   for (const s of ranked) turn[s.category] ??= s.id;
   return turn;
 }
+
+/**
+ * Jam mulai antre walk-in: celah kosong pertama (≥ durasi) setelah sekarang di jadwal staf itu — sesudah yang sedang
+ * dilayani, yang sudah antre, dan booking yang terjadwal. Antrean tidak pernah menimpa booking (keputusan owner 1 Nov).
+ */
+export function queueStart(appts: DayAppt[], staffId: string, now: number, durMin: number): number {
+  const live = ["booked", "pending_review", "arrived", "in_service"];
+  const blocks = appts.filter((a) => a.staff_id === staffId && live.includes(a.status))
+    .map((a) => ({ start: Date.parse(a.start_at), end: Date.parse(a.end_at) }))
+    .sort((x, y) => x.start - y.start);
+  let t = now;
+  for (const b of blocks) if (b.end > t && b.start < t + durMin * 60_000) t = b.end;
+  return t;
+}

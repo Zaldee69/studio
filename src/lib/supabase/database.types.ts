@@ -2110,6 +2110,9 @@ isOneToOne: false
 "alert_morning":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
+"alert_stale_appointments":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
 "alert_unpaid_weeks":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
@@ -2722,6 +2725,9 @@ isOneToOne: false
                            },
 "staff_weekly_report":
 { Args: Record<PropertyKey, never>; Returns: number
+                           },
+"start_walk_in":
+{ Args: { "p_customer_id"?: string,"p_force"?: boolean,"p_guest_name"?: string,"p_queue"?: boolean,"p_requested"?: boolean,"p_resource_id": string,"p_service_ids": (string)[],"p_staff_id": string,"p_start_at": string }; Returns: Json
                            },
 "station_staff":
 { Args: { "p_token_hash": string }; Returns: {

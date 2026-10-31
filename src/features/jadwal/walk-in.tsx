@@ -61,21 +61,19 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     const at = queue ? queueStart(appts, who.id, now.getTime(), dur) : now.getTime();
     const startIso = new Date(at).toISOString(), endIso = new Date(at + dur * 60_000).toISOString();
     const supabase = createClient();
-    const { data, error } = await supabase.rpc("create_booking_admin", {
+    // satu transaksi: buat booking + tanda giliran + status (koneksi putus = tidak ada booking setengah jadi)
+    const turnId = turn[who.category]; // giliran vs diminta pelanggan; tanpa staf kosong sekategori = tidak diketahui
+    const { data, error } = await supabase.rpc("start_walk_in", {
       p_resource_id: pickResource(startIso, endIso)!, p_staff_id: who.id, p_start_at: startIso, p_service_ids: sel,
-      p_customer_id: customer?.id, p_source: "walk_in", p_force: force && !queue, p_guest_name: customer ? undefined : guest.trim() || undefined,
+      p_customer_id: customer?.id, p_guest_name: customer ? undefined : guest.trim() || undefined,
+      p_force: force && !queue, p_requested: turnId ? turnId !== who.id : undefined, p_queue: queue,
     });
-    if (error) { setBusy(false); return toast(error.message, "error"); }
-    const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[] };
-    if (!r.saved) { setBusy(false); setQueueConflict(queue); return setConflicts(r.conflicts); }
-    // giliran vs diminta pelanggan (bukti adil pembagian walk-in); tanpa staf kosong sekategori = tidak diketahui
-    const turnId = turn[who.category];
-    if (turnId) await supabase.rpc("mark_walk_in_turn", { p_id: r.appointment_id!, p_requested: turnId !== who.id });
-    const st = await supabase.rpc("set_appointment_status", { p_id: r.appointment_id!, p_status: queue ? "arrived" : "in_service" });
     setBusy(false);
+    if (error) return toast(error.message, "error");
+    const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[] };
+    if (!r.saved) { setQueueConflict(queue); return setConflicts(r.conflicts); }
     const name = customer?.name ?? (guest.trim() || "Walk-in");
-    if (st.error) toast(`Booking dibuat, tapi status belum diubah: ${st.error.message}`, "error");
-    else toast(queue ? `${name} masuk antrean ${who.name} — tekan Mulai saat duduk` : `${name} mulai dilayani ${who.name}`);
+    toast(queue ? `${name} masuk antrean ${who.name} — tekan Mulai saat duduk` : `${name} mulai dilayani ${who.name}`);
     onDone();
   }
 

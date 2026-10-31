@@ -43,6 +43,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [useDeposit, setUseDeposit] = useState(false);
   const [noCustOk, setNoCustOk] = useState(false); // kasir menyatakan pelanggan tidak mau memberi nama/nomor
   const [method, setMethod] = useState<BaseMethod>("cash");
+  // anti bayar dobel: id yang sama selama isi keranjang tidak berubah → kirim ulang setelah koneksi putus tidak membuat transaksi kedua
+  const requestId = useRef("");
+  useEffect(() => { requestId.current = crypto.randomUUID(); }, [items, customer?.id, method]);
   const [qrisRef, setQrisRef] = useState(""); // No. referensi QRIS / transfer (wajib, dicek unik di server)
   const [received, setReceived] = useState("");
   const [cashPart, setCashPart] = useState(""); // bayar campuran: sebagian tunai
@@ -179,7 +182,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
-      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt,
+      tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt, client_request_id: requestId.current,
       items: items.map((i) => ({ service_id: i.serviceId, staff_id: i.staffId || null, appointment_id: i.appointmentId, from_upsell: !!i.fromUpsell })),
     } });
     if (error) { setPaying(false); return setError(error.message); }

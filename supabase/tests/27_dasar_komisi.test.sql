@@ -33,11 +33,11 @@ select is((select commission from commission_lines(date_trunc('month', jkt_today
           'komisi dari harga normal − HPP (diskon ditanggung toko)');
 select is((select commission_base from transaction_items where id = :'it1'), null, 'transaksi sebelum perubahan tetap memakai harga bersih');
 
--- HPP tidak dipotong (default saat ini): komisi = harga × rasio, berlaku juga untuk transaksi lama; HPP tetap tercatat
+-- Sejak 1 Nov (UANG-4) aturan komisi dibekukan per item: berhenti memotong HPP tidak mengubah komisi transaksi lama; HPP tetap tercatat
 update settings set commission_deduct_hpp = false;
 select is((select commission from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1'),
-          (select round(:n1 * pct / 100.0)::bigint from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1'),
-          'tanpa potong HPP: komisi transaksi lama ikut dihitung ulang dari harga bersih');
+          (select round(greatest(0, :n1 - hpp) * pct / 100.0)::bigint from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1'),
+          'tanpa potong HPP sesudahnya: komisi transaksi lama tetap dipotong HPP (aturan saat bayar)');
 select ok((select hpp from commission_lines(date_trunc('month', jkt_today())::date) where transaction_item_id = :'it1') > 0, 'HPP tetap tercatat untuk laporan');
 
 select * from finish();

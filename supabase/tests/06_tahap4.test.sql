@@ -63,6 +63,8 @@ select throws_like(format($$ select save_recipe('%s', '[{"item_id":"%s","qty":1}
 select save_recipe(tests.svc('Layanan X'), jsonb_build_array(jsonb_build_object('item_id', tests.item('Bahan X'), 'qty', 15)));
 
 -- =============================== Checkout: komisi (U4, U6) ===============================
+-- aturan komisi dibekukan saat bayar (UANG-4, 1 Nov) → komisi ritel 5% diset sebelum transaksi
+update settings set retail_commission_pct = 5;
 select tests.login(tests.kasir());
 select tests.put('tx_bundle', checkout(jsonb_build_object('method', 'cash', 'items', jsonb_build_array(
   jsonb_build_object('service_id', tests.svc('Potong Rambut'), 'staff_id', tests.staff_andi()),
@@ -78,7 +80,6 @@ select is((select staff_id from transaction_items where transaction_id = tests.g
           'staf penjual ritel tersimpan');
 
 select tests.login(tests.mgr());
-update settings set retail_commission_pct = 5;
 select results_eq(format($$ select net_amount, commission from commission_items(jkt_today(), '%s') where transaction_id = '%s' $$,
   tests.staff_andi(), tests.get('tx_bundle')), $$ values (67500::bigint, 26480::bigint) $$,
   'U4 Andi: net 67.500 (diskon 7.500) → (67.500 − HPP 1.300) × 40%');
@@ -87,7 +88,7 @@ select results_eq(format($$ select net_amount, hpp, commission from commission_i
   'U4 Sari: net 162.000 (diskon 18.000) → (162.000 − 12.000) × 40% = 60.000');
 update staff set commission_pct_override = 45 where id = tests.staff_sari();
 select is((select commission from commission_items(jkt_today(), tests.staff_sari()) where transaction_id = tests.get('tx_bundle')::uuid),
-          67500::bigint, 'U4 override staf 45%');
+          60000::bigint, 'U4 override staf 45% sesudah bayar: komisi transaksi lama tetap 40% (dibekukan, UANG-4)');
 update staff set commission_pct_override = null where id = tests.staff_sari();
 select is((select commission from commission_items(jkt_today(), tests.maya()) where transaction_id = tests.get('tx_retail')::uuid),
           5500::bigint, 'U6 komisi ritel 5% Pomade 110.000 = 5.500');

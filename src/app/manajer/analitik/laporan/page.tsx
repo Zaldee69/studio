@@ -313,10 +313,16 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
               {[["Nilai stok akhir", m(r.operations.inventory.value_end)], ["Stok masuk / terpakai", `${m(r.operations.inventory.in_value)} / ${m(r.operations.inventory.out_value)}`],
                 ["Stok menipis (saat ini)", n(r.operations.inventory.low_stock_now)],
+                ["Stok minus (saat ini)", n(r.operations.inventory.negative_now ?? 0)],
                 ["Selisih pemakaian bahan", r.operations.inventory.opnames >= 2 ? `${r.operations.inventory.usage_flagged} bahan · ${m(r.operations.inventory.usage_variance_value)}` : "butuh ≥ 2 opname"]].map(([k, v]) => (
                 <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
               ))}
             </div>
+            {!!r.operations.inventory.negative_now && (
+              <p className="keep mt-1 rounded-[8px] bg-[#FBF3DE] px-3 py-2 text-[11px] text-[#5A4300]">
+                Stok minus: {r.operations.inventory.negative_items}. Bahan dipakai layanan tetapi stok masuknya belum dicatat — HPP & nilai stok belum akurat sampai dicatat lewat Terima stok atau Opname.
+              </p>
+            )}
           </section>
           <section aria-labelledby="h-l">
             <H id="h-l">L. Evaluasi tindakan bulan sebelumnya</H>

@@ -41,7 +41,7 @@ export type OwnerReport = {
     sop: { operational: number; ok: number; compliance_pct: N };
     maintenance_done: number; maintenance_overdue_now: number;
     inventory: { value_end: number; value_consumable: number; value_retail: number; in_value: number; out_value: number; adjust_value: number;
-      low_stock_now: number; opnames: number; usage_flagged: number; usage_variance_value: number };
+      low_stock_now: number; negative_now?: number; negative_items?: string; opnames: number; usage_flagged: number; usage_variance_value: number };
   };
   daily: { day: string; tx: number; net: number; barbershop: number; nail: number; retail: number; discount: number; hpp: number;
     void: number; cash: number; qris: number; transfer?: number; deposit: number }[];

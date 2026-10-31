@@ -30,6 +30,8 @@ export const TABLES = {
       { name: "stock_item_id", label: "Item stok (ritel)", type: "select", options: "retailItems", nullable: true, w: "11rem" },
       { name: "needs_pedicure", label: "Kursi pedicure", type: "bool", w: "5rem" },
       { name: "online_bookable", label: "Booking online", type: "bool", w: "5.5rem" },
+      { name: "is_cut", label: "Dihitung potong", type: "bool", w: "5.5rem" },
+      { name: "is_upgrade", label: "Naik paket", type: "bool", w: "5rem" },
       { name: "public_description", label: "Deskripsi publik", type: "text", nullable: true, w: "16rem" },
       { name: "sort", label: "Urut", type: "int", w: "4.5rem" },
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },

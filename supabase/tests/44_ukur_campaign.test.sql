@@ -26,6 +26,9 @@ select is(book_online(jsonb_build_object('date', jkt_today() + 3, 'time', '11:00
 select is((select source from customers where whatsapp = '6281299997002'), 'web', 'pelanggan dari booking online bersumber web');
 
 -- ---------- laporan ----------
+-- sejak Paket A (31 Okt) pelanggan baru = transaksi pertama di periode → pelanggan instagram bertransaksi hari ini
+insert into transactions (customer_id, subtotal, total, paid_amount, payment_method)
+select id, 50000, 50000, 50000, 'cash' from customers where whatsapp = '6281299997001';
 select tests.login(tests.mgr());
 select is((select (x ->> 'n')::int from jsonb_array_elements(campaign_report(jkt_today(), jkt_today()) -> 'new_customers') x where x ->> 'source' = 'instagram') >= 1,
   true, 'laporan menghitung pelanggan baru per sumber');

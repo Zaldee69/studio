@@ -20,8 +20,8 @@ export type Period = { status: "open" | "closed"; closed_at: string | null; reop
 
 const signed = (v: number) => (v < 0 ? "−" : v > 0 ? "+" : "") + formatRupiah(Math.abs(v));
 
-export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, weekly = {} }: {
-  month: string; current: string; rows: PayRow[]; period: Period; ratio: number; minPay: number;
+export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {} }: {
+  month: string; current: string; rows: PayRow[]; period: Period; ratio: number;
   /** komisi yang sudah ditutup mingguan untuk bulan ini, per staf → dikurangkan dari total gaji */
   weekly?: Record<string, number>;
 }) {
@@ -82,7 +82,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, minPay, we
           ["Pendapatan jasa bersih", formatRupiah(rev), `${sum("service_count")} layanan`],
           ["HPP bahan", formatRupiah(hpp), rev ? `${Math.round((hpp * 1000) / rev) / 10}% dari pendapatan` : "—"],
           ["Komisi staf", formatRupiah(comm), `rasio ${ratio}% dari margin`],
-          ["Subsidi jaring pengaman", formatRupiah(sum("subsidy")), `${under} staf di bawah ${formatRupiah(minPay)}`],
+          ["Subsidi jaring harian", formatRupiah(sum("subsidy")), `${under} staf`],
         ].map(([k, v, s]) => (
           <div key={k} className="flex flex-col gap-0.5 rounded-[14px] border border-line bg-card p-4">
             <span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span>

@@ -26,8 +26,8 @@ select results_eq($$ select base_salary, commission_service, commission_retail, 
   'N: gaji pokok + 30% × (100rb − HPP 10rb) + ritel 10%, tanpa jaring pengaman');
 select results_eq($$ select base_salary, commission_service, commission_retail, subsidy, total_pay from commission_live('2026-08-01')
                      where staff_id = '00000000-0000-0000-00dd-000000000002' $$,
-  $$ values (0::bigint, 50000::bigint, 0::bigint, 1150000::bigint, 1200000::bigint) $$,
-  'L: tetap skema global (HPP tidak dipotong, ritel 0%, jaring 1,2 jt)');
+  $$ values (0::bigint, 50000::bigint, 0::bigint, 0::bigint, 50000::bigint) $$,
+  'L: tetap skema global (HPP tidak dipotong, ritel 0%); jaring bulanan sudah dihapus (1 Nov)');
 
 select tests.login(tests.mgr());
 select is((select count(*) from commission_week('2026-08-03') where staff_id = '00000000-0000-0000-00dd-000000000001'), 0::bigint,

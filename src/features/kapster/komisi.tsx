@@ -9,7 +9,7 @@ import { mondayOf, shiftWeek, weekLabel } from "@/features/sdm/shared";
 const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 
 /** Komisi saya: dari commission_for_period (sama dengan layar SDM & slip gaji), rincian tanpa HPP. */
-export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deductHpp, payMonthly }: { ratio: number; minPay: number; retailPct: number; gross?: boolean; dailyMin?: number | null; deductHpp?: boolean; payMonthly?: boolean }) {
+export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, payMonthly }: { ratio: number; retailPct: number; gross?: boolean; dailyMin?: number | null; deductHpp?: boolean; payMonthly?: boolean }) {
   const cur = jktDate().slice(0, 7);
   const months = Array.from({ length: 6 }, (_, i) => {
     const d = new Date(Date.UTC(+cur.slice(0, 4), +cur.slice(5, 7) - 1 - i, 1));
@@ -109,10 +109,9 @@ export function KomisiKapster({ ratio, minPay, retailPct, gross, dailyMin, deduc
           <div key={k} className="flex flex-col gap-0.5 rounded-[14px] bg-card p-3.5"><span className="text-xs text-muted">{k}</span><b className="text-[17px] min-[420px]:text-xl">{v}</b></div>
         ))}
       </div>
-      {s && s.subsidy > 0 && (
+      {s && s.subsidy > 0 && !!dailyMin && (
         <div className="rounded-xl bg-card px-3.5 py-3 text-sm leading-normal tabular">
-          {dailyMin ? <>Jaring harian {formatRupiah(dailyMin)}: di hari Anda melayani dan komisinya di bawah itu, toko menutup selisihnya — bulan ini <b>{formatRupiah(s.subsidy)}</b>, dibayar bersama komisi mingguan.</>
-            : <>Kurang <b>{formatRupiah(s.subsidy)}</b> lagi untuk mencapai ambang {formatRupiah(minPay)} dari komisi sendiri. Sampai itu tercapai, toko menutup selisihnya.</>}
+          Jaring harian {formatRupiah(dailyMin)}: di hari Anda melayani dan komisinya di bawah itu, toko menutup selisihnya — bulan ini <b>{formatRupiah(s.subsidy)}</b>, dibayar bersama komisi mingguan.
         </div>
       )}
       <span className="text-[13px] leading-normal text-muted">

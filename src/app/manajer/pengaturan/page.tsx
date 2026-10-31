@@ -25,7 +25,7 @@ const MENU = [
   ["Tim", [["staf", "Staf"], ["akun", "Akun & peran"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["pelamar", "Pelamar"]]],
   ["Pelanggan", [["booking", "Booking online"], ["pesan", "Pesan otomatis"], ["notifikasi", "Notifikasi & log"]]],
   ["Situs", [["publik", "Konten halaman"], ["foto", "Foto"], ["ulasan", "Ulasan"], ["privasi", "Kebijakan privasi"]]],
-  ["Keuangan", [["keuangan", "Kas, komisi & stok"]]],
+  ["Keuangan", [["keuangan", "Kas, diskon & stok"]]],
   ["Keamanan", [["keamanan", "Keamanan"]]],
 ] as const;
 

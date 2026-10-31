@@ -37,7 +37,7 @@ select is((select subsidy from m where staff_id = '00000000-0000-0000-00bb-00000
 select is((select total_pay - (select sum(amount) from commission_week_pays w where w.staff_id = m.staff_id and w.month = '2026-08-01')
            from m where staff_id = '00000000-0000-0000-00bb-000000000001')::bigint, 0::bigint, 'akhir bulan: sisa 0 — tidak dibayar dobel');
 select is((select subsidy from m where staff_id = '00000000-0000-0000-00bb-000000000002'),
-          greatest(0, (select min_monthly_pay from settings) - 50000)::bigint, 'staf tanpa jaring harian tetap pakai jaring bulanan');
+          0::bigint, 'staf tanpa jaring harian: tanpa subsidi (jaring bulanan dihapus 1 Nov)');
 
 select tests.su();
 select throws_like($$ update staff set daily_min_pay = 0 where id = '00000000-0000-0000-00bb-000000000001' $$, '%check%', 'jaring harian harus > 0 (kosong = nonaktif)');

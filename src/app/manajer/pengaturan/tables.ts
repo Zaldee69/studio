@@ -52,11 +52,6 @@ export const TABLES = {
       { name: "category", label: "Kategori", type: "select", options: CATEGORY, w: "10rem" },
       { name: "home_resource_id", label: "Kursi/meja utama", type: "select", options: "resources", nullable: true, w: "11rem" },
       { name: "whatsapp", label: "No. WA (booking, jadwal & rapor)", type: "text", nullable: true, w: "10rem" },
-      { name: "commission_pct_override", label: "Komisi khusus (%)", type: "int", nullable: true, min: 0, max: 100, w: "8rem" },
-      { name: "deduct_hpp", label: "Potong HPP (— = ikut aturan)", type: "select", options: [["true", "Ya"], ["false", "Tidak"]], nullable: true, w: "8rem" },
-      { name: "retail_pct_override", label: "Komisi ritel (%)", type: "int", nullable: true, min: 0, max: 100, w: "7rem" },
-      { name: "base_salary", label: "Gaji pokok / bulan (Rp)", type: "money", nullable: true, min: 1, w: "9rem" },
-      { name: "pay_monthly", label: "Bayar bulanan", type: "bool", w: "5.5rem" },
       { name: "sort", label: "Urut", type: "int", w: "4.5rem" },
       { name: "active", label: "Aktif", type: "bool", w: "4rem" },
     ],
@@ -202,9 +197,7 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     { name: "alert_cash_diff", label: "Tandai ⚠️ di notifikasi Telegram bila selisih tutup kasir ≥ (Rp)", type: "money" },
     { name: "alert_expense_min", label: "Kirim notifikasi Telegram untuk pengeluaran ≥ (Rp)", type: "money" },
   ] },
-  { title: "Komisi & diskon", tab: "keuangan", fields: [
-    { name: "commission_pct", label: "Komisi default (%)", type: "int", min: 0, max: 100 },
-    { name: "min_monthly_pay", label: "Jaring pengaman / bulan (Rp)", type: "money" },
+  { title: "Diskon paket", tab: "keuangan", fields: [
     { name: "bundle_pct", label: "Diskon paket barbershop + nail (%)", type: "int", min: 10, max: 15 },
   ] },
   { title: "Inventaris & perawatan", tab: "keuangan", fields: [

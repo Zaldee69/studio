@@ -5,5 +5,5 @@ export const metadata = { title: "Komisi" };
 export default async function Page() {
   const { data } = await (await createClient()).rpc("staff_commission_terms");
   const t = (data ?? { ratio: 40, min_pay: 0, retail_pct: 0 }) as { ratio: number; min_pay: number; retail_pct: number; basis?: string; daily_min?: number | null; deduct_hpp?: boolean; pay_monthly?: boolean };
-  return <KomisiKapster ratio={t.ratio} minPay={t.min_pay} retailPct={Number(t.retail_pct)} gross={t.basis === "gross"} dailyMin={t.daily_min ?? null} deductHpp={!!t.deduct_hpp} payMonthly={!!t.pay_monthly} />;
+  return <KomisiKapster ratio={t.ratio} retailPct={Number(t.retail_pct)} gross={t.basis === "gross"} dailyMin={t.daily_min ?? null} deductHpp={!!t.deduct_hpp} payMonthly={!!t.pay_monthly} />;
 }

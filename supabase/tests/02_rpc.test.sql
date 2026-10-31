@@ -81,8 +81,8 @@ select is((select sum(c.hpp) from transaction_item_costs c join transaction_item
 select results_eq(
   $$ select service_count, revenue_net, commission_service, subsidy, total_pay from commission_for_period(jkt_today())
      where staff_id = '00000000-0000-0000-0001-000000000004' $$,
-  $$ values (1, 81000::bigint, 31600::bigint, 1168400::bigint, 1200000::bigint) $$,
-  'komisi Sari: (81.000 − 2.000) × 40% + subsidi jaring pengaman');
+  $$ values (1, 81000::bigint, 31600::bigint, 0::bigint, 31600::bigint) $$,
+  'komisi Sari: (81.000 − 2.000) × 40%, tanpa jaring bulanan (dihapus 1 Nov)');
 
 -- ---------- Void ----------
 select tests.login(tests.kasir());

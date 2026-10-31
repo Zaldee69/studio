@@ -22,7 +22,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   const month = /^\d{4}-\d{2}$/.test(one(sp.bulan)) ? one(sp.bulan) : current;
   const year = /^\d{4}$/.test(one(sp.tahun)) ? Number(one(sp.tahun)) : Number(current.slice(0, 4));
   const supabase = await createClient();
-  const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, min_monthly_pay, commission_basis, commission_deduct_hpp").single();
+  const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, commission_basis, commission_deduct_hpp").single();
 
   let body: React.ReactNode;
   if (tab === "mingguan") {
@@ -40,10 +40,10 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
     ]);
     body = <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
       weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
-      ratio={st?.commission_pct ?? 40} minPay={st?.min_monthly_pay ?? 0} />;
+      ratio={st?.commission_pct ?? 40} />;
   } else if (tab === "aturan") {
-    const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, daily_min_pay, active").order("sort");
-    body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} minPay={st?.min_monthly_pay ?? 0} basis={st?.commission_basis === "gross" ? "gross" : "net"} deductHpp={!!st?.commission_deduct_hpp} staff={staff ?? []} />;
+    const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, daily_min_pay, active, deduct_hpp, retail_pct_override, base_salary, pay_monthly").order("sort");
+    body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} basis={st?.commission_basis === "gross" ? "gross" : "net"} deductHpp={!!st?.commission_deduct_hpp} staff={staff ?? []} />;
   } else if (tab === "peringkat") {
     const byYear = sp.periode === "tahun";
     const end = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).toISOString().slice(0, 10);

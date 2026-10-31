@@ -11,37 +11,61 @@ import { itemCommission } from "@/lib/domain/commission";
 import { createClient } from "@/lib/supabase/client";
 import { CAT } from "./shared";
 
-type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; daily_min_pay: number | null; active: boolean };
+type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; daily_min_pay: number | null; active: boolean;
+  deduct_hpp: boolean | null; retail_pct_override: number | null; base_salary: number | null; pay_monthly: boolean };
+type Row = { pct: string; hpp: "" | "true" | "false"; retail: string; base: string; monthly: boolean; daily: string };
 
-/** Aturan komisi: rasio global, override per staf, komisi ritel, ambang gaji minimum. Berlaku untuk periode yang belum ditutup. */
-export function CommissionRules({ ratio, retailPct, minPay, basis, deductHpp, staff }: { ratio: number; retailPct: number; minPay: number; basis: "net" | "gross"; deductHpp: boolean; staff: StaffRule[] }) {
+const rp = (n: number | null) => (n ? n.toLocaleString("id-ID") : "");
+const digits = (v: string) => Number(v.replace(/\D/g, "")) || null;
+const intOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
+const toRow = (s: StaffRule): Row => ({ pct: s.commission_pct_override == null ? "" : String(s.commission_pct_override), hpp: s.deduct_hpp == null ? "" : s.deduct_hpp ? "true" : "false",
+  retail: s.retail_pct_override == null ? "" : String(s.retail_pct_override), base: rp(s.base_salary), monthly: s.pay_monthly, daily: rp(s.daily_min_pay) });
+
+/**
+ * Satu-satunya tempat aturan upah (1 Nov 2026): aturan umum + aturan per staf (komisi khusus, potong HPP, ritel, gaji pokok,
+ * bayar bulanan, jaring harian). Pengaturan → Staf hanya data identitas & operasional.
+ */
+export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: { ratio: number; retailPct: number; basis: "net" | "gross"; deductHpp: boolean; staff: StaffRule[] }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
-  const [f, setF] = useState({ ratio, retail: String(retailPct), minPay: String(minPay), basis, hpp: deductHpp });
-  const [ov, setOv] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.commission_pct_override == null ? "" : String(s.commission_pct_override)])));
-  const [dm, setDm] = useState<Record<string, string>>(Object.fromEntries(staff.map((s) => [s.id, s.daily_min_pay ? s.daily_min_pay.toLocaleString("id-ID") : ""])));
+  const [f, setF] = useState({ ratio, retail: String(retailPct), basis, hpp: deductHpp });
+  const [rows, setRows] = useState<Record<string, Row>>(Object.fromEntries(staff.map((s) => [s.id, toRow(s)])));
+  const set = (id: string, patch: Partial<Row>) => setRows({ ...rows, [id]: { ...rows[id], ...patch } });
   async function save() {
     const supabase = createClient();
-    const retail = Number(f.retail.replace(",", ".")), min = Number(f.minPay.replace(/\D/g, ""));
-    if (!(retail >= 0 && retail <= 100) || !(min >= 0)) return toast("Cek angka komisi ritel & gaji minimum", "error");
-    const { error } = await supabase.from("settings").update({ commission_pct: f.ratio, retail_commission_pct: retail, min_monthly_pay: min, commission_basis: f.basis, commission_deduct_hpp: f.hpp }).eq("id", true);
-    if (error) return toast(error.message, "error");
+    const retail = Number(f.retail.replace(",", "."));
+    if (!(retail >= 0 && retail <= 100)) return toast("Cek angka komisi ritel", "error");
+    const changes: [StaffRule, Omit<StaffRule, "id" | "name" | "category" | "active">][] = [];
     for (const s of staff) {
-      const v = ov[s.id].trim() === "" ? null : Number(ov[s.id]);
-      const d = Number(dm[s.id].replace(/\D/g, "")) || null;
-      if (v !== s.commission_pct_override || d !== s.daily_min_pay) {
-        if (v !== null && !(Number.isInteger(v) && v >= 0 && v <= 100)) return toast(`Override ${s.name} harus 0–100`, "error");
-        const r = await supabase.from("staff").update({ commission_pct_override: v, daily_min_pay: d }).eq("id", s.id);
-        if (r.error) return toast(r.error.message, "error");
-      }
+      const r = rows[s.id];
+      const v = { commission_pct_override: intOrNull(r.pct), deduct_hpp: r.hpp === "" ? null : r.hpp === "true", retail_pct_override: intOrNull(r.retail),
+        base_salary: digits(r.base), pay_monthly: r.monthly, daily_min_pay: digits(r.daily) };
+      for (const [k, n] of [["komisi khusus", v.commission_pct_override], ["komisi ritel", v.retail_pct_override]] as const)
+        if (n !== null && !(Number.isInteger(n) && n >= 0 && n <= 100)) return toast(`${s.name}: ${k} harus 0–100`, "error");
+      if ((Object.keys(v) as (keyof typeof v)[]).some((k) => v[k] !== s[k])) changes.push([s, v]);
     }
-    toast("Aturan komisi disimpan"); router.refresh();
+    const { error } = await supabase.from("settings").update({ commission_pct: f.ratio, retail_commission_pct: retail, commission_basis: f.basis, commission_deduct_hpp: f.hpp }).eq("id", true);
+    if (error) return toast(error.message, "error");
+    for (const [s, v] of changes) {
+      const r = await supabase.from("staff").update(v).eq("id", s.id);
+      if (r.error) return toast(`${s.name}: ${r.error.message}`, "error");
+    }
+    toast("Aturan upah disimpan"); router.refresh();
   }
   const ex = itemCommission(162000, f.hpp ? 12000 : 0, f.ratio);
+  const harga = f.basis === "gross" ? "harga normal" : "harga bersih";
+  /** Ringkasan skema satu staf dari isian saat ini (kosong = ikut aturan umum). */
+  const scheme = (r: Row) => {
+    const pct = r.pct.trim() === "" ? f.ratio : Number(r.pct), hpp = r.hpp === "" ? f.hpp : r.hpp === "true";
+    const ret = r.retail.trim() === "" ? Number(f.retail) || 0 : Number(r.retail), base = digits(r.base), daily = digits(r.daily);
+    return [`${pct}% ${harga}${hpp ? " − HPP" : ""}`, ret > 0 && `ritel ${ret}%`, base && `gaji pokok ${formatRupiah(base)}/bulan`,
+      daily && `jaring harian ${formatRupiah(daily)}`, r.monthly ? "dibayar bulanan" : "dibayar mingguan"].filter(Boolean).join(" · ");
+  };
   return (
-    <form onSubmit={(e) => { e.preventDefault(); save(); }} className="grid gap-4 min-[1000px]:grid-cols-2">
+    <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4">
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
+        <b>Aturan umum</b>
         <div className="flex flex-col gap-2">
-          <label htmlFor="cr-ratio" className="label">Rasio komisi global: <b className="text-lg text-ink">{f.ratio}%</b> dari harga {f.basis === "gross" ? "normal" : "bersih"}{f.hpp && " − HPP"}</label>
+          <label htmlFor="cr-ratio" className="label">Rasio komisi umum: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</label>
           <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-accent" />
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
@@ -62,32 +86,49 @@ export function CommissionRules({ ratio, retailPct, minPay, basis, deductHpp, st
           <span><b>Potong HPP bahan habis pakai dari komisi</b><span className="block text-xs text-muted">Berlaku juga untuk transaksi lama di periode yang belum ditutup.</span></span>
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={`Komisi ritel (% harga ${f.basis === "gross" ? "normal" : "bersih"})`} htmlFor="cr-retail"><input id="cr-retail" inputMode="decimal" className="input" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
-          <Field label="Jaring pengaman / bulan (Rp)" htmlFor="cr-min"><input id="cr-min" inputMode="numeric" className="input" value={f.minPay} onChange={(e) => setF({ ...f, minPay: e.target.value })} /></Field>
+          <Field label={`Komisi ritel (% ${harga})`} htmlFor="cr-retail"><input id="cr-retail" inputMode="decimal" className="input" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
         </div>
         <div className="rounded-[12px] bg-paper p-3.5 text-sm leading-relaxed">
-          <b>Cara hitung:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} {f.hpp ? "dikurangi HPP bahan (tidak pernah minus)" : "(HPP bahan tidak dipotong)"}.
-          {Number(f.retail) > 0 && <> Produk ritel yang ia jual menambah <b>{f.retail}%</b> dari harga {f.basis === "gross" ? "normal" : "bersih"}.</>}
-          {" "}Jika total komisi sebulan di bawah <b>{formatRupiah(Number(f.minPay.replace(/\D/g, "")) || 0)}</b>, toko menambah selisihnya (subsidi).
-          Bonus/potongan manual ditambahkan setelah subsidi. Contoh: Gel Polish net Rp162.000{f.hpp && ", HPP Rp12.000"} → komisi <b>{formatRupiah(ex)}</b>.
+          <b>Cara hitung umum:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} {f.hpp ? "dikurangi HPP bahan (tidak pernah minus)" : "(HPP bahan tidak dipotong)"}.
+          {Number(f.retail) > 0 && <> Produk ritel yang ia jual menambah <b>{f.retail}%</b>.</>}
+          {" "}Bonus/potongan manual ditambahkan setelah komisi. Contoh: Gel Polish net Rp162.000{f.hpp && ", HPP Rp12.000"} → komisi <b>{formatRupiah(ex)}</b>.
+          Staf dengan aturan khusus di bawah mengikuti skemanya sendiri.
         </div>
       </section>
       <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-5">
-        <b>Aturan khusus per staf</b>
-        <span className="text-xs text-muted">Rasio: kosongkan untuk memakai rasio global. Jaring harian: bila diisi, di hari staf melayani ≥1 layanan
-          dan komisinya di bawah angka ini, toko menutup selisihnya — dibayar bersama komisi mingguan dan menggantikan jaring pengaman bulanan.</span>
-        {staff.filter((s) => s.active).map((s) => (
-          <div key={s.id} className="flex items-center gap-3 border-t border-[#EEEEEA] py-1.5">
-            <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
-            <label htmlFor={`ov-${s.id}`} className="flex-1 text-sm font-semibold">{s.name}</label>
-            <input id={`ov-${s.id}`} inputMode="numeric" placeholder={`${f.ratio}`} className="input w-24" value={ov[s.id]} onChange={(e) => setOv({ ...ov, [s.id]: e.target.value })} />
-            <span className="text-sm text-muted">%</span>
-            <label htmlFor={`dm-${s.id}`} className="sr-only">Jaring harian {s.name}</label>
-            <input id={`dm-${s.id}`} inputMode="numeric" placeholder="Jaring harian" className="input w-32" value={dm[s.id]}
-              onChange={(e) => { const n = Number(e.target.value.replace(/\D/g, "")); setDm({ ...dm, [s.id]: n ? n.toLocaleString("id-ID") : "" }); }} />
-          </div>
-        ))}
-        <button disabled={!online} className="btn-ink mt-2 h-12">Simpan aturan komisi</button>
+        <b>Aturan per staf</b>
+        <span className="text-xs text-muted">Kosong = ikut aturan umum. Jaring harian: di hari staf melayani ≥1 layanan dan komisinya di bawah angka ini, toko menutup
+          selisihnya (dibayar bersama komisi mingguan). Bayar bulanan: komisi tidak dibayar mingguan, tetapi bersama gaji akhir bulan.</span>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[920px] text-sm">
+            <thead><tr className="text-left text-xs text-muted">
+              <th className="py-2 pr-2 font-semibold">Staf</th><th className="py-2 pr-2 font-semibold">Komisi khusus (%)</th><th className="py-2 pr-2 font-semibold">Potong HPP</th>
+              <th className="py-2 pr-2 font-semibold">Komisi ritel (%)</th><th className="py-2 pr-2 font-semibold">Gaji pokok / bulan (Rp)</th>
+              <th className="py-2 pr-2 font-semibold">Bayar bulanan</th><th className="py-2 font-semibold">Jaring harian (Rp)</th>
+            </tr></thead>
+            <tbody>
+              {staff.map((s) => { const r = rows[s.id]; return (
+                <tr key={s.id} className="border-t border-[#EEEEEA] align-top">
+                  <td className="py-2 pr-2">
+                    <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
+                      <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#EFEFEB] px-2 py-0.5 text-[11px] font-bold text-[#4A4C46]">nonaktif</span>}</span>
+                    <span className="mt-1 block max-w-[260px] text-xs text-muted">{scheme(r)}</span>
+                  </td>
+                  <td className="py-2 pr-2"><input aria-label={`Komisi khusus ${s.name}`} inputMode="numeric" placeholder={`${f.ratio}`} className="input w-20" value={r.pct} onChange={(e) => set(s.id, { pct: e.target.value })} /></td>
+                  <td className="py-2 pr-2"><select aria-label={`Potong HPP ${s.name}`} className="input w-36" value={r.hpp} onChange={(e) => set(s.id, { hpp: e.target.value as Row["hpp"] })}>
+                    <option value="">Ikut umum ({f.hpp ? "ya" : "tidak"})</option><option value="true">Ya</option><option value="false">Tidak</option></select></td>
+                  <td className="py-2 pr-2"><input aria-label={`Komisi ritel ${s.name}`} inputMode="numeric" placeholder={f.retail || "0"} className="input w-20" value={r.retail} onChange={(e) => set(s.id, { retail: e.target.value })} /></td>
+                  <td className="py-2 pr-2"><input aria-label={`Gaji pokok ${s.name}`} inputMode="numeric" placeholder="—" className="input w-36" value={r.base}
+                    onChange={(e) => set(s.id, { base: rp(digits(e.target.value)) })} /></td>
+                  <td className="py-2 pr-2"><input type="checkbox" aria-label={`Bayar bulanan ${s.name}`} className="mt-3 size-5 accent-accent" checked={r.monthly} onChange={(e) => set(s.id, { monthly: e.target.checked })} /></td>
+                  <td className="py-2"><input aria-label={`Jaring harian ${s.name}`} inputMode="numeric" placeholder="—" className="input w-32" value={r.daily}
+                    onChange={(e) => set(s.id, { daily: rp(digits(e.target.value)) })} /></td>
+                </tr>
+              ); })}
+            </tbody>
+          </table>
+        </div>
+        <button disabled={!online} className="btn-ink mt-2 h-12 self-start px-6">Simpan aturan upah</button>
       </section>
     </form>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CloseButton, useToast } from "@/components/ui";
 import { parseCsv, previewImport, TEMPLATE_CSV, type ImportRow } from "@/lib/domain/csv";
 import { createClient } from "@/lib/supabase/client";
+import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 
 const STATUS_STYLE = { valid: ["Valid", "#E6F1E4", "#144D2A"], duplicate: ["Duplikat", "#FBF3DE", "#5A4300"], error: ["Error", "#F9E6E6", "#6E1616"] } as const;
 
@@ -14,6 +15,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
   const [fileName, setFileName] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [source, setSource] = useState<CustomerSource | "">(""); // "tahu dari mana" satu batch (laporan campaign)
 
   async function onFile(f: File | undefined) {
     if (!f) return;
@@ -46,7 +48,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
     let inserted = 0, dup = 0, errs = 0;
     for (let i = 0; i < valid.length; i += 500) {
       const { data, error } = await createClient().rpc("import_customers", {
-        p_rows: valid.slice(i, i + 500).map((r) => ({ name: r.name, whatsapp: r.wa, notes: r.notes })),
+        p_rows: valid.slice(i, i + 500).map((r) => ({ name: r.name, whatsapp: r.wa, notes: r.notes, source })),
       });
       if (error) { setSaving(false); return setError(error.message); }
       const d = data as { inserted: number; duplicates: number; errors: unknown[] };
@@ -102,9 +104,15 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
             </table>
             {rows.length > 300 && <p className="px-3 py-2 text-xs text-muted">…dan {rows.length - 300} baris lagi.</p>}
           </div>
-          <div className="flex justify-end gap-2.5">
+          <div className="flex flex-wrap items-end justify-end gap-2.5">
+            <label className="mr-auto flex flex-col gap-1 text-xs font-bold text-muted">Kontak ini tahu D&apos;Pras dari mana?
+              <select className="input w-56" value={source} onChange={(e) => setSource(e.target.value as CustomerSource)}>
+                <option value="">— pilih —</option>
+                {CUSTOMER_SOURCES.filter(([k]) => k !== "web").map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+            </label>
             <button onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
-            <button onClick={confirmImport} disabled={!valid.length || saving} className="btn-ink h-12 px-6">
+            <button onClick={confirmImport} disabled={!valid.length || !source || saving} className="btn-ink h-12 px-6">
               {saving ? "Mengimpor…" : `Impor ${valid.length} pelanggan`}
             </button>
           </div>

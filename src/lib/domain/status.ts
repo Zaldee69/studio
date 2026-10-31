@@ -15,6 +15,17 @@ export const STATUS: Record<ApptStatus, { label: string; short: string; bg: stri
 /** Urutan alur layanan (tanpa paid/cancelled) — dipakai tombol status satu langkah. */
 export const FLOW: ApptStatus[] = ["booked", "arrived", "in_service", "completed"];
 
+/**
+ * Perpindahan status yang boleh lewat set_appointment_status (sama dengan aturan di DB, audit BOOK-5 1 Nov): maju satu
+ * langkah atau mundur satu langkah; tidak lompat ke Selesai tanpa Dilayani (jam layanan tercatat). Tidak datang → Terjadwal
+ * hanya manajer (dicek DB).
+ */
+export const MOVES: Partial<Record<ApptStatus, ApptStatus[]>> = {
+  booked: ["arrived", "in_service"], arrived: ["booked", "in_service"], in_service: ["arrived", "completed"],
+  completed: ["in_service"], no_show: ["booked"],
+};
+export const canMove = (from: ApptStatus, to: ApptStatus) => !!MOVES[from]?.includes(to);
+
 /** Langkah berikutnya yang boleh lewat advance_appointment_status(). 'paid' hanya lewat checkout. */
 export function nextStatus(s: ApptStatus): ApptStatus | null {
   const i = FLOW.indexOf(s);

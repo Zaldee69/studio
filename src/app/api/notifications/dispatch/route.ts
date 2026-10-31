@@ -1,4 +1,5 @@
 import { liveAdapters } from "@/lib/notifications/adapters";
+import { pushSecretOk } from "@/lib/push-secret";
 import { processQueue, type Queued } from "@/lib/notifications/dispatch";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -10,7 +11,7 @@ import { mapsUrl } from "@/lib/domain/format";
 // Blast promosi bisa ratusan pesan → proses batch 25 berulang sampai antrean habis / mendekati batas waktu fungsi.
 export const maxDuration = 60;
 export async function POST(req: Request) {
-  if (!process.env.PUSH_SECRET || req.headers.get("x-push-secret") !== process.env.PUSH_SECRET) {
+  if (!pushSecretOk(req.headers.get("x-push-secret"))) {
     log("warn", "notify_dispatch_unauthorized");
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }

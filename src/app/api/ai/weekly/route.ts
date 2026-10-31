@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { pushSecretOk } from "@/lib/push-secret";
 import { telegramBody, writeWeeklyMeeting } from "@/lib/ai/weekly";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -7,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 // dengan notifikasi lain (dikirim /api/notifications/dispatch).
 export const maxDuration = 300; // 3 langkah AI berurutan (2 putaran + GM); butuh Fluid Compute (bawaan project Vercel baru)
 export async function POST(req: Request) {
-  if (!process.env.PUSH_SECRET || req.headers.get("x-push-secret") !== process.env.PUSH_SECRET) {
+  if (!pushSecretOk(req.headers.get("x-push-secret"))) {
     log("warn", "ai_weekly_unauthorized");
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }

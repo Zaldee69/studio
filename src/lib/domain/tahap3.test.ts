@@ -92,4 +92,11 @@ describe("captcha (server)", () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("offline"); }));
     expect(await verifyTurnstile("tok")).toBe(false);
   });
+  it("production: widget aktif tapi secret kosong → tolak (salah konfigurasi, audit SEC-7)", async () => {
+    vi.stubEnv("VERCEL_ENV", "production"); vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "0x4uji");
+    expect(await verifyTurnstile("tok")).toBe(false);
+    vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "");
+    expect(await verifyTurnstile(null)).toBe(true); // captcha memang dimatikan
+    vi.unstubAllEnvs();
+  });
 });

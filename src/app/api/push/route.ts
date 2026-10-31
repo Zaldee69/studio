@@ -1,4 +1,5 @@
 import webpush from "web-push";
+import { pushSecretOk } from "@/lib/push-secret";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
 import { errInfo, log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
@@ -8,7 +9,7 @@ import { apptName } from "@/lib/domain/guest";
 const TITLE = { new: "Booking baru", changed: "Booking diubah", cancelled: "Booking dibatalkan" } as const;
 
 export async function POST(req: Request) {
-  if (!process.env.PUSH_SECRET || req.headers.get("x-push-secret") !== process.env.PUSH_SECRET) {
+  if (!pushSecretOk(req.headers.get("x-push-secret"))) {
     log("warn", "push_unauthorized");
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }

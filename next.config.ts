@@ -6,6 +6,15 @@ const local = ["127.0.0.1", "localhost"].includes(supabase.hostname);
 const nextConfig: NextConfig = {
   // dev/build terhadap Supabase produksi (npm run dev:prod) memakai folder sendiri — cache lokal & produksi tidak tercampur
   distDir: process.env.NEXT_DIST_DIR || ".next",
+  // Audit SEC-8: tidak boleh di-iframe situs lain (clickjacking kasir/manajer), tanpa tebak tipe konten, referrer dibatasi.
+  async headers() {
+    return [{ source: "/:path*", headers: [
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    ] }];
+  },
   // Browser selalu meminta /favicon.ico; arahkan ke ikon SVG di app/icon.svg.
   async redirects() {
     return [{ source: "/favicon.ico", destination: "/icon.svg", permanent: true }];

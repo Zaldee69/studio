@@ -27,7 +27,7 @@ select is((select count(*) from audit_log), 0::bigint, 'kasir tidak bisa membaca
 select throws_like($$ select cancel_booking_admin('00000000-0000-0000-00fe-000000000002', 'salah input') $$,
                    '%sudah dikerjakan%', 'kasir tidak bisa membatalkan booking yang sudah selesai dilayani');
 select throws_like($$ select set_appointment_status('00000000-0000-0000-00fe-000000000002', 'booked') $$,
-                   '%sudah dikerjakan%', 'kasir tidak bisa memundurkan status layanan selesai');
+                   '%tidak bisa langsung%', 'kasir tidak bisa memundurkan status layanan selesai');
 select tests.login(tests.mgr());
 select lives_ok($$ select cancel_booking_admin('00000000-0000-0000-00fe-000000000003', 'Komplain, digratiskan') $$,
                 'manajer boleh membatalkan (tercatat)');

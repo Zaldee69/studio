@@ -7,7 +7,7 @@ import { CloseButton, StatusBadge, useOnline } from "@/components/ui";
 import { METHOD_LABEL } from "@/lib/domain/closing";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { actualMinutes } from "@/lib/domain/staff";
-import { STATUS, FLOW, type ApptStatus } from "@/lib/domain/status";
+import { STATUS, FLOW, type ApptStatus, canMove } from "@/lib/domain/status";
 import { createClient } from "@/lib/supabase/client";
 import type { DayAppt, Master } from "../counter/types";
 import type { PayMethod } from "@/lib/domain/cart";
@@ -114,7 +114,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
               {FLOW.map((st) => {
                 const on = appt.status === st, S = STATUS[st];
                 return (
-                  <button key={st} aria-pressed={on} disabled={!online} onClick={() => !on && onStatus(st)}
+                  <button key={st} aria-pressed={on} disabled={!online || (!on && !canMove(appt.status, st))} onClick={() => !on && onStatus(st)}
                     className="flex h-11 items-center justify-center gap-1.5 rounded-[10px] border-2 text-[13px] font-bold disabled:opacity-50"
                     style={{ borderColor: on ? S.dot : "#E5E5E0", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#1F2320" }}>
                     <span className="size-2 rounded-full" style={{ background: S.dot }} />{st === "booked" ? "Terjadwal" : S.short}

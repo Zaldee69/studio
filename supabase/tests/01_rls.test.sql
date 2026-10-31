@@ -64,7 +64,7 @@ select is((select count(*) from customers), 0::bigint, 'anon: customers tertutup
 select is((select count(*) from appointments), 0::bigint, 'anon: appointments tertutup');
 select ok((select count(*) from public_services) > 0, 'anon: membaca public_services');
 select ok((select count(*) from public_staff) > 0, 'anon: membaca public_staff');
-select throws_like($$ select checkout('{"items":[],"method":"cash"}') $$, '%Akses ditolak%', 'anon: tidak bisa checkout');
+select throws_ok($$ select checkout('{"items":[],"method":"cash"}') $$, '42501', null, 'anon: tidak bisa checkout (sejak 1 Nov: tanpa hak EXECUTE)');
 select throws_like($$ select deposit_balance_of(gen_random_uuid()) $$, '%permission denied%', 'anon: helper internal tertutup');
 
 -- ---------- Transaksi hanya lewat RPC ----------

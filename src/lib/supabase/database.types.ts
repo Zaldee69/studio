@@ -2684,6 +2684,11 @@ isOneToOne: false
               "has_pin": boolean,"locked_until": string,"staff_id": string,"updated_at": string
             }[]
                            },
+"staff_private":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "base_salary": number,"commission_pct_override": number,"daily_min_pay": number,"deduct_hpp": boolean,"id": string,"pay_monthly": boolean,"retail_pct_override": number,"whatsapp": string
+            }[]
+                           },
 "staff_wa":
 { Args: { "p_staff": string }; Returns: string
                            },

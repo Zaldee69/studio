@@ -57,11 +57,15 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       </div>
     );
   } else if (tab === "kursi" || tab === "staf") {
-    const [{ data }, { data: open }, { data: res }] = await Promise.all([
-      tab === "kursi" ? supabase.from("resources").select("*").order("sort") : supabase.from("staff").select("*").order("sort"),
+    const [{ data }, { data: open }, { data: res }, { data: priv }] = await Promise.all([
+      tab === "kursi" ? supabase.from("resources").select("*").order("sort")
+        : supabase.from("staff").select("id, name, category, active, sort, created_at, photo_path, home_resource_id").order("sort"),
       supabase.rpc("bookable_categories"),
       supabase.from("resources").select("id, name, type").eq("active", true).order("sort"),
+      tab === "staf" ? supabase.rpc("staff_private") : Promise.resolve({ data: [] }),
     ]);
+    // No. WA staf hanya terbaca manajer (staff_private), digabung ke baris tabel
+    const rows = (data ?? []).map((r) => ({ ...r, ...(priv ?? []).find((p) => p.id === r.id) }));
     // kursi utama: diutamakan saat booking, harus sekategori (dijaga trigger DB)
     const resources = (res ?? []).map((r) => [r.id, `${r.name} (${CAT_NAME[r.type]})`] as [string, string]);
     const hidden = (["barbershop", "nail"] as const).filter((c) => !(open ?? []).includes(c));
@@ -73,7 +77,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
             halaman publik — butuh minimal satu kursi/meja <b>dan</b> satu staf aktif di kategori itu.
           </p>
         )}
-        <CrudTable table={tab === "kursi" ? "resources" : "staff"} rows={data ?? []} options={{ resources }} />
+        <CrudTable table={tab === "kursi" ? "resources" : "staff"} rows={rows} options={{ resources }} />
       </div>
     );
   } else if (tab === "jam") {

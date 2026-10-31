@@ -42,7 +42,10 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
       weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
       ratio={st?.commission_pct ?? 40} />;
   } else if (tab === "aturan") {
-    const { data: staff } = await supabase.from("staff").select("id, name, category, commission_pct_override, daily_min_pay, active, deduct_hpp, retail_pct_override, base_salary, pay_monthly").order("sort");
+    // gaji & aturan komisi per staf hanya terbaca manajer (staff_private)
+    const [{ data: base }, { data: priv }] = await Promise.all([
+      supabase.from("staff").select("id, name, category, active").order("sort"), supabase.rpc("staff_private")]);
+    const staff = (base ?? []).flatMap((s) => { const p = (priv ?? []).find((x) => x.id === s.id); return p ? [{ ...s, ...p }] : []; });
     body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} basis={st?.commission_basis === "gross" ? "gross" : "net"} deductHpp={!!st?.commission_deduct_hpp} staff={staff ?? []} />;
   } else if (tab === "peringkat") {
     const byYear = sp.periode === "tahun";

@@ -50,10 +50,15 @@ export function previewImport(rows: string[][], existingWa: Set<string>): Import
 
 export const TEMPLATE_CSV = "nama,whatsapp,catatan\nBudi Santoso,081234567890,Clipper #2 samping\nRina Wati,0813-9876-5432,Gel warna nude\n";
 
-/** Ekspor CSV untuk Excel (Indonesia): BOM UTF-8, pemisah ";", sel dikutip bila perlu. Bisa dibaca ulang parseCsv(). */
+/**
+ * Ekspor CSV untuk Excel (Indonesia): BOM UTF-8, pemisah ";", sel dikutip bila perlu. Bisa dibaca ulang parseCsv().
+ * Teks yang diawali = + - @ tab/CR diberi awalan ' agar Excel tidak menjalankannya sebagai formula (data pelamar/pelanggan
+ * diisi publik). Angka dan teks angka murni ("-5000") dibiarkan.
+ */
 export function toCsv(rows: (string | number | null | undefined)[][]): string {
   const cell = (v: string | number | null | undefined) => {
-    const s = v == null ? "" : String(v);
+    let s = v == null ? "" : String(v);
+    if (typeof v === "string" && /^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+([.,]\d+)?$/.test(s)) s = `'${s}`;
     return /[";\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return "﻿" + rows.map((r) => r.map(cell).join(";")).join("\r\n") + "\r\n";

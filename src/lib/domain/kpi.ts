@@ -161,7 +161,9 @@ export function previousPeriod(from: string, to: string) {
 
 /** Persen 1 desimal gaya Indonesia (22,7). */
 export const pct1 = (v: number) => (Math.round(v * 10) / 10).toLocaleString("id-ID", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-export const deltaLabel = (d: number | null) => (d === null ? "baru" : `${d >= 0 ? "▲" : "▼"} ${pct1(Math.abs(d))}%`);
+/** Perubahan: % untuk uang/jumlah, "poin" untuk metrik yang sudah berupa persen (rasio ritel, utilisasi). */
+export const deltaLabel = (d: number | null, unit: "%" | "poin" = "%") =>
+  d === null ? "baru" : `${d >= 0 ? "▲" : "▼"} ${pct1(Math.abs(d))}${unit === "poin" ? " poin" : "%"}`;
 
 const DAYS = ["", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 export type InsightInput = {

@@ -127,6 +127,7 @@ describe("U11 perbandingan periode", () => {
   it("7,2 jt vs 6,4 jt → ▲ 12,5%; lalu 0 → baru", () => {
     expect(deltaLabel(delta(7_200_000, 6_400_000))).toBe("▲ 12,5%");
     expect(deltaLabel(delta(5, 0))).toBe("baru");
+    expect(deltaLabel(5, "poin")).toBe("▲ 5,0 poin"); // metrik persen: 10% → 15%
     expect(deltaLabel(delta(90, 100))).toBe("▼ 10,0%");
   });
   it("periode sebelumnya: panjang sama, tepat sebelum from", () => {

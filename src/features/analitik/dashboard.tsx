@@ -48,9 +48,9 @@ function Chip({ tone, icon, label }: { tone: "ok" | "warn" | "bad" | "info"; ico
   const c = { ok: ["#E6F1E4", "#144D2A"], warn: ["#FBF3DE", "#5A4300"], bad: ["#F9E6E6", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
   return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
 }
-function Delta({ d }: { d: number | null | undefined }) {
+function Delta({ d, unit = "%" }: { d: number | null | undefined; unit?: "%" | "poin" }) {
   const v = d ?? null;
-  return <span className={`text-xs font-bold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{deltaLabel(v)}</span>;
+  return <span className={`text-xs font-bold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{deltaLabel(v, unit)}</span>;
 }
 function Section({ id, title, children, onCsv, extra }: { id: string; title: string; children: React.ReactNode; onCsv?: () => void; extra?: React.ReactNode }) {
   return (
@@ -93,8 +93,8 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
       chip: aovSt("nail"), sub: `target ${formatRupiah(t.aov_nail)} · ${cur.tx_nail ?? 0} tx` }] : []),
     ...(cats.includes("massage") ? [{ href: "#aov", title: "AOV Pijat", value: money(cur.aov_massage), delta: delta.aov_massage,
       chip: null, sub: `${cur.tx_massage ?? 0} tx` }] : []),
-    ...(!d.category ? [{ href: "#ritel", title: "Rasio ritel", value: pctOr(cur.retail_ratio), delta: delta.retail_ratio, chip: retailSt, band: true, sub: `pita ${t.retail_min}–${t.retail_max}%` }] : []),
-    { href: "#utilisasi", title: "Utilisasi rata-rata", value: pctOr(cur.utilization_avg), delta: delta.utilization_avg, chip: utilSt, sub: `target ${t.utilization}%` },
+    ...(!d.category ? [{ href: "#ritel", title: "Rasio ritel", value: pctOr(cur.retail_ratio), delta: delta.retail_ratio, unit: "poin" as const, chip: retailSt, band: true, sub: `pita ${t.retail_min}–${t.retail_max}%` }] : []),
+    { href: "#utilisasi", title: "Utilisasi rata-rata", value: pctOr(cur.utilization_avg), delta: delta.utilization_avg, unit: "poin" as const, chip: utilSt, sub: `target ${t.utilization}%` },
   ];
 
   return (
@@ -142,7 +142,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
           <a key={c.title} href={c.href} className="flex flex-col gap-1 rounded-[14px] border border-line bg-card p-4 hover:border-[#CFC8B8]">
             <span className="text-xs font-semibold text-muted">{c.title}</span>
             <b className="font-display text-2xl tabular">{c.value}</b>
-            <span className="flex flex-wrap items-center gap-1.5"><Delta d={c.delta} />
+            <span className="flex flex-wrap items-center gap-1.5"><Delta d={c.delta} unit={"unit" in c ? c.unit : "%"} />
               {c.chip && ("band" in c
                 ? <Chip tone={c.chip === "within" ? "ok" : "warn"} icon={c.chip === "within" ? "✓" : c.chip === "below" ? "▼" : "▲"} label={BAND_LABEL[c.chip as "within"]} />
                 : <Chip tone={c.chip === "within" ? "ok" : "bad"} icon={c.chip === "within" ? "✓" : "▼"} label={c.chip === "within" ? "Sesuai target" : "Di bawah target"} />)}

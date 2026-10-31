@@ -31,6 +31,7 @@ export type OwnerReport = {
   services: { name: string; category: Cat; qty: number; revenue: number; hpp: number; margin: number; margin_pct: N }[];
   customers: { new_customers: number; returning: number; return_rate: N; return_eligible: number; return_back: number; churn_count: number;
     followup_sent: number; followup_converted: number; followup_rate: N; window_days: number;
+    recorded?: { tx: number; with_customer: number };
     top: { name: string; visits: number; spend: number; deposit_balance: number }[] };
   online: { landing: number; booking_open: number; booked: number; online_appts: number; all_appts: number; online_created: number;
     online_cancelled: number; no_show: number; showed: number; share_online: N; cancel_rate: N; no_show_rate: N };

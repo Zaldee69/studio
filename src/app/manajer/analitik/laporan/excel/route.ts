@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth";
 import { log } from "@/lib/log";
 import { attainment, marginPct } from "@/lib/domain/owner";
 import { EXPENSE_CAT } from "@/lib/domain/expense";
+import { customerCoverage } from "@/lib/domain/customer";
 
 // Laporan owner → .xlsx (satu sheet per bagian). Angka sama persis dengan halaman PDF (owner_report()).
 const FMT: Record<RowKind | "delta" | "poin", string> = {
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest) {
   const q = { periode: sp.get("periode") ?? undefined, nilai: sp.get("nilai") ?? undefined, dari: sp.get("dari") ?? undefined, sampai: sp.get("sampai") ?? undefined, bulan: sp.get("bulan") ?? undefined };
   const { p, r, shop, extra: x } = await loadOwnerReport(q);
   const fv = ownerFinanceView(r, x, p.kind === "minggu");
-  const s = r.summary, f = r.finance, t = r.targets;
+  const s = r.summary, f = r.finance, t = r.targets, cov = customerCoverage(r.customers.recorded);
+  const custKeys = new Set(["new_customers", "returning", "return_rate"]);
   const sub = `${shop.name} · ${p.from} s.d. ${p.to} · dibanding ${p.previous.label}${p.sameCompare ? "" : ` & ${p.lastYear.label}`} · dibuat ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`;
 
   const wb = new ExcelJS.Workbook();
@@ -50,9 +52,10 @@ export async function GET(req: NextRequest) {
   const ly = !p.sameCompare; // laporan tahunan: "sebelumnya" = "tahun lalu" → satu kolom pembanding
   const r0 = table(ws, ["Metrik", p.label, p.previous.label, "Perubahan", ...(ly ? [p.lastYear.label, "Perubahan"] : []), "Target", "Capaian"],
     SUMMARY_ROWS.map((row) => {
-      const cur = s[row.key] as number | null, prev = r.previous[row.key] as number | null, last = r.last_year[row.key] as number | null;
+      const hide = !cov.enough && custKeys.has(row.key); // angka pelanggan dari data < 40% tidak dilaporkan
+      const cur = hide ? null : s[row.key] as number | null, prev = hide ? null : r.previous[row.key] as number | null, last = hide ? null : r.last_year[row.key] as number | null;
       const target = row.target?.(t) ?? null;
-      return [row.label, cur, prev, change(row.kind, cur, prev).value, ...(ly ? [last, change(row.kind, cur, last).value] : []), target, attainment(cur, target)];
+      return [hide ? `${row.label} — data belum cukup` : row.label, cur, prev, change(row.kind, cur, prev).value, ...(ly ? [last, change(row.kind, cur, last).value] : []), target, attainment(cur, target)];
     }), []);
   // format per baris (jenis metrik berbeda-beda)
   SUMMARY_ROWS.forEach((row, i) => {
@@ -131,9 +134,12 @@ export async function GET(req: NextRequest) {
   // 6. Pelanggan
   ws = sheet(wb, "Pelanggan", "Pelanggan & booking", sub);
   const c = r.customers, o = r.online;
+  // data pelanggan < 40% transaksi → angka pelanggan dikosongkan (tidak representatif)
+  const cv = (v: number | null) => (cov.enough ? v : null), lab = (k: string) => (cov.enough ? k : `${k} — data belum cukup`);
   table(ws, ["Metrik", "Nilai"], [
-    ["Pelanggan baru", c.new_customers], ["Pelanggan kembali", c.returning], [`Tingkat kembali ≤ ${c.window_days} hari (%)`, c.return_rate],
-    ["Belum kembali (churn, saat ini)", c.churn_count], ["Follow-up dikirim", c.followup_sent], ["Follow-up berhasil", c.followup_converted],
+    ["Transaksi dengan pelanggan (%)", cov.pct],
+    [lab("Pelanggan baru"), cv(c.new_customers)], [lab("Pelanggan kembali"), cv(c.returning)], [lab(`Tingkat kembali ≤ ${c.window_days} hari (%)`), cv(c.return_rate)],
+    [lab("Belum kembali (churn, saat ini)"), cv(c.churn_count)], ["Follow-up dikirim", c.followup_sent], [lab("Follow-up berhasil"), cv(c.followup_converted)],
     ["Kunjungan landing", o.landing], ["Buka halaman booking", o.booking_open], ["Booking online dibuat", o.booked],
     ["Porsi booking online (%)", o.share_online], ["Pembatalan online (%)", o.cancel_rate], ["No-show (%)", o.no_show_rate], ["No-show (jumlah)", o.no_show],
   ], [null, "#,##0.0"]);

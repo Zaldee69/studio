@@ -8,6 +8,8 @@ const MAX_DATA = 40_000; // karakter JSON; heatmap & harian periode panjang dipa
 
 const BASE = `D'Pras Studio: barbershop dengan layanan pijat di Ruko Emerald, Cimanggis Golf Estate, Depok. Data (JSON) adalah laporan dari aplikasi untuk periode yang sedang dilihat manajer di halaman Analitik: analitik.summary (periode ini dan pembanding), daily (per hari), drivers, util (utilisasi kursi), heat (jam × hari), duration, retail, mix (layanan), customers, online (langkah booking online), insights, settings (target); campaign (sumber pengunjung web, voucher, pelanggan tercatat, pelanggan baru per sumber).
 
+Cakupan data pelanggan: bila analitik.customers.recorded menunjukkan transaksi dengan pelanggan < 40% dari semua transaksi, angka pelanggan baru/kembali/tingkat kembali/churn/follow-up TIDAK representatif — jangan menyimpulkan loyalitas atau retensi; sebutkan persentase cakupannya dan bahwa kasir perlu mencatat No. WA pelanggan.
+
 ${STUDIO_RULES}`;
 
 const EXPLAIN = `${BASE}

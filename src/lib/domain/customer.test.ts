@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fillNama, followupLink, loyalty } from "./customer";
+import { fillNama, followupLink, loyalty, customerCoverage } from "./customer";
 
 describe("sapaan {nama}", () => {
   it("nama depan; 'Kak' bila nama belum diketahui; tidak menjadi 'Kak Kak'", () => {
@@ -18,5 +18,16 @@ describe("penanda pelanggan di kasir", () => {
     expect(loyalty(3, ago(4), now)).toBe("langganan");
     expect(loyalty(1, ago(2), now)).toBe("biasa");
     expect(loyalty(4, ago(7), now)).toBe("biasa");
+  });
+});
+
+describe("cakupan data pelanggan (ambang 40%)", () => {
+  it("di bawah 40% → belum cukup; tanpa transaksi → belum cukup", () => {
+    expect(customerCoverage({ tx: 180, with_customer: 8 }).enough).toBe(false);
+    expect(customerCoverage({ tx: 0, with_customer: 0 })).toEqual({ pct: null, enough: false });
+    expect(customerCoverage(undefined).enough).toBe(false);
+  });
+  it("40% ke atas → cukup", () => {
+    expect(customerCoverage({ tx: 10, with_customer: 4 })).toEqual({ pct: 40, enough: true });
   });
 });

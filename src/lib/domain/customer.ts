@@ -38,3 +38,15 @@ export function loyalty(visits: number, lastVisitAt: string | null, now: Date = 
   if (weeks > 8) return "jarang";
   return visits >= 3 && weeks <= 6 ? "langganan" : "biasa";
 }
+
+/**
+ * Cakupan data pelanggan (rapat 31 Okt): angka pelanggan baru/kembali/tingkat kembali/follow-up baru bermakna bila
+ * ≥ 40% transaksi periode itu tercatat dengan pelanggan; di bawahnya ditampilkan "Data belum cukup".
+ */
+export const MIN_CUSTOMER_COVERAGE = 40;
+export function customerCoverage(r: { tx: number; with_customer: number } | null | undefined) {
+  const pct = r?.tx ? (r.with_customer * 100) / r.tx : null;
+  return { pct, enough: pct !== null && pct >= MIN_CUSTOMER_COVERAGE };
+}
+export const coverageNote = (pct: number | null) =>
+  `baru ${pct === null ? 0 : Math.round(pct)}% transaksi tercatat dengan pelanggan; butuh ≥${MIN_CUSTOMER_COVERAGE}%`;

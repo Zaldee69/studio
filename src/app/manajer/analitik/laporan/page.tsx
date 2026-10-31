@@ -5,6 +5,7 @@ import { loadOwnerReport, ownerFinanceView, type OwnerNotes } from "@/features/a
 import { CAT_NAME } from "@/features/analitik/owner-rows";
 import { CAT_LABEL } from "@/features/analitik/palette";
 import { EXPENSE_CAT } from "@/lib/domain/expense";
+import { coverageNote, customerCoverage } from "@/lib/domain/customer";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { pct1 } from "@/lib/domain/kpi";
 import { attainment } from "@/lib/domain/owner";
@@ -55,6 +56,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
 
   // Keuangan: kasbon = uang muka gaji (bukan biaya operasional); gaji bulanan sudah dipotong kasbon → biaya staf = gaji + kasbon.
   const { kasbon, marketing, opexRows, fullPayroll, labor, contribution, operating, cashNet } = ownerFinanceView(r, x, weekly);
+  const cov = customerCoverage(r.customers.recorded);
   const revTarget = t.revenue || null;
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
   const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: pv.rev_massage ?? null };
@@ -246,7 +248,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             {[["Kampanye WA terkirim", n(x.campaign_sends), `${n(x.campaign_recipients)} penerima`],
               ["Biaya pemasaran", m(marketing), "pengeluaran kategori Pemasaran"],
               ["Promo booking online", m(f.discount_promo ?? 0), "diskon yang diberikan"],
-              ["Porsi booking online", pc(s.online_share), `pelanggan baru ${n(s.new_customers)}`],
+              ["Porsi booking online", pc(s.online_share), cov.enough ? `pelanggan baru ${n(s.new_customers)}` : "pelanggan baru: data belum cukup"],
             ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <p className="mt-1 text-[11px] text-muted">Atribusi kampanye → booking/omzet: {NA.toLowerCase()} (booking belum ditandai sumber kampanye). Hasil kampanye tidak disimpulkan dari kenaikan omzet saja.</p>
@@ -293,10 +295,11 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             <div className="grid grid-cols-2 gap-2 text-[12px] min-[700px]:grid-cols-4 print:grid-cols-4">
               {[["Pelanggan baru", n(r.customers.new_customers)], ["Pelanggan kembali", n(r.customers.returning)],
                 [`Pelanggan baru yang kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
-                ["Belum kembali (saat ini)", n(r.customers.churn_count)]].map(([k, v]) => (
+                ["Belum kembali (saat ini)", n(r.customers.churn_count)]].map(([k, v]) => [k, cov.enough ? v : "Data belum cukup"]).map(([k, v]) => (
                 <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
               ))}
             </div>
+            {!cov.enough && <p className="mt-1 text-[11px] text-muted">Angka pelanggan belum ditampilkan: {coverageNote(cov.pct)}.</p>}
             {charts.mix.weekly.length > 1 && (
               <div className="keep mt-2">
                 <b className="text-[12px]">Omzet per minggu</b>

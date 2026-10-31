@@ -10,6 +10,7 @@ import { BAND_LABEL, bandStatus, deltaLabel, funnel, pct1, targetStatus } from "
 import { createClient } from "@/lib/supabase/client";
 import { Bullet, DataTable, Funnel, HBars, Heatmap, Legend, LineChart, StackedWeekly } from "./charts";
 import { CAT_LABEL, COLOR, rb } from "./palette";
+import { coverageNote, customerCoverage } from "@/lib/domain/customer";
 
 type Period = Record<string, number | null>;
 export type AnalyticsData = {
@@ -82,6 +83,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
   const tgt = cats.filter((k): k is "barbershop" | "nail" => k !== "massage"); // pijat belum punya target AOV
   const [planned, setPlanned] = useState(false);
   const drv = (c: string) => d.drivers.find((x) => x.category === c);
+  const cov = customerCoverage(d.customers.recorded);
 
   const cards = [
     { href: "#omzet", title: "Omzet", value: money(cur.omzet), delta: delta.omzet, chip: null, sub: `${tx} transaksi · AOV ${money(cur.aov_all)}` },
@@ -246,13 +248,15 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
 
       <Section id="pelanggan" title="Pelanggan" extra={<Link href="/manajer/pelanggan?filter=follow" className="flex min-h-11 items-center text-xs font-semibold text-accent underline">Lihat daftar follow-up →</Link>}>
         <div className="grid gap-3 min-[820px]:grid-cols-3 xl:grid-cols-6">
-          {[["Pelanggan baru", String(d.customers.new_customers), "transaksi pertama di periode"],
+          {[...([["Pelanggan baru", String(d.customers.new_customers), "transaksi pertama di periode"],
             ["Pelanggan kembali", String(d.customers.returning), "pernah datang sebelumnya"],
             [`Tingkat kembali ${d.customers.window_days} hari`, pctOr(d.customers.return_rate), `${d.customers.return_back} dari ${d.customers.return_eligible} (pengamatan ≥ ${d.customers.window_days} hari)`],
             ["Churn", String(d.customers.churn_count), "belum kembali lewat batas"],
-            ["Efektivitas follow-up", pctOr(d.customers.followup_rate), `${d.customers.followup_sent} dikirimi → ${d.customers.followup_converted} datang`],
+            ["Efektivitas follow-up", pctOr(d.customers.followup_rate), `${d.customers.followup_sent} dikirimi → ${d.customers.followup_converted} datang`]]
+            // data pelanggan < 40% transaksi → angka di atas tidak representatif
+            .map(([k, v, s]) => (cov.enough ? [k, v, s] : [k, "Data belum cukup", coverageNote(cov.pct)]))),
             ["Transaksi dengan pelanggan", pctOr(rec(d.customers.recorded)), `${d.customers.recorded.with_customer} dari ${d.customers.recorded.tx} · target 40% (8 Nov) → 60% (30 Nov)`]].map(([k, v, s]) => (
-            <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
+            <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className={`font-display tabular ${v === "Data belum cukup" ? "text-base text-muted" : "text-2xl"}`}>{v}</b><span className="text-xs text-muted">{s}</span></div>
           ))}
         </div>
               {!!d.customers.recorded_daily.length && (

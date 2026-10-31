@@ -12,7 +12,7 @@ export const SUMMARY_ROWS: SummaryRow[] = [
   { key: "aov", label: "AOV (rata-rata per transaksi)", kind: "money" },
   { key: "aov_barbershop", label: "AOV Barbershop", kind: "money", target: (t) => t.aov_barbershop || null },
   { key: "aov_nail", label: "AOV Nail", kind: "money", target: (t) => t.aov_nail || null },
-  { key: "aov_massage", label: "AOV Pijat", kind: "money" },
+  { key: "aov_massage", label: "AOV Pijat", kind: "money", target: (t) => t.aov_massage || null },
   { key: "rev_barbershop", label: "Omzet Barbershop", kind: "money" },
   { key: "rev_nail", label: "Omzet Nail Art", kind: "money" },
   { key: "rev_massage", label: "Omzet Pijat", kind: "money" },

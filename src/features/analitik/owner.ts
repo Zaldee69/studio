@@ -46,7 +46,7 @@ export type OwnerReport = {
   daily: { day: string; tx: number; net: number; barbershop: number; nail: number; retail: number; discount: number; hpp: number;
     void: number; cash: number; qris: number; transfer?: number; deposit: number }[];
   insights: { priority: number; code: string; message: string; href: string }[];
-  targets: { revenue: number; revenue_monthly: number; aov_barbershop: number; aov_nail: number; utilization: number; retail_min: number; retail_max: number };
+  targets: { revenue: number; revenue_monthly: number; aov_barbershop: number; aov_nail: number; aov_massage?: number; utilization: number; retail_min: number; retail_max: number };
 };
 
 export type OwnerQuery = { periode?: string; nilai?: string; dari?: string; sampai?: string; bulan?: string };

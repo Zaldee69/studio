@@ -15,7 +15,7 @@ import { coverageNote, customerCoverage } from "@/lib/domain/customer";
 type Period = Record<string, number | null>;
 export type AnalyticsData = {
   periode: string; from: string; to: string; label: string; prevLabel: string; category: string; staff: string; monthForReport: string;
-  summary: { current: Period; previous: Period; delta: Period; targets: { aov_barbershop: number; aov_nail: number; retail_min: number; retail_max: number; utilization: number; min_tx: number } };
+  summary: { current: Period; previous: Period; delta: Period; targets: { aov_barbershop: number; aov_nail: number; aov_massage?: number; retail_min: number; retail_max: number; utilization: number; min_tx: number } };
   daily: { day: string; aov_barbershop: number | null; aov_nail: number | null; aov_massage: number | null; tx_barbershop: number; tx_nail: number; tx_massage: number; omzet: number }[];
   drivers: { category: string; tx_count: number; avg_services: number | null; upsell_rate: number | null; bundle_pct: number | null }[];
   util: { resource_id: string; name: string; type: "barbershop" | "nail"; sold_minutes: number; planned_minutes: number; available_minutes: number; pct: number | null; pct_planned: number | null; n_actual: number; planned_vs_actual_avg: number | null }[];
@@ -30,7 +30,7 @@ export type AnalyticsData = {
     walk_aways: number; by_staff: { name: string; walk_ins: number; requested: number; turn: number }[] };
   insights: { code: string; message: string; href: string }[];
   staffList: { id: string; name: string }[];
-  settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
+  settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; aov_target_massage: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
     insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number };
 };
 
@@ -75,12 +75,13 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
   };
   const tx = Number(cur.tx_count ?? 0);
   const retailSt = bandStatus(cur.retail_ratio ?? null, t.retail_min, t.retail_max);
-  const aovSt = (k: "barbershop" | "nail") => targetStatus(cur[`aov_${k}`] ?? null, k === "barbershop" ? t.aov_barbershop : t.aov_nail);
+  const aovTarget = (k: Cat) => (k === "barbershop" ? t.aov_barbershop : k === "massage" ? t.aov_massage ?? 0 : t.aov_nail);
+  const aovSt = (k: Cat) => targetStatus(cur[`aov_${k}`] ?? null, aovTarget(k));
   const utilSt = targetStatus(cur.utilization_avg ?? null, t.utilization);
   // tanpa filter: kategori jasa yang ada transaksinya di periode (nail masih daftar tunggu → tidak tampil kosong)
   const cats = (d.category ? [d.category] : (["barbershop", "massage", "nail"] as const).filter((k) => Number(cur[`tx_${k}`] ?? 0) > 0)) as Cat[];
   if (!cats.length) cats.push("barbershop");
-  const tgt = cats.filter((k): k is "barbershop" | "nail" => k !== "massage"); // pijat belum punya target AOV
+  const tgt = cats.filter((k) => aovTarget(k) > 0); // kategori tanpa target AOV (0) tidak digambar garis targetnya
   const [planned, setPlanned] = useState(false);
   const drv = (c: string) => d.drivers.find((x) => x.category === c);
   const cov = customerCoverage(d.customers.recorded);
@@ -92,7 +93,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
     ...(cats.includes("nail") ? [{ href: "#aov", title: "AOV Nail", value: money(cur.aov_nail), delta: delta.aov_nail,
       chip: aovSt("nail"), sub: `target ${formatRupiah(t.aov_nail)} · ${cur.tx_nail ?? 0} tx` }] : []),
     ...(cats.includes("massage") ? [{ href: "#aov", title: "AOV Pijat", value: money(cur.aov_massage), delta: delta.aov_massage,
-      chip: null, sub: `${cur.tx_massage ?? 0} tx` }] : []),
+      chip: aovTarget("massage") > 0 ? aovSt("massage") : null, sub: `${aovTarget("massage") > 0 ? `target ${formatRupiah(aovTarget("massage"))} · ` : ""}${cur.tx_massage ?? 0} tx` }] : []),
     ...(!d.category ? [{ href: "#ritel", title: "Rasio ritel", value: pctOr(cur.retail_ratio), delta: delta.retail_ratio, unit: "poin" as const, chip: retailSt, band: true, sub: `pita ${t.retail_min}–${t.retail_max}%` }] : []),
     { href: "#utilisasi", title: "Utilisasi rata-rata", value: pctOr(cur.utilization_avg), delta: delta.utilization_avg, unit: "poin" as const, chip: utilSt, sub: `target ${t.utilization}%` },
   ];
@@ -154,10 +155,10 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
 
       <Section id="aov" title="AOV harian per kategori" onCsv={() => csv(`aov-harian-${d.from}_${d.to}`, [["Tanggal", "AOV Barbershop", "Tx Barbershop", "AOV Pijat", "Tx Pijat", "AOV Nail", "Tx Nail", "Omzet"],
         ...d.daily.map((r) => [r.day, r.aov_barbershop, r.tx_barbershop, r.aov_massage, r.tx_massage, r.aov_nail, r.tx_nail, r.omzet])])}>
-        <Legend items={[...cats.map((k) => ({ label: CAT_LABEL[k], color: COLOR[k] })), ...tgt.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"}`, color: COLOR[k], dashed: true }))]} />
+        <Legend items={[...cats.map((k) => ({ label: CAT_LABEL[k], color: COLOR[k] })), ...tgt.map((k) => ({ label: `Target ${CAT_LABEL[k].toLowerCase()}`, color: COLOR[k], dashed: true }))]} />
         <LineChart labels={d.daily.map((r) => dm(r.day))} ariaLabel="AOV harian per kategori"
           series={cats.map((k) => ({ key: k, label: CAT_LABEL[k], color: COLOR[k], values: d.daily.map((r) => r[`aov_${k}`]) }))}
-          targets={tgt.map((k) => ({ label: `Target ${k === "barbershop" ? "barbershop" : "nail"} ${rb(k === "barbershop" ? t.aov_barbershop : t.aov_nail)}`, value: k === "barbershop" ? t.aov_barbershop : t.aov_nail, color: COLOR[k] }))}
+          targets={tgt.map((k) => ({ label: `Target ${CAT_LABEL[k].toLowerCase()} ${rb(aovTarget(k))}`, value: aovTarget(k), color: COLOR[k] }))}
           tooltip={(i) => { const r = d.daily[i]; return (
             <><b className="block">{r.day}</b>{cats.map((k) => <span key={k} className="block">{CAT_LABEL[k]}: <b>{money(r[`aov_${k}`])}</b> · {r[`tx_${k}`]} tx</span>)}<span className="block">Omzet {formatRupiah(r.omzet)}</span></>); }} />
         <div className="grid gap-2 min-[820px]:grid-cols-2">
@@ -305,7 +306,7 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
   const [f, setF] = useState(Object.fromEntries(Object.entries(s).map(([k, v]) => [k, String(v)])) as Record<keyof typeof s, string>);
   const fields: [keyof typeof s, string][] = [
     ["revenue_target_monthly", "Target omzet bersih per bulan (Rp)"],
-    ["aov_target_barbershop", "Target AOV barbershop (Rp)"], ["aov_target_nail", "Target AOV nail (Rp)"],
+    ["aov_target_barbershop", "Target AOV barbershop (Rp)"], ["aov_target_massage", "Target AOV pijat (Rp; 0 = belum ada)"], ["aov_target_nail", "Target AOV nail (Rp)"],
     ["retail_ratio_min", "Rasio ritel minimum (%)"], ["retail_ratio_max", "Rasio ritel maksimum (%)"], ["utilization_target", "Target utilisasi (%)"],
     ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],
     ["kpi_min_tx_for_stable", "Catatan \"data masih sedikit\" di bawah (transaksi)"],

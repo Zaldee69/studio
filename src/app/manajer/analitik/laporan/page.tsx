@@ -61,7 +61,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   const title = weekly ? "Laporan Mingguan Owner" : p.kind === "bulan" ? "Laporan Bulanan Owner (Monthly Business Review)" : "Laporan Owner";
   const prevCat: Record<string, number | null> = { barbershop: pv.rev_barbershop, nail: pv.rev_nail, retail: pv.rev_retail, massage: pv.rev_massage ?? null };
   // AOV per transaksi per kategori (definisi yang sama dengan target AOV); kategori lain belum punya AOV & target
-  const aovCat: Record<string, [number | null, number | null]> = { barbershop: [s.aov_barbershop, t.aov_barbershop || null], nail: [s.aov_nail, t.aov_nail || null], massage: [s.aov_massage ?? null, null] };
+  const aovCat: Record<string, [number | null, number | null]> = { barbershop: [s.aov_barbershop, t.aov_barbershop || null], nail: [s.aov_nail, t.aov_nail || null], massage: [s.aov_massage ?? null, t.aov_massage || null] };
   const cats = f.by_category.filter((c) => c.items > 0 || (prevCat[c.category] ?? 0) > 0);
   const staff = r.staff.filter((st) => st.active || st.tx > 0);
 

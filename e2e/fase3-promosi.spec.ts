@@ -28,7 +28,7 @@ test("blast promosi ke segmen pelanggan setia → terkirim", async ({ page }) =>
   await expect(page.getByLabel("Pratinjau pesan")).toContainText(`Hai ${ikut.name.split(" ")[0]}, diskon 10%`);
   await page.getByRole("button", { name: "Kirim ke 1 pelanggan" }).click();
   await page.getByRole("button", { name: "Kirim 1 pesan" }).click();
-  await expect(page.getByText("Campaign dikirim ke 1 pelanggan")).toBeVisible();
+  await expect(page.getByText(/^Campaign masuk antrean untuk 1 pelanggan/)).toBeVisible();
 
   await expect.poll(() => wablas.sent.filter((m) => m.phone === ikut.wa).length, { timeout: 20_000 }).toBe(1);
   const msg = wablas.sent.find((m) => m.phone === ikut.wa)!;

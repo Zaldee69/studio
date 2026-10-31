@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { login, sql, uniq, allowNoCustomer } from "./helpers";
 
-// Pijat: kategori ketiga yang hanya lewat kasir — terapis sendiri, 2 bed, tidak tampil di booking online.
-test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; tidak ada di booking online", async ({ page }) => {
+// Pijat: kategori ketiga — terapis sendiri, 2 bed. Boleh dibooking online (keputusan owner 1 Nov), tetapi tidak dipromosikan.
+test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; bisa dibooking online", async ({ page }) => {
   const terapis = `Terapis ${uniq()}`;
   sql(`insert into staff (name, category) values ('${terapis}', 'massage')`);
   try {
@@ -24,7 +24,7 @@ test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; tidak
     await expect(page.getByText("Bed Pijat 2", { exact: true })).toBeVisible();
 
     await page.goto("/booking");
-    await expect(page.getByText(/Pijat/)).toHaveCount(0);
+    await expect(page.getByText(/Pijat/).first()).toBeVisible(); // terapis aktif → pijat tersedia di booking online
   } finally {
     sql(`update staff set active = false where name = '${terapis}'`);
   }

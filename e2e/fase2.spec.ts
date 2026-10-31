@@ -81,7 +81,7 @@ test("E2 · checkout 3× Potong → neck strip lewat ambang → banner & lonceng
     await expect(page.getByRole("button", { name: /^Neck strip ·/ })).toHaveCount(0);
     for (let i = 0; i < 3; i++) await sell([{ service: "Potong Rambut", staff: STAFF.andi }]);
 
-    await expect(page.getByRole("button", { name: `Neck strip · ${neck.qty - 3} / ${neck.qty - 3} pcs` })).toBeVisible(); // banner, tanpa reload
+    await expect(page.getByRole("button", { name: `Neck strip · ${(neck.qty - 3).toLocaleString("id-ID")} / ${(neck.qty - 3).toLocaleString("id-ID")} pcs` })).toBeVisible(); // banner, tanpa reload
     await page.getByRole("button", { name: /^Notifikasi, \d+ belum dibaca/ }).click();
     await expect(page.getByRole("dialog", { name: "Notifikasi" })).toContainText("Stok Neck strip tinggal");
     await page.keyboard.press("Escape"); // Esc menutup panel notifikasi
@@ -160,7 +160,7 @@ test("E4 · laporan pemakaian: dua opname + 2× Hair Spa di antaranya → teoret
   await expect(page.getByRole("row").filter({ hasText: "Shampoo salon" })).not.toContainText("Di atas");
 });
 
-test("E5 · komisi bundle → bonus Andi → tutup periode → slip 1.300.000 dibayar → Final di HP → void ditolak → buka ulang → void → tutup lagi", async ({ page, browser }, info) => {
+test("E5 · komisi bundle → bonus Andi → tutup periode → slip dibayar → Final di HP → void ditolak → buka ulang → void → tutup lagi", async ({ page, browser }, info) => {
   await resetPayroll();
   try {
     const tx = await sell([{ service: "Potong Rambut", staff: STAFF.andi }, { service: "Gel Polish Tangan", staff: STAFF.sari }]);
@@ -190,9 +190,11 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip 1.300.000 di
     await page.getByRole("button", { name: "Tutup & bekukan angka" }).click();
     await expect(page.getByText(/^Ditutup /)).toBeVisible();
     const andiRow = page.getByRole("row").filter({ has: page.getByRole("button", { name: /^Andi/ }) });
-    await expect(andiRow).toContainText("Rp1.300.000");
+    // jaring bulanan dihapus 1 Nov → total = komisi bulan ini + bonus (bergantung data); dicek sama di tabel, slip & HP
+    await expect(andiRow).toContainText("+Rp100.000");
+    const total = [...(await andiRow.innerText()).matchAll(/Rp[\d.]+/g)].at(-1)![0];
     await andiRow.getByRole("link", { name: /Slip/ }).click();
-    await expect(page.getByRole("article")).toContainText("Total dibayarRp1.300.000");
+    await expect(page.getByRole("article")).toContainText(`Total dibayar${total}`);
     await page.getByRole("button", { name: "Tandai sudah dibayar" }).click();
     await page.getByRole("button", { name: "Simpan" }).click();
     await expect(page.getByRole("article")).toContainText("Status: dibayar");
@@ -200,7 +202,7 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip 1.300.000 di
     const hp = await newSession(browser, info, "andi", { width: 390, height: 844 });
     await hp.goto("/kapster/komisi");
     await expect(hp.getByText(/^Final · dibayar/)).toBeVisible();
-    await expect(hp.getByText("Rp1.300.000")).toBeVisible();
+    await expect(hp.getByText(total, { exact: true }).first()).toBeVisible();
     await hp.context().close();
 
     await page.goto(`/manajer/kasir?tab=riwayat&tx=${tx}`);

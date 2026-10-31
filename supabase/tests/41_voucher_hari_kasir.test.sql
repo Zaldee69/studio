@@ -12,7 +12,8 @@ insert into vouchers (code, kind, value, category, quota, once_per_customer, wee
   ('HARIINI', 'amount', 5000, null, 2, true, :'dow'::text),
   ('BUKANHARIINI', 'amount', 5000, null, null, false, ((:dow % 7) + 1)::text);
 select tests.svc('Potong Rambut') as potong \gset
-select jkt_today() + ((8 - :dow) % 7) as senin, jkt_today() + ((13 - :dow) % 7) as sabtu \gset
+-- Sabtu berikutnya yang pasti di masa depan (bila hari ini Sabtu, pesan voucher tanpa akhiran "pilih jadwal")
+select jkt_today() + ((8 - :dow) % 7) as senin, jkt_today() + 7 + ((13 - :dow) % 7) as sabtu \gset
 insert into customers (id, name, whatsapp) values
   ('00000000-0000-0000-00ef-000000000001', 'Walk-in Satu', '6281299991001'),
   ('00000000-0000-0000-00ef-000000000002', 'Walk-in Dua', '6281299991002'),

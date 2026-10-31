@@ -86,7 +86,7 @@ test.describe.serial("Analitik", () => {
 
     const [dl] = await Promise.all([page.waitForEvent("download"), aov.getByRole("button", { name: "Unduh CSV" }).click()]);
     const csv = readFileSync((await dl.path())!, "utf8");
-    expect(csv).toContain(`${day};71250;2;171000;2;594500`);
+    expect(csv).toContain(`${day};71250;2;;0;171000;2;594500`); // + kolom AOV & Tx Pijat (Paket A)
     const [dl2] = await Promise.all([page.waitForEvent("download"), page.locator("#ritel").getByRole("button", { name: "Unduh CSV" }).click()]);
     expect(readFileSync((await dl2.path())!, "utf8")).toContain("Rasio %;;22,7");
 

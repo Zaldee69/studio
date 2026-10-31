@@ -28,7 +28,10 @@ join resources r on r.name = m.res
 where s.name = m.staff;
 
 -- ---------- Inventaris ----------
-insert into inventory_items (name, kind, unit, unit_cost, reorder_at) values
+-- Migrasi 20261028000002 (inventaris nyata prod) sudah membuat sebagian bahan (mis. Neck strip, Pisau cukur): yang sudah ada
+-- diperbarui ke angka uji, sisanya dibuat — tanpa nama kembar (dulu resep menghitung bahan kembar dua kali).
+select set_config('app.via_cost', 'on', false); -- izin ubah harga pokok (seed lokal saja)
+with v(name, kind, unit, unit_cost, reorder_at) as (values
   ('Shampoo salon', 'consumable', 'ml', 50, 1000),
   ('Krim hair spa', 'consumable', 'ml', 150, 500),
   ('Pisau cukur', 'consumable', 'pcs', 2500, 20),
@@ -42,7 +45,12 @@ insert into inventory_items (name, kind, unit, unit_cost, reorder_at) values
   ('Cat rambut', 'consumable', 'tube', 45000, 5),
   ('Pomade Matte', 'retail', 'pcs', 60000, 5),
   ('Cuticle Oil', 'retail', 'pcs', 30000, 5),
-  ('Shampoo Anti-Ketombe', 'retail', 'pcs', 50000, 4);
+  ('Shampoo Anti-Ketombe', 'retail', 'pcs', 50000, 4)),
+upd as (update inventory_items i set kind = v.kind::item_kind, unit = v.unit, unit_cost = v.unit_cost, reorder_at = v.reorder_at
+        from v where i.name = v.name returning i.name)
+insert into inventory_items (name, kind, unit, unit_cost, reorder_at)
+select name, kind::item_kind, unit, unit_cost, reorder_at from v where name not in (select name from upd);
+select set_config('app.via_cost', '', false);
 
 insert into stock_moves (item_id, qty, type, unit_cost, note)
 select id, case unit when 'ml' then 5000 when 'g' then 3000 when 'tube' then 20 else 300 end, 'in', unit_cost, 'Stok awal'
@@ -105,3 +113,8 @@ insert into sop_tool_groups (name, sort) values
 
 -- Data uji lokal: akun manajer contoh tanpa verifikasi 2 langkah (produksi: wajib, bawaan migration).
 update settings set manager_mfa_required = false;
+
+-- Penanda layanan potong / naik paket (migrasi 20261101000011 mengisinya untuk data yang sudah ada; seed dibuat sesudahnya)
+update services set is_cut = (category = 'barbershop' and (name ilike '%groom%' or name in ('Essential Cut', 'Potong Rambut', 'Kids Cut'))),
+                    is_upgrade = (category = 'barbershop' and name ilike '%groom%')
+where true;

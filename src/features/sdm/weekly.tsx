@@ -44,7 +44,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
   }
   function exportCsv() {
     downloadText(`komisi-mingguan-${week}.csv`, toCsv([
-      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Potongan kasbon", "Dibayar bersih", "Tanggal bayar", "Metode"],
+      ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon & potongan", "Dibayar bersih", "Tanggal bayar", "Metode"],
       ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.commission_service, r.commission_retail, r.subsidy, r.kasbon,
         r.amount, r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
@@ -69,14 +69,14 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
       <p className="text-sm text-muted">
         Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
-        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dipotong dari bayaran minggu ini (sisanya minggu berikutnya). Staf yang dibayar bulanan (Pengaturan → Staf) tidak muncul di sini; semuanya masuk Gaji bulanan.
+        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dan potongan (komisi transaksi yang di-void setelah minggunya dibayar) dipotong dari bayaran minggu ini; sisanya terbawa ke minggu berikutnya, juga lintas bulan. Staf yang dibayar bulanan (Pengaturan → Staf) tidak muncul di sini; semuanya masuk Gaji bulanan.
       </p>
 
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         {!rows.length ? <Empty>{future ? "Minggu ini belum dimulai." : "Tidak ada komisi di minggu ini."}</Empty> : (
           <table className="w-full min-w-[1080px] text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">
-              {["Staf", "Layanan", "Pendapatan", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon", "Dibayar", "Pembayaran", ""].map((h, i) =>
+              {["Staf", "Layanan", "Pendapatan", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon & potongan", "Dibayar", "Pembayaran", ""].map((h, i) =>
                 <th key={i} className={`py-2.5 pr-2 font-semibold ${i && i < 8 ? "text-right" : ""}`}>{h}</th>)}
             </tr></thead>
             <tbody>

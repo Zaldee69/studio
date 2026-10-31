@@ -61,7 +61,7 @@ test("kasbon dipotong mingguan → slip gaji mingguan", async ({ page }) => {
     await row.getByRole("link", { name: "Slip" }).click();
     const slip = page.getByRole("article");
     await expect(slip).toContainText("Slip gaji mingguan");
-    await expect(slip).toContainText("Potongan kasbon−Rp20.000");
+    await expect(slip).toContainText("Potongan kasbon & koreksi−Rp20.000");
     await expect(slip).toContainText("DibayarRp30.000");
     await expect(slip).toContainText("Potong");
     await expect(page.getByRole("button", { name: "Cetak / PDF" })).toBeVisible();

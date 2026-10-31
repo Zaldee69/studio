@@ -29,7 +29,7 @@ export default async function SlipMinggu({ params }: PageProps<"/manajer/sdm/sli
     ["Layanan", String(r.service_count)], ["Pendapatan jasa", formatRupiah(r.revenue_net)], ["Komisi jasa", formatRupiah(r.commission_service)],
     ...(r.commission_retail ? [["Komisi ritel", formatRupiah(r.commission_retail)] as [string, string]] : []),
     ...(r.subsidy ? [["Subsidi jaring harian", formatRupiah(r.subsidy)] as [string, string]] : []),
-    ...(r.kasbon ? [["Potongan kasbon", `−${formatRupiah(r.kasbon)}`] as [string, string]] : []),
+    ...(r.kasbon ? [["Potongan kasbon & koreksi", `−${formatRupiah(r.kasbon)}`] as [string, string]] : []),
   ];
   const label = weekLabel(minggu);
   const wa = `Slip gaji mingguan ${label} — ${r.staff_name}\n${lines.map(([k, v]) => `${k}: ${v}`).join("\n")}\nDibayar: ${formatRupiah(r.amount)}${r.paid_at ? `\nDibayar ${formatTanggal(r.paid_at)} (${r.paid_method})` : ""}`;

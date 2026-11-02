@@ -145,15 +145,3 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
       </div>
   );
 }
-
-export function Segera({ title }: { title: string }) {
-  return (
-    <div>
-      <h1 className="font-display text-3xl font-bold">{title}</h1>
-      <div className="mt-6 rounded-2xl border border-dashed border-line bg-card p-10 text-center text-muted">
-        <p className="font-display text-lg font-semibold text-ink">Segera</p>
-        <p className="mt-1 text-sm">Modul ini dibangun di tahap berikutnya.</p>
-      </div>
-    </div>
-  );
-}

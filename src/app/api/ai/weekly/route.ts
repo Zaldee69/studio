@@ -4,8 +4,9 @@ import { telegramBody, writeWeeklyMeeting } from "@/lib/ai/weekly";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 
-// Dipanggil pg_cron (kick_ai_weekly) setiap Senin 08.20 WIB. Hasilnya masuk antrean Telegram owner yang sama
-// dengan notifikasi lain (dikirim /api/notifications/dispatch).
+// Dipanggil pg_cron (kick_ai_weekly) setiap Senin 08.20 WIB. Satu pesan Telegram owner: ringkasan angka minggu lalu
+// (weekly_summary_text) + notulen rapat AI (keputusan owner 1 Nov). Cadangan 09.00 (weekly_summary_fallback) mengirim
+// ringkasan saja bila pesan ini tidak masuk antrean.
 export const maxDuration = 300; // 3 langkah AI berurutan (2 putaran + GM); butuh Fluid Compute (bawaan project Vercel baru)
 export async function POST(req: Request) {
   if (!pushSecretOk(req.headers.get("x-push-secret"))) {
@@ -13,12 +14,12 @@ export async function POST(req: Request) {
     return Response.json({ error: "unauthorized" }, { status: 401 });
   }
   if (!process.env.ANTHROPIC_API_KEY) {
-    log("warn", "ai_weekly_skipped", { reason: "ANTHROPIC_API_KEY kosong" });
+    log("warn", "ai_weekly_skipped", { reason: "ANTHROPIC_API_KEY kosong" }); // ringkasan angka tetap dikirim cadangan 09.00
     return Response.json({ skipped: "ANTHROPIC_API_KEY belum diisi" }, { status: 503 });
   }
   const db = createAdminClient();
-  const { data: facts, error } = await db.rpc("ai_weekly_facts");
-  if (error || !facts) {
+  const [{ data: facts, error }, { data: summary }] = await Promise.all([db.rpc("ai_weekly_facts"), db.rpc("weekly_summary_text")]);
+  if (error || !facts || !summary) {
     log("error", "ai_weekly_facts_failed", { error: error?.message });
     return Response.json({ error: "facts" }, { status: 500 });
   }
@@ -37,8 +38,9 @@ export async function POST(req: Request) {
       : (e as Error).message;
     log("error", "ai_weekly_failed", { reason });
     // owner tetap tahu analisis minggu ini tidak terkirim (ringkasan angka biasa tetap jalan 08.05)
-    body = `🤖 Rapat mingguan AI minggu ${minggu} gagal dibuat: ${reason}. Ringkasan angka mingguan tetap terkirim seperti biasa.`;
+    body = `🤖 Rapat mingguan AI minggu ${minggu} gagal dibuat: ${reason}.`;
   }
+  body = `${summary}\n\n${body}`;
   const { error: qErr } = await db.from("outbound_messages").insert({ channel: "telegram", to_address: "ops", template: "alert", body });
   if (qErr) {
     log("error", "ai_weekly_enqueue_failed", { error: qErr.message });

@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "SDM & Komisi" };
 
-const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan komisi"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
+const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan upah"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
@@ -33,11 +33,14 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
     body = <WeeklyCommission key={week} week={week} thisWeek={thisWeek} rows={(rows ?? []) as WeekRow[]}
       reopenReason={wk?.status === "open" ? wk.reopen_reason : null} />;
   } else if (tab === "bulanan") {
-    const [{ data: rows }, { data: period }, { data: weekly }] = await Promise.all([
+    // gaji bulanan hanya untuk staf yang dibayar bulanan (keputusan owner 1 Nov); staf mingguan cukup di Komisi mingguan
+    const [{ data: all }, { data: period }, { data: weekly }, { data: priv }] = await Promise.all([
       supabase.rpc("commission_for_period", { p_month: `${month}-01` }),
       supabase.from("payroll_periods").select("status, closed_at, reopen_reason").eq("month", `${month}-01`).maybeSingle(),
       supabase.rpc("commission_weekly_for_month", { p_month: `${month}-01` }),
+      supabase.rpc("staff_private"),
     ]);
+    const rows = (all ?? []).filter((r) => (priv ?? []).some((p) => p.id === r.staff_id && p.pay_monthly));
     body = <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
       weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
       ratio={st?.commission_pct ?? 40} />;

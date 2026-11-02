@@ -24,7 +24,7 @@ export function Beranda({ master }: { master: Master }) {
     const supabase = createClient();
     const week0 = new Date(Date.parse(`${today}T00:00:00Z`) - 6 * 864e5).toISOString().slice(0, 10);
     const [{ data: churn, count }, { data: online }, { count: pendingOff }, { data: funnel }, { count: reorder }, { count: drafts }, { data: prevPeriod },
-      { data: sop }, { data: tasks }, { data: ins }] = await Promise.all([
+      { data: sop }, { data: tasks }, { data: ins }, { data: priv }, { data: act }] = await Promise.all([
       supabase.from("customer_stats").select("customer_id", { count: "exact" }).eq("is_churn", true).limit(3),
       supabase.from("appointments").select("id, start_at, customer:customers(name)").eq("source", "online").eq("status", "booked")
         .gte("start_at", new Date().toISOString()).order("start_at").limit(3),
@@ -36,10 +36,13 @@ export function Beranda({ master }: { master: Master }) {
       supabase.rpc("sop_day", { p_date: today, p_shift: 1 }),
       supabase.rpc("maintenance_status", {}),
       supabase.rpc("kpi_insights", { p_from: week0, p_to: today }),
+      supabase.rpc("staff_private"), supabase.from("staff").select("id").eq("active", true),
     ]);
+    // pengingat tutup gaji hanya bila ada staf aktif yang dibayar bulanan (staf mingguan ditutup di Komisi mingguan)
+    const monthly = (priv ?? []).some((p) => p.pay_monthly && (act ?? []).some((a) => a.id === p.id));
     const { data: names } = await supabase.from("customers").select("name").in("id", (churn ?? []).map((c) => c.customer_id!));
     return { followCount: count ?? 0, followNames: (names ?? []).map((n) => n.name), online: online ?? [], pendingOff: pendingOff ?? 0,
-      reorder: reorder ?? 0, drafts: drafts ?? 0, prevOpen: prevPeriod?.status !== "closed",
+      reorder: reorder ?? 0, drafts: drafts ?? 0, prevOpen: monthly && prevPeriod?.status !== "closed",
       sop: sop as { done: number; total: number; closed: boolean; approval: unknown } | null,
       tasks: ((tasks ?? []) as { name: string; status: string; days_left: number }[]).filter((t) => t.status === "overdue" || t.status === "due"),
       insight: ((ins ?? []) as { message: string; href: string }[])[0] ?? null,

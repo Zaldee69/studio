@@ -11,7 +11,8 @@ test("blast promosi ke segmen pelanggan setia → terkirim", async ({ page }) =>
   const ikut = { name: `Setia ${uniq()}`, wa: "62" + randomWa().slice(1) };
   for (const c of [ikut]) {
     sql(`with c as (insert into customers (name, whatsapp) values ('${c.name}', '${c.wa}') returning id)
-      insert into transactions (customer_id, subtotal, total, paid_amount, payment_method) select id, ${spend}, ${spend}, ${spend}, 'cash' from c`);
+      insert into transactions (customer_id, subtotal, total, paid_amount, payment_method, created_at)
+      select id, ${spend}, ${spend}, ${spend}, 'cash', now() - interval '60 days' from c`); // bukan hari ini: tidak mengotori omzet beranda
   }
   // batas 3 kiriman/10 menit per manajer: kiriman run tes sebelumnya tidak ikut dihitung
   sql("update campaign_sends set created_at = created_at - interval '1 hour' where created_at > now() - interval '10 minutes'");

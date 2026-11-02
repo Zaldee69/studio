@@ -28,9 +28,13 @@ export async function analitikAi(p: Period, question: string | null): Promise<Ai
   await admin.from("booking_attempts").insert({ key });
 
   const analitik = { ...(await loadAnalytics(p)), staffList: undefined }; // daftar staf tidak perlu dikirim ke AI
-  const { data: campaign } = await (await createClient()).rpc("campaign_report", { p_from: analitik.from, p_to: analitik.to });
+  const [{ data: campaign }, { data: facts }] = await Promise.all([
+    (await createClient()).rpc("campaign_report", { p_from: analitik.from, p_to: analitik.to }),
+    admin.rpc("ai_studio_facts"), // voucher aktif, komisi, kategori dibuka, target — dari data, bukan teks prompt
+  ]);
+  const { target, ...fakta_studio } = (facts ?? {}) as Record<string, unknown>;
   try {
-    const text = await analitikAnswer(new Anthropic(), { analitik, campaign }, q);
+    const text = await analitikAnswer(new Anthropic(), { analitik, campaign, fakta_studio, target }, q);
     return { ok: true, text, left: LIMIT - used - 1 };
   } catch (e) {
     const reason = e instanceof Anthropic.RateLimitError ? "batas pemakaian API tercapai"

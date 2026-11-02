@@ -65,7 +65,7 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
         <b>Aturan umum</b>
         <div className="flex flex-col gap-2">
-          <label htmlFor="cr-ratio" className="label">Rasio komisi umum: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</label>
+          <label htmlFor="cr-ratio" className="label">Komisi default: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</label>
           <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-accent" />
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>

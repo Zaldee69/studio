@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  aov, aovAll, aovDrivers, apptMinutes, bandStatus, BAND_LABEL, canRecord, canUndo, delta, deltaLabel, durationVariance, followupRate,
-  funnel, heatmap, insights, maintenanceLabel, maintenanceState, nextDue, noShowRate, omzet, openMinutes, pct1, previousPeriod,
-  retailRatio, returnWindowRate, sopStatus, splitByHour, utilization, type InsightInput, type Tx,
+  aov,   apptMinutes, bandStatus, BAND_LABEL, canRecord, canUndo, delta, deltaLabel,  
+  funnel, heatmap, insights, maintenanceLabel, maintenanceState,  noShowRate, omzet, openMinutes, pct1, previousPeriod,
+     splitByHour, utilization, type InsightInput, type Tx,
 } from "./kpi";
 
 // Data contoh tetap (spesifikasi bagian 4): satu hari, buka 09:00–21:00.

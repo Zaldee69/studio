@@ -108,9 +108,6 @@ export async function saveSettings(_: SaveState, fd: FormData): Promise<SaveStat
   const r = parseFields(groups.flatMap((g) => g.fields), fd);
   if (!r.success) return { error: r.error.issues[0].message };
   const v = r.data as Record<string, unknown>;
-  if ((v.online_promo_pct as number) > 0 && (!v.online_promo_start || !v.online_promo_end || (v.online_promo_end as string) < (v.online_promo_start as string))) {
-    return { error: "Promo booking online: isi tanggal mulai & selesai (selesai tidak boleh sebelum mulai)." };
-  }
   const row: Record<string, unknown> = Object.fromEntries(Object.entries(v).filter(([k]) => !k.startsWith("std_")));
   if ("std_1_title" in v) row.standards = [1, 2, 3, 4].map((i) => ({ title: v[`std_${i}_title`], text: v[`std_${i}_text`] }));
   const supabase = await createClient();

@@ -27,13 +27,13 @@ export default async function Inventaris({ searchParams }: PageProps<"/manajer/i
   const [{ data: levels }, { data: sups }, { data: st }] = await Promise.all([
     supabase.from("stock_levels").select("*").order("name"),
     supabase.from("suppliers").select("id, name, whatsapp, active, notes").order("name"),
-    supabase.from("settings").select("inventory_cost_method, margin_warning_pct, reorder_suggest_multiplier, shop_name, commission_pct, usage_variance_threshold_pct").single(),
+    supabase.from("settings").select("inventory_cost_method, margin_warning_pct, reorder_suggest_multiplier, shop_name, commission_pct, commission_deduct_hpp, usage_variance_threshold_pct").single(),
   ]);
   const items = (levels ?? []).map((l) => ({ ...l, qty: Number(l.qty), reorder_at: Number(l.reorder_at), unit_cost: Number(l.unit_cost), stock_value: Number(l.stock_value) })) as StockRow[];
   const suppliers = (sups ?? []) as Supplier[];
   const settings: InvSettings = {
     method: (st?.inventory_cost_method ?? "weighted_avg") as CostMethod, marginWarn: Number(st?.margin_warning_pct ?? 60),
-    multiplier: Number(st?.reorder_suggest_multiplier ?? 2), shop: st?.shop_name ?? BRAND, ratio: st?.commission_pct ?? 40,
+    multiplier: Number(st?.reorder_suggest_multiplier ?? 2), shop: st?.shop_name ?? BRAND, ratio: st?.commission_pct ?? 40, deductHpp: !!st?.commission_deduct_hpp,
     variancePct: Number(st?.usage_variance_threshold_pct ?? 10),
   };
 

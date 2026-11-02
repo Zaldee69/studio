@@ -3,8 +3,8 @@ import type { OwnerExtra, OwnerReport } from "../../features/analitik/owner";
 import { ownerFinanceView } from "./owner-finance";
 
 // Audit KPI-4 (1 Nov): laba/rugi laporan owner dijaga test (dulu dihitung di TypeScript tanpa test).
-const report = (complete: boolean, totalPay = 0) => ({
-  payroll: { complete, total_pay: totalPay },
+const report = (complete: boolean, totalPay = 0, allClosed = true) => ({
+  payroll: { complete, total_pay: totalPay, all_closed: allClosed },
   finance: {
     net: 1_000_000, hpp: 50_000, maintenance_cost: 30_000, expenses_total: 170_000,
     expenses_by_category: [{ category: "kasbon", amount: 50_000 }, { category: "listrik_air", amount: 100_000 }, { category: "pemasaran", amount: 20_000 }],
@@ -25,11 +25,14 @@ describe("laba/rugi laporan owner", () => {
     expect(v.opexRows.map((e) => e.category)).toEqual(["listrik_air", "pemasaran"]);
     expect(v.marketing).toBe(20_000);
   });
-  it("bulan penuh: upah = gaji bulanan + kasbon yang sudah dipotong dari gaji", () => {
+  it("bulan penuh: upah = bayaran (mingguan + gaji bulanan) + kasbon yang sudah dipotong dari bayaran", () => {
     const v = ownerFinanceView(report(true, 900_000), extra, false);
     expect(v.fullPayroll).toBe(true);
     expect(v.labor).toBe(950_000);
     expect(v.operating).toBe(1_000_000 - 50_000 - 950_000 - 150_000);
+  });
+  it("bulan penuh tapi masih ada minggu belum ditutup → estimasi", () => {
+    expect(ownerFinanceView(report(true, 900_000, false), extra, false).fullPayroll).toBe(false);
   });
   it("laporan mingguan selalu memakai estimasi walau periodenya bulan penuh", () => {
     expect(ownerFinanceView(report(true, 900_000), extra, true).labor).toBe(1_200_000);

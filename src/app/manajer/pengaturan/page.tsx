@@ -21,11 +21,11 @@ export const metadata = { title: "Pengaturan" };
 // Kelompok → sub-tab. Kunci sub-tab = ?tab=… (kunci lama tetap dipakai agar tautan lama tidak putus).
 const MENU = [
   ["Studio", [["umum", "Profil studio"], ["jam", "Jam buka & libur"], ["kursi", "Kursi & meja"]]],
-  ["Layanan", [["layanan", "Layanan & harga"], ["voucher", "Voucher"], ["deposit", "Paket deposit"], ["gaya", "Katalog gaya"]]],
+  ["Layanan", [["layanan", "Layanan & harga"], ["voucher", "Promo & voucher"], ["deposit", "Paket deposit"], ["gaya", "Katalog gaya"]]],
   ["Tim", [["staf", "Staf"], ["akun", "Akun & peran"], ["stasiun", "Stasiun & PIN"], ["sop", "SOP"], ["pelamar", "Pelamar"]]],
   ["Pelanggan", [["booking", "Booking online"], ["pesan", "Pesan otomatis"], ["notifikasi", "Notifikasi & log"]]],
   ["Situs", [["publik", "Konten halaman"], ["foto", "Foto"], ["ulasan", "Ulasan"], ["privasi", "Kebijakan privasi"]]],
-  ["Keuangan", [["keuangan", "Kas, diskon & stok"]]],
+  ["Keuangan", [["keuangan", "Kas & stok"]]],
   ["Keamanan", [["keamanan", "Keamanan"]]],
 ] as const;
 
@@ -150,18 +150,22 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     const { data } = await supabase.from("deposit_packages").select("*").order("amount_paid");
     body = <CrudTable table="deposit_packages" rows={data ?? []} />;
   } else if (tab === "voucher") {
-    const [{ data }, { data: usage }] = await Promise.all([
+    const [{ data }, { data: usage }, bundle] = await Promise.all([
       supabase.from("vouchers").select("*").order("created_at", { ascending: false }),
       supabase.rpc("voucher_usage"),
+      settingsForm("voucher"),
     ]);
     const u = new Map((usage ?? []).map((x) => [x.voucher_id, x]));
     body = (
       <div className="space-y-4">
+        {/* ponytail: promo % booking online (settings.online_promo_*) tidak lagi bisa diatur — keputusan owner 1 Nov "cukup voucher";
+            kolom & hitungannya di checkout dibiarkan (nilai 0). Hapus bila yakin tidak dipakai lagi. */}
         <p className="text-sm text-muted">
-          Kode voucher <b>hanya bisa dipakai lewat booking online</b> (dprasstudio.com); kasir tidak bisa memasukkan kode. Potongan dihitung
-          saat bayar dan <b>tidak ditumpuk</b> dengan diskon paket/promo — yang terbesar yang dipakai. &quot;Hari berlaku&quot; dicek terhadap
-          tanggal jadwal. Kuota terhitung dari booking yang tidak dibatalkan.
+          Dua jenis potongan: <b>diskon paket</b> (otomatis bila satu transaksi berisi barbershop + nail) dan <b>voucher</b>. Potongan
+          <b> tidak ditumpuk</b> — saat bayar dipakai yang terbesar. Kode voucher <b>hanya bisa dipakai lewat booking online</b> (dprasstudio.com);
+          kasir tidak bisa memasukkan kode. &quot;Hari berlaku&quot; dicek terhadap tanggal jadwal. Kuota terhitung dari booking yang tidak dibatalkan.
         </p>
+        {bundle}
         {!!data?.length && (
           <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">
             <table className="w-full min-w-[520px] text-sm tabular">

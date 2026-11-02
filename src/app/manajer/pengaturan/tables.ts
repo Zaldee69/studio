@@ -160,11 +160,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     { name: "booking_max_days_ahead", label: "Bisa booking sampai (hari ke depan)", type: "int", min: 1, max: 90 },
     { name: "cancel_cutoff_hours", label: "Batas batal / jadwal ulang (jam sebelum mulai)", type: "int", min: 0, max: 72 },
   ] },
-  { title: "Promo booking online", tab: "booking", fields: [
-    { name: "online_promo_pct", label: "Diskon booking online (%) — 0 = promo mati", type: "int", min: 0, max: 50 },
-    { name: "online_promo_start", label: "Berlaku untuk booking yang dibuat mulai", type: "date", nullable: true },
-    { name: "online_promo_end", label: "sampai dengan", type: "date", nullable: true },
-  ] },
   { title: "Pesan WhatsApp otomatis", tab: "pesan", fields: [
     { name: "churn_weeks", label: "Pelanggan dianggap hilang setelah (minggu)", type: "int", min: 1, max: 52 },
     { name: "wa_followup_template", label: "Template follow-up WA ({nama} = nama depan)", type: "textarea" },
@@ -199,23 +194,15 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
     { name: "alert_cash_diff", label: "Tandai ⚠️ di notifikasi Telegram bila selisih tutup kasir ≥ (Rp)", type: "money" },
     { name: "alert_expense_min", label: "Kirim notifikasi Telegram untuk pengeluaran ≥ (Rp)", type: "money" },
   ] },
-  { title: "Diskon paket", tab: "keuangan", fields: [
+  { title: "Diskon paket", tab: "voucher", fields: [
     { name: "bundle_pct", label: "Diskon paket barbershop + nail (%)", type: "int", min: 10, max: 15 },
   ] },
-  { title: "Inventaris & perawatan", tab: "keuangan", fields: [
+  { title: "Inventaris", tab: "keuangan", fields: [
     { name: "inventory_cost_method", label: "Harga pokok saat stok masuk", type: "select",
       options: [["weighted_avg", "Rata-rata tertimbang"], ["last", "Harga beli terakhir"]] },
     { name: "margin_warning_pct", label: "Tandai margin layanan di bawah (%)", type: "int", min: 0, max: 100 },
     { name: "usage_variance_threshold_pct", label: "Tandai selisih pemakaian di atas (%)", type: "int", min: 1, max: 100 },
     { name: "reorder_suggest_multiplier", label: "Saran beli sampai … × ambang reorder", type: "int", min: 1, max: 10 },
-    { name: "maint_default_interval_days", label: "Interval perawatan alat default (hari)", type: "int", min: 1, max: 365 },
-  ] },
-  { title: "Target KPI", tab: "keuangan", fields: [
-    { name: "aov_target_barbershop", label: "Target AOV barbershop (Rp)", type: "money" },
-    { name: "aov_target_nail", label: "Target AOV nail (Rp)", type: "money" },
-    { name: "retail_ratio_min", label: "Rasio ritel min (%)", type: "int", min: 0, max: 100 },
-    { name: "retail_ratio_max", label: "Rasio ritel maks (%)", type: "int", min: 0, max: 100 },
-    { name: "utilization_target", label: "Target utilisasi (%)", type: "int", min: 0, max: 100 },
   ] },
   { title: "Kode undangan tim", tab: "keamanan", fields: [
     { name: "invite_code", label: "Kode undangan tim (min. 6)", type: "text", min: 6 },

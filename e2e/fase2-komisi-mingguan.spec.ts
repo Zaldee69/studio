@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { login, newSession, sql, uniq } from "./helpers";
 
-// Komisi mingguan: manajer menutup minggu → menandai dibayar → gaji bulanan mengurangkan yang sudah dibayar mingguan.
+// Komisi mingguan: manajer menutup minggu → menandai dibayar; staf mingguan tidak muncul di Gaji bulanan (hanya staf bayar bulanan).
 // Minggu acak di 2020 (tanpa data lain & gaji bulan itu belum ditutup); dibersihkan di akhir.
-test("tutup minggu → tandai dibayar → gaji bulanan: dibayar mingguan & sisa akhir bulan", async ({ page, browser }, info) => {
+test("tutup minggu → tandai dibayar → staf mingguan tidak ada di gaji bulanan", async ({ page, browser }, info) => {
   const offset = Math.floor(Math.random() * 40);
   const [{ w }] = sql<{ w: string }>(`select (date '2020-01-06' + ${offset} * 7)::text as w`); // Senin
   const name = `Minggu ${uniq()}`;
@@ -28,8 +28,8 @@ test("tutup minggu → tandai dibayar → gaji bulanan: dibayar mingguan & sisa 
     await expect(page.getByRole("button", { name: "Buka ulang" })).toBeDisabled(); // sudah ada yang dibayar
 
     await page.goto(`/manajer/sdm?tab=bulanan&bulan=${month}`);
-    await expect(page.getByRole("columnheader", { name: "Dibayar mingguan" })).toBeVisible();
-    await expect(page.getByRole("row", { name: new RegExp(name) })).toContainText("−Rp50.000");
+    await expect(page.getByText("Hanya staf yang dibayar bulanan")).toBeVisible();
+    await expect(page.getByRole("row", { name: new RegExp(name) })).toHaveCount(0);
 
     // capster melihat bagian komisi mingguannya sendiri
     const k = await newSession(browser, info, "andi", { width: 390, height: 844 });

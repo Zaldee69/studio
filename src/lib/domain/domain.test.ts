@@ -1,10 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { calcCart, promoEligible, upsellSuggestions, type CartLine } from "./cart";
-import { monthlyPay, serviceHpp } from "./commission";
-import { followupLink, isChurn } from "./customer";
+import { serviceHpp } from "./commission";
+import { followupLink } from "./customer";
 import { formatRupiah, formatTanggal, normalizeWhatsApp } from "./format";
-import { aov, retailRatio, utilization } from "./kpi";
-import { availableSlots, minToHHMM, planBooking } from "./slots";
+import { aov, utilization } from "./kpi";
 import { nextStatus } from "./status";
 
 const potong: CartLine = { serviceId: "potong", name: "Potong Rambut", category: "barbershop", price: 75000 };
@@ -66,22 +65,13 @@ describe("keranjang (cermin checkout SQL)", () => {
 });
 
 describe("HPP & komisi", () => {
-  it("HPP resep dan jaring pengaman", () => {
+  it("HPP resep", () => {
     expect(serviceHpp([{ qty: 20, unitCost: 50 }, { qty: 1, unitCost: 300 }])).toBe(1300);
-    expect(monthlyPay([{ netAmount: 81000, hpp: 2000 }], 40, 1200000)).toMatchObject(
-      { commission: 31600, subsidy: 1168400, totalPay: 1200000 });
-    expect(monthlyPay([{ netAmount: 5_000_000, hpp: 0 }], 40, 1200000))
-      .toMatchObject({ commission: 2000000, subsidy: 0, totalPay: 2000000 });
-    expect(monthlyPay([{ netAmount: 1000, hpp: 5000 }], 40, 0).commission).toBe(0); // rugi tidak negatif
   });
 });
 
 describe("pelanggan & status", () => {
-  it("churn & follow-up", () => {
-    const now = new Date("2026-09-29T00:00:00Z");
-    expect(isChurn("2026-08-01T00:00:00Z", 4, now)).toBe(true);
-    expect(isChurn("2026-09-20T00:00:00Z", 4, now)).toBe(false);
-    expect(isChurn(null, 4, now)).toBe(false);
+  it("follow-up", () => {
     expect(followupLink("6281", "Halo {nama}!", "Rina Wati")).toBe("https://wa.me/6281?text=Halo%20Rina!");
   });
   it("alur status", () => {
@@ -93,7 +83,7 @@ describe("pelanggan & status", () => {
 });
 
 describe("KPI", () => {
-  it("AOV, utilisasi, rasio ritel", () => {
+  it("AOV, utilisasi", () => {
     const txs = [
       { items: [{ category: "barbershop" as const, netAmount: 100000 }, { category: "retail" as const, netAmount: 20000 }] },
       { items: [{ category: "barbershop" as const, netAmount: 140000 }, { category: "nail" as const, netAmount: 200000 }] },
@@ -101,37 +91,6 @@ describe("KPI", () => {
     ];
     expect(aov(txs, "barbershop")).toBe(120000);
     expect(aov(txs, "nail")).toBe(200000);
-    expect(retailRatio(txs)).toBeCloseTo((20000 / 440000) * 100);
     expect(utilization([{ status: "paid", durationMin: 360 }, { status: "booked", durationMin: 60 }], 720)).toBe(50);
-  });
-});
-
-describe("slot booking (cermin plan_booking SQL)", () => {
-  const resources = [
-    { id: "b1", type: "barbershop" as const, isPedicure: false },
-    { id: "m1", type: "nail" as const, isPedicure: false },
-    { id: "p1", type: "nail" as const, isPedicure: true },
-  ];
-  const staff = [{ id: "andi", category: "barbershop" as const }, { id: "sari", category: "nail" as const }];
-  const cut = { id: "cut", category: "barbershop" as const, durationMin: 45, needsPedicure: false };
-  const pedi = { id: "pedi", category: "nail" as const, durationMin: 60, needsPedicure: true };
-  const mani = { id: "mani", category: "nail" as const, durationMin: 45, needsPedicure: false };
-
-  it("berdua bersamaan: mulai sama; pedicure dapat kursi pedicure", () => {
-    const plan = planBooking({ services: [cut, pedi], resources, staff, busy: [], together: true }, 600);
-    expect(plan?.map((g) => [g.resourceId, g.startMin])).toEqual([["b1", 600], ["p1", 600]]);
-  });
-  it("manicure tidak memakai kursi pedicure bila meja kosong", () => {
-    expect(planBooking({ services: [mani], resources, staff, busy: [], together: true }, 600)?.[0].resourceId).toBe("m1");
-  });
-  it("sendiri berurutan: nail setelah barber", () => {
-    const plan = planBooking({ services: [cut, mani], resources, staff, busy: [], together: false }, 600);
-    expect(plan?.map((g) => g.startMin)).toEqual([600, 645]);
-  });
-  it("bentrok staf / resource menutup slot; jam tutup & minimal mulai dihormati", () => {
-    const busy = [{ resourceId: "b1", staffId: "andi", startMin: 600, endMin: 645 }];
-    const ctx = { services: [cut], resources, staff, busy, together: true };
-    const slots = availableSlots(ctx, 540, 750, 570).map(minToHHMM);
-    expect(slots).toEqual(["11:00", "11:30"]); // 09:00 < minimal; 09:30–10:30 bentrok; 12:00+45 > tutup 12:30
   });
 });

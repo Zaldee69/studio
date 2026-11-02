@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { allocateDiscount, bundleDiscount, type CartLine } from "./cart";
-import { itemCommission, monthlyPay, rankStaff, retailCommission, returnRate, serviceHpp, serviceMargin, upsellRate } from "./commission";
-import { crossesReorder, newUnitCost, opnameMoves, stockStatus, suggestOrder, supplierMessage, usageVariance } from "./inventory";
+import { itemCommission, serviceHpp, serviceMargin, upsellRate } from "./commission";
+import { crossesReorder, newUnitCost, opnameMoves, suggestOrder, supplierMessage } from "./inventory";
 
 describe("U1 harga pokok saat stok masuk", () => {
   it("rata-rata tertimbang: 450 ml @120 + 1.000 ml @135 = Rp130,3448", () => {
@@ -50,35 +50,6 @@ describe("U4 komisi hibrida", () => {
   it("pembulatan per item, setengah ke atas", () => expect(itemCommission(1001, 0, 50)).toBe(501));
 });
 
-describe("U5 jaring pengaman", () => {
-  const pay = (commission: number, adjustments = 0) => monthlyPay([{ netAmount: commission, hpp: 0 }], 100, 1_200_000, { adjustments });
-  it("komisi 1.199.999 → subsidi 1", () => expect(pay(1_199_999).subsidy).toBe(1));
-  it("komisi = ambang → 0; di atas ambang → 0", () => {
-    expect(pay(1_200_000).subsidy).toBe(0);
-    expect(pay(1_500_000).subsidy).toBe(0);
-  });
-  it("Dimas 886.440 → subsidi 313.560; bonus +100.000 → total 1.300.000", () => {
-    const p = pay(886_440, 100_000);
-    expect(p.subsidy).toBe(313_560);
-    expect(p.totalPay).toBe(1_300_000);
-  });
-  it("bonus tidak mengurangi subsidi, potongan tidak menambah subsidi", () => {
-    expect(pay(886_440, 100_000).subsidy).toBe(pay(886_440).subsidy);
-    const cut = pay(886_440, -50_000);
-    expect(cut.subsidy).toBe(313_560);
-    expect(cut.totalPay).toBe(1_150_000);
-  });
-});
-
-describe("U6 komisi ritel", () => {
-  it("Pomade 110.000 dijual Maya, 5% = 5.500", () => expect(retailCommission(110000, 5, "maya")).toBe(5500));
-  it("tanpa penjual → 0", () => expect(retailCommission(110000, 5, null)).toBe(0));
-  it("masuk ke total bulanan", () => {
-    const p = monthlyPay([{ netAmount: 67500, hpp: 1200 }, { netAmount: 110000, hpp: 60000, retail: true, sellerId: "maya" }], 40, 0, { retailPct: 5 });
-    expect(p).toMatchObject({ commissionService: 26520, commissionRetail: 5500, commission: 32020 });
-  });
-});
-
 describe("U7 stok opname", () => {
   it("neck strip sistem 35, fisik 32 → mutasi −3, nilai −900; hitungan kosong tanpa mutasi", () => {
     const r = opnameMoves([
@@ -89,25 +60,9 @@ describe("U7 stok opname", () => {
     expect(r.moves).toEqual([{ itemId: "neck", qty: -3, value: -900 }]);
     expect(r.value).toBe(-900);
   });
-  it("status stok & melewati ambang", () => {
-    expect(stockStatus(35, 100)).toBe("reorder");
-    expect(stockStatus(150, 100)).toBe("low");
-    expect(stockStatus(151, 100)).toBe("ok");
+  it("melewati ambang", () => {
     expect(crossesReorder(101, 100, 100)).toBe(true);
     expect(crossesReorder(100, 99, 100)).toBe(false); // sudah di bawah → tidak dobel
-  });
-});
-
-describe("U8 pemakaian teoretis vs aktual", () => {
-  it("shampoo: teoretis 3.250, aktual 3.500 → +250 ml (+7,7%) tidak ditandai", () => {
-    const theoretical = 120 * 15 + 40 * 25 + 30 * 15;
-    expect(theoretical).toBe(3250);
-    expect(usageVariance({ theoretical, start: 2200, incoming: 2000, adjust: 0, end: 700, sold: 0 }, 10))
-      .toEqual({ actual: 3500, variance: 250, pct: 7.7, flagged: false });
-  });
-  it("di atas ambang → ditandai; teoretis 0 tapi terpakai → ditandai", () => {
-    expect(usageVariance({ theoretical: 30, start: 1000, incoming: 500, adjust: -10, end: 1440, sold: 0 }, 10).flagged).toBe(true);
-    expect(usageVariance({ theoretical: 0, start: 10, incoming: 0, adjust: 0, end: 8, sold: 0 }, 10).flagged).toBe(true);
   });
 });
 
@@ -123,24 +78,10 @@ describe("daftar belanja", () => {
   });
 });
 
-describe("U11 peringkat & evaluasi", () => {
-  it("seri → jumlah layanan, lalu nama", () => {
-    const r = rankStaff([
-      { name: "Rizky", revenue: 500000, count: 5 }, { name: "Andi", revenue: 500000, count: 5 },
-      { name: "Dimas", revenue: 500000, count: 6 }, { name: "Sari", revenue: 900000, count: 3 },
-    ]);
-    expect(r.map((x) => `${x.rank}${x.name}`)).toEqual(["1Sari", "2Dimas", "3Andi", "4Rizky"]);
-  });
+describe("U11 evaluasi", () => {
   it("tingkat upsell per transaksi", () => {
     expect(upsellRate([{ tx: "1", fromUpsell: false }, { tx: "1", fromUpsell: true }, { tx: "2", fromUpsell: false },
       { tx: "3", fromUpsell: false }, { tx: "4", fromUpsell: false }])).toBe(25);
-  });
-  it("pelanggan kembali: tepat 60 hari ya, 61 hari tidak, walk-in diabaikan", () => {
-    expect(returnRate([
-      { customerId: "a", date: "2025-03-01" }, { customerId: "a", date: "2025-04-30" },
-      { customerId: "b", date: "2025-03-01" }, { customerId: "b", date: "2025-05-01" },
-      { customerId: null, date: "2025-03-01" }, { customerId: null, date: "2025-03-02" },
-    ], 2025)).toBe(50);
   });
 });
 

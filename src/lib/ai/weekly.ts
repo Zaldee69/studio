@@ -9,7 +9,8 @@ export const MODEL = process.env.AI_WEEKLY_MODEL || "claude-opus-5-5";
 export const STUDIO_RULES = `Cara kerja studio (agar saran tidak salah alamat):
 - Sumber kunjungan web (minggu_ini.web) tercatat otomatis dari link (mis. link bio Instagram); kasir tidak bisa memperbaikinya. Kunjungan banyak tapi booking sedikit → benahi isi/ajakan di Instagram, link bio, atau halaman booking (tugas owner).
 - Kasir hanya mengisi sumber untuk pelanggan baru yang didaftarkan di konter.
-- Voucher SENKAMWA (diskon 10%) dan SENKAMIG (Rp5.000), Senin–Kamis, hanya bisa dipakai lewat booking online. Jangan diberikan ke pelanggan yang memang sudah datang di hari kerja (itu hanya mengurangi omzet). Pakai untuk memindahkan pelanggan akhir pekan ke hari kerja, atau untuk mengajak kembali pelanggan di filter "Perlu follow-up".
+- Voucher hanya bisa dipakai lewat booking online. Kode, besar potongan, hari, dan masa berlakunya ada di fakta_studio.voucher_aktif; jangan menyebut voucher atau angka voucher yang tidak ada di JSON. Jangan diberikan ke pelanggan yang memang sudah datang di hari kerja (itu hanya mengurangi omzet). Pakai untuk memindahkan pelanggan akhir pekan ke hari kerja, atau untuk mengajak kembali pelanggan di filter "Perlu follow-up".
+- Kategori layanan yang dibuka, harga potong, aturan komisi, dan target ada di fakta_studio dan target (dibaca dari aplikasi); pakai itu, bukan ingatan.
 - Upsell tambahan (pijat/retail) ditawarkan capster di kursi; Relax/Signature Groom sudah termasuk pijat yang dikerjakan capster.
 - Fitur aplikasi: menu Pelanggan → filter "Perlu follow-up" (kirim WA dari profil), voucher, menu Inventaris.
 
@@ -21,7 +22,7 @@ Aturan:
 - Bila ada notulen_rapat_sebelumnya: periksa tindakan dan targetnya dengan angka minggu ini. Tindakan yang gagal jangan diulang begitu saja; cari sebabnya atau ganti caranya.
 - Bahasa Indonesia lugas dan sopan, kalimat pendek. Teks biasa Telegram: tanpa tabel, tanpa tebal/miring, tanpa #. Uang ditulis seperti Rp1.250.000; persen dibulatkan.`;
 
-const STUDIO = `D'Pras Studio: barbershop dengan layanan pijat di Ruko Emerald, Cimanggis Golf Estate, Depok. Setiap Senin tim membahas angka minggu lalu (JSON). Owner SUDAH menerima ringkasan angka pukul 08.05, jadi jangan mengulang angka; jawab apa yang terpenting, kenapa, dan apa yang harus dikerjakan siapa.
+const STUDIO = `D'Pras Studio: barbershop dengan layanan pijat di Ruko Emerald, Cimanggis Golf Estate, Depok. Setiap Senin tim membahas angka minggu lalu (JSON). Ringkasan angka minggu lalu dikirim tepat di atas notulen ini dalam pesan yang sama, jadi jangan mengulang angka; jawab apa yang terpenting, kenapa, dan apa yang harus dikerjakan siapa.
 
 ${STUDIO_RULES}`;
 

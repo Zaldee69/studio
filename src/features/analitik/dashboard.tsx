@@ -31,7 +31,8 @@ export type AnalyticsData = {
   insights: { code: string; message: string; href: string }[];
   staffList: { id: string; name: string }[];
   settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; aov_target_massage: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
-    insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number };
+    insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number;
+    target_cuts_senkam: number; target_cuts_weekend_max: number; target_upgrade_pct: number; target_customer_pct: number };
 };
 
 type Cat = "barbershop" | "nail" | "massage";
@@ -273,7 +274,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         <Section id="antrean" title="Antrean walk-in">
           <div className="grid gap-3 min-[820px]:grid-cols-4">
             {[["Tunggu (median · p90)", `${mnt(d.queue.wait_median)} · ${mnt(d.queue.wait_p90)}`, `${d.queue.queued} dari ${d.queue.walk_ins} walk-in sempat menunggu`],
-              ["Tunggu Sabtu–Minggu", `${mnt(d.queue.wait_median_weekend)} · ${mnt(d.queue.wait_p90_weekend)}`, "target median ≤15 mnt · p90 ≤25 mnt"],
+              ["Tunggu Jumat–Minggu", `${mnt(d.queue.wait_median_weekend)} · ${mnt(d.queue.wait_p90_weekend)}`, "target median ≤15 mnt · p90 ≤25 mnt"],
               ["Pulang sebelum dilayani", String(d.queue.walk_aways), "dicatat dari laci booking"],
               ["Diminta pelanggan", pctOr(rec({ tx: d.queue.by_staff.reduce((a, s) => a + s.requested + s.turn, 0), with_customer: d.queue.by_staff.reduce((a, s) => a + s.requested, 0) })), "walk-in yang memilih staf di luar giliran"]].map(([k, v, s]) => (
               <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
@@ -308,6 +309,8 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     ["revenue_target_monthly", "Target omzet bersih per bulan (Rp)"],
     ["aov_target_barbershop", "Target AOV barbershop (Rp)"], ["aov_target_massage", "Target AOV pijat (Rp; 0 = belum ada)"], ["aov_target_nail", "Target AOV nail (Rp)"],
     ["retail_ratio_min", "Rasio ritel minimum (%)"], ["retail_ratio_max", "Rasio ritel maksimum (%)"], ["utilization_target", "Target utilisasi (%)"],
+    ["target_cuts_senkam", "Potong per hari Senin–Kamis"], ["target_cuts_weekend_max", "Batas nyaman potong per hari Jumat–Minggu"],
+    ["target_upgrade_pct", "Potong yang naik paket (%)"], ["target_customer_pct", "Transaksi dengan pelanggan (%)"],
     ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],
     ["kpi_min_tx_for_stable", "Catatan \"data masih sedikit\" di bawah (transaksi)"],
   ];
@@ -315,6 +318,8 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     const row = Object.fromEntries(fields.map(([k]) => [k, Number(f[k].replace(/[^\d.,]/g, "").replace(",", "."))])) as AnalyticsData["settings"];
     if (Object.values(row).some((v) => !Number.isFinite(v) || v < 0)) return toast("Isi semua angka target", "error");
     if (row.retail_ratio_min > row.retail_ratio_max) return toast("Rasio ritel minimum harus ≤ maksimum", "error");
+    const pct = ["retail_ratio_min", "retail_ratio_max", "utilization_target", "target_upgrade_pct", "target_customer_pct"] as const;
+    if (pct.some((k) => row[k] > 100)) return toast("Target persen maksimal 100%", "error");
     const { error } = await createClient().from("settings").update(row).eq("id", true);
     if (error) return toast(error.message, "error");
     toast("Target KPI disimpan"); onSaved();

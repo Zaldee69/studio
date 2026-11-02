@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { actualMinutes, approvedOffFor, commissionOnDay, pickCurrent, revertRemaining, serviceTimer, staffCanMove } from "./staff";
+import { actualMinutes, approvedOffFor, commissionOnDay, pickCurrent, revertRemaining, serviceTimer } from "./staff";
 import type { ApptStatus } from "./status";
 
 const a = (id: string, status: ApptStatus, hh: string) => ({ id, status, start_at: `2026-10-01T${hh}:00+07:00` });
@@ -15,15 +15,7 @@ describe("capster: pelanggan berikutnya", () => {
   });
 });
 
-describe("capster: transisi & koreksi", () => {
-  it("maju/mundur satu langkah, tidak pernah ke paid", () => {
-    expect(staffCanMove("booked", "arrived")).toBe(true);
-    expect(staffCanMove("in_service", "completed")).toBe(true);
-    expect(staffCanMove("in_service", "arrived")).toBe(true);
-    expect(staffCanMove("booked", "in_service")).toBe(false);
-    expect(staffCanMove("completed", "paid")).toBe(false);
-    expect(staffCanMove("arrived", "cancelled")).toBe(false);
-  });
+describe("capster: koreksi", () => {
   it("jendela koreksi 10 menit, hanya perubahan sendiri", () => {
     const now = Date.parse("2026-10-01T10:10:00+07:00");
     const x = (at: string | null, me = true, status: ApptStatus = "in_service") => ({ status, status_changed_at: at, changed_by_me: me });

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { Empty, useToast } from "@/components/ui";
@@ -38,7 +39,8 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
   const { data, refresh } = useRealtimeTable(["campaigns", "campaign_sends"], async () => {
     const db = createClient();
     const [c, s] = await Promise.all([
-      db.from("campaigns").select("id, name, message, segment, archived, updated_at").order("updated_at", { ascending: false }),
+      // kiriman otomatis (ajak potong lagi, minta ulasan) diatur di Pengaturan → Pesan otomatis, bukan di sini
+      db.from("campaigns").select("id, name, message, segment, archived, updated_at").is("auto_kind", null).order("updated_at", { ascending: false }),
       db.from("campaign_send_stats").select("*").order("created_at", { ascending: false }).limit(200),
     ]);
     if (c.error) throw c.error;
@@ -144,6 +146,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               </button>
             ))}
           </div>
+          <p className="text-xs text-muted">Kiriman otomatis (ajak potong lagi, minta ulasan Google) diatur di <Link href="/manajer/pengaturan?tab=pesan" className="underline">Pengaturan → Pesan otomatis</Link>; riwayat kirimnya tetap tampil di bawah.</p>
           {!data ? <Empty>Memuat…</Empty> : !campaigns.length ? (
             <Empty>{showArchived ? "Tidak ada campaign di arsip." : "Belum ada campaign. Buat yang pertama di sebelah kanan."}</Empty>
           ) : campaigns.map((c) => {

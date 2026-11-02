@@ -87,7 +87,7 @@ select alert_unpaid_weeks();
 select is(pg_temp.n('💰 Komisi sudah ditutup tapi BELUM DIBAYAR:%Andi Rp100.000%'), 1::bigint, 'komisi ditutup > 2 hari belum dibayar → pengingat');
 
 select alert_weekly_summary();
-select is(pg_temp.n('📈 Ringkasan minggu %Omzet Rp%Barbershop:%Pelanggan ber-WA:%Komisi minggu ini:%'), 1::bigint, 'ringkasan mingguan');
+select is(pg_temp.n('📈 Ringkasan minggu %Omzet Rp%Potong:%Transaksi dengan pelanggan:%Per staf:%Komisi minggu lalu:%'), 1::bigint, 'ringkasan mingguan');
 
 select * from finish();
 rollback;

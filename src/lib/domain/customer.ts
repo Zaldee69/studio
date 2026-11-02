@@ -1,11 +1,5 @@
 const DAY = 24 * 3600 * 1000;
 
-/** Churn: transaksi terakhir lebih dari churnWeeks minggu lalu. Belum pernah bertransaksi = bukan churn. */
-export function isChurn(lastVisitAt: Date | string | null, churnWeeks: number, now: Date = new Date()): boolean {
-  if (!lastVisitAt) return false;
-  return now.getTime() - new Date(lastVisitAt).getTime() > churnWeeks * 7 * DAY;
-}
-
 /** "Tahu D'Pras dari mana?" — kolom customers.source (web = booking online, diisi otomatis). */
 export const CUSTOMER_SOURCES = [
   ["instagram", "Instagram"], ["google_maps", "Google Maps"], ["whatsapp", "WhatsApp / pesan promo"], ["teman", "Teman / keluarga"],

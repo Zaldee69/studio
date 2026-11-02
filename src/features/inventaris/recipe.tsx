@@ -31,7 +31,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
     return it ? Number(r.qty.replace(",", ".")) * it.unit_cost : 0;
   };
   const hpp = serviceHpp(rows.map((r) => ({ qty: Number(r.qty.replace(",", ".")) || 0, unitCost: items.find((i) => i.item_id === r.item_id)?.unit_cost ?? 0 })));
-  const m = svc ? serviceMargin(svc.price, hpp, settings.ratio) : null;
+  const m = svc ? serviceMargin(svc.price, hpp, settings.ratio, settings.deductHpp) : null;
   const margin = (id: string) => margins.find((x) => x.id === id);
   const valid = rows.every((r) => r.item_id && Number(r.qty.replace(",", ".")) > 0);
 

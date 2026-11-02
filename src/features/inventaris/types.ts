@@ -6,7 +6,7 @@ export type StockRow = {
   supplier_id: string | null; active: boolean; qty: number; stock_value: number; status: StockStatus;
 };
 export type Supplier = { id: string; name: string; whatsapp: string | null; active: boolean };
-export type InvSettings = { method: CostMethod; marginWarn: number; multiplier: number; shop: string; ratio: number; variancePct: number };
+export type InvSettings = { method: CostMethod; marginWarn: number; multiplier: number; shop: string; ratio: number; deductHpp: boolean; variancePct: number };
 
 export const ADJUST_REASONS: [string, string][] = [
   ["rusak", "Rusak"], ["kedaluwarsa", "Kedaluwarsa"], ["tumpah", "Tumpah / tercecer"], ["keperluan_lain", "Keperluan lain"], ["koreksi", "Koreksi hitungan"],

@@ -211,8 +211,8 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <p className="mt-1 text-[11px] text-muted">
-            {fullPayroll ? "Biaya staf = gaji & komisi bulan penuh (termasuk subsidi gaji minimum & penyesuaian) + kasbon yang sudah dipotong dari gaji."
-              : `Upah staf = estimasi komisi dari transaksi periode ini ${m(x.commission_est)} + jaring harian ${m(x.subsidy_est ?? 0)} + gaji pokok prorata ${m(x.base_salary_est ?? 0)}; jaring bulanan & penyesuaian diselesaikan akhir bulan.`}
+            {fullPayroll ? "Biaya staf = bayaran mingguan yang ditutup untuk bulan ini (staf mingguan) + gaji bulanan (staf bergaji pokok) + kasbon yang sudah dipotong dari bayaran."
+              : `Upah staf = estimasi komisi dari transaksi periode ini ${m(x.commission_est)} + jaring harian ${m(x.subsidy_est ?? 0)} + gaji pokok prorata ${m(x.base_salary_est ?? 0)}; bonus/potongan dihitung saat periode ditutup.`}
             {" "}Laba/rugi operasional belum memperhitungkan pajak, penyusutan, bunga, dan biaya tetap yang tidak dicatat di aplikasi — bukan laba bersih.
             {!!f.payments.tips_qris && ` Tips non-tunai ${m(f.payments.tips_qris)} adalah titipan staf (masuk via QRIS/transfer, diserahkan tunai) — tidak dihitung di atas.`}
             {" "}Saldo deposit pelanggan {m(f.deposit.balance_end)} adalah kewajiban layanan yang belum dipakai.

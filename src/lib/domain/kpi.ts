@@ -1,5 +1,5 @@
-// KPI & SOP. Cermin fungsi SQL Tahap 5 (kpi_period, kpi_aov_drivers, appt_minutes, kpi_heatmap, kpi_duration_variance,
-// kpi_customers, kpi_online, kpi_insights, sop_status, maintenance_state) — ubah keduanya bersamaan (satu definisi per KPI).
+// KPI & SOP. Cermin fungsi SQL Tahap 5 (kpi_period, appt_minutes, kpi_heatmap, kpi_online, kpi_insights,
+// maintenance_state) — ubah keduanya bersamaan (satu definisi per KPI).
 import type { Category } from "./cart";
 
 type ServiceCat = Exclude<Category, "retail">;
@@ -22,20 +22,6 @@ export function aov(txs: Tx[], category: ServiceCat): number | null {
 
 /** Omzet = Σ total transaksi non-void (= Σ net semua item, diskon sudah teralokasi ke item). */
 export const omzet = (txs: Tx[]) => live(txs).reduce((a, t) => a + t.items.reduce((b, i) => b + i.netAmount, 0), 0);
-export function aovAll(txs: Tx[]): number | null {
-  const n = live(txs).length;
-  return n ? Math.round(omzet(txs) / n) : null;
-}
-
-/** Rasio ritel (%) = pendapatan ritel ÷ pendapatan jasa bersih × 100. Jasa 0 → null ("—"). */
-export function retailRatio(txs: Tx[]): number | null {
-  let retail = 0, service = 0;
-  for (const t of live(txs)) for (const i of t.items) {
-    if (i.category === "retail") retail += i.netAmount;
-    else service += i.netAmount;
-  }
-  return service ? (retail / service) * 100 : null;
-}
 
 export type BandStatus = "below" | "within" | "above";
 export const BAND_LABEL: Record<BandStatus, string> = { below: "Di bawah target", within: "Sesuai target", above: "Di atas target" };
@@ -45,19 +31,6 @@ export function bandStatus(v: number | null, min: number, max: number): BandStat
 }
 /** Status nilai vs target minimal (AOV, utilisasi). */
 export const targetStatus = (v: number | null, target: number): "below" | "within" | null => (v === null ? null : v < target ? "below" : "within");
-
-/** Penggerak AOV atas transaksi berlayanan (kategori tertentu bila diberikan). */
-export function aovDrivers(txs: Tx[], category?: ServiceCat) {
-  const isCat = (i: TxItem) => (category ? i.category === category : i.category !== "retail");
-  const rows = live(txs).map((t) => ({ items: t.items.filter(isCat), bundle: !!t.bundle })).filter((t) => t.items.length);
-  const n = rows.length;
-  return {
-    txCount: n,
-    avgServices: n ? rows.reduce((a, t) => a + t.items.length, 0) / n : null,
-    upsellRate: n ? (rows.filter((t) => t.items.some((i) => i.fromUpsell)).length * 100) / n : null,
-    bundlePct: n ? (rows.filter((t) => t.bundle).length * 100) / n : null,
-  };
-}
 
 export type ApptMin = { status: string; durationMin: number; startedAt?: string | null; endedAt?: string | null };
 const SOLD = new Set(["in_service", "completed", "paid"]);
@@ -110,39 +83,7 @@ export function heatmap(intervals: { start: string | Date; end: string | Date }[
   return (weekday: number, hour: number) => (cells.get(`${weekday}-${hour}`) ?? 0) / (weeks.get(weekday) ?? 1);
 }
 
-/** Selisih durasi per layanan: rata-rata (nyata − rencana), hanya bila n ≥ minN. */
-export function durationVariance(rows: { service: string; planned: number; actual: number }[], minN = 5) {
-  const by = new Map<string, { sum: number; n: number }>();
-  for (const r of rows) { const x = by.get(r.service) ?? { sum: 0, n: 0 }; x.sum += r.actual - r.planned; x.n++; by.set(r.service, x); }
-  return [...by].filter(([, x]) => x.n >= minN).map(([service, x]) => ({ service, diffAvg: x.sum / x.n, n: x.n }))
-    .sort((a, b) => Math.abs(b.diffAvg) - Math.abs(a.diffAvg));
-}
-
 const dnum = (d: string) => Date.parse(`${d}T00:00:00Z`) / 86_400_000;
-/**
- * Tingkat kembali (%): dari pelanggan yang bertransaksi pada hari d dalam periode dengan pengamatan ≥ window hari
- * (d ≤ today − window), berapa yang bertransaksi lagi ≤ window hari sesudahnya. Walk-in (customerId null) dikecualikan.
- */
-export function returnWindowRate(visits: { customerId: string | null; date: string }[], from: string, to: string, today: string, windowDays = 60) {
-  const by = new Map<string, number[]>();
-  for (const v of visits) if (v.customerId) by.set(v.customerId, [...(by.get(v.customerId) ?? []), dnum(v.date)]);
-  let eligible = 0, back = 0;
-  for (const [, ds] of by) {
-    const inP = ds.filter((d) => d >= dnum(from) && d <= dnum(to) && d <= dnum(today) - windowDays);
-    if (!inP.length) continue;
-    eligible++;
-    if (inP.some((d) => ds.some((e) => e > d && e - d <= windowDays))) back++;
-  }
-  return { eligible, back, rate: eligible ? (back * 100) / eligible : null };
-}
-
-/** Efektivitas follow-up (%): pelanggan yang dikirimi & bertransaksi ≤ window hari sesudahnya ÷ pelanggan yang dikirimi. */
-export function followupRate(sent: { customerId: string; at: string }[], txs: { customerId: string; at: string }[], windowDays = 30) {
-  const customers = new Set(sent.map((s) => s.customerId));
-  const ok = new Set(sent.filter((s) => txs.some((t) => t.customerId === s.customerId && Date.parse(t.at) > Date.parse(s.at)
-    && Date.parse(t.at) <= Date.parse(s.at) + windowDays * 86_400_000)).map((s) => s.customerId));
-  return { sent: customers.size, converted: ok.size, rate: customers.size ? (ok.size * 100) / customers.size : null };
-}
 
 /** Funnel sesi unik: konversi antar langkah (%). */
 export function funnel(steps: number[]) {
@@ -204,12 +145,6 @@ export const SOP_STATUS: Record<SopStatus, { label: string; bg: string; fg: stri
   empty: { label: "Kosong", bg: "#EEEBE4", fg: "#4A463F", icon: "○" },
   closed: { label: "Tutup", bg: "#F6F4EF", fg: "#6B665C", icon: "—" },
 };
-export function sopStatus(done: number, total: number, approved: boolean, closed: boolean): SopStatus {
-  if (approved) return "ok";
-  if (closed && done === 0) return "closed";
-  if (total > 0 && done >= total) return "done";
-  return done > 0 ? "part" : "empty";
-}
 export const STAGES = ["wash", "soak", "autoclave"] as const;
 export type Stage = (typeof STAGES)[number];
 export const STAGE_LABEL: Record<Stage, string> = { wash: "Cuci", soak: "Rendam", autoclave: "Autoclave" };
@@ -233,8 +168,3 @@ export const MAINT_STATUS: Record<MaintState, { bg: string; fg: string; icon: st
 };
 export const maintenanceLabel = (daysLeft: number) =>
   daysLeft < 0 ? `Terlambat ${-daysLeft} hari` : daysLeft === 0 ? "Jatuh tempo hari ini" : `${daysLeft} hari lagi`;
-/** next_due = tanggal terakhir selesai (atau dibuat) + interval; days_left = next_due − hari ini. */
-export function nextDue(lastDone: string | null, created: string, intervalDays: number, today: string) {
-  const due = dnum(lastDone ?? created) + intervalDays;
-  return { nextDue: new Date(due * 86_400_000).toISOString().slice(0, 10), daysLeft: due - dnum(today) };
-}

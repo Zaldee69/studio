@@ -33,6 +33,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
   const firstFree = staff.find((s) => s.now.free);
   const staffId = [staffPick, firstFree && turn[firstFree.category], firstFree?.id, staff.find((s) => !s.now.off)?.id]
     .find((id) => id && !staff.find((s) => s.id === id)?.now.off) ?? "";
+  // memilih layanan mengunci capster default, agar jadwal yang dimuat ulang tidak memindahkannya ke kategori lain
   const [sel, setSel] = useState<string[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [guest, setGuest] = useState("");
@@ -113,7 +114,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
             {services.map((s) => {
               const on = sel.includes(s.id);
               return (
-                <button key={s.id} type="button" aria-pressed={on} onClick={() => { setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id]); setConflicts(null); }}
+                <button key={s.id} type="button" aria-pressed={on} onClick={() => { setStaffPick(staffId); setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id]); setConflicts(null); }}
                   className={`min-h-11 rounded-full border px-3.5 text-sm font-semibold ${on ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>
                   {s.name} <span className={on ? "text-white/75" : "text-muted"}>· {formatRupiah(s.price)}</span>
                 </button>

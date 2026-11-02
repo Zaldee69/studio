@@ -8,9 +8,9 @@ test("walk-in sekarang → dilayani → Selesai dari panel → Bayar", async ({ 
   await page.goto("/kasir/jadwal");
   await page.getByRole("button", { name: "Walk-in sekarang" }).click();
   const form = page.getByRole("dialog", { name: "Walk-in sekarang" });
+  await form.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   const pick = form.getByRole("radio", { checked: true }); // default: capster yang kosong
   const staff = (await pick.locator("b").innerText()).trim();
-  await form.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   await form.getByLabel("Nama panggilan (opsional)").fill(guest);
   await form.getByRole("button", { name: /^Mulai dilayani/ }).click();
   const tetap = form.getByRole("button", { name: "Tetap mulai" });

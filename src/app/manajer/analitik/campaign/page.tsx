@@ -54,7 +54,14 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
   const sp = await searchParams;
   const today = jktDate();
   const from = one(sp.dari) ?? `${today.slice(0, 8)}01`, to = one(sp.sampai) ?? today;
-  const { data, error } = await (await createClient()).rpc("campaign_report", { p_from: from, p_to: to });
+  const supabase = await createClient();
+  const [{ data, error }, { data: g }] = await Promise.all([
+    supabase.rpc("campaign_report", { p_from: from, p_to: to }),
+    supabase.from("settings").select("target_cuts_senkam, target_cuts_weekend_max, target_upgrade_pct, target_customer_pct").single(),
+  ]);
+  // target dari Analitik → Target KPI (satu rumah)
+  const t = { senkam: Number(g?.target_cuts_senkam ?? 5.5), weekend: Number(g?.target_cuts_weekend_max ?? 14), upgrade: g?.target_upgrade_pct ?? 30, customer: g?.target_customer_pct ?? 40 };
+  const num = (v: number) => v.toLocaleString("id-ID");
   const r = data as unknown as Report | null;
   const c = r?.cuts;
   const tx = (r?.weekly ?? []).reduce((a, w) => ({ n: a.n + w.tx, wc: a.wc + w.with_customer }), { n: 0, wc: 0 });
@@ -74,14 +81,14 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
       </div>
       {error || !r || !c ? <p role="alert" className="text-sm text-[#A12A2A]">{error?.message ?? "Laporan tidak tersedia."}</p> : (
         <>
-          <p className="text-sm text-muted">{formatTanggal(from)} – {formatTanggal(to)} · target rapat: Sen–Kam ≥5,5 potong/hari, akhir pekan ≤14, Fresh Groom ke atas ≥30%, transaksi dengan pelanggan ≥60%.</p>
+          <p className="text-sm text-muted">{formatTanggal(from)} – {formatTanggal(to)} · target (ubah di <Link href="/manajer/analitik#target" className="underline">Target KPI</Link>): Sen–Kam ≥{num(t.senkam)} potong/hari, Jum–Min ≤{num(t.weekend)}, naik paket ≥{t.upgrade}%, transaksi dengan pelanggan ≥{t.customer}%.</p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <Card label="Potong per hari, Senin–Kamis" value={avg(c.senkam_cuts, c.senkam_days)} note={`${c.senkam_cuts} potong dalam ${c.senkam_days} hari`}
-              ok={c.senkam_days ? c.senkam_cuts / c.senkam_days >= 5.5 : null} />
-            <Card label="Potong per hari, Sabtu–Minggu" value={avg(c.weekend_cuts, c.weekend_days)} note={`${c.weekend_cuts} potong dalam ${c.weekend_days} hari · batas nyaman 14`}
-              ok={c.weekend_days ? c.weekend_cuts / c.weekend_days <= 14 : null} />
-            <Card label="Fresh Groom ke atas" value={pct(c.upgrade, c.total)} note={`${c.upgrade} dari ${c.total} potong`} ok={c.total ? c.upgrade / c.total >= 0.3 : null} />
-            <Card label="Transaksi dengan pelanggan" value={pct(tx.wc, tx.n)} note={`${tx.wc} dari ${tx.n} transaksi`} ok={tx.n ? tx.wc / tx.n >= 0.6 : null} />
+              ok={c.senkam_days ? c.senkam_cuts / c.senkam_days >= t.senkam : null} />
+            <Card label="Potong per hari, Jumat–Minggu" value={avg(c.weekend_cuts, c.weekend_days)} note={`${c.weekend_cuts} potong dalam ${c.weekend_days} hari · batas nyaman ${num(t.weekend)}`}
+              ok={c.weekend_days ? c.weekend_cuts / c.weekend_days <= t.weekend : null} />
+            <Card label="Naik paket" value={pct(c.upgrade, c.total)} note={`${c.upgrade} dari ${c.total} potong`} ok={c.total ? c.upgrade / c.total >= t.upgrade / 100 : null} />
+            <Card label="Transaksi dengan pelanggan" value={pct(tx.wc, tx.n)} note={`${tx.wc} dari ${tx.n} transaksi`} ok={tx.n ? tx.wc / tx.n >= t.customer / 100 : null} />
           </div>
           <Table title="Pelanggan tercatat per minggu" head={["Minggu mulai", "Transaksi", "Dengan pelanggan", "Persen"]}
             rows={r.weekly.map((w) => [formatTanggal(w.week), w.tx, w.with_customer, pct(w.with_customer, w.tx)])} empty="Belum ada transaksi." />

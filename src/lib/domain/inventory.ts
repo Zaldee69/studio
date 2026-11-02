@@ -1,4 +1,4 @@
-// Inventaris. Cermin new_unit_cost(), stock_levels, opname_approve(), usage_report() dan shopping_list() di SQL.
+// Inventaris. Cermin new_unit_cost(), opname_approve() dan shopping_list() di SQL.
 
 export type CostMethod = "weighted_avg" | "last";
 
@@ -9,10 +9,6 @@ export function newUnitCost(method: CostMethod, oldQty: number, oldCost: number,
 }
 
 export type StockStatus = "reorder" | "low" | "ok";
-/** Reorder ≤ ambang · Menipis ≤ 1,5× ambang · Aman. */
-export function stockStatus(qty: number, reorderAt: number): StockStatus {
-  return qty <= reorderAt ? "reorder" : qty <= reorderAt * 1.5 ? "low" : "ok";
-}
 export const STOCK_STATUS: Record<StockStatus, { label: string; bg: string; fg: string }> = {
   reorder: { label: "Reorder", bg: "#FFDADA", fg: "#6E1616" },
   low: { label: "Menipis", bg: "#FFF1C2", fg: "#5A4300" },
@@ -27,18 +23,6 @@ export function opnameMoves(lines: { itemId: string; system: number; counted: nu
   const moves = lines.filter((l) => l.counted !== null && l.counted !== l.system)
     .map((l) => ({ itemId: l.itemId, qty: l.counted! - l.system, value: Math.round((l.counted! - l.system) * l.unitCost) }));
   return { moves, value: Math.round(lines.reduce((a, l) => a + (l.counted === null ? 0 : (l.counted - l.system) * l.unitCost), 0)) };
-}
-
-/**
- * 4.5 Pemakaian teoretis vs aktual antara dua opname.
- * Aktual = awal + masuk + penyesuaian − akhir − jual. Ditandai bila |selisih %| > ambang.
- */
-export function usageVariance(r: { theoretical: number; start: number; incoming: number; adjust: number; end: number; sold: number },
-  thresholdPct: number) {
-  const actual = r.start + r.incoming + r.adjust - r.end - r.sold;
-  const variance = actual - r.theoretical;
-  const pct = r.theoretical > 0 ? Math.round((variance * 1000) / r.theoretical) / 10 : null;
-  return { actual, variance, pct, flagged: pct === null ? actual !== 0 : Math.abs((variance * 100) / r.theoretical) > thresholdPct };
 }
 
 /** Saran beli = sampai multiplier × ambang, dibulatkan ke atas (kelipatan min order bila ada). */

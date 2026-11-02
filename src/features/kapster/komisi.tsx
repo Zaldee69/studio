@@ -72,13 +72,15 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       </section>}
 
       <div className="flex flex-wrap items-center gap-2.5">
-        <h2 className="flex-1 font-display text-xl font-bold">Gaji bulanan</h2>
+        <h2 className="flex-1 font-display text-xl font-bold">{payMonthly ? "Gaji bulanan" : "Rekap bulanan"}</h2>
         <label htmlFor="km-month" className="sr-only">Bulan</label>
         <select id="km-month" value={month} onChange={(e) => setMonth(e.target.value)} className="input w-auto">
           {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
         </select>
       </div>
-      {s?.closed ? (
+      {!payMonthly ? (
+        <span className="-mt-2 self-start rounded-xl bg-card px-2.5 py-1 text-xs font-semibold text-muted">Ringkasan saja — bayaran Anda dibayar per minggu (lihat di atas)</span>
+      ) : s?.closed ? (
         <span className="-mt-2 self-start rounded-xl bg-[#E6F1E4] px-2.5 py-1 text-xs font-semibold text-[#144D2A]">
           Final{s.paid_at ? ` · dibayar ${formatTanggal(s.paid_at)} (${s.paid_method})` : " · belum dibayar"}
         </span>
@@ -87,7 +89,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       )}
 
       <section className="flex flex-col gap-1.5 rounded-[18px] bg-ink p-5 text-paper">
-        <span className="text-[13px] text-[#9A9C95]">{s?.closed ? "Total dibayar" : "Perkiraan diterima"} · {monthLabel(month)}</span>
+        <span className="text-[13px] text-[#9A9C95]">{!payMonthly ? "Total komisi" : s?.closed ? "Total dibayar" : "Perkiraan diterima"} · {monthLabel(month)}</span>
         <b className="font-display text-[40px] tracking-tight tabular">{s ? formatRupiah(s.total_pay) : "…"}</b>
         {s && (
           <span className="text-[13px] text-[#D6D6D0] tabular">
@@ -97,7 +99,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
             {s.adjustments !== 0 && ` ${s.adjustments > 0 ? "+" : "−"} penyesuaian ${formatRupiah(Math.abs(s.adjustments))}`}
           </span>
         )}
-        {s && paidWeekly > 0 && (
+        {s && payMonthly && paidWeekly > 0 && (
           <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#D6D6D0] tabular">
             Sudah dibayar mingguan −{formatRupiah(paidWeekly)} · <b className="text-paper">sisa akhir bulan {formatRupiah(s.total_pay - paidWeekly)}</b>
           </span>

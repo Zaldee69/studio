@@ -65,9 +65,14 @@ test("E1 · stok masuk 1.000 ml krim @135 → harga pokok rata-rata → HPP Hair
   await expect(page.getByRole("complementary", { name: "Ringkasan margin" })).toContainText(`HPP bahan${formatRupiah(newHpp)}`);
   expect(newHpp).not.toBe(old.hpp);
 
-  await page.goto("/manajer/sdm?tab=bulanan");
-  await page.getByRole("button", { name: /^Dimas/ }).click();
-  await expect(page.getByRole("dialog", { name: "Detail staf" })).toContainText(`net ${formatRupiah(old.net)} · HPP ${formatRupiah(old.hpp)}`);
+  await admin.from("staff").update({ pay_monthly: true }).eq("id", STAFF.dimas); // Gaji bulanan hanya untuk staf bayar bulanan
+  try {
+    await page.goto("/manajer/sdm?tab=bulanan");
+    await page.getByRole("button", { name: /^Dimas/ }).click();
+    await expect(page.getByRole("dialog", { name: "Detail staf" })).toContainText(`net ${formatRupiah(old.net)} · HPP ${formatRupiah(old.hpp)}`);
+  } finally {
+    await admin.from("staff").update({ pay_monthly: false }).eq("id", STAFF.dimas);
+  }
 });
 
 test("E2 · checkout 3× Potong → neck strip lewat ambang → banner & lonceng realtime → daftar belanja → pesan WA", async ({ page }) => {
@@ -90,7 +95,8 @@ test("E2 · checkout 3× Potong → neck strip lewat ambang → banner & lonceng
     await page.getByRole("button", { name: "Daftar belanja" }).click();
     const list = page.getByRole("dialog", { name: "Daftar belanja" });
     const group = list.locator("section").filter({ hasText: sup!.name });
-    const suggest = 2 * (neck.qty - 3) - (neck.qty - 3);
+    const { data: mo } = await admin.from("inventory_items").select("min_order_qty").eq("id", neck.id).single();
+    const min = Number(mo!.min_order_qty) || 1, suggest = Math.ceil((neck.qty - 3) / min) * min; // 2× ambang − stok, dibulatkan ke minimal order
     await expect(group.getByLabel("Jumlah beli Neck strip")).toHaveValue(String(suggest));
     const href = decodeURIComponent((await group.getByRole("link", { name: "Kirim via WhatsApp" }).getAttribute("href"))!);
     expect(href).toContain("wa.me/6281200001111");
@@ -162,13 +168,15 @@ test("E4 · laporan pemakaian: dua opname + 2× Hair Spa di antaranya → teoret
 
 test("E5 · komisi bundle → bonus Andi → tutup periode → slip dibayar → Final di HP → void ditolak → buka ulang → void → tutup lagi", async ({ page, browser }, info) => {
   await resetPayroll();
+  // tab Gaji bulanan hanya untuk staf yang dibayar bulanan (keputusan owner 1 Nov) → Andi & Sari jadi staf bulanan selama tes
+  await admin.from("staff").update({ pay_monthly: true }).in("id", [STAFF.andi, STAFF.sari]);
   try {
     const tx = await sell([{ service: "Potong Rambut", staff: STAFF.andi }, { service: "Gel Polish Tangan", staff: STAFF.sari }]);
     const potong = await hppOf(tx, "Potong Rambut"), gel = await hppOf(tx, "Gel Polish Tangan");
     expect([potong.net, gel.net]).toEqual([67500, 162000]); // diskon 25.500 → 7.500 / 18.000
-    // komisi tidak dipotong HPP (settings.commission_deduct_hpp = false, default)
-    const andi = Math.round(67500 * 0.4), sari = Math.round(162000 * 0.4);
-    expect(sari).toBe(64800);
+    // dasar komisi = harga normal (settings.commission_basis = gross, seperti prod); HPP tidak dipotong
+    const andi = Math.round(75000 * 0.4), sari = Math.round(180000 * 0.4);
+    expect(sari).toBe(72000);
 
     await login(page, "manager");
     await page.goto("/manajer/sdm?tab=bulanan");
@@ -233,6 +241,7 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip dibayar → 
     expect(after.data![0].commission_service).toBe(before.data![0].commission_service - andi);
     await expect(andiRow).toContainText(formatRupiah(after.data![0].commission_service));
   } finally {
+    await admin.from("staff").update({ pay_monthly: false }).in("id", [STAFF.andi, STAFF.sari]);
     await resetPayroll();
   }
 });

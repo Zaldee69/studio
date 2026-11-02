@@ -76,6 +76,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
         </div>
       </div>
       {period?.reopen_reason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{period.reopen_reason}”</p>}
+      <p className="text-sm text-muted">Hanya staf yang dibayar bulanan (bergaji pokok). Staf yang dibayar mingguan ada di tab <Link href="?tab=mingguan" className="underline">Komisi mingguan</Link>.</p>
 
       <div className="grid gap-3 min-[820px]:grid-cols-2 xl:grid-cols-4">
         {[

@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(5);
+select plan(6);
 
 -- Batas blast per hari: kelebihan pindah ke besok 10.00 WIB; batas dibaca saat kirim; transaksional tidak tersentuh.
 select tests.su();
@@ -21,7 +21,10 @@ select is((select send_after <= now() from outbound_messages where template = 'o
 select is(defer_promo_over_limit(), 0, 'dipanggil ulang → tidak ada yang dipindah lagi');
 update settings set blast_daily_limit = 10;
 update outbound_messages set send_after = now() where template = 'promo' and status = 'queued';
-select is(defer_promo_over_limit(), 0, 'batas dinaikkan → semua boleh dikirim hari ini');
+-- jeda (insiden 3 Nov): maks 5 promo per 5 menit — 1 baru terkirim → 4 jalan, 1 digeser 5 menit (bukan ke besok)
+select is(defer_promo_over_limit(), 1, 'batas dinaikkan → hari ini, tapi maks 5 per 5 menit');
+select is((select count(*) from outbound_messages where template = 'promo' and status = 'queued'
+           and send_after > now() and send_after < now() + interval '6 minutes'), 1::bigint, 'kelebihan jatah 5 menit dikirim putaran berikutnya');
 
 select * from finish();
 rollback;

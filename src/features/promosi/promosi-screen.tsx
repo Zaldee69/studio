@@ -7,7 +7,7 @@ import { Empty, useToast } from "@/components/ui";
 import { CAT_NAME, CATS } from "@/lib/domain/category";
 import { fillNama, firstName } from "@/lib/domain/customer";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
-import { cleanSegment, describeSegment, PRESETS, type Segment } from "@/lib/domain/segment";
+import { blastWarnings, cleanSegment, describeSegment, PRESETS, type Segment } from "@/lib/domain/segment";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/database.types";
@@ -38,13 +38,14 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
 
   const { data, refresh } = useRealtimeTable(["campaigns", "campaign_sends"], async () => {
     const db = createClient();
-    const [c, s] = await Promise.all([
+    const [c, s, st] = await Promise.all([
       // kiriman otomatis (ajak potong lagi, minta ulasan) diatur di Pengaturan → Pesan otomatis, bukan di sini
       db.from("campaigns").select("id, name, message, segment, archived, updated_at").is("auto_kind", null).order("updated_at", { ascending: false }),
       db.from("campaign_send_stats").select("*").order("created_at", { ascending: false }).limit(200),
+      db.from("settings").select("blast_daily_limit").single(),
     ]);
     if (c.error) throw c.error;
-    return { campaigns: (c.data ?? []) as unknown as Campaign[], sends: (s.data ?? []) as unknown as Send[] };
+    return { campaigns: (c.data ?? []) as unknown as Campaign[], sends: (s.data ?? []) as unknown as Send[], dailyLimit: st.data?.blast_daily_limit ?? 50 };
   }, "promosi");
   const campaigns = (data?.campaigns ?? []).filter((c) => c.archived === showArchived);
   const sendsOf = (id: string | null) => (data?.sends ?? []).filter((s) => s.campaign_id === id);
@@ -102,8 +103,9 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     if (!count?.n) return toast("Tidak ada penerima untuk segmen ini.", "error");
     if (draft.message.includes("[LINK")) return toast("Ganti tulisan [LINK …] dengan alamat yang sebenarnya.", "error");
     const again = lastSend ? ` Campaign ini terakhir dikirim ${ago(lastSend.created_at)} ke ${lastSend.recipient_count} pelanggan.` : "";
+    const warn = blastWarnings(draft.message, count.n, data?.dailyLimit ?? 50).map((w) => ` ⚠️ ${w}`).join("");
     if (!(await confirm({ title: `Kirim ke ${count.n} pelanggan?`,
-      description: `${describeSegment(seg)} akan menerima pesan WhatsApp ini. Pesan langsung masuk antrean dan tidak bisa dibatalkan.${again}`,
+      description: `${describeSegment(seg)} akan menerima pesan WhatsApp ini. Pesan langsung masuk antrean dan tidak bisa dibatalkan.${again}${warn}`,
       confirmLabel: `Kirim ${count.n} pesan` }))) return;
     setBusy(true);
     const id = dirty ? await save() : draft.id;
@@ -111,7 +113,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     const { data: r, error } = await createClient().rpc("send_campaign", { p_campaign: id });
     setBusy(false);
     if (error) return toast(error.message, "error");
-    toast(`Campaign masuk antrean untuk ${(r as { recipients: number }).recipients} pelanggan · dikirim sesuai batas blast per hari (Pengaturan → Umum)`);
+    toast(`Campaign masuk antrean untuk ${(r as { recipients: number }).recipients} pelanggan · dikirim bertahap: maks 5 pesan per 5 menit, sesuai batas blast per hari (Pengaturan → Pesan otomatis)`);
     refresh();
   }
   async function archive(c: Campaign) {

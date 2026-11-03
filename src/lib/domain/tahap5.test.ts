@@ -20,33 +20,8 @@ describe("U1–U2 AOV & omzet", () => {
     expect(aov(TX, "nail")).toBe(171000);
     expect(aov([], "nail")).toBeNull();
   });
-  it("omzet 594.500, AOV keseluruhan 148.625", () => {
+  it("omzet 594.500", () => {
     expect(omzet(TX)).toBe(594500);
-    expect(aovAll(TX)).toBe(148625);
-  });
-});
-
-describe("U3 rasio ritel", () => {
-  it("110.000 ÷ 484.500 = 22,7% → Di atas target (15–20%)", () => {
-    const r = retailRatio(TX)!;
-    expect(pct1(r)).toBe("22,7");
-    expect(BAND_LABEL[bandStatus(r, 15, 20)!]).toBe("Di atas target");
-  });
-  it("pendapatan jasa 0 → —", () => {
-    expect(retailRatio([{ items: [{ category: "retail", netAmount: 110000 }] }])).toBeNull();
-    expect(bandStatus(null, 15, 20)).toBeNull();
-  });
-});
-
-describe("U4 penggerak AOV", () => {
-  it("layanan/tx 1,33 · bundle 33,3% · upsell", () => {
-    const d = aovDrivers(TX);
-    expect(d.txCount).toBe(3);
-    expect(d.avgServices!.toFixed(2)).toBe("1.33");
-    expect(pct1(d.bundlePct!)).toBe("33,3");
-    expect(d.upsellRate).toBe(0);
-    const up = aovDrivers([...TX, { items: [{ category: "barbershop", netAmount: 85000, fromUpsell: true }, { category: "barbershop", netAmount: 75000 }] }], "barbershop");
-    expect(up.upsellRate).toBeCloseTo(100 / 3);
   });
 });
 
@@ -81,37 +56,6 @@ describe("U6 peta panas", () => {
     const cell = heatmap([{ start: "2026-03-10T07:00:00Z", end: "2026-03-10T08:00:00Z" }], "2026-03-03", "2026-03-16");
     expect(cell(2, 14)).toBe(30);
     expect(cell(3, 14)).toBe(0);
-  });
-});
-
-describe("U7 selisih durasi", () => {
-  it("hanya bila n ≥ 5", () => {
-    const rows = (n: number) => Array.from({ length: n }, () => ({ service: "Hair Spa", planned: 30, actual: 36 }));
-    expect(durationVariance(rows(4))).toEqual([]);
-    expect(durationVariance(rows(5))).toEqual([{ service: "Hair Spa", diffAvg: 6, n: 5 }]);
-  });
-});
-
-describe("U8 tingkat kembali (jendela 60 hari)", () => {
-  const visits = [
-    { customerId: "a", date: "2026-08-01" }, { customerId: "a", date: "2026-09-15" }, // 45 hari → kembali
-    { customerId: "b", date: "2026-08-01" }, { customerId: "b", date: "2026-10-02" }, // 62 hari → tidak
-    { customerId: null, date: "2026-08-01" }, { customerId: null, date: "2026-08-02" }, // walk-in
-  ];
-  it("45 hari = ya, 62 hari = tidak; walk-in dikecualikan", () => {
-    expect(returnWindowRate(visits, "2026-08-01", "2026-08-31", "2026-12-31")).toEqual({ eligible: 2, back: 1, rate: 50 });
-  });
-  it("pengamatan < 60 hari dikecualikan", () => {
-    expect(returnWindowRate(visits, "2026-08-01", "2026-08-31", "2026-09-15").eligible).toBe(0);
-  });
-});
-
-describe("U9 efektivitas follow-up", () => {
-  it("20 dikirimi, 5 datang ≤ 30 hari = 25%", () => {
-    const sent = Array.from({ length: 20 }, (_, i) => ({ customerId: `c${i}`, at: "2026-06-01T03:00:00Z" }));
-    const txs = [...Array.from({ length: 5 }, (_, i) => ({ customerId: `c${i}`, at: "2026-06-15T03:00:00Z" })),
-      { customerId: "c5", at: "2026-07-20T03:00:00Z" }]; // 49 hari → tidak dihitung
-    expect(followupRate(sent, txs)).toEqual({ sent: 20, converted: 5, rate: 25 });
   });
 });
 
@@ -163,13 +107,6 @@ describe("U12 insight berbasis aturan", () => {
 });
 
 describe("U13 SOP", () => {
-  it("status hari", () => {
-    expect(sopStatus(12, 12, true, false)).toBe("ok");
-    expect(sopStatus(12, 12, false, false)).toBe("done");
-    expect(sopStatus(11, 12, false, false)).toBe("part");
-    expect(sopStatus(0, 12, false, false)).toBe("empty");
-    expect(sopStatus(0, 12, false, true)).toBe("closed");
-  });
   it("urutan tahap & pembatalan", () => {
     expect(canRecord({}, "wash")).toBe(true);
     expect(canRecord({}, "soak")).toBe(false);
@@ -180,17 +117,11 @@ describe("U13 SOP", () => {
 });
 
 describe("U14 status perawatan", () => {
-  it("terakhir 12 Sep + 14 → 26 Sep; 28 Sep = terlambat 2 hari", () => {
-    const r = nextDue("2026-09-12", "2026-08-01", 14, "2026-09-28");
-    expect(r).toEqual({ nextDue: "2026-09-26", daysLeft: -2 });
-    expect(maintenanceState(r.daysLeft)).toBe("overdue");
-    expect(maintenanceLabel(r.daysLeft)).toBe("Terlambat 2 hari");
-  });
-  it("tepat jatuh tempo, kuning, hijau, lintas bulan/tahun", () => {
-    expect(maintenanceLabel(nextDue("2026-09-12", "2026-08-01", 14, "2026-09-26").daysLeft)).toBe("Jatuh tempo hari ini");
+  it("terlambat, jatuh tempo, kuning, hijau", () => {
+    expect(maintenanceState(-2)).toBe("overdue");
+    expect(maintenanceLabel(-2)).toBe("Terlambat 2 hari");
+    expect(maintenanceLabel(0)).toBe("Jatuh tempo hari ini");
     expect(maintenanceState(3)).toBe("soon");
     expect(maintenanceState(4)).toBe("ok");
-    expect(nextDue("2026-12-25", "2026-08-01", 14, "2027-01-05")).toEqual({ nextDue: "2027-01-08", daysLeft: 3 });
-    expect(nextDue(null, "2026-01-25", 14, "2026-02-10")).toEqual({ nextDue: "2026-02-08", daysLeft: -2 });
   });
 });

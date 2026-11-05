@@ -1,7 +1,7 @@
 "use client";
 
 // Analitik ringan tanpa cookie: id sesi acak di sessionStorage, satu event per langkah per sesi.
-type Step = "landing" | "booking_open" | "service_pick" | "service" | "time" | "booked";
+type Step = "landing" | "booking_open" | "service_pick" | "service" | "slots" | "time" | "booked";
 
 function sessionId() {
   try {
@@ -33,6 +33,7 @@ export function landingSource(search: string, referrer: string, ownHost = typeof
 }
 
 export function track(step: Step) {
+  if (navigator.webdriver) return; // browser otomatis (tangkapan layar saat deploy, uji e2e) bukan pengunjung — audit 3 Nov: 12 dari 36 landing
   const id = sessionId();
   if (!id) return;
   const source = step === "landing" ? landingSource(location.search, document.referrer) : null;

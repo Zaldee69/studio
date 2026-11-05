@@ -134,6 +134,32 @@ export default async function Landing() {
     ...(online ? { potentialAction: { "@type": "ReserveAction", target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/booking`, inLanguage: "id-ID" } } } : {}),
   };
 
+  // TIGA LINI — setara di bawah satu studio
+  const worlds = (
+    <section id="dunia" aria-label="Barbershop, Nail Art, dan Lashes" className="grid border-b border-rule min-[900px]:grid-cols-3">
+      {[
+        { numeral: "I", title: "Barbershop", sub: "Potong & grooming", cat: "barbershop", tone: "bg-lux", icon: <Scissors />, text: s.groom_text, p: photo("groom") },
+        { numeral: "II", title: "Nail Art", sub: "Manicure, pedicure & desain", cat: "nail", tone: "bg-lux-2", icon: <Polish />, text: s.bloom_text, p: photo("bloom"), soon: soon("nail") },
+        { numeral: "III", title: "Lashes", sub: "Eyelash extension & lift", cat: "lashes", tone: "bg-lux", icon: <Lash />, text: LASHES_TEXT, p: photo("lashes"), soon: soon("lashes") },
+      ].map((w) => (
+        <article key={w.title} className={`flex flex-col items-center gap-[22px] border-rule text-center min-[900px]:border-r min-[900px]:last:border-r-0 ${sec} ${px} ${w.tone}`}>
+          <span className="font-serif text-lg tracking-[0.2em] text-gold">{w.numeral}</span>
+          <div className="relative flex h-[280px] w-[220px] items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux-3 text-gold min-[900px]:h-[300px] min-[900px]:w-[220px] min-[1200px]:h-[340px] min-[1200px]:w-[260px]">
+            {w.p ? <Image src={photoUrl(w.p.path)!} alt={w.p.caption || `${w.title} — ${w.sub}`} fill loading={soon("nail") ? "lazy" : "eager"} quality={90} sizes={CARD_SIZES} className="object-cover" /> : w.icon}
+          </div>
+          <h2 className={h2}>{w.title}</h2>
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-dust">{w.sub}</span>
+          <p className="max-w-[360px] text-base leading-[1.7] text-sand">{w.text}</p>
+          {w.soon ? <Link href={`/daftar-tunggu?minat=${w.cat}`} className="btn-line h-12 px-[26px]">Segera hadir · Daftar tunggu</Link>
+            // kategori tanpa kursi/meja atau staf aktif: tanpa tombol reservasi
+            : (!online || bookable.includes(w.cat)) && (
+              <Link href={bookHref(w.cat)} className="btn-line h-12 px-[26px]">{online ? `Reservasi ${w.title}` : bookLabel}</Link>
+            )}
+        </article>
+      ))}
+    </section>
+  );
+
   return (
     <div data-landing className="min-h-screen bg-lux font-jost text-cream">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
@@ -162,6 +188,10 @@ export default async function Landing() {
                   Lihat menu <span className="h-px w-7 bg-cream" />
                 </a>
               </div>
+              {/* hari kerja sepi → datang langsung lebih mudah daripada booking (audit 3 Nov); booking online tetap untuk akhir pekan */}
+              <p className="max-w-[460px] text-sm leading-[1.7] text-sand">
+                Senin–Kamis biasanya tanpa antre, silakan datang langsung{wa && <>, atau <a href={wa} target="_blank" rel="noopener" className="text-cream underline underline-offset-4">chat kami di WhatsApp</a> dan kami bookingkan</>}. Untuk akhir pekan, sebaiknya reservasi dulu.
+              </p>
             </div>
             <div className="relative flex h-[420px] justify-center min-[900px]:h-[520px] min-[1200px]:h-[600px]">
               <div aria-hidden="true" className="absolute -right-2 top-10 size-28 rounded-full bg-rose/60 min-[900px]:size-36" />
@@ -186,29 +216,7 @@ export default async function Landing() {
           </div>
         </div>
 
-        {/* TIGA LINI — setara di bawah satu studio */}
-        <section id="dunia" aria-label="Barbershop, Nail Art, dan Lashes" className="grid border-b border-rule min-[900px]:grid-cols-3">
-          {[
-            { numeral: "I", title: "Barbershop", sub: "Potong & grooming", cat: "barbershop", tone: "bg-lux", icon: <Scissors />, text: s.groom_text, p: photo("groom") },
-            { numeral: "II", title: "Nail Art", sub: "Manicure, pedicure & desain", cat: "nail", tone: "bg-lux-2", icon: <Polish />, text: s.bloom_text, p: photo("bloom"), soon: soon("nail") },
-            { numeral: "III", title: "Lashes", sub: "Eyelash extension & lift", cat: "lashes", tone: "bg-lux", icon: <Lash />, text: LASHES_TEXT, p: photo("lashes"), soon: soon("lashes") },
-          ].map((w) => (
-            <article key={w.title} className={`flex flex-col items-center gap-[22px] border-rule text-center min-[900px]:border-r min-[900px]:last:border-r-0 ${sec} ${px} ${w.tone}`}>
-              <span className="font-serif text-lg tracking-[0.2em] text-gold">{w.numeral}</span>
-              <div className="relative flex h-[280px] w-[220px] items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux-3 text-gold min-[900px]:h-[300px] min-[900px]:w-[220px] min-[1200px]:h-[340px] min-[1200px]:w-[260px]">
-                {w.p ? <Image src={photoUrl(w.p.path)!} alt={w.p.caption || `${w.title} — ${w.sub}`} fill loading="eager" quality={90} sizes={CARD_SIZES} className="object-cover" /> : w.icon}
-              </div>
-              <h2 className={h2}>{w.title}</h2>
-              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-dust">{w.sub}</span>
-              <p className="max-w-[360px] text-base leading-[1.7] text-sand">{w.text}</p>
-              {w.soon ? <Link href={`/daftar-tunggu?minat=${w.cat}`} className="btn-line h-12 px-[26px]">Segera hadir · Daftar tunggu</Link>
-                // kategori tanpa kursi/meja atau staf aktif: tanpa tombol reservasi
-                : (!online || bookable.includes(w.cat)) && (
-                  <Link href={bookHref(w.cat)} className="btn-line h-12 px-[26px]">{online ? `Reservasi ${w.title}` : bookLabel}</Link>
-                )}
-            </article>
-          ))}
-        </section>
+        {!soon("nail") && worlds}
 
         {/* MENU */}
         <section id="menu" className={`mx-auto flex max-w-[1180px] flex-col gap-12 ${sec} ${px}`}>
@@ -261,6 +269,9 @@ export default async function Landing() {
             </div>
           )}
         </section>
+
+        {/* selama nail art & lashes belum buka, kartu "segera hadir" turun ke bawah menu agar harga barbershop cepat terlihat (audit 3 Nov) */}
+        {soon("nail") && worlds}
 
         {/* RITUAL & DEPOSIT */}
         {(!soon("nail") || !!packs.length) && <section id="ritual" className="border-y border-rule bg-lux-2">

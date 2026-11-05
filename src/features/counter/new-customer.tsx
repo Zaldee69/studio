@@ -32,7 +32,7 @@ export function NewCustomer({ online, onClose, onSaved, initial = "" }: { online
       <Field label="Tahu D'Pras dari mana?" htmlFor="nc-source">
         <select id="nc-source" className="input" value={f.source} onChange={(e) => setF({ ...f, source: e.target.value as CustomerSource })}>
           <option value="">— Pilih —</option>
-          {CUSTOMER_SOURCES.filter(([v]) => v !== "web").map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+          {CUSTOMER_SOURCES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
       </Field>
       <Field label="Catatan preferensi (opsional)" htmlFor="nc-notes"><textarea id="nc-notes" rows={3} className="input py-2.5" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field>

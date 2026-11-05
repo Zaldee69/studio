@@ -125,7 +125,8 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
     toastTimer.current = setTimeout(() => setToast(""), 2600);
   };
   const go = (v: View) => {
-    if (view === "layanan" && v === "staf") track("service");
+    if (view === "layanan" && (v === "staf" || v === "waktu")) track("service");
+    if (v === "waktu") track("slots"); // layar jam terlihat: bedakan pergi di layar staf vs layar jam (audit 3 Nov)
     setView(v); setErr(""); window.scrollTo({ top: 0 });
   };
   // masuk langsung ke /booking?src=… → sumber tetap tercatat; datang dari beranda → landing sudah ada (diabaikan)
@@ -168,9 +169,12 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const staffName = (c: Cat) => staff.find((s) => s.id === pick[c])?.name ?? (preview.key === previewKey ? preview.names[c] : undefined) ?? "Siapa saja";
   const lines = chosen.map((s) => ({ name: s.name, dur: `${s.duration} mnt`, price: formatRupiah(s.price), staff: staffName(s.category) }));
   const when = time ? `${longDate(date)} · ${time}` : "";
-  const stepIdx = FLOW.indexOf(view as (typeof FLOW)[number]);
-  const inFlow = stepIdx >= 0;
   const offIds = offRes.date === date ? offRes.ids : [];
+  // satu staf per kategori (mis. capster hanya Obay) → langkah "pilih staf" tidak memberi pilihan, lewati (audit 3 Nov: 4/4 pergi di sini)
+  const skipStaf = !bothCats && cats.every((c) => staff.filter((s) => s.category === c && !offIds.includes(s.id)).length <= 1);
+  const flow = FLOW.filter((v) => v !== "staf" || !skipStaf || view === "staf");
+  const stepIdx = flow.indexOf(view as (typeof FLOW)[number]);
+  const inFlow = stepIdx >= 0;
 
   // Staf yang izin sepanjang tanggal terpilih tidak ditampilkan.
   useEffect(() => {
@@ -258,7 +262,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
 
   function primary() {
     if (!primaryOk) return;
-    if (view === "layanan") go("staf");
+    if (view === "layanan") go(skipStaf ? "waktu" : "staf");
     else if (view === "staf") go("waktu");
     else if (view === "waktu") { track("time"); go("konfirmasi"); }
     else if (view === "konfirmasi") confirm();
@@ -267,7 +271,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   function back() {
     if (reschedule && view === "waktu") { router.push("/akun"); return; }
     if (view === "staf") go("layanan");
-    else if (view === "waktu") go("staf");
+    else if (view === "waktu") go(skipStaf ? "layanan" : "staf");
     else if (view === "konfirmasi") go("waktu");
     else if (view === "masuk") go(returnTo);
     else go("layanan");
@@ -331,14 +335,14 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
           )}
           {inFlow && (
             <nav aria-label="Langkah booking" className="flex flex-wrap items-center gap-2">
-              {STEP_LABEL.map((label, i) => {
+              {flow.map((v) => STEP_LABEL[FLOW.indexOf(v)]).map((label, i) => {
                 const cur = i === stepIdx, isDone = i < stepIdx;
                 return (
                   <span key={label} aria-current={cur ? "step" : undefined}
                     className={`flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.22em] ${cur ? "text-gold" : isDone ? "text-sand" : "text-ash"}`}>
                     <span className={`flex size-7 items-center justify-center rounded-full font-serif text-sm italic tracking-normal ${cur ? "bg-gold text-lux" : isDone ? "border border-gold text-gold" : "border border-rule-2"}`}>{i + 1}</span>
                     <span className={cur ? "" : "hidden min-[900px]:inline"}>{label}</span>
-                    {i < 3 && <span className="ml-1 h-px w-6 bg-rule-2" />}
+                    {i < flow.length - 1 && <span className="ml-1 h-px w-6 bg-rule-2" />}
                   </span>
                 );
               })}
@@ -361,6 +365,10 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 <h1 className="font-serif text-[36px] font-normal leading-none min-[900px]:text-[48px]">Pilih layanan</h1>
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-dust">
                   <OpenNow hours={hours} closures={closures} /><span aria-hidden="true">·</span><span>Bayar di tempat, tunai atau QRIS</span>
+                </p>
+                {/* hari kerja sepi: datang langsung lebih mudah daripada booking (audit 3 Nov) */}
+                <p className="text-[13px] leading-relaxed text-sand">
+                  Senin–Kamis biasanya tanpa antre, silakan datang langsung{shop.whatsapp && <>, atau <a href={`https://wa.me/${shop.whatsapp}`} target="_blank" rel="noopener" className="text-cream underline underline-offset-4">chat kami di WhatsApp</a> dan kami bookingkan</>}.
                 </p>
                 {promoNow && <div role="note" className="rounded-xl bg-rose/45 px-4 py-3 text-sm leading-relaxed text-cream">
                   <b className="font-semibold">Diskon {shop.promo.pct}% untuk booking online.</b> Berlaku untuk booking lewat website sampai {formatTanggal(`${shop.promo.end}T12:00:00+07:00`)}. Potongan langsung saat bayar di studio — tidak perlu kode promo.
@@ -663,7 +671,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             </div>
             <div className="h-px bg-rule" />
             {!lines.length && <span className="py-2 text-sm font-light italic text-dust">Belum ada layanan dipilih.</span>}
-            {time && stepIdx >= 2 && (
+            {time && (view === "waktu" || view === "konfirmasi") && (
               <div className="flex items-center gap-2 font-serif text-lg tabular-nums text-gold">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /></svg>
                 {when}
@@ -684,7 +692,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
               <span className="lux-label">Estimasi total</span><span className="font-serif text-[32px] leading-none">{formatRupiah(total)}</span>
             </div>
             <button onClick={primary} disabled={!primaryOk} className="btn-gold w-full">
-              {sending ? "Memproses…" : PRIMARY[FLOW[stepIdx]][0]}
+              {sending ? "Memproses…" : (skipStaf && view === "layanan" ? "Lanjut pilih waktu" : PRIMARY[flow[stepIdx]][0])}
             </button>
             <span className="text-center text-[11px] uppercase tracking-[0.18em] text-stone">Bayar di toko setelah layanan</span>
           </aside>
@@ -701,7 +709,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
             </span>
           </div>
           <button onClick={primary} disabled={!primaryOk} className="btn-gold h-[52px] px-6">
-            {sending ? "Memproses…" : PRIMARY[FLOW[stepIdx]][1]}
+            {sending ? "Memproses…" : PRIMARY[flow[stepIdx]][1]}
           </button>
         </div>
       )}

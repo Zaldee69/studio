@@ -291,7 +291,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                   <Field label="Tahu D'Pras dari mana?" htmlFor="f-src">
                     <select id="f-src" className="input" value={custSource} onChange={(e) => setCustSource(e.target.value as CustomerSource)}>
                       <option value="">— Pilih —</option>
-                      {CUSTOMER_SOURCES.filter(([v]) => v !== "web").map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      {CUSTOMER_SOURCES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
                   </Field>
                 </>

@@ -1,6 +1,6 @@
 const DAY = 24 * 3600 * 1000;
 
-/** "Tahu D'Pras dari mana?" — kolom customers.source (web = booking online, diisi otomatis). */
+/** "Tahu D'Pras dari mana?" — kolom customers.source (web = booking online diisi otomatis, atau dipilih kasir: lihat harga di situs lalu datang). */
 export const CUSTOMER_SOURCES = [
   ["instagram", "Instagram"], ["google_maps", "Google Maps"], ["whatsapp", "WhatsApp / pesan promo"], ["teman", "Teman / keluarga"],
   ["lewat", "Lewat depan studio"], ["web", "Website"], ["lainnya", "Lainnya"],

@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
@@ -91,7 +94,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         {data.approval ? (
           <span className="rounded-full bg-[#E6F1E4] px-3 py-1 text-xs font-bold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
         ) : manager && (
-          <button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="btn-ink h-11">Otorisasi shift</button>
+          <Button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="h-11">Otorisasi shift</Button>
         )}
       </div>
 
@@ -134,17 +137,17 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
             <div className="flex flex-col gap-3 p-5">
               {manager && staff.length > 0 && (
                 <Field label="Diisi atas nama (opsional)" htmlFor="sop-behalf">
-                  <select id="sop-behalf" className="input" value={f.onBehalf} onChange={(e) => setF({ ...f, onBehalf: e.target.value })}>
+                  <NativeSelect id="sop-behalf" value={f.onBehalf} onChange={(e) => setF({ ...f, onBehalf: e.target.value })}>
                     <option value="">— saya sendiri —</option>
                     {staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
+                  </NativeSelect>
                 </Field>
               )}
-              <Field label="Catatan (opsional)" htmlFor="sop-note"><input id="sop-note" className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
+              <Field label="Catatan (opsional)" htmlFor="sop-note"><Input id="sop-note" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
               <Field label={pick.stage === "autoclave" && requirePhoto ? "Foto indikator (wajib)" : "Foto (opsional)"} htmlFor="sop-photo">
-                <input id="sop-photo" type="file" accept="image/*" capture="environment" className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+                <Input id="sop-photo" type="file" accept="image/*" capture="environment" className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               </Field>
-              <button disabled={!online || busy} className="btn h-14 rounded-[12px] bg-[#1F7A45] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</button>
+              <Button disabled={!online || busy} variant="plain" className="h-14 rounded-[12px] bg-[#1F7A45] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</Button>
             </div>
           </form>
         )}
@@ -159,9 +162,9 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
             <div className="flex flex-col gap-2 p-5 text-sm">
               <p><b>{view.log.by ?? "—"}</b>{view.log.on_behalf && <> atas nama <b>{view.log.on_behalf}</b></>} · {formatTanggal(view.log.at)} {formatJam(view.log.at)}</p>
               <p className="text-muted">{view.log.note || "Tanpa catatan"}</p>
-              {view.log.photo && <button onClick={() => openSopPhoto(view.log.photo!)} className="btn-ghost h-11 self-start">Lihat foto</button>}
+              {view.log.photo && <Button onClick={() => openSopPhoto(view.log.photo!)} variant="outline" className="h-11 self-start">Lihat foto</Button>}
               {!locked && canUndo(view.group.stages, view.stage) && (manager || view.log.by_id === me) ? (
-                <button onClick={undo} disabled={!online} className="btn-ghost h-11 self-start text-[#A12A2A]">Batalkan</button>
+                <Button onClick={undo} disabled={!online} variant="outline" className="h-11 self-start text-[#A12A2A]">Batalkan</Button>
               ) : !locked && <p className="text-xs text-muted">{canUndo(view.group.stages, view.stage) ? "Hanya pengisi atau manajer yang bisa membatalkan." : "Batalkan tahap berikutnya dulu."}</p>}
             </div>
           </div>

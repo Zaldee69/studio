@@ -1,3 +1,5 @@
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -30,11 +32,11 @@ export default async function Laporan({ searchParams }: PageProps<"/manajer/sop/
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A4; margin: 12mm } @media print { body { background: #fff } }"}</style>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Link href="/manajer/sop" className="btn-ghost h-11">← SOP</Link>
+        <Link href="/manajer/sop" className={buttonClass("outline", "h-11")}>← SOP</Link>
         <form className="flex flex-wrap items-end gap-2">
-          <input type="date" name="dari" aria-label="Dari" defaultValue={from} className="input w-44" />
-          <input type="date" name="sampai" aria-label="Sampai" defaultValue={to} className="input w-44" />
-          <button className="btn-ghost h-11">Terapkan</button>
+          <DateInput name="dari" aria-label="Dari" defaultValue={from} className="w-44" />
+          <DateInput name="sampai" aria-label="Sampai" defaultValue={to} className="w-44" />
+          <Button variant="outline" className="h-11">Terapkan</Button>
         </form>
         <PrintButton />
       </div>

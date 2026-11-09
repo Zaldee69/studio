@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
 import { CAT_NAME, CAT_TONE } from "@/lib/domain/category";
@@ -130,7 +132,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
         </Field>
         {!customer && (
           <Field label="Nama panggilan (opsional)" htmlFor="wi-guest">
-            <input id="wi-guest" className="input" maxLength={40} placeholder="mis. Budi kaos merah" value={guest} onChange={(e) => setGuest(e.target.value)} />
+            <Input id="wi-guest" maxLength={40} placeholder="mis. Budi kaos merah" value={guest} onChange={(e) => setGuest(e.target.value)} />
           </Field>
         )}
       </div>
@@ -139,7 +141,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
           <NewCustomer online={online} onClose={() => setAdding(false)} onSaved={(c) => { setCustomer(c); setAdding(false); toast(`${c.name} ditambahkan`); }} />
         </div>
       ) : (
-        <button type="button" onClick={() => setAdding(true)} className="btn-ghost h-11 self-start rounded-[10px]">+ Pelanggan baru (dengan no. WA)</button>
+        <Button type="button" onClick={() => setAdding(true)} variant="outline" className="h-11 self-start rounded-[10px]">+ Pelanggan baru (dengan no. WA)</Button>
       ))}
 
       {conflicts && (
@@ -148,18 +150,18 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
           {conflicts.map((c, i) => <span key={i}>{c.customer_name} {formatJam(c.start_at)}–{formatJam(c.end_at)} · {c.resource_name}</span>)}
           {!queueConflict && <span className="text-xs">Kalau pelanggan sebelumnya sudah selesai, tandai Selesai dulu — atau tetap mulai.</span>}
           {queueConflict ? <span className="text-xs">Antrean tidak boleh menimpa booking — pilih capster lain atau tunggu sampai booking itu selesai.</span>
-            : <button onClick={() => start(true)} disabled={busy || !online} className="btn self-start rounded-[10px] bg-[#6E1616] px-4 text-white">Tetap mulai</button>}
+            : <Button onClick={() => start(true)} disabled={busy || !online} variant="plain" className="self-start rounded-[10px] bg-[#6E1616] px-4 text-white">Tetap mulai</Button>}
         </div>
       )}
 
       {who?.now.current && !conflicts && (
-        <button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="btn-ink h-14 rounded-xl text-base">
+        <Button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="h-14 rounded-xl text-base">
           {busy ? "Menyimpan…" : `Antre · mulai ±${formatJam(new Date(queueStart(appts, who.id, Date.parse(who.now.current.end_at), dur)))} bersama ${who.name}`}
-        </button>
+        </Button>
       )}
-      <button onClick={() => start()} disabled={!sel.length || !who || busy || !online} className={`${who?.now.current ? "btn-ghost" : "btn-ink"} h-14 rounded-xl text-base`}>
+      <Button onClick={() => start()} disabled={!sel.length || !who || busy || !online} variant={who?.now.current ? "outline" : "default"} className="h-14 rounded-xl text-base">
         {busy ? "Menyimpan…" : sel.length ? `Mulai dilayani · ${dur} mnt · ${formatRupiah(price)}` : "Pilih layanan"}
-      </button>
+      </Button>
     </div>
   );
 }

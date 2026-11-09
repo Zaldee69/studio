@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useActionState, useState } from "react";
 import { useToast } from "@/components/ui";
 import { formatJam, formatTanggal } from "@/lib/domain/format";
@@ -51,10 +53,10 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
               <span className="flex min-w-32 flex-1 flex-col"><b className="text-sm">{s.name}</b>
                 <span className="text-xs text-muted">{locked ? "Terkunci sementara" : st?.has_pin ? `PIN diatur ${st.updated_at ? formatTanggal(st.updated_at) : ""}` : "Belum ada PIN"}</span></span>
               <label htmlFor={`pin-${s.id}`} className="sr-only">PIN baru {s.name}</label>
-              <input id={`pin-${s.id}`} inputMode="numeric" autoComplete="off" pattern="\d{4,6}" maxLength={6} placeholder="PIN baru" className="input w-32 tabular"
+              <Input id={`pin-${s.id}`} inputMode="numeric" autoComplete="off" pattern="\d{4,6}" maxLength={6} placeholder="PIN baru" className="w-32 tabular"
                 value={pins[s.id] ?? ""} onChange={(e) => setPins({ ...pins, [s.id]: e.target.value.replace(/\D/g, "") })} />
-              <button disabled={(pins[s.id] ?? "").length < 4} className="btn-ink h-11 px-4">Simpan</button>
-              {st?.has_pin && <button type="button" onClick={() => clearPin(s.id)} className="btn-danger h-11 px-3">Hapus</button>}
+              <Button disabled={(pins[s.id] ?? "").length < 4} className="h-11 px-4">Simpan</Button>
+              {st?.has_pin && <Button type="button" onClick={() => clearPin(s.id)} variant="destructive" className="h-11 px-3">Hapus</Button>}
             </form>
           );
         })}
@@ -64,8 +66,8 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
         <h2 className="font-display text-lg font-semibold">Perangkat stasiun</h2>
         <form action={regAction} className="flex flex-wrap items-end gap-2 rounded-xl bg-paper p-3">
           <label className="flex min-w-40 flex-1 flex-col gap-1 text-xs font-bold text-muted">Nama perangkat ini
-            <input name="name" className="input" placeholder="Mis. Tablet meja kuku" /></label>
-          <button disabled={registering} className="btn-ink h-11">Daftarkan perangkat ini</button>
+            <Input name="name" placeholder="Mis. Tablet meja kuku" /></label>
+          <Button disabled={registering} className="h-11">Daftarkan perangkat ini</Button>
           {reg?.error && <p role="alert" className="w-full text-[13px] font-semibold text-danger">{reg.error}</p>}
           {reg?.ok && <p role="status" className="w-full text-[13px] font-semibold text-[#1F7A45]">{reg.ok}</p>}
         </form>
@@ -75,7 +77,7 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
             <span className="flex flex-1 flex-col"><b className="text-sm">{d.name}</b>
               <span className="text-xs text-muted tabular">Terakhir dipakai {d.last_seen_at ? `${formatTanggal(d.last_seen_at)} ${formatJam(d.last_seen_at)}` : "—"}</span></span>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${d.active ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EFEFEB] text-[#4A4C46]"}`}>{d.active ? "Aktif" : "Dicabut"}</span>
-            <button onClick={() => setActive(d.id, !d.active)} className="btn-ghost h-11 rounded-[10px]">{d.active ? "Cabut" : "Aktifkan"}</button>
+            <Button onClick={() => setActive(d.id, !d.active)} variant="outline" className="h-11 rounded-[10px]">{d.active ? "Cabut" : "Aktifkan"}</Button>
           </div>
         ))}
         {data && !data.devices.length && <p className="text-sm text-muted">Belum ada perangkat.</p>}

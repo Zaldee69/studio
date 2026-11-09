@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { PrintSheet } from "@/components/print-sheet";
 import { useToast } from "@/components/ui";
 import { receiptEscpos } from "@/lib/domain/escpos";
@@ -136,17 +138,17 @@ export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r:
         <ReceiptPaper r={r} paper={paper} />
       </PrintSheet>
       <div className="flex flex-col gap-2">
-        <a href={waLink(r.whatsapp, receiptText(r))} target="_blank" rel="noopener" className="btn h-12 rounded-xl bg-[#1F7A45] text-white hover:bg-[#186238]">
+        <a href={waLink(r.whatsapp, receiptText(r))} target="_blank" rel="noopener" className={buttonClass("plain", "h-12 rounded-xl bg-[#1F7A45] text-white hover:bg-[#186238]")}>
           Kirim struk via WhatsApp
         </a>
         <div className="flex gap-2">
           <label htmlFor="paper" className="sr-only">Ukuran kertas</label>
-          <select id="paper" className="input w-28" value={paper} onChange={(e) => setPrinterSettings({ paper: +e.target.value as 58 | 80 })}>
+          <NativeSelect id="paper" className="w-28" value={paper} onChange={(e) => setPrinterSettings({ paper: +e.target.value as 58 | 80 })}>
             <option value={80}>80 mm</option><option value={58}>58 mm</option>
-          </select>
+          </NativeSelect>
           {/* printer Bluetooth tersambung → langsung cetak; selain itu dialog print browser */}
-          <button onClick={() => on ? printReceipt(r).then(() => toast("Struk dicetak"), (e) => toast(e instanceof Error ? e.message : String(e), "error")) : window.print()}
-            className="btn-ghost h-11 flex-1 rounded-[10px]">{on ? "Cetak struk" : "Cetak"}</button>
+          <Button onClick={() => on ? printReceipt(r).then(() => toast("Struk dicetak"), (e) => toast(e instanceof Error ? e.message : String(e), "error")) : window.print()}
+            variant="outline" className="h-11 flex-1 rounded-[10px]">{on ? "Cetak struk" : "Cetak"}</Button>
         </div>
         {children}
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useOnline, useToast } from "@/components/ui";
@@ -155,7 +156,7 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
       {a.customer_id && <History customerId={a.customer_id} />}
       {a.customer_id && <PrefEditor customerId={a.customer_id} initial={a.customer_notes ?? ""} category={category} />}
       {category === "barbershop" && (
-        <Link href={`/kapster/gaya?booking=${a.id}`} className="btn-ghost h-11 rounded-xl">Konsultasi gaya & riwayat potongan</Link>
+        <Link href={`/kapster/gaya?booking=${a.id}`} className={buttonClass("outline", "h-11 rounded-xl")}>Konsultasi gaya & riwayat potongan</Link>
       )}
 
       {action && (

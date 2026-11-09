@@ -1,5 +1,10 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useEffect, useState } from "react";
 import { closingEscpos, type ClosingSummary } from "@/lib/domain/escpos";
 import { printBytes, printerSettings, usePrinter } from "@/lib/printer";
@@ -160,7 +165,7 @@ export function Closing({ master }: { master: Master }) {
             <span className="text-[13px] text-muted">{master.shop.name} · {formatTanggal(`${date}T12:00:00+07:00`)}</span>
           </div>
           <div className="no-print"><Field label="Tanggal" htmlFor="cl-date">
-            <input id="cl-date" type="date" className="input" value={date} max={jktDate()} onChange={(e) => e.target.value && setDate(e.target.value)} />
+            <DateInput id="cl-date" value={date} max={jktDate()} onChange={(e) => e.target.value && setDate(e.target.value)} />
           </Field></div>
         </div>
         {body}
@@ -169,7 +174,7 @@ export function Closing({ master }: { master: Master }) {
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
         <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold">
-          <input type="checkbox" className="size-5 accent-accent" checked={byDenom} onChange={(e) => setByDenom(e.target.checked)} />
+          <Checkbox className="size-5" checked={byDenom} onCheckedChange={(v) => setByDenom(v === true)} />
           Hitung per pecahan (disarankan)
         </label>
         {byDenom ? (
@@ -177,14 +182,14 @@ export function Closing({ master }: { master: Master }) {
             {DENOMS.map((d) => (
               <div key={d} className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
                 <label htmlFor={`dn-${d}`} className="font-bold">{rb(d)}</label>
-                <input id={`dn-${d}`} inputMode="numeric" placeholder="0 lembar" aria-label={`Jumlah lembar ${rb(d)}`} className="input h-10 text-right"
+                <Input id={`dn-${d}`} inputMode="numeric" placeholder="0 lembar" aria-label={`Jumlah lembar ${rb(d)}`} className="h-10 text-right"
                   value={counts[d] ?? ""} onChange={(e) => setCounts({ ...counts, [d]: e.target.value.replace(/\D/g, "") })} />
                 <span className="w-24 text-right text-muted">{formatRupiah(d * Number(counts[d] || 0))}</span>
               </div>
             ))}
             <div className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
               <label htmlFor="dn-coins" className="font-bold">Koin</label>
-              <input id="dn-coins" inputMode="numeric" placeholder="total Rp" className="input h-10 text-right"
+              <Input id="dn-coins" inputMode="numeric" placeholder="total Rp" className="h-10 text-right"
                 value={counts.coins ? Number(counts.coins).toLocaleString("id-ID") : ""} onChange={(e) => setCounts({ ...counts, coins: e.target.value.replace(/\D/g, "") })} />
               <span className="w-24" />
             </div>
@@ -192,7 +197,7 @@ export function Closing({ master }: { master: Master }) {
           </div>
         ) : (
           <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci saat ini — uang hari ini & sisa kemarin — sebelum disetor. Termasuk koin.">
-            <input id="cl-phys" inputMode="numeric" className="input text-right text-lg tabular"
+            <Input id="cl-phys" inputMode="numeric" className="text-right text-lg tabular"
               value={physical ? Number(physical).toLocaleString("id-ID") : ""} onChange={(e) => setPhysical(e.target.value.replace(/\D/g, ""))} />
           </Field>
         )}
@@ -202,7 +207,7 @@ export function Closing({ master }: { master: Master }) {
           </div>
         )}
         <Field label="Disetor ke brankas / owner (Rp, opsional)" htmlFor="cl-dep" hint="Pemindahan uang, bukan biaya. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
-          <input id="cl-dep" inputMode="numeric" className="input text-right tabular"
+          <Input id="cl-dep" inputMode="numeric" className="text-right tabular"
             value={deposit ? Number(deposit).toLocaleString("id-ID") : ""} onChange={(e) => setDeposit(e.target.value.replace(/\D/g, ""))} />
         </Field>
         {phys != null && (
@@ -211,13 +216,13 @@ export function Closing({ master }: { master: Master }) {
           </div>
         )}
         <Field label="Catatan (opsional)" htmlFor="cl-note">
-          <textarea id="cl-note" rows={2} className="input py-2.5" value={note} onChange={(e) => setNote(e.target.value)} />
+          <Textarea id="cl-note" rows={2} className="py-2.5" value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
-        <button onClick={save} disabled={phys == null || dep > (phys ?? 0) || saving || !online || lockedForCashier} className="btn-ink h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</button>
+        <Button onClick={save} disabled={phys == null || dep > (phys ?? 0) || saving || !online || lockedForCashier} className="h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</Button>
         {lockedForCashier && <p className="text-xs text-muted">Tanggal ini sudah ditutup. Koreksi hitungan dilakukan manajer.</p>}
-        {printer.status === "on" && <button onClick={printSlip} disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak ke printer struk</button>}
-        <button onClick={() => { const t = document.title; document.title = `Rekap kasir ${date}`; window.print(); document.title = t; }} // nama file PDF
-          disabled={!s || s.blind} className="btn-ghost h-11 rounded-[10px]">Cetak / simpan PDF</button>
+        {printer.status === "on" && <Button onClick={printSlip} disabled={!s || s.blind} variant="outline" className="h-11 rounded-[10px]">Cetak ke printer struk</Button>}
+        <Button onClick={() => { const t = document.title; document.title = `Rekap kasir ${date}`; window.print(); document.title = t; }} // nama file PDF
+          disabled={!s || s.blind} variant="outline" className="h-11 rounded-[10px]">Cetak / simpan PDF</Button>
         {!!closings?.length && <p className="text-xs text-muted">{closings.length}× ditutup pada tanggal ini.</p>}
       </section>
     </div>

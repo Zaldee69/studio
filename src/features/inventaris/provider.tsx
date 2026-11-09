@@ -1,5 +1,9 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
@@ -55,15 +59,15 @@ function ItemPicker({ id, value, onChange, kind }: { id: string; value: string; 
   const list = items.filter((i) => i.active && (!kind || i.kind === kind) && i.name.toLowerCase().includes(q.trim().toLowerCase()));
   return (
     <div className="grid gap-2 min-[560px]:grid-cols-[1fr_1.4fr]">
-      <input type="search" aria-label="Cari item" placeholder="Cari item…" className="input" value={q} onChange={(e) => setQ(e.target.value)} />
-      <select id={id} className="input" value={value} onChange={(e) => onChange(e.target.value)}>
+      <Input type="search" aria-label="Cari item" placeholder="Cari item…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <NativeSelect id={id} value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">Pilih item…</option>
         {(["consumable", "retail"] as const).map((k) => (
           <optgroup key={k} label={k === "consumable" ? "Bahan HPP" : "Barang ritel"}>
             {list.filter((i) => i.kind === k).map((i) => <option key={i.item_id} value={i.item_id}>{i.name} ({qtyFmt(i.qty)} {i.unit})</option>)}
           </optgroup>
         ))}
-      </select>
+      </NativeSelect>
     </div>
   );
 }
@@ -113,42 +117,42 @@ function StockIn({ initial, onDone }: { initial?: string; onDone: () => void }) 
         {it && <p className="text-sm text-muted tabular">Stok sekarang <b className="text-ink">{qtyFmt(it.qty)} {it.unit}</b> · harga pokok <b className="text-ink">{formatUnitCost(it.unit_cost)}</b>/{it.unit}</p>}
         <div className="grid grid-cols-2 gap-3">
           <Field label={`Jumlah masuk${it ? ` (${it.unit})` : ""}`} htmlFor="si-qty">
-            <input id="si-qty" inputMode="decimal" className="input" value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value })} />
+            <Input id="si-qty" inputMode="decimal" value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value })} />
           </Field>
           <Field label={f.total ? "Total harga beli (Rp)" : `Harga beli per ${it?.unit ?? "satuan"} (Rp)`} htmlFor="si-price">
-            <input id="si-price" inputMode="decimal" className="input" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />
+            <Input id="si-price" inputMode="decimal" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} />
           </Field>
         </div>
         <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input type="checkbox" className="size-5 accent-accent" checked={f.total} onChange={(e) => setF({ ...f, total: e.target.checked })} />
+          <Checkbox className="size-5" checked={f.total} onCheckedChange={(v) => setF({ ...f, total: v === true })} />
           Saya isi total harga nota (dihitung per satuan otomatis)
         </label>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Pemasok" htmlFor="si-sup">
-            <select id="si-sup" className="input" value={f.supplier} onChange={(e) => setF({ ...f, supplier: e.target.value })}>
+            <NativeSelect id="si-sup" value={f.supplier} onChange={(e) => setF({ ...f, supplier: e.target.value })}>
               <option value="">—</option>
               {suppliers.filter((s) => s.active).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+            </NativeSelect>
           </Field>
-          <Field label="No. nota" htmlFor="si-inv"><input id="si-inv" className="input" value={f.invoice} onChange={(e) => setF({ ...f, invoice: e.target.value })} /></Field>
+          <Field label="No. nota" htmlFor="si-inv"><Input id="si-inv" value={f.invoice} onChange={(e) => setF({ ...f, invoice: e.target.value })} /></Field>
         </div>
         <Field label="Dibayar dari" htmlFor="si-paid" hint={f.paidFrom === "laci" ? "Mengurangi kas diharapkan di tutup kasir hari ini." : "Wajib — supaya tercatat di arus kas laporan."}>
-          <select id="si-paid" className="input" required value={f.paidFrom} onChange={(e) => setF({ ...f, paidFrom: e.target.value })}>
+          <NativeSelect id="si-paid" required value={f.paidFrom} onChange={(e) => setF({ ...f, paidFrom: e.target.value })}>
             <option value="">Pilih…</option>
             {Object.entries(EXPENSE_SOURCE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-          </select>
+          </NativeSelect>
         </Field>
         <Field label="Foto nota (opsional)" htmlFor="si-file">
-          <input id="si-file" type="file" accept={`${IMAGE_ACCEPT},application/pdf`} className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <Input id="si-file" type="file" accept={`${IMAGE_ACCEPT},application/pdf`} className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
         </Field>
-        <Field label="Catatan" htmlFor="si-note"><input id="si-note" className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
+        <Field label="Catatan" htmlFor="si-note"><Input id="si-note" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
         {valid && next !== null && (
           <p role="status" className="rounded-[10px] bg-paper px-3.5 py-3 text-sm tabular">
             Stok {qtyFmt(it.qty)} → <b>{qtyFmt(it.qty + qty)} {it.unit}</b> · harga pokok {formatUnitCost(it.unit_cost)} → <b>{formatUnitCost(next)}</b>
             {f.total && <span className="block text-xs text-muted">{formatUnitCost(unitCost, 4)} per {it.unit}</span>}
           </p>
         )}
-        <button disabled={!valid || !f.paidFrom || busy || !online} className="btn-ink h-12">{busy ? "Menyimpan…" : "Simpan stok masuk"}</button>
+        <Button disabled={!valid || !f.paidFrom || busy || !online} className="h-12">{busy ? "Menyimpan…" : "Simpan stok masuk"}</Button>
       </div>
     </form>
   );
@@ -179,21 +183,21 @@ function Adjust({ initial, onDone }: { initial?: string; onDone: () => void }) {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={`Jumlah${it ? ` (${it.unit})` : ""}`} htmlFor="ad-qty"><input id="ad-qty" inputMode="decimal" className="input" value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value })} /></Field>
+          <Field label={`Jumlah${it ? ` (${it.unit})` : ""}`} htmlFor="ad-qty"><Input id="ad-qty" inputMode="decimal" value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value })} /></Field>
           <Field label="Alasan" htmlFor="ad-reason">
-            <select id="ad-reason" className="input" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })}>
+            <NativeSelect id="ad-reason" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })}>
               <option value="">Pilih…</option>
               {ADJUST_REASONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
+            </NativeSelect>
           </Field>
         </div>
-        <Field label="Catatan" htmlFor="ad-note"><input id="ad-note" className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
+        <Field label="Catatan" htmlFor="ad-note"><Input id="ad-note" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
         {it && Number.isFinite(qty) && qty !== 0 && (
           <p role="status" className="rounded-[10px] bg-paper px-3.5 py-3 text-sm tabular">
             Stok {qtyFmt(it.qty)} → <b>{qtyFmt(it.qty + qty)} {it.unit}</b> · nilai <b>{qty < 0 ? "−" : "+"}{formatRupiah(Math.abs(Math.round(qty * it.unit_cost)))}</b>
           </p>
         )}
-        <button disabled={!valid || !online} className="btn-ink h-12">Catat penyesuaian</button>
+        <Button disabled={!valid || !online} className="h-12">Catat penyesuaian</Button>
       </div>
     </form>
   );
@@ -217,9 +221,9 @@ function SetCost({ initial, onDone }: { initial?: string; onDone: () => void }) 
         <p className="text-sm text-muted">Biasanya harga pokok berubah otomatis lewat Stok masuk. Pakai ini hanya untuk koreksi (mis. salah input nota). Transaksi lama tidak berubah.</p>
         <Field label="Item" htmlFor="sc-item"><ItemPicker id="sc-item" value={itemId} onChange={setItemId} /></Field>
         {it && <p className="text-sm tabular">Sekarang {formatUnitCost(it.unit_cost, 4)} per {it.unit}</p>}
-        <Field label="Harga pokok baru per satuan (Rp)" htmlFor="sc-cost"><input id="sc-cost" inputMode="decimal" className="input" value={cost} onChange={(e) => setCost(e.target.value)} /></Field>
-        <Field label="Alasan (wajib)" htmlFor="sc-reason"><input id="sc-reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
-        <button disabled={!it || !(num(cost) >= 0) || !reason.trim()} className="btn-ink h-12">Simpan harga pokok</button>
+        <Field label="Harga pokok baru per satuan (Rp)" htmlFor="sc-cost"><Input id="sc-cost" inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} /></Field>
+        <Field label="Alasan (wajib)" htmlFor="sc-reason"><Input id="sc-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+        <Button disabled={!it || !(num(cost) >= 0) || !reason.trim()} className="h-12">Simpan harga pokok</Button>
       </div>
     </form>
   );
@@ -264,7 +268,7 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
           <section key={g.id || "lain"} className="flex flex-col gap-2 rounded-[14px] border border-line p-3.5">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="flex-1 text-base font-bold">{g.name}</h3>
-              <a className={`btn h-11 rounded-[10px] bg-[#1F7A45] text-white ${!g.rows.some((r) => q(r) > 0) ? "pointer-events-none opacity-50" : ""}`} target="_blank" rel="noopener"
+              <a className={buttonClass("plain", `h-11 rounded-[10px] bg-[#1F7A45] text-white ${!g.rows.some((r) => q(r) > 0) ? "pointer-events-none opacity-50" : ""}`)} target="_blank" rel="noopener"
                 href={`https://wa.me/${g.wa ?? ""}?text=${encodeURIComponent(text(g))}`}>Kirim via WhatsApp</a>
             </div>
             <div className="overflow-x-auto">
@@ -278,7 +282,7 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
                       <td>{qtyFmt(r.reorder_at)}</td>
                       <td>
                         <label className="sr-only" htmlFor={`sl-${r.item_id}`}>Jumlah beli {r.name}</label>
-                        <input id={`sl-${r.item_id}`} inputMode="decimal" className="input w-28" value={qty[r.item_id] ?? String(r.suggested)}
+                        <Input id={`sl-${r.item_id}`} inputMode="decimal" className="w-28" value={qty[r.item_id] ?? String(r.suggested)}
                           onChange={(e) => setQty({ ...qty, [r.item_id]: e.target.value })} /> <span className="text-muted">{r.unit}</span>
                       </td>
                       <td className="text-right">{formatRupiah(Math.round(q(r) * r.unit_cost))}</td>
@@ -292,8 +296,8 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
         {!!rows?.length && (
           <div className="flex flex-wrap items-center gap-2">
             <b className="flex-1 tabular">Estimasi total {formatRupiah(rows.reduce((a, r) => a + Math.round(q(r) * r.unit_cost), 0))}</b>
-            <button type="button" className="btn-ghost h-11" onClick={() => navigator.clipboard.writeText(all()).then(() => toast("Daftar disalin"))}>Salin daftar</button>
-            <button type="button" className="btn-ghost h-11" onClick={print}>Cetak</button>
+            <Button type="button" variant="outline" className="h-11" onClick={() => navigator.clipboard.writeText(all()).then(() => toast("Daftar disalin"))}>Salin daftar</Button>
+            <Button type="button" variant="outline" className="h-11" onClick={print}>Cetak</Button>
           </div>
         )}
         <p className="text-xs text-muted">Saran = sampai {settings.multiplier}× ambang reorder{"; "}dibulatkan ke kelipatan minimal order bila diisi. Contoh: {suggestOrder(35, 100, settings.multiplier)} untuk stok 35 / ambang 100.</p>
@@ -308,8 +312,8 @@ export function InvHeader() {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Inventaris</h1>
-      <button onClick={() => open({ kind: "shopping" })} className="btn-ghost h-11">Daftar belanja</button>
-      <button onClick={() => open({ kind: "in" })} className="btn-ink h-11">+ Stok masuk</button>
+      <Button onClick={() => open({ kind: "shopping" })} variant="outline" className="h-11">Daftar belanja</Button>
+      <Button onClick={() => open({ kind: "in" })} className="h-11">+ Stok masuk</Button>
     </div>
   );
 }

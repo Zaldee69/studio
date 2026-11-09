@@ -1,5 +1,7 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useOnline, useToast } from "@/components/ui";
 import { jktDate } from "@/lib/domain/format";
@@ -48,19 +50,19 @@ export function IzinKapster() {
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <label className="flex flex-col gap-1.5 text-[13px] font-bold">Tanggal{allDay && " mulai"}
-            <input type="date" className="input" min={jktDate()} value={date} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>
+            <DateInput min={jktDate()} value={date} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>
           {allDay ? (
             <label className="flex flex-col gap-1.5 text-[13px] font-bold">Sampai tanggal
-              <input type="date" className="input" min={date} value={until < date ? date : until} onChange={(e) => e.target.value && setUntil(e.target.value)} /></label>
+              <DateInput min={date} value={until < date ? date : until} onChange={(e) => e.target.value && setUntil(e.target.value)} /></label>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              <label className="flex flex-col gap-1.5 text-[13px] font-bold">Dari<input type="time" step={900} className="input" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
-              <label className="flex flex-col gap-1.5 text-[13px] font-bold">Sampai<input type="time" step={900} className="input" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-bold">Dari<Input type="time" step={900} value={from} onChange={(e) => setFrom(e.target.value)} /></label>
+              <label className="flex flex-col gap-1.5 text-[13px] font-bold">Sampai<Input type="time" step={900} value={to} onChange={(e) => setTo(e.target.value)} /></label>
             </div>
           )}
         </div>
         <label className="flex flex-col gap-1.5 text-[13px] font-bold">Alasan
-          <input className="input" required value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mis. acara keluarga, sakit" /></label>
+          <Input required value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mis. acara keluarga, sakit" /></label>
         <button disabled={saving || !online || !reason.trim()} className="h-[60px] rounded-[14px] bg-ink text-[17px] font-bold text-white disabled:opacity-50">
           {saving ? "Mengirim…" : "Ajukan izin"}
         </button>

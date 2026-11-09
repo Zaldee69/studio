@@ -1,5 +1,10 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CloseButton, Empty, Field, Sheet, useToast } from "@/components/ui";
@@ -42,7 +47,7 @@ export function HairstyleCatalog() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <p className="flex-1 text-sm text-muted">Dipakai capster di menu <b>Gaya</b>. Model hanya direkomendasikan bila aktif & punya foto referensi (utamakan foto depan + samping).</p>
-        <button onClick={() => setEditing("new")} className="btn-ink h-11">+ Tambah model</button>
+        <Button onClick={() => setEditing("new")} className="h-11">+ Tambah model</Button>
       </div>
       {!data ? <Empty>Memuat…</Empty> : !data.length ? <Empty>Belum ada model.</Empty> : (
         <div className="grid grid-cols-2 gap-3 min-[700px]:grid-cols-3 xl:grid-cols-4">
@@ -154,38 +159,38 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
           <CloseButton onClick={onClose} />
         </div>
         <div className="grid grid-cols-[1fr_7rem] gap-3">
-          <Field label="Nama model" htmlFor="hs-name"><input id="hs-name" className="input" value={f.name} onChange={(e) => set("name", e.target.value)} /></Field>
-          <Field label="Kode" htmlFor="hs-code"><input id="hs-code" className="input uppercase" value={f.code} onChange={(e) => set("code", e.target.value)} /></Field>
+          <Field label="Nama model" htmlFor="hs-name"><Input id="hs-name" value={f.name} onChange={(e) => set("name", e.target.value)} /></Field>
+          <Field label="Kode" htmlFor="hs-code"><Input id="hs-code" className="uppercase" value={f.code} onChange={(e) => set("code", e.target.value)} /></Field>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Kategori" htmlFor="hs-cat">
-            <select id="hs-cat" className="input" value={f.category} onChange={(e) => set("category", e.target.value)}>
+            <NativeSelect id="hs-cat" value={f.category} onChange={(e) => set("category", e.target.value)}>
               {Object.entries(CATEGORY).map(([c, l]) => <option key={c} value={c}>{l}</option>)}
-            </select>
+            </NativeSelect>
           </Field>
           <Field label="Perawatan" htmlFor="hs-maint">
-            <select id="hs-maint" className="input" value={f.maintenance_level} onChange={(e) => set("maintenance_level", e.target.value)}>
+            <NativeSelect id="hs-maint" value={f.maintenance_level} onChange={(e) => set("maintenance_level", e.target.value)}>
               {["low", "medium", "high"].map((m) => <option key={m} value={m}>{HAIR_LABEL[m]}</option>)}
-            </select>
+            </NativeSelect>
           </Field>
         </div>
-        <Field label="Deskripsi" htmlFor="hs-desc"><textarea id="hs-desc" rows={2} className="input py-2" value={f.description} onChange={(e) => set("description", e.target.value)} /></Field>
+        <Field label="Deskripsi" htmlFor="hs-desc"><Textarea id="hs-desc" rows={2} className="py-2" value={f.description} onChange={(e) => set("description", e.target.value)} /></Field>
         {chips("face_shapes", "Cocok untuk bentuk wajah")}
         {chips("hair_types", "Jenis rambut")}
         {chips("hair_density", "Ketebalan rambut")}
         {chips("suitable_lengths", "Panjang rambut awal yang bisa dibentuk")}
         <Field label="Poin singkat untuk katalog (satu per baris, maks. 4)" htmlFor="hs-points" hint="Tampil di katalog lengkap, mis. Modern & rapi / Samping tipis (low taper).">
-          <textarea id="hs-points" rows={4} className="input py-2" value={points} onChange={(e) => setPoints(e.target.value)} />
+          <Textarea id="hs-points" rows={4} className="py-2" value={points} onChange={(e) => setPoints(e.target.value)} />
         </Field>
-        <Field label="Karakter gaya (pisahkan koma)" htmlFor="hs-char"><input id="hs-char" className="input" placeholder="modern, clean" value={chars} onChange={(e) => setChars(e.target.value)} /></Field>
+        <Field label="Karakter gaya (pisahkan koma)" htmlFor="hs-char"><Input id="hs-char" placeholder="modern, clean" value={chars} onChange={(e) => setChars(e.target.value)} /></Field>
         <Field label="Catatan potong (opsional)" htmlFor="hs-notes" hint="Mis. guard sisi, tinggi fade — boleh dikutip di catatan capster.">
-          <textarea id="hs-notes" rows={2} className="input py-2" value={f.cut_notes} onChange={(e) => set("cut_notes", e.target.value)} />
+          <Textarea id="hs-notes" rows={2} className="py-2" value={f.cut_notes} onChange={(e) => set("cut_notes", e.target.value)} />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-5 accent-[#1f2320]" checked={f.active} onChange={(e) => set("active", e.target.checked)} />Aktif</label>
-          <Field label="Urut" htmlFor="hs-sort"><input id="hs-sort" type="number" className="input" value={f.sort} onChange={(e) => set("sort", Number(e.target.value))} /></Field>
+          <label className="flex items-center gap-2 text-sm"><Checkbox className="size-5" checked={f.active} onCheckedChange={(v) => set("active", v === true)} />Aktif</label>
+          <Field label="Urut" htmlFor="hs-sort"><Input id="hs-sort" type="number" value={f.sort} onChange={(e) => set("sort", Number(e.target.value))} /></Field>
         </div>
-        <button disabled={busy} className="btn-ink h-12">{busy ? "Menyimpan…" : style ? "Simpan" : "Tambah model"}</button>
+        <Button disabled={busy} className="h-12">{busy ? "Menyimpan…" : style ? "Simpan" : "Tambah model"}</Button>
 
         {style && (
           <section className="flex flex-col gap-3 border-t border-line pt-4">
@@ -203,15 +208,15 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
             </div>
             <div className="flex gap-2">
               <label htmlFor="hs-view" className="sr-only">Sudut foto</label>
-              <select id="hs-view" className="input w-32" value={view} onChange={(e) => setView(e.target.value as Img["view"])}>
+              <NativeSelect id="hs-view" className="w-32" value={view} onChange={(e) => setView(e.target.value as Img["view"])}>
                 {Object.entries(VIEW).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-              </select>
-              <label className={`btn-ghost h-11 flex-1 cursor-pointer rounded-[10px] ${busy ? "pointer-events-none opacity-50" : ""}`}>
+              </NativeSelect>
+              <label className={buttonClass("outline", `h-11 flex-1 cursor-pointer rounded-[10px] ${busy ? "pointer-events-none opacity-50" : ""}`)}>
                 Unggah foto
                 <input type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Unggah foto referensi" onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = ""; }} />
               </label>
             </div>
-            <button type="button" onClick={removeStyle} className="btn-danger mt-2 h-11 self-start px-3">Hapus model</button>
+            <Button type="button" onClick={removeStyle} variant="destructive" className="mt-2 h-11 self-start px-3">Hapus model</Button>
           </section>
         )}
       </form>

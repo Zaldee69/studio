@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { CMD, Escpos } from "@/lib/domain/escpos";
 import { connectPrinter, disconnectPrinter, printBytes, setPrinterSettings, usePrinter } from "@/lib/printer";
@@ -50,8 +52,8 @@ export function PrinterButton() {
                 <b className="truncate">{on ? p.name : p.status === "connecting" ? `Menyambung ke ${p.name}…` : "Belum tersambung"}</b>
                 <span className="text-xs text-muted">Bluetooth · tersimpan di perangkat ini</span>
               </span>
-              {on ? <button type="button" onClick={disconnectPrinter} className="btn-ghost h-10 rounded-[10px] px-3 text-sm">Putuskan</button>
-                : <button type="button" onClick={connectPrinter} disabled={p.status === "connecting"} className="btn-ink h-10 rounded-[10px] px-4 text-sm">Sambungkan</button>}
+              {on ? <Button type="button" onClick={disconnectPrinter} variant="outline" className="h-10 rounded-[10px] px-3 text-sm">Putuskan</Button>
+                : <Button type="button" onClick={connectPrinter} disabled={p.status === "connecting"} className="h-10 rounded-[10px] px-4 text-sm">Sambungkan</Button>}
             </div>
           )}
           {p.error && <p role="alert" className="text-sm text-danger">{p.error}</p>}
@@ -67,18 +69,18 @@ export function PrinterButton() {
             </div>
           </fieldset>
           <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 accent-[#1f2320]" checked={p.settings.autoPrint} onChange={(e) => setPrinterSettings({ autoPrint: e.target.checked })} />
+            <Checkbox className="mt-0.5 size-5" checked={p.settings.autoPrint} onCheckedChange={(v) => setPrinterSettings({ autoPrint: v === true })} />
             <span><b>Cetak struk otomatis</b><span className="block text-xs text-muted">Langsung tercetak setelah pembayaran dicatat.</span></span>
           </label>
           <label className="flex items-start gap-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 accent-[#1f2320]" checked={p.settings.drawer} onChange={(e) => setPrinterSettings({ drawer: e.target.checked })} />
+            <Checkbox className="mt-0.5 size-5" checked={p.settings.drawer} onCheckedChange={(v) => setPrinterSettings({ drawer: v === true })} />
             <span><b>Buka laci uang saat bayar tunai</b><span className="block text-xs text-muted">Laci harus tersambung ke port laci (RJ11) printer. Kebanyakan printer Bluetooth 58 mm tidak punya port ini.</span></span>
           </label>
 
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={test} disabled={!on || busy} className="btn-ghost h-11 rounded-[10px]">Uji cetak</button>
-            <button type="button" onClick={() => send(Uint8Array.from([...CMD.init, ...CMD.drawer]), "Perintah buka laci terkirim")} disabled={!on || busy || !p.settings.drawer}
-              className="btn-ghost h-11 rounded-[10px]">Buka laci</button>
+            <Button type="button" onClick={test} disabled={!on || busy} variant="outline" className="h-11 rounded-[10px]">Uji cetak</Button>
+            <Button type="button" onClick={() => send(Uint8Array.from([...CMD.init, ...CMD.drawer]), "Perintah buka laci terkirim")} disabled={!on || busy || !p.settings.drawer}
+              variant="outline" className="h-11 rounded-[10px]">Buka laci</Button>
           </div>
         </div>
       </Sheet>

@@ -1,5 +1,8 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { CloseButton, Field, Sheet, useToast } from "@/components/ui";
 import { CATALOG_SELECT, hairstyleImageUrl, REACTION, toCatalogStyle, type CatalogRow, type CatalogStyle, type Recommendation } from "@/lib/domain/hair";
@@ -67,7 +70,7 @@ export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
         <b className={big ? "font-display text-lg" : "text-sm"}>{rec.hair_style_name}</b>
         {rec.insight && <p className={`${big ? "text-sm" : "text-xs"} leading-relaxed`}>{rec.insight}</p>}
         {rec.barber_note && <p className="rounded-lg bg-paper px-2.5 py-2 text-xs"><b>Catatan capster:</b> {rec.barber_note}</p>}
-        {onUse && <button type="button" onClick={onUse} className="btn-ink mt-auto h-10 rounded-[10px] text-sm">Pakai gaya ini</button>}
+        {onUse && <Button type="button" onClick={onUse} className="mt-auto h-10 rounded-[10px] text-sm">Pakai gaya ini</Button>}
       </div>
     </article>
   );
@@ -100,7 +103,7 @@ export function RecordSheet({ pick, appointmentId, onClose, onSaved }: { pick: P
           <CloseButton onClick={onClose} />
         </div>
         <Field label="Detail potongan" htmlFor="cut-notes" hint="Mis. sisi guard 1, fade rendah, atas ±5 cm. Muncul paling atas di kunjungan berikutnya.">
-          <textarea id="cut-notes" rows={3} className="input py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
+          <Textarea id="cut-notes" rows={3} className="py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
         <fieldset className="flex flex-col gap-1.5">
           <legend className="mb-1 text-xs font-bold text-muted">Reaksi pelanggan</legend>
@@ -113,11 +116,11 @@ export function RecordSheet({ pick, appointmentId, onClose, onSaved }: { pick: P
         </fieldset>
         {pick.preview && (
           <label className="flex items-start gap-3 rounded-[10px] bg-paper p-3 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-[#1f2320]" checked={savePreview} onChange={(e) => setSavePreview(e.target.checked)} />
+            <Checkbox className="mt-0.5 size-5 shrink-0" checked={savePreview} onCheckedChange={(v) => setSavePreview(v === true)} />
             <span>Simpan pratinjau di profil pelanggan. <span className="text-muted">Hanya bila pelanggan setuju; terhapus otomatis setelah 6 bulan.</span></span>
           </label>
         )}
-        <button type="button" onClick={save} disabled={busy} className="btn-ink h-12">{busy ? "Menyimpan…" : "Simpan ke riwayat"}</button>
+        <Button type="button" onClick={save} disabled={busy} className="h-12">{busy ? "Menyimpan…" : "Simpan ke riwayat"}</Button>
       </div>
     </Sheet>
   );
@@ -161,8 +164,8 @@ export function CutList({ cuts, onRepeat }: { cuts: (CutRow & { previewUrl: stri
           <b className="font-display text-lg">{last.style_name}</b>
           {last.notes && <p>{last.notes}</p>}
           <span className={`self-start rounded-full px-2 py-0.5 text-xs font-bold ${last.reaction === "kurang" ? "bg-[#F9E6E6] text-[#6E1616]" : last.reaction === "biasa" ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#E6F1E4] text-[#144D2A]"}`}>Pelanggan: {REACTION[last.reaction]}</span>
-          {onRepeat && <button type="button" onClick={() => onRepeat({ code: last.hairstyle?.code ?? null, name: last.style_name, notes: last.notes })}
-            className="btn-ink mt-1 h-10 self-start rounded-[10px] px-4 text-sm">Ulangi potongan ini</button>}
+          {onRepeat && <Button type="button" onClick={() => onRepeat({ code: last.hairstyle?.code ?? null, name: last.style_name, notes: last.notes })}
+            className="mt-1 h-10 self-start rounded-[10px] px-4 text-sm">Ulangi potongan ini</Button>}
         </div>
       </div>
       {older.map((c) => (

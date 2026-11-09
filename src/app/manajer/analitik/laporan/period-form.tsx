@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { OwnerKind } from "@/lib/domain/owner";
@@ -28,29 +32,29 @@ export function OwnerPeriodForm({ kind, value, from, to, today }: { kind: OwnerK
   return (
     <form onSubmit={show} className="flex flex-wrap items-end gap-2">
       <label className="flex flex-col text-xs text-muted">Periode
-        <select aria-label="Jenis periode" className="input h-11 w-32" value={k} onChange={(e) => setK(e.target.value as OwnerKind)}>
+        <NativeSelect aria-label="Jenis periode" className="h-11 w-32" value={k} onChange={(e) => setK(e.target.value as OwnerKind)}>
           {KINDS.map(([id, l]) => <option key={id} value={id}>{l}</option>)}
-        </select>
+        </NativeSelect>
       </label>
-      {k === "minggu" && <input type="date" aria-label="Tanggal dalam minggu" title="Pilih tanggal mana pun — laporan memakai Senin–Minggu" className="input h-11 w-44" value={v.minggu} max={today} onChange={(e) => setV({ ...v, minggu: e.target.value })} />}
-      {k === "bulan" && <input type="month" aria-label="Bulan" className="input h-11 w-44" value={v.bulan} max={today.slice(0, 7)} onChange={(e) => setV({ ...v, bulan: e.target.value })} />}
+      {k === "minggu" && <DateInput aria-label="Tanggal dalam minggu" title="Pilih tanggal mana pun — laporan memakai Senin–Minggu" className="h-11 w-44" value={v.minggu} max={today} onChange={(e) => setV({ ...v, minggu: e.target.value })} />}
+      {k === "bulan" && <Input type="month" aria-label="Bulan" className="h-11 w-44" value={v.bulan} max={today.slice(0, 7)} onChange={(e) => setV({ ...v, bulan: e.target.value })} />}
       {k === "kuartal" && (
-        <select aria-label="Kuartal" className="input h-11 w-40" value={v.kuartal} onChange={(e) => setV({ ...v, kuartal: e.target.value })}>
+        <NativeSelect aria-label="Kuartal" className="h-11 w-40" value={v.kuartal} onChange={(e) => setV({ ...v, kuartal: e.target.value })}>
           {years.flatMap((yy) => [4, 3, 2, 1].map((q) => `${yy}-Q${q}`)).map((o) => <option key={o} value={o}>{`Kuartal ${["I", "II", "III", "IV"][+o.slice(6) - 1]} ${o.slice(0, 4)}`}</option>)}
-        </select>
+        </NativeSelect>
       )}
       {k === "tahun" && (
-        <select aria-label="Tahun" className="input h-11 w-28" value={v.tahun} onChange={(e) => setV({ ...v, tahun: e.target.value })}>
+        <NativeSelect aria-label="Tahun" className="h-11 w-28" value={v.tahun} onChange={(e) => setV({ ...v, tahun: e.target.value })}>
           {years.map((yy) => <option key={yy} value={yy}>{yy}</option>)}
-        </select>
+        </NativeSelect>
       )}
       {k === "kustom" && (
         <>
-          <input type="date" aria-label="Dari" className="input h-11 w-40" value={v.dari} onChange={(e) => setV({ ...v, dari: e.target.value })} />
-          <input type="date" aria-label="Sampai" className="input h-11 w-40" value={v.sampai} onChange={(e) => setV({ ...v, sampai: e.target.value })} />
+          <DateInput aria-label="Dari" className="h-11 w-40" value={v.dari} onChange={(e) => setV({ ...v, dari: e.target.value })} />
+          <DateInput aria-label="Sampai" className="h-11 w-40" value={v.sampai} onChange={(e) => setV({ ...v, sampai: e.target.value })} />
         </>
       )}
-      <button className="btn-ghost h-11">Tampilkan</button>
+      <Button variant="outline" className="h-11">Tampilkan</Button>
     </form>
   );
 }

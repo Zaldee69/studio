@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import type { CatalogStyle, Recommendation } from "@/lib/domain/hair";
 
@@ -73,7 +74,7 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       )}
       {error && (
         <p role="alert" className="flex flex-wrap items-center justify-center gap-3 text-sm text-danger">
-          {error} <button type="button" onClick={onRetry} className="btn-ghost h-9 rounded-[10px] px-3 text-ink">Coba lagi</button>
+          {error} <Button type="button" onClick={onRetry} variant="outline" className="h-9 rounded-[10px] px-3 text-ink">Coba lagi</Button>
         </p>
       )}
       <div className="overflow-x-auto pb-1">
@@ -88,7 +89,7 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
               </ul>
               <Cell image={image} i={i} n={n} row={1} label={`${c.rec.hair_style_name} tampak samping`} />
               {onPick ? (
-                <button type="button" onClick={async () => onPick(c.rec, image ? await cropColumn(image, i, n) : null)} className="btn-ink m-2 h-10 rounded-[10px] text-sm">Pilih gaya ini</button>
+                <Button type="button" onClick={async () => onPick(c.rec, image ? await cropColumn(image, i, n) : null)} className="m-2 h-10 rounded-[10px] text-sm">Pilih gaya ini</Button>
               ) : <span />}
             </article>
           ))}
@@ -107,7 +108,7 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
           <p className="text-sm">{summary || top.rec.insight}</p>
         </div>
       </div>
-      <button type="button" onClick={share} disabled={busy || !image} className="btn-ink h-12 rounded-xl">{busy ? "Menyiapkan gambar…" : "Bagikan / simpan gambar katalog"}</button>
+      <Button type="button" onClick={share} disabled={busy || !image} className="h-12 rounded-xl">{busy ? "Menyiapkan gambar…" : "Bagikan / simpan gambar katalog"}</Button>
     </section>
   );
 }

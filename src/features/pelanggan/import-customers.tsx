@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { CloseButton, useToast } from "@/components/ui";
 import { parseCsv, previewImport, TEMPLATE_CSV, type ImportRow } from "@/lib/domain/csv";
@@ -69,7 +71,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
         <CloseButton onClick={onClose} />
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <label className="btn-ink h-11 cursor-pointer">
+        <label className={buttonClass("default", "h-11 cursor-pointer")}>
           Pilih file…
           <input type="file" accept=".csv,.xlsx,text/csv" className="sr-only" onChange={(e) => onFile(e.target.files?.[0])} />
         </label>
@@ -106,15 +108,15 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
           </div>
           <div className="flex flex-wrap items-end justify-end gap-2.5">
             <label className="mr-auto flex flex-col gap-1 text-xs font-bold text-muted">Kontak ini tahu D&apos;Pras dari mana?
-              <select className="input w-56" value={source} onChange={(e) => setSource(e.target.value as CustomerSource)}>
+              <NativeSelect className="w-56" value={source} onChange={(e) => setSource(e.target.value as CustomerSource)}>
                 <option value="">— pilih —</option>
                 {CUSTOMER_SOURCES.filter(([k]) => k !== "web").map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-              </select>
+              </NativeSelect>
             </label>
-            <button onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
-            <button onClick={confirmImport} disabled={!valid.length || !source || saving} className="btn-ink h-12 px-6">
+            <Button onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
+            <Button onClick={confirmImport} disabled={!valid.length || !source || saving} className="h-12 px-6">
               {saving ? "Mengimpor…" : `Impor ${valid.length} pelanggan`}
-            </button>
+            </Button>
           </div>
         </>
       )}

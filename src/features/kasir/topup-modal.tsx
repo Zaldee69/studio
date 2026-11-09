@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
 import type { BaseMethod } from "@/lib/domain/cart";
@@ -72,11 +74,11 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Dibayar (Rp)" htmlFor="tp-paid">
-            <input id="tp-paid" inputMode="numeric" className="input tabular" disabled={!!p} placeholder="Nominal manual"
+            <Input id="tp-paid" inputMode="numeric" className="tabular" disabled={!!p} placeholder="Nominal manual"
               value={p ? p.amount_paid.toLocaleString("id-ID") : paid} onChange={(e) => setPaid(e.target.value)} />
           </Field>
           <Field label="Saldo masuk (Rp)" htmlFor="tp-cr">
-            <input id="tp-cr" inputMode="numeric" className="input tabular" disabled={!!p || !canBonus} placeholder="= dibayar"
+            <Input id="tp-cr" inputMode="numeric" className="tabular" disabled={!!p || !canBonus} placeholder="= dibayar"
               value={p ? p.amount_credited.toLocaleString("id-ID") : canBonus ? credited : amountPaid ? amountPaid.toLocaleString("id-ID") : ""} onChange={(e) => setCredited(e.target.value)} />
           </Field>
         </div>
@@ -89,17 +91,17 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
         {method !== "cash" && (
           <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
                   <label htmlFor="tp-qris-ref" className="text-[13px] font-bold">No. referensi {method === "transfer" ? "transfer" : "QRIS"}</label>
-                  <input id="tp-qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
+                  <Input id="tp-qris-ref" autoComplete="off" className="h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
                 </div>
         )}
         {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
         <div className="flex justify-end gap-2.5">
-          <button type="button" onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
-          <button disabled={saving || !online} className="btn-ink h-12 px-6">
+          <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
+          <Button disabled={saving || !online} className="h-12 px-6">
             {saving ? "Menyimpan…" : `Simpan top-up · ${formatRupiah(amountPaid)}`}
-          </button>
+          </Button>
         </div>
       </form>
     </Sheet>

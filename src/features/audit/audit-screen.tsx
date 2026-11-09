@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
 import { Empty } from "@/components/ui";
@@ -150,11 +151,11 @@ export function AuditScreen() {
           }).join(" · ") : summary(a)}</span>])} />
         {pages > 1 && (
           <nav aria-label="Halaman jejak perubahan" className="flex items-center justify-between gap-3 border-t border-[#EEEEEA] pt-3 text-sm">
-            <button onClick={() => setPage(page - 1)} disabled={page === 0} className="btn-ghost h-10 rounded-[10px] px-3">‹ Lebih baru</button>
+            <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[10px] px-3">‹ Lebih baru</Button>
             <span className="tabular text-muted">
               Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * LOG_PAGE + 1}–{Math.min((page + 1) * LOG_PAGE, log?.total ?? 0)} dari {log?.total}
             </span>
-            <button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} className="btn-ghost h-10 rounded-[10px] px-3">Lebih lama ›</button>
+            <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 rounded-[10px] px-3">Lebih lama ›</Button>
           </nav>
         )}
       </Section>

@@ -1,5 +1,11 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useState } from "react";
@@ -105,8 +111,8 @@ export function Rencana() {
         <section aria-label="Progres minggu" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="flex-1 text-base font-bold">{p ? `Minggu ${shortDate(p.week)} – ${shortDate(addDays(p.week, 6))}` : "Progres minggu"}</h2>
-            <button className="btn-ghost h-10" onClick={() => setDay(addDays(day, -7))}>← Minggu lalu</button>
-            <button className="btn-ghost h-10" disabled={!!isThisWeek} onClick={() => setDay(addDays(day, 7) > today ? today : addDays(day, 7))}>Minggu berikut →</button>
+            <Button variant="outline" size="sm" onClick={() => setDay(addDays(day, -7))}>← Minggu lalu</Button>
+            <Button variant="outline" size="sm" disabled={!!isThisWeek} onClick={() => setDay(addDays(day, 7) > today ? today : addDays(day, 7))}>Minggu berikut →</Button>
           </div>
           {!p ? <Empty>Memuat…</Empty> : (
             <>
@@ -159,7 +165,7 @@ export function Rencana() {
               {live.filter((t) => t.status === "selesai").length}/{live.length} selesai · {live.filter((t) => t.status === "jalan").length} berjalan ·{" "}
               <b className={live.some(late) ? "text-[#A12A2A]" : ""}>{live.filter(late).length} lewat tenggat</b>
             </span>
-            <label className="flex h-10 items-center gap-2 text-sm"><input type="checkbox" checked={onlyGrow} onChange={(e) => setOnlyGrow(e.target.checked)} /> Hanya yang menambah pelanggan</label>
+            <label className="flex h-10 items-center gap-2 text-sm"><Checkbox checked={onlyGrow} onCheckedChange={(v) => setOnlyGrow(v === true)} /> Hanya yang menambah pelanggan</label>
           </div>
           {!data ? <Empty>Memuat…</Empty> : !tasks.length ? <Empty>Belum ada tugas.</Empty> : weeks.map((w) => (
             <div key={w} className="flex flex-col rounded-[14px] border border-line bg-card">
@@ -177,17 +183,17 @@ export function Rencana() {
                       {t.measure && <span className="text-xs text-muted">Berhasil bila: {t.measure}</span>}
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <select aria-label={`Status ${t.title}`} className="input h-10" value={t.status} disabled={!online}
+                      <NativeSelect size="sm" aria-label={`Status ${t.title}`} value={t.status} disabled={!online}
                         onChange={(e) => update(t.id, { status: e.target.value }, `Status: ${STATUS[e.target.value][0]}`)}>
                         {Object.entries(STATUS).map(([k, [lab]]) => <option key={k} value={k}>{lab}</option>)}
-                      </select>
+                      </NativeSelect>
                       <span className="self-start rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
                     </div>
                     <div className="flex gap-2 min-[700px]:col-start-2 min-[700px]:col-end-4">
-                      <textarea aria-label={`Catatan ${t.title}`} rows={1} className="input min-h-10 flex-1 py-2 text-sm" placeholder="Catatan atau bukti pelaksanaan"
+                      <Textarea aria-label={`Catatan ${t.title}`} rows={1} className="min-h-10 flex-1 py-2 text-sm" placeholder="Catatan atau bukti pelaksanaan"
                         value={draft} onChange={(e) => setDrafts({ ...drafts, [t.id]: e.target.value })} />
-                      <button className="btn-ghost h-10" disabled={!online || draft === t.note} onClick={() => saveNote(t)}>Simpan</button>
-                      <button className="btn-ghost h-10" onClick={() => edit(t)}>Ubah</button>
+                      <Button variant="outline" size="sm" disabled={!online || draft === t.note} onClick={() => saveNote(t)}>Simpan</Button>
+                      <Button variant="outline" size="sm" onClick={() => edit(t)}>Ubah</Button>
                     </div>
                     <span className="text-xs text-muted min-[700px]:col-start-2 min-[700px]:col-end-4">Terakhir diubah {stamp(t.updated_at)} oleh {who(t.updated_by)}</span>
                   </div>
@@ -212,9 +218,9 @@ export function Rencana() {
 
       <form id="tugas-form" onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex scroll-mt-16 flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">{editing ? "Ubah tugas" : "Tambah tugas"}</h2>
-        <Field label="Tugas" htmlFor="tg-title"><textarea id="tg-title" rows={2} className="input py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
+        <Field label="Tugas" htmlFor="tg-title"><Textarea id="tg-title" rows={2} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
         <Field label="Ditugaskan ke" htmlFor="tg-assign" hint="Kasir/capster melihat tugas ini di layarnya dan bisa mengisi status & catatan">
-          <select id="tg-assign" className="input" value={form.assign} onChange={(e) => {
+          <NativeSelect id="tg-assign" value={form.assign} onChange={(e) => {
             const v = e.target.value;
             const label = !v ? "Manajer" : v.startsWith("role:") ? ROLE_LABEL[v.slice(5) as "cashier" | "staff"] : data?.team.find((p) => p.id === v)?.full_name ?? form.pic;
             setForm({ ...form, assign: v, pic: label });
@@ -223,18 +229,18 @@ export function Rencana() {
             <option value="role:cashier">{ROLE_LABEL.cashier}</option>
             <option value="role:staff">{ROLE_LABEL.staff}</option>
             {(data?.team ?? []).map((p) => <option key={p.id} value={p.id}>{p.full_name} · {p.role === "cashier" ? "kasir" : "capster/terapis"}</option>)}
-          </select>
+          </NativeSelect>
         </Field>
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Penanggung jawab" htmlFor="tg-pic"><input id="tg-pic" className="input" value={form.pic} onChange={(e) => setForm({ ...form, pic: e.target.value })} /></Field>
-          <Field label="Tenggat" htmlFor="tg-due"><input id="tg-due" type="date" className="input" value={form.due} onChange={(e) => e.target.value && setForm({ ...form, due: e.target.value })} /></Field>
+          <Field label="Penanggung jawab" htmlFor="tg-pic"><Input id="tg-pic" value={form.pic} onChange={(e) => setForm({ ...form, pic: e.target.value })} /></Field>
+          <Field label="Tenggat" htmlFor="tg-due"><DateInput id="tg-due" value={form.due} onChange={(e) => e.target.value && setForm({ ...form, due: e.target.value })} /></Field>
         </div>
         <Field label="Berhasil bila" htmlFor="tg-measure" hint="Ukuran yang bisa dicek, mis. ≥5 pelanggan kembali minggu ini">
-          <input id="tg-measure" className="input" value={form.measure} onChange={(e) => setForm({ ...form, measure: e.target.value })} />
+          <Input id="tg-measure" value={form.measure} onChange={(e) => setForm({ ...form, measure: e.target.value })} />
         </Field>
-        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.grows} onChange={(e) => setForm({ ...form, grows: e.target.checked })} /> Tugas ini langsung menambah pelanggan</label>
-        <button disabled={!online} className="btn-ink h-12">{editing ? "Simpan perubahan" : "Tambah tugas"}</button>
-        {editing && <button type="button" className="btn-ghost h-11" onClick={() => { setEditing(null); setForm(BLANK); }}>Batal mengubah</button>}
+        <label className="flex items-center gap-2 text-sm"><Checkbox checked={form.grows} onCheckedChange={(v) => setForm({ ...form, grows: v === true })} /> Tugas ini langsung menambah pelanggan</label>
+        <Button size="lg" disabled={!online}>{editing ? "Simpan perubahan" : "Tambah tugas"}</Button>
+        {editing && <Button type="button" variant="outline" onClick={() => { setEditing(null); setForm(BLANK); }}>Batal mengubah</Button>}
         <p className="text-xs text-muted">Tugas tidak bisa dihapus. Pilih status Dibatalkan bila tidak jadi dikerjakan, supaya riwayatnya tetap ada.</p>
       </form>
     </div>
@@ -261,7 +267,7 @@ function StaffTargets({ staff, studio, onSaved }: { staff: StaffRow[]; studio: n
       <div className="grid grid-cols-2 gap-2 min-[700px]:grid-cols-4">
         {staff.map((s) => (
           <Field key={s.id} label={s.name} htmlFor={`st-t-${s.id}`}>
-            <input id={`st-t-${s.id}`} inputMode="numeric" className="input" defaultValue={s.target_cuts_weekly ?? ""}
+            <Input id={`st-t-${s.id}`} inputMode="numeric" defaultValue={s.target_cuts_weekly ?? ""}
               placeholder={s.category === "barbershop" ? `otomatis ${Math.ceil(studio / barbers)}` : "tanpa target"}
               onBlur={(e) => save(s, e.target.value)} />
           </Field>

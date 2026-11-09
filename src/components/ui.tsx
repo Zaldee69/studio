@@ -1,37 +1,46 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { XIcon } from "lucide-react";
+import { createContext, useCallback, useContext, useState, useSyncExternalStore } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Sheet as SheetRoot, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { STATUS, type ApptStatus } from "@/lib/domain/status";
 import { Icon } from "./icons";
 
-// ---------- Dialog (modal di tengah / laci kanan) — memakai <dialog> bawaan: fokus terkunci, Esc menutup ----------
+// ---------- Dialog (modal di tengah / laci kanan) — shadcn Dialog/Sheet (Radix): fokus terkunci, Esc & klik luar menutup,
+// konfirmasi (AlertDialog) yang terbuka di atasnya ditutup lebih dulu. API sama seperti sebelum migrasi shadcn (10 Nov).
 export function Sheet({ open, onClose, label, variant = "modal", width = 600, children }: {
   open: boolean; onClose: () => void; label: string; variant?: "modal" | "drawer"; width?: number; children: React.ReactNode;
 }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const d = ref.current;
-    if (!d) return;
-    if (open && !d.open) d.showModal();
-    if (!open && d.open) d.close();
-  }, [open]);
-  const cls = variant === "drawer"
-    ? "m-0 ml-auto h-dvh max-h-none w-full max-w-none border-l border-line bg-card p-0 shadow-[-12px_0_32px_rgba(28,27,25,0.10)] backdrop:bg-ink/30 min-[1000px]:w-[400px]"
-    : "m-auto max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] rounded-2xl bg-card p-0 shadow-[0_24px_64px_rgba(28,27,25,0.25)] backdrop:bg-ink/45";
+  const onOpenChange = (o: boolean) => { if (!o) onClose(); };
+  if (variant === "drawer") return (
+    <SheetRoot open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" showCloseButton={false} aria-describedby={undefined}
+        className="gap-0 overflow-y-auto border-line bg-card p-0 text-base text-ink shadow-[-12px_0_32px_rgba(28,27,25,0.10)] data-[side=right]:w-full data-[side=right]:sm:max-w-none min-[1000px]:data-[side=right]:w-[400px]">
+        <SheetTitle className="sr-only">{label}</SheetTitle>
+        {children}
+      </SheetContent>
+    </SheetRoot>
+  );
   return (
-    <dialog ref={ref} aria-label={label} onClose={onClose} onCancel={(e) => { e.preventDefault(); if (!document.querySelector("[role=alertdialog]")) onClose(); /* Esc menutup konfirmasi dulu */ }}
-      onClick={(e) => { if (e.target === ref.current) onClose(); }}
-      className={cls} style={variant === "modal" ? { maxWidth: width } : undefined}>
-      {open && children}
-    </dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent showCloseButton={false} aria-describedby={undefined} style={{ maxWidth: width }}
+        className="block max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-none overflow-y-auto rounded-2xl bg-card p-0 text-base text-ink shadow-[0_24px_64px_rgba(28,27,25,0.25)] ring-0 sm:max-w-none">
+        <DialogTitle className="sr-only">{label}</DialogTitle>
+        {children}
+      </DialogContent>
+    </Dialog>
   );
 }
 
 export function CloseButton({ onClick, label = "Tutup" }: { onClick: () => void; label?: string }) {
   return (
-    <button type="button" onClick={onClick} aria-label={label} className="flex size-11 shrink-0 items-center justify-center rounded-[10px] border border-line bg-card">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-    </button>
+    <Button type="button" variant="outline" size="icon" onClick={onClick} aria-label={label}>
+      <XIcon className="size-4" strokeWidth={2.2} />
+    </Button>
   );
 }
 
@@ -91,9 +100,9 @@ export function OfflineBanner() {
 export function StatusBadge({ status, short = false }: { status: ApptStatus; short?: boolean }) {
   const s = STATUS[status];
   return (
-    <span className="inline-flex h-[26px] items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 text-xs font-bold" style={{ background: s.bg, color: s.fg }}>
+    <Badge className="h-[26px] gap-1.5 rounded-full px-2.5 text-xs font-bold" style={{ background: s.bg, color: s.fg }}>
       <span className="size-2 rounded-full" style={{ background: s.dot }} />{short ? s.short : s.label}
-    </span>
+    </Badge>
   );
 }
 
@@ -108,16 +117,16 @@ export const CAT_STYLE = {
 export function CatChip({ cat }: { cat: keyof typeof CAT_STYLE }) {
   const c = CAT_STYLE[cat];
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold" style={{ background: c.bg, color: c.fg }}>
+    <Badge className="h-auto gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold" style={{ background: c.bg, color: c.fg }}>
       <span aria-hidden="true" className="size-1.5 rounded-full" style={{ background: c.dot }} />{c.short}
-    </span>
+    </Badge>
   );
 }
 
 export function Field({ label, htmlFor, children, hint }: { label: string; htmlFor: string; children: React.ReactNode; hint?: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-xs font-bold text-[#63665F]">{label}</label>
+      <Label htmlFor={htmlFor} className="font-bold">{label}</Label>
       {children}
       {hint && <span className="text-xs text-[#63665F]">{hint}</span>}
     </div>

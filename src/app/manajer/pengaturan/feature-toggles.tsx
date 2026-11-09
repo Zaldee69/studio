@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useActionState } from "react";
 import { FEATURES } from "@/lib/features";
 import { saveHiddenFeatures } from "./actions";
@@ -16,14 +18,14 @@ export function FeatureToggles({ hidden }: { hidden: string[] }) {
         <div className="grid gap-2 sm:grid-cols-2">
           {FEATURES.map(([k, label]) => (
             <label key={k} className="flex min-h-11 items-center gap-3 text-sm">
-              <input type="checkbox" name="show" value={k} defaultChecked={!hidden.includes(k)} className="size-5" />
+              <Checkbox name="show" value={k} defaultChecked={!hidden.includes(k)} className="size-5" />
               {label}
             </label>
           ))}
         </div>
       </fieldset>
       <div className="flex items-center gap-3">
-        <button disabled={pending} className="btn-primary">Simpan fitur</button>
+        <Button variant="brand" disabled={pending}>Simpan fitur</Button>
         <Msg s={state} />
       </div>
     </form>

@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { useToast } from "@/components/ui";
@@ -63,7 +66,7 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
           <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-bold text-[#144D2A]">Aktif</span>
-          {!required && <button onClick={disable} className="btn-ghost h-11">Matikan</button>}
+          {!required && <Button onClick={disable} variant="outline" className="h-11">Matikan</Button>}
         </div>
       ) : enroll ? (
         <form onSubmit={verify} className="space-y-3">
@@ -71,15 +74,15 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
           {/* eslint-disable-next-line @next/next/no-img-element -- data URI SVG dari Supabase */}
           <img src={enroll.qr} alt="Kode QR verifikasi 2 langkah" width={180} height={180} className="rounded-lg border border-line bg-white p-2" />
           <p className="text-xs text-muted">Tidak bisa memindai? Masukkan kunci manual: <code className="select-all break-all font-mono">{enroll.secret}</code></p>
-          <label htmlFor="mfa-verify" className="label">2. Masukkan 6 digit kode dari aplikasi</label>
+          <Label htmlFor="mfa-verify" className="mb-1">2. Masukkan 6 digit kode dari aplikasi</Label>
           <div className="flex gap-2">
-            <input id="mfa-verify" value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" maxLength={6} className="input w-40" />
-            <button disabled={busy || code.trim().length !== 6} className="btn-primary h-11">Aktifkan</button>
-            <button type="button" onClick={() => setEnroll(null)} className="btn-ghost h-11">Batal</button>
+            <Input id="mfa-verify" value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" maxLength={6} className="w-40" />
+            <Button disabled={busy || code.trim().length !== 6} variant="brand" className="h-11">Aktifkan</Button>
+            <Button type="button" onClick={() => setEnroll(null)} variant="outline" className="h-11">Batal</Button>
           </div>
         </form>
       ) : (
-        <button onClick={start} disabled={busy} className="btn-primary h-11">Aktifkan verifikasi 2 langkah</button>
+        <Button onClick={start} disabled={busy} variant="brand" className="h-11">Aktifkan verifikasi 2 langkah</Button>
       )}
     </section>
   );

@@ -1,5 +1,9 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CAT_STYLE, CatChip, Empty, Sheet, useOnline, useToast } from "@/components/ui";
@@ -278,7 +282,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
         {done ? (
           <div className="flex-1 overflow-y-auto px-6 py-7">
             <ReceiptView r={done}>
-              <button onClick={() => setDone(null)} className="btn-ink h-[52px] rounded-xl text-[15px]">Transaksi baru</button>
+              <Button onClick={() => setDone(null)} className="h-[52px] rounded-xl text-[15px]">Transaksi baru</Button>
             </ReceiptView>
           </div>
         ) : (
@@ -291,8 +295,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     onCreate={(q) => { setNewInit(q); setNewCust(true); }} />
                 </div>
                 {customer
-                  ? <button onClick={() => setTopup(true)} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</button>
-                  : <button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} className="btn-ghost h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</button>}
+                  ? <Button onClick={() => setTopup(true)} disabled={!online} variant="outline" className="h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</Button>
+                  : <Button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} variant="outline" className="h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</Button>}
               </div>
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
               {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
@@ -301,7 +305,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
                   <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
                   <label className="flex min-h-11 items-center gap-2 font-semibold">
-                    <input type="checkbox" checked={noCustOk} onChange={(e) => setNoCustOk(e.target.checked)} className="size-5 accent-accent" />
+                    <Checkbox checked={noCustOk} onCheckedChange={(v) => setNoCustOk(v === true)} className="size-5" />
                     Pelanggan tidak mau memberi nama/nomor
                   </label>
                 </div>
@@ -382,14 +386,14 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {nonCash && (
                 <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
                   <label htmlFor="qris-ref" className="text-[13px] font-bold">No. referensi {refLabel}</label>
-                  <input id="qris-ref" autoComplete="off" className="input h-11 uppercase tabular placeholder:normal-case"
+                  <Input id="qris-ref" autoComplete="off" className="h-11 uppercase tabular placeholder:normal-case"
                     placeholder={method === "transfer" ? "mis. No. Ref / 4 digit terakhir rekening pengirim" : "mis. 4 digit terakhir No. Ref"}
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">{method === "transfer" ? "Cek dana sudah masuk di mutasi rekening toko sebelum dicatat. " : "Dari bukti bayar di HP pelanggan / notifikasi bank. "}Satu nomor hanya untuk satu transaksi.</span>
                   <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
                     <div className="flex items-center gap-2">
                       <label htmlFor="cash-part" className="flex-1 text-[13px] font-bold">Sebagian dibayar tunai (opsional)</label>
-                      <input id="cash-part" inputMode="numeric" placeholder="0" className="input h-11 w-32 text-right tabular"
+                      <Input id="cash-part" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
                         value={cashPart ? Number(cashPart).toLocaleString("id-ID") : ""} onChange={(e) => setCashPart(e.target.value.replace(/\D/g, ""))} />
                     </div>
                     {cashAmt > 0 && (cashAmt < k.paid
@@ -400,15 +404,15 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
                       <div className="flex items-center gap-2">
                         <label htmlFor="tip-in" className="flex-1 text-[13px] font-bold">Tips (opsional)</label>
-                        <input id="tip-in" inputMode="numeric" placeholder="0" className="input h-11 w-32 text-right tabular"
+                        <Input id="tip-in" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
                           value={tip ? Number(tip).toLocaleString("id-ID") : ""} onChange={(e) => setTip(e.target.value.replace(/\D/g, ""))} />
                       </div>
                       {tipAmt > 0 && <>
                         <div className="flex items-center gap-2">
                           <label htmlFor="tip-staff" className="flex-1 text-[13px] font-bold">Tips untuk</label>
-                          <select id="tip-staff" className="input h-11 w-40" value={tipStaff} onChange={(e) => setTipPick(e.target.value)}>
+                          <NativeSelect id="tip-staff" className="h-11 w-40" value={tipStaff} onChange={(e) => setTipPick(e.target.value)}>
                             {tipStaffIds.map((id) => <option key={id} value={id}>{master.staff.find((s) => s.id === id)?.name ?? "Staf"}</option>)}
-                          </select>
+                          </NativeSelect>
                         </div>
                         <div className="flex justify-between text-[15px] font-bold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(nonCashAmt + tipAmt)}</span></div>
                         <span className="text-xs text-muted">Tips bukan omzet. Serahkan {formatRupiah(tipAmt)} tunai dari laci ke staf sekarang — kas diharapkan ikut berkurang.</span>
@@ -421,7 +425,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 <div className="flex flex-col gap-2 rounded-[10px] bg-paper p-3">
                   <div className="flex items-center gap-2">
                     <label htmlFor="cash-in" className="flex-1 text-[13px] font-bold">Uang diterima</label>
-                    <input id="cash-in" inputMode="numeric" placeholder={cashDue.toLocaleString("id-ID")} className="input h-11 w-40 text-right tabular"
+                    <Input id="cash-in" inputMode="numeric" placeholder={cashDue.toLocaleString("id-ID")} className="h-11 w-40 text-right tabular"
                       value={received ? Number(received.replace(/\D/g, "")).toLocaleString("id-ID") : ""} onChange={(e) => setReceived(e.target.value.replace(/\D/g, ""))} />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -440,10 +444,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDEDE9] bg-card px-5 pb-4 pt-3 tabular">
               {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
               <div className="flex items-baseline justify-between"><span className="font-bold">Total</span><span className="font-display text-[28px] font-bold">{formatRupiah(k.total)}</span></div>
-              <button onClick={pay} disabled={!items.length || paying || !online || shortCash || (!customer && !noCustOk)}
-                className="btn-ink h-14 rounded-xl text-base">
+              <Button onClick={pay} disabled={!items.length || paying || !online || shortCash || (!customer && !noCustOk)}
+                className="h-14 rounded-xl text-base">
                 {paying ? "Memproses…" : !customer && !noCustOk && items.length ? "Isi pelanggan dulu" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
-              </button>
+              </Button>
             </div>
           </>
         )}

@@ -1,5 +1,8 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useToast } from "@/components/ui";
@@ -26,14 +29,14 @@ function Rows<T extends Record<string, string>>({ title, fields, rows, max, onCh
         <div key={i} className="grid gap-2 rounded-[10px] border border-line p-3 min-[700px]:grid-cols-2">
           {fields.map(([k, label]) => (
             <label key={String(k)} className="flex flex-col gap-1 text-xs font-semibold text-muted">{label}
-              <textarea rows={1} className="input min-h-10 py-2 text-sm font-normal text-ink" value={r[k]}
+              <Textarea rows={1} className="min-h-10 py-2 text-sm font-normal text-ink" value={r[k]}
                 onChange={(e) => onChange(rows.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))} />
             </label>
           ))}
           <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} className="self-end justify-self-start text-xs font-semibold text-[#A12A2A] underline">Hapus baris</button>
         </div>
       ))}
-      {rows.length < max && <button type="button" onClick={() => onChange([...rows, blank(fields)])} className="btn-ghost h-10 self-start rounded-[10px] px-3 text-sm">+ Tambah</button>}
+      {rows.length < max && <Button type="button" onClick={() => onChange([...rows, blank(fields)])} variant="outline" className="h-10 self-start rounded-[10px] px-3 text-sm">+ Tambah</Button>}
     </fieldset>
   );
 }
@@ -61,12 +64,12 @@ export function NotesEditor({ kind, periodStart, initial, suggestions }: {
     <section aria-label="Catatan manajer" className="mx-auto flex w-full max-w-[210mm] flex-col gap-4 rounded-[14px] border border-line bg-card p-5 print:hidden">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="flex-1 font-display text-lg font-bold">Catatan manajer <span className="text-sm font-normal text-muted">— bagian A, G, H, I laporan (tidak tercetak di sini, tampil di laporan)</span></h2>
-        <button type="button" onClick={() => setOpen(!open)} className="btn-ghost h-10 rounded-[10px] px-3 text-sm">{open ? "Tutup" : "Isi / ubah catatan"}</button>
+        <Button type="button" onClick={() => setOpen(!open)} variant="outline" className="h-10 rounded-[10px] px-3 text-sm">{open ? "Tutup" : "Isi / ubah catatan"}</Button>
       </div>
       {open && <>
         <label className="flex flex-col gap-1 text-sm font-bold">A. Ringkasan eksekutif
           <span className="text-xs font-normal text-muted">Satu paragraf: kondisi bisnis, pencapaian terpenting, masalah/risiko terbesar, prioritas berikutnya. Jangan ulang angka di tabel.</span>
-          <textarea rows={4} className="input py-2 text-sm font-normal" value={n.summary ?? ""} onChange={(e) => set({ summary: e.target.value })} />
+          <Textarea rows={4} className="py-2 text-sm font-normal" value={n.summary ?? ""} onChange={(e) => set({ summary: e.target.value })} />
         </label>
         {suggestions.length > 0 && (
           <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3 text-xs">
@@ -85,19 +88,19 @@ export function NotesEditor({ kind, periodStart, initial, suggestions }: {
           hint="Hanya hal di luar wewenang manajer (harga, struktur gaji/komisi, pengeluaran di luar anggaran, investasi, perekrutan sesuai kesepakatan)."
           onChange={(decisions) => set({ decisions, no_decision: decisions.length ? false : n.no_decision })} />
         {!(n.decisions ?? []).length && (
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" className="size-4" checked={!!n.no_decision} onChange={(e) => set({ no_decision: e.target.checked })} />
+          <label className="flex items-center gap-2 text-sm"><Checkbox className="size-4" checked={!!n.no_decision} onCheckedChange={(v) => set({ no_decision: v === true })} />
             Tidak ada keputusan owner yang mendesak</label>
         )}
         <Rows<Priority> title={`I. Prioritas ${kind === "minggu" ? "minggu" : "bulan"} berikutnya`} fields={PRIORITY} rows={n.priorities ?? []} max={3} onChange={(priorities) => set({ priorities })} />
         {kind === "bulan" && <>
           <label className="flex flex-col gap-1 text-sm font-bold">Evaluasi tindakan bulan sebelumnya
-            <textarea rows={3} className="input py-2 text-sm font-normal" value={n.evaluation ?? ""} onChange={(e) => set({ evaluation: e.target.value })} />
+            <Textarea rows={3} className="py-2 text-sm font-normal" value={n.evaluation ?? ""} onChange={(e) => set({ evaluation: e.target.value })} />
           </label>
           <label className="flex flex-col gap-1 text-sm font-bold">Rencana & target bulan berikutnya
-            <textarea rows={3} className="input py-2 text-sm font-normal" value={n.next_plan ?? ""} onChange={(e) => set({ next_plan: e.target.value })} />
+            <Textarea rows={3} className="py-2 text-sm font-normal" value={n.next_plan ?? ""} onChange={(e) => set({ next_plan: e.target.value })} />
           </label>
         </>}
-        <button type="button" onClick={save} disabled={saving} className="btn-ink h-12 self-end rounded-[10px] px-6">{saving ? "Menyimpan…" : "Simpan catatan"}</button>
+        <Button type="button" onClick={save} disabled={saving} className="h-12 self-end rounded-[10px] px-6">{saving ? "Menyimpan…" : "Simpan catatan"}</Button>
       </>}
     </section>
   );

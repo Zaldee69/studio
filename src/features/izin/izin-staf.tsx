@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
 import { useState } from "react";
 import { Empty, Field, useOnline, useToast } from "@/components/ui";
@@ -69,8 +73,8 @@ export function IzinStaf({ master }: { master: Master }) {
                     <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
                     {o.status === "pending" && (
                       <>
-                        <button disabled={!online} onClick={() => decide(o.id, false)} className="btn-ghost h-11 rounded-[10px] text-[#A12A2A]">Tolak</button>
-                        <button disabled={!online} onClick={() => decide(o.id, true)} className="btn h-11 rounded-[10px] bg-[#1F7A45] text-white">Setujui</button>
+                        <Button disabled={!online} onClick={() => decide(o.id, false)} variant="outline" className="h-11 rounded-[10px] text-[#A12A2A]">Tolak</Button>
+                        <Button disabled={!online} onClick={() => decide(o.id, true)} variant="plain" className="h-11 rounded-[10px] bg-[#1F7A45] text-white">Setujui</Button>
                       </>
                     )}
                   </div>
@@ -93,9 +97,9 @@ export function IzinStaf({ master }: { master: Master }) {
       <form onSubmit={(e) => { e.preventDefault(); record(); }} className="flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Catat izin staf</h2>
         <Field label="Staf" htmlFor="io-staff">
-          <select id="io-staff" className="input" value={f.staff} onChange={(e) => setF({ ...f, staff: e.target.value })}>
+          <NativeSelect id="io-staff" value={f.staff} onChange={(e) => setF({ ...f, staff: e.target.value })}>
             {master.staff.filter((s) => s.active).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          </NativeSelect>
         </Field>
         <div role="radiogroup" aria-label="Jenis izin" className="grid grid-cols-2 gap-2">
           {[[true, "Sehari penuh"], [false, "Rentang jam"]].map(([v, l]) => (
@@ -104,16 +108,16 @@ export function IzinStaf({ master }: { master: Master }) {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Field label="Tanggal" htmlFor="io-date"><input id="io-date" type="date" className="input" value={f.date} onChange={(e) => e.target.value && setF({ ...f, date: e.target.value })} /></Field>
+          <Field label="Tanggal" htmlFor="io-date"><DateInput id="io-date" value={f.date} onChange={(e) => e.target.value && setF({ ...f, date: e.target.value })} /></Field>
           {f.allDay
-            ? <Field label="Sampai" htmlFor="io-until"><input id="io-until" type="date" className="input" min={f.date} value={f.until < f.date ? f.date : f.until} onChange={(e) => e.target.value && setF({ ...f, until: e.target.value })} /></Field>
+            ? <Field label="Sampai" htmlFor="io-until"><DateInput id="io-until" min={f.date} value={f.until < f.date ? f.date : f.until} onChange={(e) => e.target.value && setF({ ...f, until: e.target.value })} /></Field>
             : <div className="grid grid-cols-2 gap-1.5">
-                <Field label="Dari" htmlFor="io-from"><input id="io-from" type="time" step={900} className="input px-2" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
-                <Field label="Sampai" htmlFor="io-to"><input id="io-to" type="time" step={900} className="input px-2" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
+                <Field label="Dari" htmlFor="io-from"><Input id="io-from" type="time" step={900} className="px-2" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} /></Field>
+                <Field label="Sampai" htmlFor="io-to"><Input id="io-to" type="time" step={900} className="px-2" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} /></Field>
               </div>}
         </div>
-        <Field label="Alasan" htmlFor="io-reason"><input id="io-reason" className="input" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></Field>
-        <button disabled={!online || !f.staff} className="btn-ink h-12">Catat & setujui</button>
+        <Field label="Alasan" htmlFor="io-reason"><Input id="io-reason" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></Field>
+        <Button disabled={!online || !f.staff} className="h-12">Catat & setujui</Button>
       </form>
     </div>
   );

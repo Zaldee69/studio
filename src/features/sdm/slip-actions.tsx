@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useOnline, useToast } from "@/components/ui";
@@ -18,17 +22,17 @@ export function SlipActions({ month, staffId, closed, paid, wa }: { month: strin
   }
   return (
     <>
-      <button onClick={() => window.print()} className="btn-ghost h-11">Cetak / PDF</button>
-      <a href={`https://wa.me/?text=${encodeURIComponent(wa)}`} target="_blank" rel="noopener" className="btn h-11 rounded-[10px] bg-[#1F7A45] text-white">Kirim via WhatsApp</a>
-      {closed && !paid && !open && <button onClick={() => setOpen(true)} className="btn-ink h-11">Tandai sudah dibayar</button>}
+      <Button onClick={() => window.print()} variant="outline" className="h-11">Cetak / PDF</Button>
+      <a href={`https://wa.me/?text=${encodeURIComponent(wa)}`} target="_blank" rel="noopener" className={buttonClass("plain", "h-11 rounded-[10px] bg-[#1F7A45] text-white")}>Kirim via WhatsApp</a>
+      {closed && !paid && !open && <Button onClick={() => setOpen(true)} className="h-11">Tandai sudah dibayar</Button>}
       {open && (
         <form onSubmit={(e) => { e.preventDefault(); markPaid(); }} className="flex w-full flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3">
-          <label className="flex flex-col"><span className="label">Tanggal bayar</span><input type="date" className="input w-44" value={f.date} onChange={(e) => e.target.value && setF({ ...f, date: e.target.value })} /></label>
-          <label className="flex flex-col"><span className="label">Metode</span>
-            <select className="input w-36" value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}><option value="transfer">Transfer</option><option value="tunai">Tunai</option></select>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Tanggal bayar</span><DateInput className="w-44" value={f.date} onChange={(e) => e.target.value && setF({ ...f, date: e.target.value })} /></label>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Metode</span>
+            <NativeSelect className="w-36" value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}><option value="transfer">Transfer</option><option value="tunai">Tunai</option></NativeSelect>
           </label>
-          <label className="flex flex-1 flex-col"><span className="label">Catatan</span><input className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></label>
-          <button disabled={!online} className="btn-ink h-11">Simpan</button>
+          <label className="flex flex-1 flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Catatan</span><Input value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></label>
+          <Button disabled={!online} className="h-11">Simpan</Button>
         </form>
       )}
     </>

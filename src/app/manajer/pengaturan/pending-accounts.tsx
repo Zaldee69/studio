@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
@@ -53,14 +55,14 @@ export function PendingAccounts({ rows, staff }: { rows: Signup[]; staff: [strin
               <td className="py-2">
                 <div className="flex items-center justify-end gap-2">
                   {r.role === "staff" && (
-                    <select aria-label={`Tautan staf untuk ${r.full_name}`} className="input h-10 w-40" value={link[r.id] ?? ""} onChange={(e) => setLink({ ...link, [r.id]: e.target.value })}>
+                    <NativeSelect aria-label={`Tautan staf untuk ${r.full_name}`} className="h-10 w-40" value={link[r.id] ?? ""} onChange={(e) => setLink({ ...link, [r.id]: e.target.value })}>
                       <option value="">Tautkan ke staf…</option>
                       {staff.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-                    </select>
+                    </NativeSelect>
                   )}
-                  <button onClick={() => approve(r)} disabled={!online || busy === r.id || !r.email_confirmed_at || (r.role === "staff" && !link[r.id])}
-                    title={!r.email_confirmed_at ? "Email belum diverifikasi" : undefined} className="btn-ink h-10">Setujui</button>
-                  <button onClick={() => reject(r)} disabled={!online || busy === r.id} className="btn-ghost h-10 text-danger">Tolak</button>
+                  <Button onClick={() => approve(r)} disabled={!online || busy === r.id || !r.email_confirmed_at || (r.role === "staff" && !link[r.id])}
+                    title={!r.email_confirmed_at ? "Email belum diverifikasi" : undefined} className="h-10">Setujui</Button>
+                  <Button onClick={() => reject(r)} disabled={!online || busy === r.id} variant="outline" className="h-10 text-danger">Tolak</Button>
                 </div>
               </td>
             </tr>

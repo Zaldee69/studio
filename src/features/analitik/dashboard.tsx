@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -61,7 +65,7 @@ function Section({ id, title, children, onCsv, extra }: { id: string; title: str
       <div className="flex flex-wrap items-center gap-2">
         <h2 id={`${id}-h`} className="flex-1 font-display text-lg font-bold">{title}</h2>
         {extra}
-        {onCsv && <button onClick={onCsv} className="btn-ghost h-11 px-3 text-xs">Unduh CSV</button>}
+        {onCsv && <Button onClick={onCsv} variant="outline" className="h-11 px-3 text-xs">Unduh CSV</Button>}
       </div>
       {children}
     </section>
@@ -116,11 +120,11 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         </div>
         <form className="flex flex-wrap items-end gap-1.5" onChange={(e) => { const f = e.currentTarget; if ((e.target as HTMLElement).tagName === "SELECT") f.requestSubmit(); }}>
           <input type="hidden" name="periode" value="kustom" />
-          <input type="date" name="dari" aria-label="Dari" defaultValue={d.from} className="input h-11 w-40" />
-          <input type="date" name="sampai" aria-label="Sampai" defaultValue={d.to} className="input h-11 w-40" />
-          <select name="kategori" aria-label="Kategori" defaultValue={d.category} className="input h-11 w-36"><option value="">Semua</option><option value="barbershop">Barbershop</option><option value="nail">Nail</option><option value="massage">Pijat</option></select>
-          <select name="staf" aria-label="Staf" defaultValue={d.staff} className="input h-11 w-36"><option value="">Semua staf</option>{d.staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
-          <button className="btn-ink h-11">Terapkan</button>
+          <DateInput name="dari" aria-label="Dari" defaultValue={d.from} className="h-11 w-40" />
+          <DateInput name="sampai" aria-label="Sampai" defaultValue={d.to} className="h-11 w-40" />
+          <NativeSelect name="kategori" aria-label="Kategori" defaultValue={d.category} className="h-11 w-36"><option value="">Semua</option><option value="barbershop">Barbershop</option><option value="nail">Nail</option><option value="massage">Pijat</option></NativeSelect>
+          <NativeSelect name="staf" aria-label="Staf" defaultValue={d.staff} className="h-11 w-36"><option value="">Semua staf</option>{d.staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
+          <Button className="h-11">Terapkan</Button>
         </form>
       </div>
       <p className="text-sm text-muted tabular">{d.label} · <b className="text-ink">{tx} transaksi</b> · dibanding {d.prevLabel}</p>
@@ -332,9 +336,9 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     <form id="target" onSubmit={(e) => { e.preventDefault(); save(); }} className="flex scroll-mt-16 flex-col gap-3 rounded-[14px] border border-line bg-card p-4 print:hidden xl:p-5">
       <h2 className="font-display text-lg font-bold">Target KPI</h2>
       <div className="grid gap-3 min-[820px]:grid-cols-4">
-        {fields.map(([k, l]) => <Field key={k} label={l} htmlFor={`tg-${k}`}><input id={`tg-${k}`} inputMode="decimal" className="input" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></Field>)}
+        {fields.map(([k, l]) => <Field key={k} label={l} htmlFor={`tg-${k}`}><Input id={`tg-${k}`} inputMode="decimal" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></Field>)}
       </div>
-      <button disabled={!online} className="btn-ink h-11 self-start">Simpan target</button>
+      <Button disabled={!online} className="h-11 self-start">Simpan target</Button>
     </form>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,11 +29,11 @@ export function StartOpname({ base, drafts }: { base: string; drafts: { scope: s
   return (
     <div className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-4">
       <Field label="Cakupan" htmlFor="op-scope">
-        <select id="op-scope" className="input w-48" value={scope} onChange={(e) => setScope(e.target.value)}>
+        <NativeSelect id="op-scope" className="w-48" value={scope} onChange={(e) => setScope(e.target.value)}>
           {Object.entries(SCOPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
+        </NativeSelect>
       </Field>
-      <button disabled={!online || taken} onClick={start} className="btn-ink h-11">Mulai opname</button>
+      <Button disabled={!online || taken} onClick={start} className="h-11">Mulai opname</Button>
       {taken && <span role="status" className="text-sm text-[#5A4300]">Sudah ada opname {SCOPE_LABEL[scope]} yang belum selesai — lanjutkan di bawah.</span>}
     </div>
   );
@@ -48,7 +51,7 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
           <Link key={d.id} href={`${base}/${d.id}`} className="flex min-h-14 items-center gap-3 rounded-[14px] border-2 border-[#E8D6A6] bg-[#FFFBEB] px-4 py-3">
             <span className="flex flex-1 flex-col"><b>{SCOPE_LABEL[d.scope]} · dimulai {formatTanggal(d.started_at)} {formatJam(d.started_at)}</b>
               <span className="text-xs text-muted">oleh {d.starter} · {d.counted}/{d.total} item dihitung</span></span>
-            <span className="btn-ink h-11">Lanjutkan →</span>
+            <span className={buttonClass("default", "h-11")}>Lanjutkan →</span>
           </Link>
         ))}
       </section>
@@ -135,7 +138,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
   return (
     <div className="flex flex-col gap-4 pb-28">
       <div className="flex flex-wrap items-center gap-3">
-        <Link href={back} className="btn-ghost h-11">← Kembali</Link>
+        <Link href={back} className={buttonClass("outline", "h-11")}>← Kembali</Link>
         <h1 className="flex-1 font-display text-[26px] font-bold">Opname {SCOPE_LABEL[opname.scope]} · {formatTanggal(opname.started_at)}</h1>
         {locked && <span className="rounded-full bg-paper px-3 py-1 text-sm font-bold">{opname.status === "approved" ? "Disetujui" : "Dibatalkan"}</span>}
       </div>
@@ -146,7 +149,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
         {manager && <div className="rounded-[14px] border border-line bg-card p-4 text-sm"><span className="text-xs text-muted">Selisih terbesar</span>
           {!biggest.length ? <p className="text-muted">—</p> : biggest.map((b) => <div key={b.itemId} className="flex justify-between tabular"><span>{lines.find((l) => l.item_id === b.itemId)?.name}</span><b>{signed(b.value)}</b></div>)}</div>}
       </div>
-      <input type="search" aria-label="Cari item" placeholder="Cari item…" className="input max-w-sm" value={q} onChange={(e) => setQ(e.target.value)} />
+      <Input type="search" aria-label="Cari item" placeholder="Cari item…" className="max-w-sm" value={q} onChange={(e) => setQ(e.target.value)} />
       {!data ? <Empty>Memuat…</Empty> : (["consumable", "retail"] as const).map((k) => {
         const group = lines.filter((l) => l.kind === k && l.name.toLowerCase().includes(q.trim().toLowerCase()));
         if (!group.length) return null;
@@ -162,12 +165,12 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
                   <span className="flex flex-col"><b className="text-[15px]">{l.name}</b><span className="text-xs text-muted">{l.unit}</span></span>
                   <span className="hidden text-sm tabular min-[820px]:block">Sistem <b>{qtyFmt(Number(l.system_qty))}</b></span>
                   <div className="flex items-center gap-1.5">
-                    <button type="button" disabled={locked} aria-label={`Kurangi ${l.name}`} onClick={() => bump(l, -1)} className="btn-ghost size-12 p-0 text-xl">−</button>
+                    <Button type="button" disabled={locked} aria-label={`Kurangi ${l.name}`} onClick={() => bump(l, -1)} variant="outline" className="size-12 p-0 text-xl">−</Button>
                     <label className="sr-only" htmlFor={`oc-${l.item_id}`}>Hitungan fisik {l.name}</label>
-                    <input id={`oc-${l.item_id}`} inputMode="decimal" disabled={locked} placeholder="—"
-                      className="input h-12 w-24 text-center text-xl font-bold tabular" value={l.item_id in edits ? edits[l.item_id] : l.counted_qty === null ? "" : String(Number(l.counted_qty))}
+                    <Input id={`oc-${l.item_id}`} inputMode="decimal" disabled={locked} placeholder="—"
+                      className="h-12 w-24 text-center text-xl font-bold tabular" value={l.item_id in edits ? edits[l.item_id] : l.counted_qty === null ? "" : String(Number(l.counted_qty))}
                       onChange={(e) => setEdits({ ...edits, [l.item_id]: e.target.value })} />
-                    <button type="button" disabled={locked} aria-label={`Tambah ${l.name}`} onClick={() => bump(l, 1)} className="btn-ghost size-12 p-0 text-xl">+</button>
+                    <Button type="button" disabled={locked} aria-label={`Tambah ${l.name}`} onClick={() => bump(l, 1)} variant="outline" className="size-12 p-0 text-xl">+</Button>
                   </div>
                   <span className={`col-span-2 text-sm font-bold tabular min-[820px]:col-span-1 min-[820px]:text-right ${tone}`}>
                     <span className="font-normal text-muted min-[820px]:hidden">Sistem {qtyFmt(Number(l.system_qty))} · </span>
@@ -182,9 +185,9 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
       {!locked && (
         <div className="fixed inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-card/95 px-4 py-3 backdrop-blur left-[84px] xl:left-56">
           <span className="mr-auto text-sm text-muted">{dirty.length ? `${dirty.length} perubahan belum disimpan` : "Semua hitungan tersimpan"}</span>
-          {manager && <button onClick={cancel} disabled={!online} className="btn-ghost h-12 text-[#A12A2A]">Batalkan opname</button>}
-          <button onClick={saveCounts} disabled={!online || busy || !dirty.length} className="btn-ghost h-12">Simpan sebagian</button>
-          {manager && <button onClick={approve} disabled={!online || busy || !counted} className="btn-ink h-12">Setujui opname</button>}
+          {manager && <Button onClick={cancel} disabled={!online} variant="outline" className="h-12 text-[#A12A2A]">Batalkan opname</Button>}
+          <Button onClick={saveCounts} disabled={!online || busy || !dirty.length} variant="outline" className="h-12">Simpan sebagian</Button>
+          {manager && <Button onClick={approve} disabled={!online || busy || !counted} className="h-12">Setujui opname</Button>}
         </div>
       )}
     </div>

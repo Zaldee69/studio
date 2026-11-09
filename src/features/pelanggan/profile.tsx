@@ -1,5 +1,8 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { CloseButton, Field, useToast } from "@/components/ui";
@@ -80,10 +83,10 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
     <div className="flex flex-col gap-4 p-5">
       <div className="flex flex-col gap-2.5">
         <div className="flex items-center justify-between"><label htmlFor="pf-name" className="text-xs font-bold text-muted">Nama</label>{onClose && <CloseButton onClick={onClose} label="Tutup profil" />}</div>
-        <input id="pf-name" className="input font-bold" value={name} onChange={(e) => setName(e.target.value)}
+        <Input id="pf-name" className="font-bold" value={name} onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && name.trim() !== c.name && saveField({ name: name.trim() })} />
         <label htmlFor="pf-wa" className="text-xs font-bold text-muted">No. WhatsApp</label>
-        <input id="pf-wa" className="input tabular" inputMode="tel" value={wa} onChange={(e) => setWa(e.target.value)}
+        <Input id="pf-wa" className="tabular" inputMode="tel" value={wa} onChange={(e) => setWa(e.target.value)}
           onBlur={() => {
             const n = wa.trim() ? normalizeWhatsApp(wa) : null;
             if (wa.trim() && !n) return setFieldErr("No. WhatsApp belum valid.");
@@ -100,11 +103,11 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
               onClick={() => { // efektivitas follow-up (Analitik): catat setiap pengiriman
                 createClient().auth.getUser().then(({ data }) => createClient().from("followup_events").insert({ customer_id: c.id, sent_by: data.user!.id }));
               }}
-              className="btn h-11 rounded-[10px] bg-[#1F7A45] text-white">Kirim WhatsApp follow-up</a>
+              className={buttonClass("plain", "h-11 rounded-[10px] bg-[#1F7A45] text-white")}>Kirim WhatsApp follow-up</a>
           )}
         </div>
       ) : c.whatsapp && (
-        <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener" className="btn-ghost h-11 rounded-[10px]">Chat WhatsApp</a>
+        <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener" className={buttonClass("outline", "h-11 rounded-[10px]")}>Chat WhatsApp</a>
       )}
 
       <div className="grid grid-cols-2 gap-2">
@@ -114,13 +117,13 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         {card("Saldo deposit", formatRupiah(s?.deposit_balance ?? 0), true)}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <button onClick={() => setTopup(true)} className="btn-ghost h-11 rounded-[10px]">Top-up saldo</button>
-        <Link href={`${master.base}/jadwal?new=1&customer=${c.id}`} className="btn-ink h-11">Buat booking</Link>
+        <Button onClick={() => setTopup(true)} variant="outline" className="h-11 rounded-[10px]">Top-up saldo</Button>
+        <Link href={`${master.base}/jadwal?new=1&customer=${c.id}`} className={buttonClass("default", "h-11")}>Buat booking</Link>
       </div>
 
       <Field label="Catatan preferensi teknis" htmlFor="pf-notes"
         hint={noteState === "saving" ? "Menyimpan…" : noteState === "saved" ? "Tersimpan ✓" : noteState === "error" ? "Gagal menyimpan — coba lagi" : "Tersimpan otomatis"}>
-        <textarea id="pf-notes" rows={4} className="input py-2.5 leading-normal" value={notes} onChange={(e) => onNotes(e.target.value)}
+        <Textarea id="pf-notes" rows={4} className="py-2.5 leading-normal" value={notes} onChange={(e) => onNotes(e.target.value)}
           placeholder="Mis. ukuran clipper, formulasi warna gel polish, sensitivitas kulit…" />
       </Field>
 
@@ -171,15 +174,15 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
           onDeleted?.();
         }}>
           <label htmlFor="pf-forget" className="text-xs font-bold text-[#6E1616]">Alasan menghapus (wajib)</label>
-          <input id="pf-forget" className="input" required autoFocus placeholder="mis. Data asal-isi / permintaan pelanggan" value={forgetReason} onChange={(e) => setForgetReason(e.target.value)} />
+          <Input id="pf-forget" required autoFocus placeholder="mis. Data asal-isi / permintaan pelanggan" value={forgetReason} onChange={(e) => setForgetReason(e.target.value)} />
           <p className="text-xs text-muted">Nama, WA & catatan dihapus. Riwayat transaksi tetap ada untuk pembukuan (tampil sebagai &quot;Pelanggan umum&quot;); booking mendatang dibatalkan. Tidak bisa dibatalkan.</p>
           <div className="flex gap-2">
-            <button type="button" onClick={() => setForgetting(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
-            <button disabled={!forgetReason.trim()} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Hapus pelanggan</button>
+            <Button type="button" onClick={() => setForgetting(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
+            <Button disabled={!forgetReason.trim()} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Hapus pelanggan</Button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setForgetting(true)} className="btn-ghost h-11 self-start rounded-[10px] text-[#A12A2A]">Hapus pelanggan…</button>
+        <Button onClick={() => setForgetting(true)} variant="outline" className="h-11 self-start rounded-[10px] text-[#A12A2A]">Hapus pelanggan…</Button>
       ))}
 
       <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />

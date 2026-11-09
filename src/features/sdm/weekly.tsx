@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -53,17 +55,17 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, -1)}`} aria-label="Minggu sebelumnya" className="btn-ghost size-11 p-0">‹</Link>
+        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, -1)}`} aria-label="Minggu sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
         <b className="min-w-52 text-center font-display text-xl">{weekLabel(week)}</b>
-        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, 1)}`} aria-label="Minggu berikutnya" className="btn-ghost size-11 p-0">›</Link>
+        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, 1)}`} aria-label="Minggu berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
         <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : running ? "bg-[#FBF3DE] text-[#5A4300]" : future ? "bg-paper text-muted" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
           {closed ? (unpaid.length ? `Ditutup · ${unpaid.length} belum dibayar` : "Ditutup · semua dibayar") : running ? "Minggu berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
-          <button onClick={exportCsv} disabled={!rows.length} className="btn-ghost h-11">Ekspor</button>
+          <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor</Button>
           {closed
-            ? <button onClick={() => setReopen(true)} disabled={!online || anyPaid || busy} title={anyPaid ? "Sudah ada yang dibayar" : undefined} className="btn-ghost h-11">Buka ulang</button>
-            : <button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="btn-ink h-11">Tutup minggu</button>}
+            ? <Button onClick={() => setReopen(true)} disabled={!online || anyPaid || busy} title={anyPaid ? "Sudah ada yang dibayar" : undefined} variant="outline" className="h-11">Buka ulang</Button>
+            : <Button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="h-11">Tutup minggu</Button>}
         </div>
       </div>
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
@@ -101,7 +103,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
                       : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online} className="rounded-full bg-[#FBF3DE] px-3 py-1.5 text-xs font-bold text-[#5A4300]">Tandai dibayar</button>
                       : <span className="text-xs text-muted">—</span>}
                   </td>
-                  <td className="py-2"><Link href={`/manajer/sdm/slip-minggu/${week}/${r.staff_id}`} className="btn-ghost h-9 px-3 text-xs">Slip</Link></td>
+                  <td className="py-2"><Link href={`/manajer/sdm/slip-minggu/${week}/${r.staff_id}`} className={buttonClass("outline", "h-9 px-3 text-xs")}>Slip</Link></td>
                 </tr>
               ))}
               <tr className="border-t-2 border-ink font-bold">
@@ -128,10 +130,10 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
             <b className="font-display text-3xl tabular">{formatRupiah(paying.amount)}</b>
             <div className="grid grid-cols-2 gap-2">
               {(["tunai", "transfer"] as const).map((m) => (
-                <button key={m} disabled={busy} className="btn-ink h-12 capitalize"
+                <Button key={m} disabled={busy} className="h-12 capitalize"
                   onClick={async () => { await rpc("commission_week_mark_paid", { p_week: week, p_staff_id: paying.staff_id, p_method: m }, `Komisi ${paying.staff_name} ditandai dibayar (${m})`); setPaying(null); }}>
                   {m === "tunai" ? "Dibayar tunai" : "Dibayar transfer"}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -143,9 +145,9 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
           <h2 className="text-lg font-bold">Buka ulang {weekLabel(week)}?</h2>
           <p className="text-sm text-muted">Angka kembali dihitung ulang dari transaksi. Hanya bisa bila belum ada yang dibayar.</p>
           <label className="flex flex-col gap-1.5 text-sm font-semibold">Alasan (wajib)
-            <input className="input" required value={reason} onChange={(e) => setReason(e.target.value)} /></label>
-          <div className="flex gap-2"><button type="button" onClick={() => setReopen(false)} className="btn-ghost flex-1">Batal</button>
-            <button disabled={!reason.trim() || busy} className="btn-ink flex-1">Buka ulang</button></div>
+            <Input required value={reason} onChange={(e) => setReason(e.target.value)} /></label>
+          <div className="flex gap-2"><Button type="button" onClick={() => setReopen(false)} variant="outline" className="flex-1">Batal</Button>
+            <Button disabled={!reason.trim() || busy} className="flex-1">Buka ulang</Button></div>
         </form>
       </Sheet>
     </div>

@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatTanggal } from "@/lib/domain/format";
@@ -24,7 +25,7 @@ export default async function Pelamar({ searchParams }: PageProps<"/manajer/peng
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A4; margin: 14mm } @media print { body { background: #fff } }"}</style>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Link href="/manajer/pengaturan?tab=pelamar" className="btn-ghost h-11">← Pelamar</Link>
+        <Link href="/manajer/pengaturan?tab=pelamar" className={buttonClass("outline", "h-11")}>← Pelamar</Link>
         <PrintButton filename={filename} />
         <span className="text-sm text-muted">Pilih &quot;Simpan sebagai PDF&quot; di dialog cetak.</span>
       </div>

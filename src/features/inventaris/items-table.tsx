@@ -1,5 +1,9 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -79,15 +83,15 @@ function EditCells({ r, form }: { r: StockRow; form: string }) {
   const { suppliers } = useInv();
   return (
     <>
-      <td className="py-1.5 pr-2"><input form={form} name="name" aria-label="Nama" defaultValue={r.name} className="input min-w-40 font-semibold" /></td>
-      <td className="pr-2"><input form={form} name="unit" aria-label="Satuan" defaultValue={r.unit} className="input w-20" /></td>
+      <td className="py-1.5 pr-2"><Input form={form} name="name" aria-label="Nama" defaultValue={r.name} className="min-w-40 font-semibold" /></td>
+      <td className="pr-2"><Input form={form} name="unit" aria-label="Satuan" defaultValue={r.unit} className="w-20" /></td>
       <td className="whitespace-nowrap pr-3 text-base font-bold tabular">{qtyFmt(r.qty)}</td>
-      <td className="pr-2"><input form={form} name="reorder_at" aria-label="Reorder di" inputMode="decimal" defaultValue={r.reorder_at} className="input w-24" /></td>
+      <td className="pr-2"><Input form={form} name="reorder_at" aria-label="Reorder di" inputMode="decimal" defaultValue={r.reorder_at} className="w-24" /></td>
       <td className="pr-2">
-        <select form={form} name="supplier_id" aria-label="Pemasok" defaultValue={r.supplier_id ?? ""} className="input w-36">
+        <NativeSelect form={form} name="supplier_id" aria-label="Pemasok" defaultValue={r.supplier_id ?? ""} className="w-36">
           <option value="">—</option>
           {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        </NativeSelect>
       </td>
     </>
   );
@@ -113,8 +117,8 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
       <td className="pr-2"><StatusChip status={r.status} /></td>
       <td className="whitespace-nowrap">
         <form id={form} action={save} className="flex items-center gap-1.5">
-          <button className="btn-ghost h-11 px-3">Simpan</button>
-          <button type="button" onClick={() => open({ kind: "in", itemId: r.item_id })} className="btn-ink h-11 px-3">+ Stok masuk</button>
+          <Button variant="outline" className="h-11 px-3">Simpan</Button>
+          <Button type="button" onClick={() => open({ kind: "in", itemId: r.item_id })} className="h-11 px-3">+ Stok masuk</Button>
           <RowMenu r={r} />
         </form>
       </td>
@@ -138,7 +142,7 @@ function ItemCard({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
         {extra && <span>Terjual 30 hr<b className="block text-sm text-ink">{extra.sold30}</b></span>}
       </div>
       <div className="flex gap-1.5">
-        <button onClick={() => open({ kind: "in", itemId: r.item_id })} className="btn-ink h-11 flex-1">+ Stok masuk</button>
+        <Button onClick={() => open({ kind: "in", itemId: r.item_id })} className="h-11 flex-1">+ Stok masuk</Button>
         <RowMenu r={r} />
       </div>
     </div>
@@ -159,17 +163,17 @@ function NewItem({ kind }: { kind: Kind }) {
     if (error) return toast(error.message, "error");
     toast(`${name} ditambahkan — catat Stok masuk untuk mengisi stok & harga pokok`); setOpen(false); router.refresh();
   }
-  if (!open) return <button onClick={() => setOpen(true)} className="btn-ghost h-11 self-start">+ Tambah {kind === "retail" ? "barang ritel" : "bahan"}</button>;
+  if (!open) return <Button onClick={() => setOpen(true)} variant="outline" className="h-11 self-start">+ Tambah {kind === "retail" ? "barang ritel" : "bahan"}</Button>;
   return (
     <form action={add} className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
-      <label className="flex flex-col"><span className="label">Nama</span><input name="name" className="input w-52" autoFocus /></label>
-      <label className="flex flex-col"><span className="label">Satuan</span><input name="unit" className="input w-24" placeholder={kind === "retail" ? "pcs" : "ml"} /></label>
-      <label className="flex flex-col"><span className="label">Reorder di</span><input name="reorder_at" inputMode="decimal" className="input w-24" /></label>
-      <label className="flex flex-col"><span className="label">Pemasok</span>
-        <select name="supplier_id" className="input w-40"><option value="">—</option>{suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</select>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Nama</span><Input name="name" className="w-52" autoFocus /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Satuan</span><Input name="unit" className="w-24" placeholder={kind === "retail" ? "pcs" : "ml"} /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Reorder di</span><Input name="reorder_at" inputMode="decimal" className="w-24" /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Pemasok</span>
+        <NativeSelect name="supplier_id" className="w-40"><option value="">—</option>{suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
       </label>
-      <button className="btn-ink h-11">Tambah</button>
-      <button type="button" onClick={() => setOpen(false)} className="btn-ghost h-11">Batal</button>
+      <Button className="h-11">Tambah</Button>
+      <Button type="button" onClick={() => setOpen(false)} variant="outline" className="h-11">Batal</Button>
     </form>
   );
 }
@@ -186,7 +190,7 @@ export function ItemsTable({ kind, extras }: { kind: Kind; extras?: Record<strin
       <div className="flex flex-wrap items-center gap-3">
         <NewItem kind={kind} />
         <label className="ml-auto flex min-h-11 items-center gap-2 text-sm">
-          <input type="checkbox" className="size-5 accent-accent" checked={showInactive} onChange={(e) => setShowInactive(e.target.checked)} /> Tampilkan nonaktif
+          <Checkbox className="size-5" checked={showInactive} onCheckedChange={(v) => setShowInactive(v === true)} /> Tampilkan nonaktif
         </label>
       </div>
       {!rows.length ? <Empty>Belum ada item.</Empty> : (

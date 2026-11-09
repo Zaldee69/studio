@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PayRow } from "@/features/sdm/monthly";
@@ -40,7 +41,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A5; margin: 10mm } @media print { body { background: #fff } }"}</style>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Link href={`/manajer/sdm?bulan=${bulan}`} className="btn-ghost h-11">← SDM</Link>
+        <Link href={`/manajer/sdm?bulan=${bulan}`} className={buttonClass("outline", "h-11")}>← SDM</Link>
         <SlipActions month={bulan} staffId={staf} closed={r.closed} paid={!!r.paid_at} wa={wa} />
       </div>
       {!r.closed && <p role="alert" className="rounded-[12px] bg-[#FBF3DE] px-4 py-3 text-sm text-[#5A4300] print:hidden">Periode belum ditutup — angka masih bisa berubah. Tutup periode untuk slip final.</p>}

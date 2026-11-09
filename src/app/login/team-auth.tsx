@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { captchaOn, Turnstile } from "@/components/turnstile";
@@ -93,8 +97,8 @@ export function TeamAuth({ register, mfa }: { register: boolean; mfa: boolean })
 
   const field = (name: string, label: string, props: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
     <div>
-      <label htmlFor={name} className="label">{label}</label>
-      <input id={name} name={name} className="input" required {...props} />
+      <Label htmlFor={name} className="mb-1">{label}</Label>
+      <Input id={name} name={name} required {...props} />
     </div>
   );
 
@@ -112,12 +116,12 @@ export function TeamAuth({ register, mfa }: { register: boolean; mfa: boolean })
           {field("password", "Kata sandi", { type: "password", autoComplete: "new-password", "aria-describedby": "pw-hint" })}
           <p id="pw-hint" className="-mt-2 text-xs text-muted">{PASSWORD_HINT}</p>
           <div>
-            <label htmlFor="role" className="label">Peran</label>
-            <select id="role" name="role" className="input" defaultValue="">
+            <Label htmlFor="role" className="mb-1">Peran</Label>
+            <NativeSelect id="role" name="role" defaultValue="">
               <option value="" disabled>Pilih…</option>
               <option value="cashier">Kasir / front desk</option>
               <option value="staff">Capster / nail artist</option>
-            </select>
+            </NativeSelect>
           </div>
           {field("invite_code", "Kode undangan", { autoComplete: "off" })}
         </>
@@ -130,9 +134,9 @@ export function TeamAuth({ register, mfa }: { register: boolean; mfa: boolean })
       {err && <p role="alert" className="text-sm text-danger">{err}</p>}
       {info && <p role="status" className="rounded-lg bg-st-booked p-3 text-sm">{info}</p>}
       {step === "form" && <Turnstile key={attempt} onToken={setCaptcha} />}
-      <button type="submit" disabled={busy || !hydrated} className="btn-primary w-full">
+      <Button type="submit" disabled={busy || !hydrated} variant="brand" className="w-full">
         {busy ? "Memproses…" : step === "mfa" ? "Verifikasi" : register ? "Daftar" : "Masuk"}
-      </button>
+      </Button>
       {step === "mfa" && <button type="button" onClick={cancelMfa} className="min-h-11 text-sm font-semibold text-accent">Batal &amp; keluar</button>}
     </form>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
@@ -123,8 +125,8 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
               })}
             </div>
           </div>
-          <Link href={`${master.base}/kasir?booking=${appt.id}`} className="btn-ink h-12 text-[15px]">Proses bayar di Kasir</Link>
-          <button onClick={onEdit} className="btn-ghost h-11 rounded-[10px]">Ubah booking</button>
+          <Link href={`${master.base}/kasir?booking=${appt.id}`} className={buttonClass("default", "h-12 text-[15px]")}>Proses bayar di Kasir</Link>
+          <Button onClick={onEdit} variant="outline" className="h-11 rounded-[10px]">Ubah booking</Button>
         </>
       )}
 
@@ -141,16 +143,16 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
           {rejecting ? (
             <form onSubmit={(e) => { e.preventDefault(); onReview(false, rejectReason.trim()); }} className="flex flex-col gap-2">
               <label htmlFor="rej-reason" className="text-xs font-bold text-muted">Alasan (dikirim ke pelanggan)</label>
-              <input id="rej-reason" className="input" autoFocus value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Mis. capster berhalangan" />
+              <Input id="rej-reason" autoFocus value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Mis. capster berhalangan" />
               <div className="flex gap-2">
-                <button type="button" onClick={() => setRejecting(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
-                <button disabled={!online} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Tolak booking</button>
+                <Button type="button" onClick={() => setRejecting(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
+                <Button disabled={!online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Tolak booking</Button>
               </div>
             </form>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => setRejecting(true)} disabled={!online} className="btn-ghost h-12 rounded-[10px] text-[#A12A2A]">Tolak</button>
-              <button onClick={() => onReview(true)} disabled={!online} className="btn h-12 rounded-[10px] bg-[#1F7A45] text-white">Terima</button>
+              <Button onClick={() => setRejecting(true)} disabled={!online} variant="outline" className="h-12 rounded-[10px] text-[#A12A2A]">Tolak</Button>
+              <Button onClick={() => onReview(true)} disabled={!online} variant="plain" className="h-12 rounded-[10px] bg-[#1F7A45] text-white">Terima</Button>
             </div>
           )}
         </div>
@@ -161,24 +163,24 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
 
       <div className="flex-1" />
       {canNoShow && !cancelling && (
-        <button onClick={async () => { if (await confirm({ title: "Tandai pelanggan tidak datang?", description: "Kursi & jadwal staf di jam ini dilepas.", confirmLabel: "Tidak datang", tone: "danger" })) onNoShow(); }} disabled={!online} className="btn-ghost h-11 rounded-[10px]">Tidak datang</button>
+        <Button onClick={async () => { if (await confirm({ title: "Tandai pelanggan tidak datang?", description: "Kursi & jadwal staf di jam ini dilepas.", confirmLabel: "Tidak datang", tone: "danger" })) onNoShow(); }} disabled={!online} variant="outline" className="h-11 rounded-[10px]">Tidak datang</Button>
       )}
       {appt.status === "arrived" && appt.source === "walk_in" && !cancelling && (
-        <button onClick={async () => { if (await confirm({ title: "Pelanggan pulang sebelum dilayani?", description: "Antrean dilepas dan dicatat sebagai pelanggan yang pergi karena menunggu.", confirmLabel: "Pulang sebelum dilayani", tone: "danger" })) onCancel(WALK_AWAY); }}
-          disabled={!online} className="btn-ghost h-11 rounded-[10px]">Pulang sebelum dilayani</button>
+        <Button onClick={async () => { if (await confirm({ title: "Pelanggan pulang sebelum dilayani?", description: "Antrean dilepas dan dicatat sebagai pelanggan yang pergi karena menunggu.", confirmLabel: "Pulang sebelum dilayani", tone: "danger" })) onCancel(WALK_AWAY); }}
+          disabled={!online} variant="outline" className="h-11 rounded-[10px]">Pulang sebelum dilayani</Button>
       )}
       {!closed && (cancelling ? (
         <form className="flex flex-col gap-2 rounded-[10px] border border-line p-3"
           onSubmit={async (e) => { e.preventDefault(); if (await onCancel(reason)) setCancelling(false); }}>
           <label htmlFor="cancel-reason" className="text-xs font-bold text-muted">Alasan pembatalan</label>
-          <input id="cancel-reason" className="input" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mis. pelanggan berhalangan" />
+          <Input id="cancel-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mis. pelanggan berhalangan" />
           <div className="flex gap-2">
-            <button type="button" onClick={() => setCancelling(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
-            <button disabled={!reason.trim() || !online} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Batalkan booking</button>
+            <Button type="button" onClick={() => setCancelling(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
+            <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Batalkan booking</Button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setCancelling(true)} className="btn-ghost h-11 rounded-[10px] text-[#A12A2A]">Batalkan booking</button>
+        <Button onClick={() => setCancelling(true)} variant="outline" className="h-11 rounded-[10px] text-[#A12A2A]">Batalkan booking</Button>
       ))}
     </div>
   );

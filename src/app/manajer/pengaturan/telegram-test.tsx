@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/components/ui";
 import { createClient } from "@/lib/supabase/client";
@@ -28,7 +30,7 @@ export function TelegramTest() {
         <li>15.00: staf yang belum dapat pelanggan.</li>
         <li>Senin 08.20: notulen rapat tim AI (dibuka dengan rapor tindakan minggu sebelumnya). Kamis 16.00: cek tengah minggu potong Sen–Kam vs target.</li>
       </ul>
-      <button onClick={send} disabled={busy} className="btn-ghost h-11">Kirim pesan tes</button>
+      <Button onClick={send} disabled={busy} variant="outline" className="h-11">Kirim pesan tes</Button>
     </section>
   );
 }
@@ -52,9 +54,9 @@ export function WhatsAppTest() {
       <p className="text-sm text-muted">Konfirmasi booking, pengingat H-1, kode masuk, dan blast dikirim lewat Wablas (WABLAS_URL, WABLAS_TOKEN,
         WABLAS_SECRET_KEY). Tes memakai 1 dari kuota harian Wablas; maksimal 3 tes per 10 menit.</p>
       <form onSubmit={send} className="flex flex-wrap gap-2">
-        <input type="tel" inputMode="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08…"
-          aria-label="Nomor WhatsApp tujuan tes" className="input h-11 min-w-0 flex-1" />
-        <button disabled={busy} className="btn-ghost h-11">Kirim WA tes</button>
+        <Input type="tel" inputMode="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08…"
+          aria-label="Nomor WhatsApp tujuan tes" className="h-11 min-w-0 flex-1" />
+        <Button disabled={busy} variant="outline" className="h-11">Kirim WA tes</Button>
       </form>
     </section>
   );

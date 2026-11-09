@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { TabNav } from "@/components/tab-nav";
 import { MonthlyPayroll, type PayRow, type Period } from "@/features/sdm/monthly";
@@ -87,9 +88,9 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
     body = (
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
-          <Link href={`?tab=evaluasi&tahun=${year - 1}`} aria-label="Tahun sebelumnya" className="btn-ghost size-11 p-0">‹</Link>
+          <Link href={`?tab=evaluasi&tahun=${year - 1}`} aria-label="Tahun sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
           <b className="font-display text-xl tabular">{year}</b>
-          <Link href={`?tab=evaluasi&tahun=${year + 1}`} aria-label="Tahun berikutnya" className="btn-ghost size-11 p-0">›</Link>
+          <Link href={`?tab=evaluasi&tahun=${year + 1}`} aria-label="Tahun berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
         </div>
         <AnnualReview key={year} year={year} rows={((data ?? []) as ReviewRow[]).map((r) => ({ ...r, upsell_rate: Number(r.upsell_rate), return_rate: Number(r.return_rate) }))} />
       </div>

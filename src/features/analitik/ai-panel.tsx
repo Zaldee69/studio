@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState, useTransition } from "react";
 import { analitikAi } from "@/app/manajer/analitik/ai-actions";
 
@@ -37,21 +40,21 @@ export function AiPanel({ meetings, period, label }: { meetings: Meeting[]; peri
         <details open className="rounded-[12px] bg-paper p-3">
           <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-2 text-sm font-semibold">
             Notulen rapat AI mingguan
-            <select aria-label="Minggu" value={week} onClick={(e) => e.stopPropagation()} onChange={(e) => setWeek(e.target.value)} className="input h-9 w-auto py-0 text-sm font-normal">
+            <NativeSelect aria-label="Minggu" value={week} onClick={(e) => e.stopPropagation()} onChange={(e) => setWeek(e.target.value)} className="h-9 w-auto py-0 text-sm font-normal">
               {meetings.map((x) => <option key={x.week} value={x.week}>Minggu mulai {weekLabel(x.week)}</option>)}
-            </select>
+            </NativeSelect>
           </summary>
           <p className="mt-2 whitespace-pre-line text-sm leading-relaxed">{m?.notes}</p>
         </details>
       )}
 
       <div className="flex flex-wrap items-end gap-2">
-        <button type="button" disabled={pending} onClick={() => run(null)} className="btn-ink h-11">Jelaskan periode ini</button>
+        <Button type="button" disabled={pending} onClick={() => run(null)} className="h-11">Jelaskan periode ini</Button>
         <form className="flex min-w-64 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); if (question.trim()) run(question); }}>
           <label htmlFor="ai-q" className="sr-only">Tanya data</label>
-          <input id="ai-q" value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={500}
-            placeholder="Tanya data, mis. hari apa paling sepi minggu ini?" className="input h-11 flex-1" />
-          <button disabled={pending || !question.trim()} className="btn-ghost h-11">Tanya</button>
+          <Input id="ai-q" value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={500}
+            placeholder="Tanya data, mis. hari apa paling sepi minggu ini?" className="h-11 flex-1" />
+          <Button disabled={pending || !question.trim()} variant="outline" className="h-11">Tanya</Button>
         </form>
       </div>
       {pending && <p role="status" className="text-sm text-muted">AI sedang membaca angka…</p>}

@@ -1,5 +1,7 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Sheet, useToast } from "@/components/ui";
@@ -135,34 +137,40 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   const newBooking = () => setForm({ date, resourceId: master.resources[0]?.id ?? "",
     startMin: date === today ? nextQuarter(nowMin, open, close) : open });
 
+  // Layar pendek (<700px, mis. tablet kecil mendatar): halaman boleh digulir & area jadwal ±1 layar penuh,
+  // bukan sisa ruang di bawah header + kartu capster (keluhan manajer 10 Nov: jadwal hanya ±190px).
   return (
-    <div className="flex h-[calc(100dvh-80px)] flex-col gap-3 xl:h-[calc(100dvh-88px)]">
+    <div className="flex h-[calc(100dvh-80px)] flex-col gap-3 xl:h-[calc(100dvh-88px)] [@media(max-height:700px)]:h-auto">
       <div className="flex min-h-12 flex-wrap items-center gap-2.5 xl:gap-4">
-        <h1 className="font-display text-[28px] font-bold tracking-tight">Jadwal</h1>
+        <h1 className="font-display text-[28px] font-bold tracking-tight short:sr-only">Jadwal</h1>
         <div className="flex items-center gap-1">
           <button onClick={() => setDate(addDays(date, -1))} aria-label="Hari sebelumnya" className="flex size-11 items-center justify-center rounded-[10px] border border-line bg-card">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
-          <label className="relative flex h-11 min-w-[150px] items-center justify-center rounded-[10px] border border-line bg-card px-3.5 text-sm font-semibold xl:min-w-[220px]">
-            <span aria-live="polite">{formatTanggal(`${date}T12:00:00+07:00`)}</span>
-            <input type="date" aria-label="Pilih tanggal" value={date} onChange={(e) => e.target.value && setDate(e.target.value)}
-              className="absolute inset-0 cursor-pointer opacity-0" />
-          </label>
+          <DateInput aria-label="Pilih tanggal" value={date} onChange={(e) => e.target.value && setDate(e.target.value)}
+            display={(d) => <span aria-live="polite">{formatTanggal(`${d}T12:00:00+07:00`)}</span>}
+            className="h-11 w-auto min-w-[150px] justify-center border-line px-3.5 text-sm font-semibold xl:min-w-[220px]" />
           <button onClick={() => setDate(addDays(date, 1))} aria-label="Hari berikutnya" className="flex size-11 items-center justify-center rounded-[10px] border border-line bg-card">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
           </button>
           <button onClick={() => setDate(today)} aria-pressed={date === today} className="h-11 rounded-[10px] border border-line bg-card px-4 text-sm font-semibold">Hari ini</button>
         </div>
+        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[10px] bg-[#EAEAE5] p-1">
+          {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
+            <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
+              className={`h-9 rounded-lg px-3.5 text-[13px] font-bold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
+          ))}
+        </div>
         <div className="flex-1" />
         <div className="hidden gap-4 text-[13px] text-muted tabular min-[1000px]:flex">
           <span>Omzet <b className="text-ink">{formatRupiah(revenue)}</b></span>
         </div>
-        {master.role === "manager" && <Link href="/manajer/izin" className="btn-ghost h-11 px-4">Izin staf</Link>}
-        <button onClick={newBooking} className={`${date === today ? "btn-ghost" : "btn-ink"} h-11 px-[18px]`}>
+        {master.role === "manager" && <Link href="/manajer/izin" className={buttonClass("outline", "h-11 px-4")}>Izin staf</Link>}
+        <Button onClick={newBooking} variant={date === today ? "outline" : "default"} className="h-11 px-[18px]">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           Booking baru
-        </button>
-        {date === today && <button onClick={() => setWalkIn({ staff: null })} className="btn-ink h-11 px-[18px]">Walk-in sekarang</button>}
+        </Button>
+        {date === today && <Button onClick={() => setWalkIn({ staff: null })} className="h-11 px-[18px]">Walk-in sekarang</Button>}
       </div>
 
       {date === today && (
@@ -177,15 +185,8 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         </div>
       )}
 
-      <div role="radiogroup" aria-label="Tampilan jadwal" className="flex self-start rounded-[10px] bg-paper p-1">
-        {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
-          <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
-            className={`h-9 rounded-lg px-3.5 text-[13px] font-bold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
-        ))}
-      </div>
-
       {/* GRID */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-line bg-card">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-line bg-card [@media(max-height:700px)]:h-[max(360px,calc(100dvh-80px))] max-md:[@media(max-height:700px)]:h-[max(360px,calc(100dvh-164px))] [@media(max-height:700px)]:flex-none">
         <div ref={scroller} className="min-h-0 flex-1 overflow-auto overscroll-contain">
           <div style={{ minWidth: 56 + cols.length * 190 }}>
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
@@ -319,32 +320,33 @@ function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
         const cur = n.current;
         const chair = master.resources.find((r) => r.id === (cur?.resource_id ?? s.home_resource_id))?.name;
         return (
-          <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-xl border px-3 py-2 text-[13px] ${n.free ? "border-[#BFE0C8] bg-[#F2F9F4]" : "border-line bg-card"}`}>
-            <span className="flex items-center gap-1.5"><b className="min-w-0 flex-1 truncate">{s.name}</b>
-              <span className={`rounded-full px-2 text-[11px] font-bold ${n.off ? "bg-[#EFEFEB] text-muted" : n.free ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
+          <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-xl border px-3 py-2 text-[13px] short:min-w-[230px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5 ${n.free ? "border-[#BFE0C8] bg-[#F2F9F4]" : "border-line bg-card"}`}>
+            <span className="flex items-center gap-1.5 short:min-w-0 short:flex-1"><b className="min-w-0 flex-1 truncate">{s.name}</b>
+              <span className={`shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] font-bold ${n.off ? "bg-[#EFEFEB] text-muted" : n.free ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
                 {n.off ? "Izin" : n.free ? "Kosong" : !cur ? "Ada booking" : cur.status === "arrived" ? "Menunggu" : "Melayani"}</span></span>
-            {chair && <span className="-mt-1 truncate text-xs font-semibold text-muted">{chair}</span>}
+            {chair && <span className="-mt-1 truncate text-xs font-semibold text-muted short:hidden">{chair}</span>}
             {cur ? (
-              <button onClick={() => onOpen(cur.id)} className="truncate text-left text-muted">{apptName(cur)} · s/d {formatJam(new Date(occupiedEnd(cur)))}</button>
-            ) : <span className="text-muted">{n.off ? "Tidak bisa dipilih hari ini" : "Siap menerima pelanggan"}</span>}
-            <span className="truncate text-xs text-muted">{n.next ? `Berikutnya ${formatJam(n.next.start_at)} · ${apptName(n.next)}` : "Tidak ada booking berikutnya"}</span>
-            <div className="mt-1 flex gap-1.5">
+              <button onClick={() => onOpen(cur.id)} className="truncate text-left text-muted short:hidden">{apptName(cur)} · s/d {formatJam(new Date(occupiedEnd(cur)))}</button>
+            ) : <span className="text-muted short:hidden">{n.off ? "Tidak bisa dipilih hari ini" : "Siap menerima pelanggan"}</span>}
+            <span className="truncate text-xs text-muted short:hidden">{n.next ? `Berikutnya ${formatJam(n.next.start_at)} · ${apptName(n.next)}` : "Tidak ada booking berikutnya"}</span>
+            <div className="mt-1 flex gap-1.5 short:mt-0 empty:hidden">
               {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} aria-label={`Selesai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Selesai</button>}
               {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} aria-label={`Mulai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Mulai</button>}
-              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 rounded-lg border border-ink px-3 text-xs font-bold">+ Walk-in</button>}
+              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 whitespace-nowrap rounded-lg border border-ink px-3 text-xs font-bold">+ Walk-in</button>}
             </div>
           </div>
         );
       })}
       {unpaid.length > 0 && (
-        <div className="flex min-w-[190px] flex-col gap-1 rounded-xl border border-[#E8C3C4] bg-[#FFF7F7] px-3 py-2 text-[13px]">
+        <div className="flex min-w-[190px] flex-col gap-1 rounded-xl border border-[#E8C3C4] bg-[#FFF7F7] px-3 py-2 text-[13px] short:min-w-[170px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5">
           <b className="text-[#6E1616]">Belum bayar · {unpaid.length}</b>
+          <Link href={`${master.base}/kasir`} className="hidden rounded-md bg-[#A12A2A] px-2 text-[11px] font-bold leading-6 text-white short:inline">Bayar ▸</Link>
           {unpaid.slice(0, 3).map((a) => (
-            <Link key={a.id} href={`${master.base}/kasir?booking=${a.id}`} className="flex items-center gap-2 truncate">
+            <Link key={a.id} href={`${master.base}/kasir?booking=${a.id}`} className="flex items-center gap-2 truncate short:hidden">
               <span className="flex-1 truncate">{apptName(a)}</span><span className="rounded-md bg-[#A12A2A] px-2 text-[11px] font-bold leading-6 text-white">Bayar ▸</span>
             </Link>
           ))}
-          {unpaid.length > 3 && <span className="text-xs text-muted">+{unpaid.length - 3} lainnya</span>}
+          {unpaid.length > 3 && <span className="text-xs text-muted short:hidden">+{unpaid.length - 3} lainnya</span>}
         </div>
       )}
     </section>

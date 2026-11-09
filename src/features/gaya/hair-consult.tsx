@@ -1,5 +1,7 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { useKapster } from "@/features/kapster/provider";
@@ -46,7 +48,7 @@ export function HairConsult() {
             <span className="rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: STATUS[a.status].bg, color: STATUS[a.status].fg }}>{STATUS[a.status].short}</span>
           </button>
         ))}
-        <button onClick={() => setBookingId("walkin")} className="btn-ghost h-12 rounded-xl">Walk-in tanpa booking (tidak disimpan)</button>
+        <Button onClick={() => setBookingId("walkin")} variant="outline" className="h-12 rounded-xl">Walk-in tanpa booking (tidak disimpan)</Button>
       </section>
     );
   }
@@ -120,7 +122,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
           <img src={photo.url} alt="Foto pelanggan" className="size-14 shrink-0 rounded-full object-cover" />
         )}
         <span className="min-w-0 flex-1"><span className="text-xs text-muted">Konsultasi gaya untuk</span><b className="block truncate text-lg">{customerName}</b></span>
-        <button onClick={onChange} className="btn-ghost h-10 rounded-[10px] px-3 text-sm">Ganti</button>
+        <Button onClick={onChange} variant="outline" className="h-10 rounded-[10px] px-3 text-sm">Ganti</Button>
       </section>
       {!canSave && <p className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
 
@@ -166,15 +168,15 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
             </ul>
           </details>
           <label className="flex items-start gap-3 rounded-[10px] bg-paper p-3.5 text-sm">
-            <input type="checkbox" className="mt-0.5 size-5 shrink-0 accent-[#1f2320]" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            <Checkbox className="mt-0.5 size-5 shrink-0" checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
             <span>Pelanggan setuju fotonya dipakai untuk rekomendasi gaya. <span className="text-muted">Foto tidak disimpan.</span></span>
           </label>
           {error && <p role="alert" className="rounded-[10px] bg-[#F9E6E6] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
           <input ref={camera} type="file" accept="image/*" capture="environment" className="sr-only" aria-label="Ambil foto pelanggan" onChange={(e) => analyze(e.target.files?.[0])} />
           <input ref={gallery} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Pilih foto dari galeri" onChange={(e) => analyze(e.target.files?.[0])} />
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" disabled={!consent} onClick={() => camera.current?.click()} className="btn-ink h-14 rounded-xl text-base">Ambil foto</button>
-            <button type="button" disabled={!consent} onClick={() => gallery.current?.click()} className="btn-ghost h-14 rounded-xl">Dari galeri</button>
+            <Button type="button" disabled={!consent} onClick={() => camera.current?.click()} className="h-14 rounded-xl text-base">Ambil foto</Button>
+            <Button type="button" disabled={!consent} onClick={() => gallery.current?.click()} variant="outline" className="h-14 rounded-xl">Dari galeri</Button>
           </div>
         </section>
       )}
@@ -200,7 +202,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
               ))}
             </dl>
           </details>
-          <button type="button" onClick={() => { setResult(null); }} className="btn-ghost h-12 rounded-xl">Foto ulang</button>
+          <Button type="button" onClick={() => { setResult(null); }} variant="outline" className="h-12 rounded-xl">Foto ulang</Button>
         </>
       )}
 

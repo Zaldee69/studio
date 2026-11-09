@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RouteTabs, PELANGGAN_TABS } from "@/components/route-tabs";
 import { useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
@@ -79,10 +81,10 @@ export function PelangganScreen({ master }: { master: Master }) {
         <div className="flex min-h-12 flex-wrap items-center gap-3">
           <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Pelanggan</h1>
           <label htmlFor="cust-q" className="sr-only">Cari pelanggan</label>
-          <input id="cust-q" type="search" placeholder="Cari nama atau no. WA" className="input h-11 w-[200px] xl:w-[260px]"
+          <Input id="cust-q" type="search" placeholder="Cari nama atau no. WA" className="h-11 w-[200px] xl:w-[260px]"
             value={q} onChange={(e) => { setQ(e.target.value); setLimit(PAGE); }} />
-          {master.role === "manager" && <button onClick={() => setModal("import")} className="btn-ghost h-11 rounded-[10px]">Impor</button>}
-          <button onClick={() => setModal("new")} className="btn-ink h-11">Pelanggan baru</button>
+          {master.role === "manager" && <Button onClick={() => setModal("import")} variant="outline" className="h-11 rounded-[10px]">Impor</Button>}
+          <Button onClick={() => setModal("new")} className="h-11">Pelanggan baru</Button>
         </div>
         {master.role === "manager" && <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />}
         <div role="tablist" aria-label="Filter pelanggan" className="flex flex-wrap gap-1.5">
@@ -115,7 +117,7 @@ export function PelangganScreen({ master }: { master: Master }) {
             })}
             {data && rows.length < data.total && (
               <div className="p-3 text-center">
-                <button onClick={() => setLimit(limit + PAGE)} className="btn-ghost h-11 rounded-[10px]">Muat {Math.min(PAGE, data.total - rows.length)} lagi · {rows.length}/{data.total}</button>
+                <Button onClick={() => setLimit(limit + PAGE)} variant="outline" className="h-11 rounded-[10px]">Muat {Math.min(PAGE, data.total - rows.length)} lagi · {rows.length}/{data.total}</Button>
               </div>
             )}
           </div>

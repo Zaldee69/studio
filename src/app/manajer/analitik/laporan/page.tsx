@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
@@ -85,7 +86,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
       <div className="flex flex-wrap items-end gap-2 print:hidden">
         <OwnerPeriodForm kind={p.kind} value={p.value} from={p.from} to={p.to} today={jktDate()} />
         <PrintButton />
-        <a href={`/manajer/analitik/laporan/excel?${qs}`} className="btn-ghost h-11" download>Unduh Excel (data lengkap)</a>
+        <a href={`/manajer/analitik/laporan/excel?${qs}`} className={buttonClass("outline", "h-11")} download>Unduh Excel (data lengkap)</a>
       </div>
       {weekly && !p.partial && p.to < jktDate() && (
         <p className="text-sm text-muted print:hidden">

@@ -1,3 +1,4 @@
+import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { WeekRow } from "@/features/sdm/weekly";
@@ -37,7 +38,7 @@ export default async function SlipMinggu({ params }: PageProps<"/manajer/sdm/sli
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A5; margin: 10mm } @media print { body { background: #fff } }"}</style>
       <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <Link href={`/manajer/sdm?tab=mingguan&minggu=${minggu}`} className="btn-ghost h-11">← Komisi mingguan</Link>
+        <Link href={`/manajer/sdm?tab=mingguan&minggu=${minggu}`} className={buttonClass("outline", "h-11")}>← Komisi mingguan</Link>
         <SlipActions month={minggu.slice(0, 7)} staffId={staf} closed={false} paid={false} wa={wa} />
       </div>
       {!r.closed && <p role="alert" className="rounded-[12px] bg-[#FBF3DE] px-4 py-3 text-sm text-[#5A4300] print:hidden">Minggu belum ditutup — angka masih bisa berubah. Tutup minggu untuk slip final.</p>}

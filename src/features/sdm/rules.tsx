@@ -1,5 +1,11 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
 import type { Cat } from "@/lib/domain/category";
 
 import { useRouter } from "next/navigation";
@@ -65,12 +71,12 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
       <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
         <b>Aturan umum</b>
         <div className="flex flex-col gap-2">
-          <label htmlFor="cr-ratio" className="label">Komisi default: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</label>
+          <Label htmlFor="cr-ratio" className="mb-1">Komisi default: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</Label>
           <input id="cr-ratio" type="range" min={20} max={60} step={5} value={f.ratio} onChange={(e) => setF({ ...f, ratio: Number(e.target.value) })} className="h-11 accent-accent" />
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="label mb-1">Komisi dihitung dari</legend>
+          <legend className="mb-1 block text-xs font-semibold text-muted mb-1">Komisi dihitung dari</legend>
           <div role="radiogroup" aria-label="Dasar komisi" className="grid gap-2 min-[560px]:grid-cols-2">
             {([["net", "Harga setelah diskon", "Promo & diskon paket ikut mengurangi komisi"], ["gross", "Harga normal", "Diskon & promo ditanggung toko — komisi staf utuh"]] as const).map(([v, l, d]) => (
               <button type="button" key={v} role="radio" aria-checked={f.basis === v} onClick={() => setF({ ...f, basis: v })}
@@ -82,11 +88,11 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
           <span className="text-xs text-muted">Berlaku untuk transaksi setelah disimpan; komisi transaksi sebelumnya tidak berubah.</span>
         </fieldset>
         <label className="flex min-h-11 items-center gap-3 text-sm">
-          <input type="checkbox" className="size-5 accent-accent" checked={f.hpp} onChange={(e) => setF({ ...f, hpp: e.target.checked })} />
+          <Checkbox className="size-5" checked={f.hpp} onCheckedChange={(v) => setF({ ...f, hpp: v === true })} />
           <span><b>Potong HPP bahan habis pakai dari komisi</b><span className="block text-xs text-muted">Berlaku juga untuk transaksi lama di periode yang belum ditutup.</span></span>
         </label>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={`Komisi ritel (% ${harga})`} htmlFor="cr-retail"><input id="cr-retail" inputMode="decimal" className="input" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
+          <Field label={`Komisi ritel (% ${harga})`} htmlFor="cr-retail"><Input id="cr-retail" inputMode="decimal" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
         </div>
         <div className="rounded-[12px] bg-paper p-3.5 text-sm leading-relaxed">
           <b>Cara hitung umum:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} {f.hpp ? "dikurangi HPP bahan (tidak pernah minus)" : "(HPP bahan tidak dipotong)"}.
@@ -114,21 +120,21 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
                       <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#EFEFEB] px-2 py-0.5 text-[11px] font-bold text-[#4A4C46]">nonaktif</span>}</span>
                     <span className="mt-1 block max-w-[260px] text-xs text-muted">{scheme(r)}</span>
                   </td>
-                  <td className="py-2 pr-2"><input aria-label={`Komisi khusus ${s.name}`} inputMode="numeric" placeholder={`${f.ratio}`} className="input w-20" value={r.pct} onChange={(e) => set(s.id, { pct: e.target.value })} /></td>
-                  <td className="py-2 pr-2"><select aria-label={`Potong HPP ${s.name}`} className="input w-36" value={r.hpp} onChange={(e) => set(s.id, { hpp: e.target.value as Row["hpp"] })}>
-                    <option value="">Ikut umum ({f.hpp ? "ya" : "tidak"})</option><option value="true">Ya</option><option value="false">Tidak</option></select></td>
-                  <td className="py-2 pr-2"><input aria-label={`Komisi ritel ${s.name}`} inputMode="numeric" placeholder={f.retail || "0"} className="input w-20" value={r.retail} onChange={(e) => set(s.id, { retail: e.target.value })} /></td>
-                  <td className="py-2 pr-2"><input aria-label={`Gaji pokok ${s.name}`} inputMode="numeric" placeholder="—" className="input w-36" value={r.base}
+                  <td className="py-2 pr-2"><Input aria-label={`Komisi khusus ${s.name}`} inputMode="numeric" placeholder={`${f.ratio}`} className="w-20" value={r.pct} onChange={(e) => set(s.id, { pct: e.target.value })} /></td>
+                  <td className="py-2 pr-2"><NativeSelect aria-label={`Potong HPP ${s.name}`} className="w-36" value={r.hpp} onChange={(e) => set(s.id, { hpp: e.target.value as Row["hpp"] })}>
+                    <option value="">Ikut umum ({f.hpp ? "ya" : "tidak"})</option><option value="true">Ya</option><option value="false">Tidak</option></NativeSelect></td>
+                  <td className="py-2 pr-2"><Input aria-label={`Komisi ritel ${s.name}`} inputMode="numeric" placeholder={f.retail || "0"} className="w-20" value={r.retail} onChange={(e) => set(s.id, { retail: e.target.value })} /></td>
+                  <td className="py-2 pr-2"><Input aria-label={`Gaji pokok ${s.name}`} inputMode="numeric" placeholder="—" className="w-36" value={r.base}
                     onChange={(e) => set(s.id, { base: rp(digits(e.target.value)) })} /></td>
-                  <td className="py-2 pr-2"><input type="checkbox" aria-label={`Bayar bulanan ${s.name}`} className="mt-3 size-5 accent-accent" checked={r.monthly} onChange={(e) => set(s.id, { monthly: e.target.checked })} /></td>
-                  <td className="py-2"><input aria-label={`Jaring harian ${s.name}`} inputMode="numeric" placeholder="—" className="input w-32" value={r.daily}
+                  <td className="py-2 pr-2"><Checkbox aria-label={`Bayar bulanan ${s.name}`} className="mt-3 size-5" checked={r.monthly} onCheckedChange={(v) => set(s.id, { monthly: v === true })} /></td>
+                  <td className="py-2"><Input aria-label={`Jaring harian ${s.name}`} inputMode="numeric" placeholder="—" className="w-32" value={r.daily}
                     onChange={(e) => set(s.id, { daily: rp(digits(e.target.value)) })} /></td>
                 </tr>
               ); })}
             </tbody>
           </table>
         </div>
-        <button disabled={!online} className="btn-ink mt-2 h-12 self-start px-6">Simpan aturan upah</button>
+        <Button disabled={!online} className="mt-2 h-12 self-start px-6">Simpan aturan upah</Button>
       </section>
     </form>
   );
@@ -194,7 +200,7 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm text-muted">Dasar keputusan bonus tahunan {year}. Total dibayar dari periode gaji yang sudah ditutup.</span>
-        <button onClick={exportCsv} className="btn-ghost ml-auto h-11">Ekspor</button>
+        <Button onClick={exportCsv} variant="outline" className="ml-auto h-11">Ekspor</Button>
       </div>
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         <table className="w-full min-w-[1200px] text-sm tabular">
@@ -211,8 +217,8 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
                 <td className="py-1.5">
                   <div className="flex gap-1.5">
                     <label className="sr-only" htmlFor={`rn-${r.staff_id}`}>Catatan untuk {r.staff_name}</label>
-                    <textarea id={`rn-${r.staff_id}`} rows={2} className="input min-w-56 py-2" value={notes[r.staff_id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.staff_id]: e.target.value })} />
-                    <button type="button" disabled={!online || (notes[r.staff_id] ?? "") === r.note} onClick={() => saveNote(r.staff_id)} className="btn-ghost h-11">Simpan</button>
+                    <Textarea id={`rn-${r.staff_id}`} rows={2} className="min-w-56 py-2" value={notes[r.staff_id] ?? ""} onChange={(e) => setNotes({ ...notes, [r.staff_id]: e.target.value })} />
+                    <Button type="button" disabled={!online || (notes[r.staff_id] ?? "") === r.note} onClick={() => saveNote(r.staff_id)} variant="outline" className="h-11">Simpan</Button>
                   </div>
                 </td>
               </tr>

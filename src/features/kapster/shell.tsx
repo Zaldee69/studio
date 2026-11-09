@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { stationLogout, stationPing } from "../stasiun/actions";
 import { useKapster } from "./provider";
 import { disablePush, enablePush, pushEnabled, pushSupported } from "./push";
-import { BRAND_INITIALS } from "@/lib/brand";
+import { LogoMark } from "@/components/public-header";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 const BASE_TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
@@ -71,7 +71,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-paper">
       <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center gap-3 border-b border-line bg-card px-4 text-ink">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-accent font-display text-sm font-bold text-white">{BRAND_INITIALS}</span>
+        <LogoMark className="h-10 w-auto shrink-0 text-ink" />
         <span className="flex min-w-0 flex-1 flex-col">
           <b className="truncate text-base">Halo, {me.name.split(" ")[0]}</b>
           <span className="truncate text-xs text-muted">{role} · {formatTanggal(new Date())}</span>

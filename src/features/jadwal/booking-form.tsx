@@ -1,5 +1,10 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { CAT_NAME, CATS, STAFF_TITLE } from "@/lib/domain/category";
 import { useEffect, useMemo, useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
@@ -249,24 +254,24 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
 
       <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
         <Field label={`Kursi / meja · ${CAT_NAME[cat]}`} htmlFor="f-res">
-          <select id="f-res" className="input" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setStaffPick(null); setServerConflicts(null); }}>
+          <NativeSelect id="f-res" value={resourceId} onChange={(e) => { setResourceId(e.target.value); setStaffPick(null); setServerConflicts(null); }}>
             {resOptions(cat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-          </select>
+          </NativeSelect>
         </Field>
         <Field label={STAFF_TITLE[cat]} htmlFor="f-staff">
-          <select id="f-staff" className="input" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
+          <NativeSelect id="f-staff" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
             {!staffId && <option value="">— tidak ada staf aktif —</option>}
             {staffOptions(cat, startIso, endIso)}
-          </select>
+          </NativeSelect>
         </Field>
         <Field label="Tanggal" htmlFor="f-date">
-          <input id="f-date" type="date" className="input" value={date} min={edit ? undefined : today}
+          <DateInput id="f-date" value={date} min={edit ? undefined : today}
             onChange={(e) => { if (e.target.value) setDate(e.target.value); setServerConflicts(null); }} />
         </Field>
         <Field label="Jam mulai" htmlFor="f-start">
-          <select id="f-start" className="input tabular" value={start} onChange={(e) => { setStart(+e.target.value); setServerConflicts(null); }}>
+          <NativeSelect id="f-start" className="tabular" value={start} onChange={(e) => { setStart(+e.target.value); setServerConflicts(null); }}>
             {times.map((t) => <option key={t} value={t}>{minToTime(t)}</option>)}
-          </select>
+          </NativeSelect>
         </Field>
       </div>
 
@@ -281,24 +286,24 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
             <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
               {/* Tanpa No. WA = walk-in tanpa data pelanggan (nama asal-isi tidak berguna untuk CRM/pengingat) */}
               <Field label="No. WhatsApp (opsional)" htmlFor="f-wa" hint={waNorm ? undefined : "Kosongkan untuk walk-in — tidak disimpan sebagai pelanggan."}>
-                <input id="f-wa" className="input tabular" inputMode="tel" placeholder="08…" value={newWa} onChange={(e) => setNewWa(e.target.value)} />
+                <Input id="f-wa" className="tabular" inputMode="tel" placeholder="08…" value={newWa} onChange={(e) => setNewWa(e.target.value)} />
               </Field>
               {waNorm && !existingOwner && (
                 <>
                   <Field label="Nama pelanggan" htmlFor="f-name">
-                    <input id="f-name" className="input" autoComplete="off" required value={newName} onChange={(e) => setNewName(e.target.value)} />
+                    <Input id="f-name" autoComplete="off" required value={newName} onChange={(e) => setNewName(e.target.value)} />
                   </Field>
                   <Field label="Tahu D'Pras dari mana?" htmlFor="f-src">
-                    <select id="f-src" className="input" value={custSource} onChange={(e) => setCustSource(e.target.value as CustomerSource)}>
+                    <NativeSelect id="f-src" value={custSource} onChange={(e) => setCustSource(e.target.value as CustomerSource)}>
                       <option value="">— Pilih —</option>
                       {CUSTOMER_SOURCES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
+                    </NativeSelect>
                   </Field>
                 </>
               )}
               {!waNorm && (
                 <Field label="Nama panggilan (opsional)" htmlFor="f-guest" hint="Untuk memanggil & membedakan walk-in di jadwal dan struk.">
-                  <input id="f-guest" className="input" autoComplete="off" maxLength={40} placeholder="mis. Budi kaos merah" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
+                  <Input id="f-guest" autoComplete="off" maxLength={40} placeholder="mis. Budi kaos merah" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
                 </Field>
               )}
               {existingOwner && (
@@ -327,7 +332,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
               );
             })}
           </div>
-          <input type="search" aria-label="Cari layanan" placeholder="Cari layanan…" className="input h-10 min-w-40 flex-1" value={svcQ} onChange={(e) => setSvcQ(e.target.value)} />
+          <Input type="search" aria-label="Cari layanan" placeholder="Cari layanan…" className="h-10 min-w-40 flex-1" value={svcQ} onChange={(e) => setSvcQ(e.target.value)} />
         </div>
         {tab !== cat && sel.length > 0 && !edit && !q && <span className="text-xs text-muted">Layanan {CAT_NAME[tab]} di sini dibuat sebagai booking kedua (pasangan).</span>}
         <div className="flex flex-wrap gap-1.5">
@@ -349,7 +354,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
 
       <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
         <Field label={`Durasi (menit) · otomatis ${autoDur}`} htmlFor="f-dur">
-          <input id="f-dur" type="number" inputMode="numeric" min={5} max={720} step={5} className="input tabular" value={duration}
+          <Input id="f-dur" type="number" inputMode="numeric" min={5} max={720} step={5} className="tabular" value={duration}
             onChange={(e) => { setDurOverride(e.target.value ? +e.target.value : null); setServerConflicts(null); }} />
         </Field>
         {!edit && (
@@ -370,22 +375,22 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
           <b className="text-sm">Booking kedua · {CAT_NAME[pairCat]} <span className="font-normal text-muted">— jam sama ({minToTime(start)}, {pairDur} mnt), pelanggan sama</span></b>
           <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
             <Field label="Kursi / meja" htmlFor="f-res2">
-              <select id="f-res2" className="input" value={pairResource ?? ""} onChange={(e) => { setPair({ ...pair, resourceId: e.target.value, staffPick: null }); setServerConflicts(null); }}>
+              <NativeSelect id="f-res2" value={pairResource ?? ""} onChange={(e) => { setPair({ ...pair, resourceId: e.target.value, staffPick: null }); setServerConflicts(null); }}>
                 {resOptions(pairCat).map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
-              </select>
+              </NativeSelect>
             </Field>
             <Field label={STAFF_TITLE[pairCat]} htmlFor="f-staff2">
-              <select id="f-staff2" className="input" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value }); setServerConflicts(null); }}>
+              <NativeSelect id="f-staff2" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value }); setServerConflicts(null); }}>
                 {!pairStaff && <option value="">— tidak ada staf aktif —</option>}
                 {staffOptions(pairCat, startIso, pairEndIso)}
-              </select>
+              </NativeSelect>
             </Field>
           </div>
         </section>
       )}
 
       <Field label="Catatan" htmlFor="f-notes">
-        <textarea id="f-notes" rows={2} className="input py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
+        <Textarea id="f-notes" rows={2} className="py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>
 
       {lines.length > 0 && (
@@ -415,9 +420,9 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
 
       <div className="flex justify-end gap-2.5">
-        <button type="button" onClick={onClose} className="btn-ghost h-12 rounded-[10px]">Batal</button>
+        <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
         <button type="submit" disabled={saving || !online}
-          className={`btn h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#353A33]"}`}>
+          className={buttonClass("plain", `h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#353A33]"}`)}>
           {saving ? "Menyimpan…" : hasConflict ? "Tetap simpan" : edit ? "Simpan perubahan" : pair.sel.length ? "Simpan 2 booking" : "Simpan booking"}
         </button>
       </div>

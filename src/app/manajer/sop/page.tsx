@@ -1,3 +1,5 @@
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { HistoryStrip } from "@/features/sop/history-strip";
 import { SopGrid } from "@/features/sop/grid";
@@ -43,10 +45,10 @@ export default async function Sop({ searchParams }: PageProps<"/manajer/sop">) {
         <span className="text-sm text-muted">Diisi oleh <b className="text-ink">{me?.full_name}</b></span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={q(addDays(date, -1))} aria-label="Hari sebelumnya" className="btn-ghost size-11 p-0">‹</Link>
+        <Link href={q(addDays(date, -1))} aria-label="Hari sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
         <b className="min-w-56 text-center font-display text-lg">{long(date)}</b>
-        {date < today ? <Link href={q(addDays(date, 1))} aria-label="Hari berikutnya" className="btn-ghost size-11 p-0">›</Link> : <span className="size-11" />}
-        {date !== today && <Link href={q(today)} className="btn-ghost h-11">Hari ini</Link>}
+        {date < today ? <Link href={q(addDays(date, 1))} aria-label="Hari berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link> : <span className="size-11" />}
+        {date !== today && <Link href={q(today)} className={buttonClass("outline", "h-11")}>Hari ini</Link>}
         {shifts > 1 && (
           <div role="group" aria-label="Shift" className="ml-2 flex gap-1.5">
             {[1, 2].map((s) => (
@@ -65,9 +67,9 @@ export default async function Sop({ searchParams }: PageProps<"/manajer/sop">) {
       <Maintenance manager staff={staff ?? []} />
       <form action="/manajer/sop/laporan" className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-4">
         <h2 className="w-full font-display text-xl font-bold">Laporan kepatuhan</h2>
-        <label className="flex flex-col"><span className="label">Dari</span><input type="date" name="dari" defaultValue={addDays(today, -29)} className="input w-44" /></label>
-        <label className="flex flex-col"><span className="label">Sampai</span><input type="date" name="sampai" defaultValue={today} className="input w-44" /></label>
-        <button className="btn-ink h-11">Tampilkan laporan</button>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Dari</span><DateInput name="dari" defaultValue={addDays(today, -29)} className="w-44" /></label>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Sampai</span><DateInput name="sampai" defaultValue={today} className="w-44" /></label>
+        <Button className="h-11">Tampilkan laporan</Button>
         <Link href="/manajer/pengaturan?tab=sop" className="ml-auto text-sm font-semibold text-accent underline">Pengaturan SOP →</Link>
       </form>
     </div>

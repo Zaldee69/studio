@@ -1,5 +1,11 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
 import { useActionState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { deleteRow, resetPassword, saveRow, saveSettings, type SaveState } from "./actions";
@@ -11,23 +17,23 @@ export type Options = Record<string, [string, string][]>;
 function FieldInput({ f, value, options, id }: { f: Field; value: unknown; options: Options; id: string }) {
   const common = { id, name: f.name, "aria-label": f.label, disabled: f.readonly };
   if (f.type === "bool")
-    return <input type="checkbox" {...common} defaultChecked={Boolean(value)} className="size-5 accent-accent" />;
+    return <Checkbox {...common} defaultChecked={Boolean(value)} className="size-5" />;
   if (f.type === "select") {
     const opts = Array.isArray(f.options) ? f.options : options[f.options ?? ""] ?? [];
     return (
-      <select {...common} defaultValue={String(value ?? "")} className="input">
+      <NativeSelect {...common} defaultValue={String(value ?? "")} >
         <option value="">{f.nullable ? "—" : "Pilih…"}</option>
         {opts.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-      </select>
+      </NativeSelect>
     );
   }
   if (f.type === "textarea")
-    return <textarea {...common} defaultValue={String(value ?? "")} rows={3} className="input py-2" />;
+    return <Textarea {...common} defaultValue={String(value ?? "")} rows={3} className="py-2" />;
   return (
-    <input {...common} defaultValue={value == null ? "" : String(value)}
+    <Input {...common} defaultValue={value == null ? "" : String(value)}
       type={f.type === "time" || f.type === "date" || f.type === "text" ? f.type : "number"}
       step={f.type === "money" ? 100 : 1} inputMode={f.type === "text" || f.type === "time" || f.type === "date" ? undefined : "numeric"}
-      className="input" />
+       />
   );
 }
 
@@ -49,14 +55,14 @@ function RowForm({ table, row, options }: { table: TableName; row: Row; options:
       {id && <input type="hidden" name="id" value={id} />}
       {def.fields.map((f) => <FieldInput key={f.name} f={f} value={row[f.name]} options={options} id={`${table}-${id ?? "new"}-${f.name}`} />)}
       <div className="flex items-center gap-1">
-        <button disabled={pending} className={id ? "btn-ghost" : "btn-primary"}>{id ? "Simpan" : "Tambah"}</button>
+        <Button disabled={pending} variant={id ? "outline" : "brand"}>{id ? "Simpan" : "Tambah"}</Button>
         {id && def.remove && (
-          <button formAction={delAction} disabled={deleting} className="btn-danger"
+          <Button formAction={delAction} disabled={deleting} variant="destructive" 
             onClick={async (e) => {
               e.preventDefault();
               const btn = e.currentTarget; // requestSubmit tidak memicu onClick lagi → tak perlu penanda "sudah dikonfirmasi"
               if (await confirm({ title: "Hapus baris ini?", description: "Data yang dihapus tidak bisa dikembalikan.", confirmLabel: "Hapus", tone: "danger" })) btn.form?.requestSubmit(btn);
-            }}>Hapus</button>
+            }}>Hapus</Button>
         )}
         <Msg s={delState ?? state} />
       </div>
@@ -93,7 +99,7 @@ export function SettingsForm({ values, groups, save = saveSettings, submit = "Si
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {g.fields.map((f) => (
               <div key={f.name} className={f.type === "textarea" ? "sm:col-span-2 xl:col-span-3" : ""}>
-                <label htmlFor={`set-${f.name}`} className="label">{f.label}</label>
+                <Label htmlFor={`set-${f.name}`} className="mb-1">{f.label}</Label>
                 <FieldInput f={f} value={values[f.name]} options={{}} id={`set-${f.name}`} />
               </div>
             ))}
@@ -101,7 +107,7 @@ export function SettingsForm({ values, groups, save = saveSettings, submit = "Si
         </fieldset>
       ))}
       <div className="flex items-center gap-3">
-        <button disabled={pending} className="btn-primary">{submit}</button>
+        <Button disabled={pending} variant="brand" >{submit}</Button>
         <Msg s={state} />
       </div>
     </form>
@@ -113,17 +119,17 @@ export function ResetPasswordForm({ users }: { users: [string, string][] }) {
   return (
     <form action={action} className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-card p-5">
       <div className="min-w-56 flex-1">
-        <label htmlFor="rp-user" className="label">Akun</label>
-        <select id="rp-user" name="user_id" className="input" defaultValue="">
+        <Label htmlFor="rp-user" className="mb-1">Akun</Label>
+        <NativeSelect id="rp-user" name="user_id" defaultValue="">
           <option value="" disabled>Pilih akun…</option>
           {users.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
+        </NativeSelect>
       </div>
       <div className="min-w-48 flex-1">
-        <label htmlFor="rp-pass" className="label">Sandi baru (min. 8)</label>
-        <input id="rp-pass" name="password" type="text" autoComplete="off" className="input" />
+        <Label htmlFor="rp-pass" className="mb-1">Sandi baru (min. 8)</Label>
+        <Input id="rp-pass" name="password" type="text" autoComplete="off" />
       </div>
-      <button disabled={pending} className="btn-primary">Reset sandi</button>
+      <Button disabled={pending} variant="brand" >Reset sandi</Button>
       <div className="w-full"><Msg s={state} /></div>
     </form>
   );

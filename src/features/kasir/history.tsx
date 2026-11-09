@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useEffect, useState } from "react";
 import { CloseButton, Empty, Sheet, useOnline, useToast } from "@/components/ui";
 import { dailySummary, METHOD_LABEL } from "@/lib/domain/closing";
@@ -66,7 +70,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex flex-wrap items-center gap-4 text-[13px] text-muted tabular">
-        <input type="date" aria-label="Tanggal transaksi" className="input h-9 w-auto" max={today} value={date}
+        <DateInput aria-label="Tanggal transaksi" className="h-9 w-auto" max={today} value={date}
           onChange={(e) => setDate(e.target.value || today)} />
         <span><b className="text-ink">{sum.txCount}</b> transaksi</span>
         {/* total uang hanya untuk manajer: kasir menutup kas tanpa tahu angka sistem (tutup kasir buta) */}
@@ -80,20 +84,20 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         {sum.voidedCount > 0 && <span className="text-[#A12A2A]">{sum.voidedCount} void</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <input type="search" aria-label="Cari pelanggan atau No. struk" placeholder="Cari pelanggan / No. struk" className="input h-9 w-56"
+        <Input type="search" aria-label="Cari pelanggan atau No. struk" placeholder="Cari pelanggan / No. struk" className="h-9 w-56"
           value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} />
-        <select aria-label="Metode bayar" className="input h-9 w-auto" value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>
+        <NativeSelect aria-label="Metode bayar" className="h-9 w-auto" value={f.method} onChange={(e) => setF({ ...f, method: e.target.value })}>
           <option value="">Semua metode</option><option value="cash">Tunai</option><option value="qris">QRIS</option><option value="transfer">Transfer</option><option value="deposit">Pakai deposit</option>
-        </select>
-        <select aria-label="Status" className="input h-9 w-auto" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
+        </NativeSelect>
+        <NativeSelect aria-label="Status" className="h-9 w-auto" value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}>
           <option value="">Semua status</option><option value="ok">Lunas</option><option value="void">Void</option>
-        </select>
-        <select aria-label="Staf" className="input h-9 w-auto" value={f.staff} onChange={(e) => setF({ ...f, staff: e.target.value })}>
+        </NativeSelect>
+        <NativeSelect aria-label="Staf" className="h-9 w-auto" value={f.staff} onChange={(e) => setF({ ...f, staff: e.target.value })}>
           <option value="">Semua staf</option>{staffInDay.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
-        <select aria-label="Layanan" className="input h-9 w-auto max-w-56" value={f.item} onChange={(e) => setF({ ...f, item: e.target.value })}>
+        </NativeSelect>
+        <NativeSelect aria-label="Layanan" className="h-9 w-auto max-w-56" value={f.item} onChange={(e) => setF({ ...f, item: e.target.value })}>
           <option value="">Semua layanan & produk</option>{itemsInDay.map((n) => <option key={n} value={n}>{n}</option>)}
-        </select>
+        </NativeSelect>
         {filtered && <>
           <span className="text-[13px] text-muted tabular">{txs.length} dari {all.length}</span>
           <button onClick={() => setF({ q: "", method: "", status: "", staff: "", item: "" })} className="text-[13px] font-semibold underline">Reset</button>
@@ -142,15 +146,15 @@ export function History({ master, txParam }: { master: Master; txParam: string |
               {master.role === "manager" && !open.voided_at && (voiding ? (
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
-                  <input id="void-reason" className="input" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
+                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setVoiding(false)} className="btn-ghost flex-1 rounded-[10px]">Kembali</button>
-                    <button disabled={!reason.trim() || !online} className="btn flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</button>
+                    <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
+                    <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</Button>
                   </div>
                 </form>
               ) : (
-                <button onClick={() => setVoiding(true)} className="btn-ghost h-11 rounded-[10px] text-[#A12A2A]">Batalkan transaksi (void)</button>
+                <Button onClick={() => setVoiding(true)} variant="outline" className="h-11 rounded-[10px] text-[#A12A2A]">Batalkan transaksi (void)</Button>
               ))}
             </ReceiptView>
           </div>

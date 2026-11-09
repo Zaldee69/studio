@@ -1,5 +1,8 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Button, buttonClass } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
 import { useToast } from "@/components/ui";
 import { downloadText, toCsv } from "@/lib/domain/csv";
@@ -36,20 +39,20 @@ export function MovesTab({ rows, items, people, filter }: { rows: MoveRow[]; ite
     <div className="flex flex-col gap-3">
       <form className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
         <input type="hidden" name="tab" value="mutasi" />
-        <label className="flex flex-col"><span className="label">Item</span>
-          <select name="item" defaultValue={filter.item ?? ""} className="input w-48"><option value="">Semua</option>{items.map((i) => <option key={i.item_id} value={i.item_id}>{i.name}</option>)}</select>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Item</span>
+          <NativeSelect name="item" defaultValue={filter.item ?? ""} className="w-48"><option value="">Semua</option>{items.map((i) => <option key={i.item_id} value={i.item_id}>{i.name}</option>)}</NativeSelect>
         </label>
-        <label className="flex flex-col"><span className="label">Jenis</span>
-          <select name="type" defaultValue={filter.type ?? ""} className="input w-40"><option value="">Semua</option>{Object.entries(MOVE_TYPE).map(([v, t]) => <option key={v} value={v}>{t.label}</option>)}</select>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Jenis</span>
+          <NativeSelect name="type" defaultValue={filter.type ?? ""} className="w-40"><option value="">Semua</option>{Object.entries(MOVE_TYPE).map(([v, t]) => <option key={v} value={v}>{t.label}</option>)}</NativeSelect>
         </label>
-        <label className="flex flex-col"><span className="label">Dari</span><input type="date" name="from" defaultValue={filter.from ?? ""} className="input w-40" /></label>
-        <label className="flex flex-col"><span className="label">Sampai</span><input type="date" name="to" defaultValue={filter.to ?? ""} className="input w-40" /></label>
-        <label className="flex flex-col"><span className="label">Oleh</span>
-          <select name="by" defaultValue={filter.by ?? ""} className="input w-40"><option value="">Semua</option>{people.map(([id, n]) => <option key={id} value={id}>{n}</option>)}</select>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Dari</span><DateInput name="from" defaultValue={filter.from ?? ""} className="w-40" /></label>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Sampai</span><DateInput name="to" defaultValue={filter.to ?? ""} className="w-40" /></label>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Oleh</span>
+          <NativeSelect name="by" defaultValue={filter.by ?? ""} className="w-40"><option value="">Semua</option>{people.map(([id, n]) => <option key={id} value={id}>{n}</option>)}</NativeSelect>
         </label>
-        <button className="btn-ink h-11">Terapkan</button>
-        <Link href="/manajer/inventaris?tab=mutasi" className="btn-ghost h-11">Reset</Link>
-        <button type="button" onClick={exportCsv} disabled={!rows.length} className="btn-ghost ml-auto h-11">Ekspor CSV</button>
+        <Button className="h-11">Terapkan</Button>
+        <Link href="/manajer/inventaris?tab=mutasi" className={buttonClass("outline", "h-11")}>Reset</Link>
+        <Button type="button" onClick={exportCsv} disabled={!rows.length} variant="outline" className="ml-auto h-11">Ekspor CSV</Button>
       </form>
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         <table className="w-full min-w-[900px] text-sm tabular">
@@ -96,13 +99,13 @@ export function UsageTab({ opnames, from, to, rows, threshold }: {
       ) : (
         <form className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
           <input type="hidden" name="tab" value="laporan" />
-          <label className="flex flex-col"><span className="label">Opname awal</span>
-            <select name="dari" defaultValue={from} className="input w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Opname awal</span>
+            <NativeSelect name="dari" defaultValue={from} className="w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</NativeSelect>
           </label>
-          <label className="flex flex-col"><span className="label">Opname akhir</span>
-            <select name="sampai" defaultValue={to} className="input w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</select>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Opname akhir</span>
+            <NativeSelect name="sampai" defaultValue={to} className="w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</NativeSelect>
           </label>
-          <button className="btn-ink h-11">Tampilkan</button>
+          <Button className="h-11">Tampilkan</Button>
         </form>
       )}
       {rows && (

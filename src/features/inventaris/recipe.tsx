@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CloseButton, Sheet, useOnline, useToast } from "@/components/ui";
@@ -68,7 +71,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="flex-1 font-display text-xl font-bold">{svc.name}</h2>
-                <button onClick={openHistory} className="btn-ghost h-11">Riwayat perubahan</button>
+                <Button onClick={openHistory} variant="outline" className="h-11">Riwayat perubahan</Button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm tabular">
@@ -79,16 +82,16 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                       return (
                         <tr key={i} className="border-t border-[#EEEEEA]">
                           <td className="py-1.5 pr-2">
-                            <select aria-label={`Bahan baris ${i + 1}`} className="input" value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
+                            <NativeSelect aria-label={`Bahan baris ${i + 1}`} value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
                               <option value="">Pilih bahan…</option>
                               {consumables.map((c) => <option key={c.item_id} value={c.item_id}>{c.name} ({formatUnitCost(c.unit_cost)}/{c.unit})</option>)}
-                            </select>
+                            </NativeSelect>
                           </td>
-                          <td className="pr-2"><input aria-label={`Jumlah pakai baris ${i + 1}`} inputMode="decimal" className="input w-24" value={r.qty}
+                          <td className="pr-2"><Input aria-label={`Jumlah pakai baris ${i + 1}`} inputMode="decimal" className="w-24" value={r.qty}
                             onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, qty: e.target.value } : x)))} /></td>
                           <td className="pr-2 text-muted">{it?.unit ?? "—"}</td>
                           <td className="pr-2 text-right">{formatRupiah(Math.round(cost(r)))}</td>
-                          <td><button aria-label={`Hapus baris ${i + 1}`} onClick={() => setRows(rows.filter((_, j) => j !== i))} className="btn-danger h-11 px-3">Hapus</button></td>
+                          <td><Button aria-label={`Hapus baris ${i + 1}`} onClick={() => setRows(rows.filter((_, j) => j !== i))} variant="destructive" className="h-11 px-3">Hapus</Button></td>
                         </tr>
                       );
                     })}
@@ -97,8 +100,8 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
               </div>
               {!rows.length && <p className="text-sm text-muted">Belum ada bahan — HPP layanan ini Rp0.</p>}
               <div className="flex flex-wrap gap-2">
-                <button onClick={() => setRows([...rows, { item_id: "", qty: "" }])} className="btn-ghost h-11">+ Tambah bahan</button>
-                <button disabled={!valid || !online} onClick={save} className="btn-ink ml-auto h-11">Simpan resep</button>
+                <Button onClick={() => setRows([...rows, { item_id: "", qty: "" }])} variant="outline" className="h-11">+ Tambah bahan</Button>
+                <Button disabled={!valid || !online} onClick={save} className="ml-auto h-11">Simpan resep</Button>
               </div>
               <p className="text-xs text-muted">Perubahan resep berlaku untuk transaksi mulai sekarang. HPP transaksi lama tetap (snapshot).</p>
             </section>

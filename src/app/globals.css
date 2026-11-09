@@ -1,4 +1,9 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* Layar pendek (tinggi <700px, mis. tablet kecil mendatar): tampilan dipadatkan, mis. Jadwal (keluhan manajer 10 Nov). */
+@custom-variant short (@media (max-height: 700px));
 
 @theme {
   /* admin — terang & bersih: abu netral, kartu putih, aksen olive brand D'Pras */
@@ -63,19 +68,7 @@ select:not([multiple]):not([size]) {
   background-size: 16px;
 }
 
-/* Kontrol form dasar (target sentuh ≥44px) */
-/* 16px: mencegah zoom otomatis iOS saat input difokus */
-@utility input {
-  @apply min-h-11 w-full min-w-0 rounded-[10px] border border-[#DCDCD6] bg-card px-3 text-base text-ink outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:bg-paper disabled:text-muted;
-}
-@utility btn {
-  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition disabled:opacity-50;
-}
-@utility btn-primary { @apply btn bg-accent text-white hover:bg-accent-ink; }
-@utility btn-ink { @apply btn rounded-[10px] bg-ink text-white hover:bg-[#353A33] disabled:bg-[#A3A59E]; }
-@utility btn-ghost { @apply btn border border-line bg-card text-ink hover:bg-paper; }
-@utility btn-danger { @apply btn text-danger hover:bg-st-completed; }
-@utility label { @apply mb-1 block text-xs font-semibold text-muted; }
+/* Tombol & isian aplikasi tim: komponen shadcn di src/components/ui (target sentuh ≥44px, teks 16px agar iOS tidak zoom). */
 
 /* Publik: tombol pil & isian membulat, huruf kapital berjarak */
 @utility eyebrow { @apply text-xs font-medium uppercase tracking-[0.32em] text-gold; }
@@ -118,3 +111,44 @@ select:not([multiple]):not([size]) {
   html:has([data-landing]) { scroll-behavior: smooth; }
 }
 [data-landing] section[id] { scroll-margin-top: 76px; }
+
+/* shadcn/ui (migrasi 10 Nov, aplikasi internal saja): token shadcn dipetakan ke palet aplikasi yang sudah ada,
+   jadi tampilan tidak berubah. Nama "muted" (= warna teks abu) dan "accent" (= hijau tua brand) sudah kita pakai
+   di ratusan tempat, jadi TIDAK dipetakan ulang; komponen di src/components/ui memakai bg-paper untuk latar
+   hover/redup. Font, radius, dan latar body tetap milik aplikasi. Tanpa mode gelap. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root {
+  --background: #f5f5f3;          /* paper */
+  --foreground: #1f2320;          /* ink */
+  --card-foreground: #1f2320;
+  --popover: #ffffff;
+  --popover-foreground: #1f2320;
+  --primary: #1f2320;             /* tombol utama (dulu btn-ink) */
+  --primary-foreground: #ffffff;
+  --secondary: #ffffff;           /* tombol outline (dulu btn-ghost) */
+  --secondary-foreground: #1f2320;
+  --muted-foreground: #63665f;    /* = text-muted */
+  --accent-foreground: #1f2320;
+  --destructive: #b42318;         /* = danger */
+  --border: #e5e5e0;              /* = line */
+  --input: #dcdcd6;
+  --ring: #3a4137;                /* = accent */
+  --radius: 0.625rem;
+}

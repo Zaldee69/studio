@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import { useEffect, useId, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Customer } from "./types";
@@ -45,9 +46,9 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus, o
   const pick = (c: Customer) => { onChange(c); setQ(""); setOpen(false); };
   return (
     <div className="relative">
-      <input id={id} role="combobox" aria-expanded={open && list.length > 0} aria-controls={listId} aria-autocomplete="list"
+      <Input id={id} role="combobox" aria-expanded={open && list.length > 0} aria-controls={listId} aria-autocomplete="list"
         autoComplete="off" autoFocus={autoFocus} placeholder={emptyLabel}
-        value={q} className="input"
+        value={q} 
         onChange={(e) => { setQ(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={(e) => {

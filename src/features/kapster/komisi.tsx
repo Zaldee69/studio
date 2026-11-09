@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/native-select";
 import { useEffect, useState } from "react";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -74,9 +75,9 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       <div className="flex flex-wrap items-center gap-2.5">
         <h2 className="flex-1 font-display text-xl font-bold">{payMonthly ? "Gaji bulanan" : "Rekap bulanan"}</h2>
         <label htmlFor="km-month" className="sr-only">Bulan</label>
-        <select id="km-month" value={month} onChange={(e) => setMonth(e.target.value)} className="input w-auto">
+        <NativeSelect id="km-month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto">
           {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
-        </select>
+        </NativeSelect>
       </div>
       {!payMonthly ? (
         <span className="-mt-2 self-start rounded-xl bg-card px-2.5 py-1 text-xs font-semibold text-muted">Ringkasan saja — bayaran Anda dibayar per minggu (lihat di atas)</span>

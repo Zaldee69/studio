@@ -1,5 +1,9 @@
 "use client";
 
+import { DateInput } from "@/components/date-input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useActionState, useState } from "react";
 import { compressImage, IMAGE_ACCEPT } from "@/lib/image";
 import { useToast } from "@/components/ui";
@@ -32,14 +36,14 @@ export function HoursForm({ hours }: { hours: Hours[] }) {
         return (
           <div key={d} className="grid grid-cols-[5.5rem_1fr_1fr_auto] items-center gap-2">
             <b className="text-sm">{HARI[d]}</b>
-            <input aria-label={`Buka ${HARI[d]}`} type="time" name={`open_${d}`} defaultValue={h?.open_time.slice(0, 5)} className="input" />
-            <input aria-label={`Tutup ${HARI[d]}`} type="time" name={`close_${d}`} defaultValue={h?.close_time.slice(0, 5)} className="input" />
-            <label className="flex min-h-11 items-center gap-2 text-sm"><input type="checkbox" name={`closed_${d}`} defaultChecked={h?.closed} className="size-5 accent-accent" />Libur</label>
+            <Input aria-label={`Buka ${HARI[d]}`} type="time" name={`open_${d}`} defaultValue={h?.open_time.slice(0, 5)} />
+            <Input aria-label={`Tutup ${HARI[d]}`} type="time" name={`close_${d}`} defaultValue={h?.close_time.slice(0, 5)} />
+            <label className="flex min-h-11 items-center gap-2 text-sm"><Checkbox name={`closed_${d}`} defaultChecked={h?.closed} className="size-5" />Libur</label>
           </div>
         );
       })}
       <div className="flex items-center gap-3">
-        <button disabled={pending} className="btn-primary">Simpan jam buka</button>
+        <Button disabled={pending} variant="brand" >Simpan jam buka</Button>
         {s && <span role={s.error ? "alert" : "status"} className={`text-xs ${s.error ? "text-danger" : "text-green-700"}`}>{s.error ?? s.ok}</span>}
       </div>
       <p className="text-xs text-muted">Grid Jadwal konter otomatis mengikuti rentang jam terluas.</p>
@@ -54,15 +58,15 @@ export function ClosuresForm({ closures }: { closures: { date: string; reason: s
     <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-semibold">Hari libur khusus</h2>
       <form action={action} className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-xs font-bold text-muted">Tanggal<input type="date" name="date" required className="input" /></label>
-        <label className="flex min-w-40 flex-1 flex-col gap-1 text-xs font-bold text-muted">Keterangan<input name="reason" className="input" placeholder="Mis. Idulfitri" /></label>
-        <button disabled={pending} className="btn-primary">Tambah</button>
+        <label className="flex flex-col gap-1 text-xs font-bold text-muted">Tanggal<DateInput name="date" required /></label>
+        <label className="flex min-w-40 flex-1 flex-col gap-1 text-xs font-bold text-muted">Keterangan<Input name="reason" placeholder="Mis. Idulfitri" /></label>
+        <Button disabled={pending} variant="brand" >Tambah</Button>
       </form>
       {s?.error && <p role="alert" className="text-xs text-danger">{s.error}</p>}
       {closures.map((c) => (
         <div key={c.date} className="flex items-center gap-2 border-t border-[#EEEEEA] pt-2 text-sm">
           <span className="flex-1 tabular">{formatTanggal(`${c.date}T12:00:00+07:00`)}{c.reason && ` · ${c.reason}`}</span>
-          <button onClick={async () => { const r = await removeClosure(c.date); toast(r?.error ?? "Dihapus", r?.error ? "error" : "ok"); }} className="btn-danger h-10 px-3">Hapus</button>
+          <Button onClick={async () => { const r = await removeClosure(c.date); toast(r?.error ?? "Dihapus", r?.error ? "error" : "ok"); }} variant="destructive" className="h-10 px-3">Hapus</Button>
         </div>
       ))}
       {!closures.length && <p className="text-sm text-muted">Belum ada.</p>}
@@ -79,7 +83,7 @@ function Thumb({ path, alt }: { path: string | null; alt: string }) {
 
 function Pick({ id, busy, onFile, multiple, label }: { id: string; busy: string | null; onFile: (f: FileList | null) => void; multiple?: boolean; label: string }) {
   return (
-    <label className={`btn-ghost h-11 cursor-pointer rounded-[10px] ${busy === id ? "opacity-50" : ""}`}>
+    <label className={buttonClass("outline", `h-11 cursor-pointer rounded-[10px] ${busy === id ? "opacity-50" : ""}`)}>
       {busy === id ? "Mengunggah…" : label}
       <input type="file" accept={IMAGE_ACCEPT} multiple={multiple} className="sr-only" disabled={!!busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
     </label>
@@ -185,10 +189,10 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
         {gallery.map((p, i) => (
           <div key={p.id} className="flex flex-wrap items-center gap-2">
             <Thumb path={p.path} alt={p.caption || `Galeri ${i + 1}`} />
-            <input aria-label={`Keterangan foto ${i + 1}`} defaultValue={p.caption} onBlur={(e) => caption(p, e.target.value.trim())} className="input min-w-40 flex-1" placeholder="Keterangan (opsional)" />
-            <button onClick={() => move(p, -1)} disabled={i === 0} aria-label="Geser ke atas" className="btn-ghost h-11 rounded-[10px] px-3">↑</button>
-            <button onClick={() => move(p, 1)} disabled={i === gallery.length - 1} aria-label="Geser ke bawah" className="btn-ghost h-11 rounded-[10px] px-3">↓</button>
-            <button onClick={() => remove(p)} className="btn-danger h-11 px-3">Hapus</button>
+            <Input aria-label={`Keterangan foto ${i + 1}`} defaultValue={p.caption} onBlur={(e) => caption(p, e.target.value.trim())} className="min-w-40 flex-1" placeholder="Keterangan (opsional)" />
+            <Button onClick={() => move(p, -1)} disabled={i === 0} aria-label="Geser ke atas" variant="outline" className="h-11 rounded-[10px] px-3">↑</Button>
+            <Button onClick={() => move(p, 1)} disabled={i === gallery.length - 1} aria-label="Geser ke bawah" variant="outline" className="h-11 rounded-[10px] px-3">↓</Button>
+            <Button onClick={() => remove(p)} variant="destructive" className="h-11 px-3">Hapus</Button>
           </div>
         ))}
         {!gallery.length && <p className="text-sm text-muted">Belum ada foto galeri.</p>}

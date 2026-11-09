@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
@@ -24,13 +27,13 @@ export function RemoveAccountForm({ users }: { users: [string, string][] }) {
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-card p-5">
       <div className="min-w-56 flex-1">
-        <label htmlFor="ra-user" className="label">Hapus akun tim</label>
-        <select id="ra-user" className="input" value={id} onChange={(e) => setId(e.target.value)}>
+        <Label htmlFor="ra-user" className="mb-1">Hapus akun tim</Label>
+        <NativeSelect id="ra-user" value={id} onChange={(e) => setId(e.target.value)}>
           <option value="">Pilih akun…</option>
           {users.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-        </select>
+        </NativeSelect>
       </div>
-      <button onClick={remove} disabled={!online || !id || busy} className="btn-ghost h-11 text-danger">{busy ? "Menghapus…" : "Hapus akun"}</button>
+      <Button onClick={remove} disabled={!online || !id || busy} variant="outline" className="h-11 text-danger">{busy ? "Menghapus…" : "Hapus akun"}</Button>
     </div>
   );
 }

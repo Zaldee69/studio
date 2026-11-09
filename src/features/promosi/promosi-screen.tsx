@@ -1,5 +1,10 @@
 "use client";
 
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { RouteTabs, PELANGGAN_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -141,7 +146,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
         <section aria-label="Daftar campaign" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
           <div className="flex items-center gap-2">
             <h2 className="flex-1 text-base font-bold">Campaign</h2>
-            <button onClick={() => open(null)} className="btn-primary h-10">+ Campaign baru</button>
+            <Button onClick={() => open(null)} variant="brand" className="h-10">+ Campaign baru</Button>
           </div>
           <div role="tablist" aria-label="Status campaign" className="flex gap-1.5">
             {[false, true].map((a) => (
@@ -165,9 +170,9 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                   </span>
                 </button>
                 <div className="flex flex-wrap gap-1.5">
-                  <button onClick={() => open(c)} className="btn-ghost h-9 px-3 text-xs">{last ? "Kirim lagi / ubah" : "Buka"}</button>
-                  <button onClick={() => open(c, true)} className="btn-ghost h-9 px-3 text-xs">Duplikat</button>
-                  <button onClick={() => archive(c)} className="btn-ghost h-9 px-3 text-xs text-muted">{c.archived ? "Pulihkan" : "Arsipkan"}</button>
+                  <Button onClick={() => open(c)} variant="outline" className="h-9 px-3 text-xs">{last ? "Kirim lagi / ubah" : "Buka"}</Button>
+                  <Button onClick={() => open(c, true)} variant="outline" className="h-9 px-3 text-xs">Duplikat</Button>
+                  <Button onClick={() => archive(c)} variant="outline" className="h-9 px-3 text-xs text-muted">{c.archived ? "Pulihkan" : "Arsipkan"}</Button>
                 </div>
               </article>
             );
@@ -178,7 +183,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
         <div className="flex flex-col gap-4" aria-label="Editor campaign">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-bold text-muted">{draft.id ? "Campaign" : "Campaign baru"} — nama (untuk Anda, tidak terlihat pelanggan)</span>
-            <input aria-label="Nama campaign" className="input text-base font-semibold" maxLength={80} value={draft.name}
+            <Input aria-label="Nama campaign" className="text-base font-semibold" maxLength={80} value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="mis. Promo booking online Oktober" />
           </label>
 
@@ -194,28 +199,28 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               <summary className="cursor-pointer font-semibold">Atur filter sendiri</summary>
               <div className="mt-3 flex flex-col gap-3">
                 <label className="flex flex-wrap items-center gap-2">Terakhir datang ≥
-                  <input aria-label="Minggu tidak datang" type="number" min={1} max={104} className="input h-9 w-20" value={seg.inactive_weeks ?? ""}
+                  <Input aria-label="Minggu tidak datang" type="number" min={1} max={104} className="h-9 w-20" value={seg.inactive_weeks ?? ""}
                     onChange={(e) => setSeg({ inactive_weeks: num(e.target.value) })} /> minggu lalu
                 </label>
                 <div className="flex flex-wrap items-center gap-3">Pernah memakai:
                   {CATS.map((c) => (
                     <label key={c} className="flex items-center gap-1.5">
-                      <input type="checkbox" className="size-5 accent-accent" checked={!!seg.categories?.includes(c)}
-                        onChange={(e) => setSeg({ categories: e.target.checked ? [...(seg.categories ?? []), c] : (seg.categories ?? []).filter((x) => x !== c) })} />
+                      <Checkbox className="size-5" checked={!!seg.categories?.includes(c)}
+                        onCheckedChange={(v) => setSeg({ categories: v === true ? [...(seg.categories ?? []), c] : (seg.categories ?? []).filter((x) => x !== c) })} />
                       {CAT_NAME[c]}
                     </label>
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-2">Sudah datang ≥
-                  <input aria-label="Minimal kunjungan" type="number" min={1} className="input h-9 w-20" value={seg.min_visits ?? ""} onChange={(e) => setSeg({ min_visits: num(e.target.value) })} />×
+                  <Input aria-label="Minimal kunjungan" type="number" min={1} className="h-9 w-20" value={seg.min_visits ?? ""} onChange={(e) => setSeg({ min_visits: num(e.target.value) })} />×
                   <span className="ml-2">belanja ≥ Rp</span>
-                  <input aria-label="Minimal total belanja" type="number" min={0} step={50000} className="input h-9 w-36" value={seg.min_spend ?? ""} onChange={(e) => setSeg({ min_spend: num(e.target.value) })} />
+                  <Input aria-label="Minimal total belanja" type="number" min={0} step={50000} className="h-9 w-36" value={seg.min_spend ?? ""} onChange={(e) => setSeg({ min_spend: num(e.target.value) })} />
                 </div>
                 <label className="flex flex-wrap items-center gap-2">Booking online:
-                  <select aria-label="Booking online" className="input h-9 w-auto" value={seg.online === undefined ? "" : seg.online ? "yes" : "no"}
+                  <NativeSelect aria-label="Booking online" className="h-9 w-auto" value={seg.online === undefined ? "" : seg.online ? "yes" : "no"}
                     onChange={(e) => setSeg({ online: e.target.value === "" ? undefined : e.target.value === "yes" })}>
                     <option value="">Semua</option><option value="yes">Pernah</option><option value="no">Belum pernah</option>
-                  </select>
+                  </NativeSelect>
                 </label>
               </div>
             </details>
@@ -230,11 +235,11 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
             <h3 className="text-sm font-bold"><span className="mr-2 rounded-full bg-ink px-2 py-0.5 text-white">2</span>Tulis pesan</h3>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <textarea ref={msgRef} aria-label="Pesan" rows={9} className="input py-2 leading-normal" value={draft.message}
+                <Textarea ref={msgRef} aria-label="Pesan" rows={9} className="py-2 leading-normal" value={draft.message}
                   onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <button type="button" onClick={() => insert("{nama}")} className="btn-ghost h-9 px-3 text-xs">+ Nama pelanggan</button>
-                  <button type="button" onClick={() => insert(bookingUrl)} className="btn-ghost h-9 px-3 text-xs">+ Link booking</button>
+                  <Button type="button" onClick={() => insert("{nama}")} variant="outline" className="h-9 px-3 text-xs">+ Nama pelanggan</Button>
+                  <Button type="button" onClick={() => insert(bookingUrl)} variant="outline" className="h-9 px-3 text-xs">+ Link booking</Button>
                   <span className={`ml-auto text-xs tabular ${length > MAX ? "text-danger" : "text-muted"}`}>{length}/{MAX}</span>
                 </div>
                 <span className="text-xs text-muted">*tebal*, _miring_ mengikuti format WhatsApp. Salam penutup & cara berhenti ditambahkan otomatis.</span>
@@ -251,12 +256,12 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
           <section aria-label="3. Kirim" className={step}>
             <h3 className="text-sm font-bold"><span className="mr-2 rounded-full bg-ink px-2 py-0.5 text-white">3</span>Simpan &amp; kirim</h3>
             <div className="flex flex-wrap gap-2">
-              <button onClick={async () => { if (await save()) toast("Campaign disimpan"); }} disabled={busy || !dirty} className="btn-ghost">
+              <Button onClick={async () => { if (await save()) toast("Campaign disimpan"); }} disabled={busy || !dirty} variant="outline" >
                 {draft.id ? (dirty ? "Simpan perubahan" : "Tersimpan ✓") : "Simpan sebagai draf"}
-              </button>
-              <button onClick={send} disabled={busy || !count?.n || length > MAX} className="btn-primary">
+              </Button>
+              <Button onClick={send} disabled={busy || !count?.n || length > MAX} variant="brand" >
                 {busy ? "Mengirim…" : `${lastSend ? "Kirim lagi" : "Kirim"} ke ${count?.n ?? "…"} pelanggan`}
-              </button>
+              </Button>
             </div>
             {draft.id && (
               <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-3">

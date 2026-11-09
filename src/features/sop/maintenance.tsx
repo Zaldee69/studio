@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { useState } from "react";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
 import { formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -75,7 +79,7 @@ export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?:
     <section id="perawatan" aria-label="Perawatan fasilitas" className="flex flex-col gap-2.5">
       <div className="flex items-center gap-2">
         <h2 className="flex-1 font-display text-xl font-bold">Perawatan fasilitas</h2>
-        {manager && <button onClick={() => setEdit("new")} className="btn-ghost h-11">+ Tambah tugas</button>}
+        {manager && <Button onClick={() => setEdit("new")} variant="outline" className="h-11">+ Tambah tugas</Button>}
       </div>
       {!data ? <p className="text-muted">Memuat…</p> : !tasks.length ? <p className="text-sm text-muted">Belum ada tugas perawatan.</p> : (
         <div className="grid gap-2.5 min-[820px]:grid-cols-2">
@@ -101,8 +105,8 @@ export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?:
                         {manager && h.cost == null && (costFor?.id === h.id ? (
                           <span className="flex items-center gap-1">
                             <label className="sr-only" htmlFor={`cost-${h.id}`}>Biaya servis</label>
-                            <input id={`cost-${h.id}`} inputMode="numeric" className="input h-10 w-32" value={costFor.value} onChange={(e) => setCostFor({ id: h.id, value: e.target.value })} />
-                            <button onClick={saveCost} disabled={!Number(costFor.value.replace(/\D/g, ""))} className="btn-ink h-10 px-3">Simpan</button>
+                            <Input id={`cost-${h.id}`} inputMode="numeric" className="h-10 w-32" value={costFor.value} onChange={(e) => setCostFor({ id: h.id, value: e.target.value })} />
+                            <Button onClick={saveCost} disabled={!Number(costFor.value.replace(/\D/g, ""))} className="h-10 px-3">Simpan</Button>
                           </span>
                         ) : <button onClick={() => setCostFor({ id: h.id, value: "" })} className="min-h-11 font-semibold text-accent underline">Tambah biaya</button>)}
                       </div>
@@ -110,9 +114,9 @@ export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?:
                   </details>
                 )}
                 <div className="flex flex-wrap gap-2">
-                  {t.active && <button onClick={() => setDone(t)} disabled={!online} className="btn-ink h-11 flex-1">Tandai selesai</button>}
-                  {manager && <button onClick={() => setEdit(t)} className="btn-ghost h-11">Ubah</button>}
-                  {manager && <button onClick={() => toggle(t)} className="btn-ghost h-11">{t.active ? "Nonaktifkan" : "Aktifkan"}</button>}
+                  {t.active && <Button onClick={() => setDone(t)} disabled={!online} className="h-11 flex-1">Tandai selesai</Button>}
+                  {manager && <Button onClick={() => setEdit(t)} variant="outline" className="h-11">Ubah</Button>}
+                  {manager && <Button onClick={() => toggle(t)} variant="outline" className="h-11">{t.active ? "Nonaktifkan" : "Aktifkan"}</Button>}
                 </div>
               </article>
             );
@@ -125,11 +129,11 @@ export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?:
           <form onSubmit={(e) => { e.preventDefault(); markDone(); }}>
             <div className="flex items-center gap-3 border-b border-line px-5 py-3.5"><h2 className="flex-1 font-display text-xl font-bold">{done.name}</h2><CloseButton onClick={() => setDone(null)} /></div>
             <div className="flex flex-col gap-3 p-5">
-              <Field label="Catatan" htmlFor="mt-note"><input id="mt-note" className="input" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
-              <Field label="Foto (opsional)" htmlFor="mt-photo"><input id="mt-photo" type="file" accept="image/*" capture="environment" className="input py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></Field>
-              <Field label="Vendor / teknisi (opsional)" htmlFor="mt-vendor"><input id="mt-vendor" className="input" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} /></Field>
-              {manager && <Field label="Biaya (Rp, opsional)" htmlFor="mt-cost"><input id="mt-cost" inputMode="numeric" className="input" value={f.cost} onChange={(e) => setF({ ...f, cost: e.target.value })} /></Field>}
-              <button disabled={!online || busy} className="btn-ink h-12">{busy ? "Menyimpan…" : "Simpan"}</button>
+              <Field label="Catatan" htmlFor="mt-note"><Input id="mt-note" value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} /></Field>
+              <Field label="Foto (opsional)" htmlFor="mt-photo"><Input id="mt-photo" type="file" accept="image/*" capture="environment" className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} /></Field>
+              <Field label="Vendor / teknisi (opsional)" htmlFor="mt-vendor"><Input id="mt-vendor" value={f.vendor} onChange={(e) => setF({ ...f, vendor: e.target.value })} /></Field>
+              {manager && <Field label="Biaya (Rp, opsional)" htmlFor="mt-cost"><Input id="mt-cost" inputMode="numeric" value={f.cost} onChange={(e) => setF({ ...f, cost: e.target.value })} /></Field>}
+              <Button disabled={!online || busy} className="h-12">{busy ? "Menyimpan…" : "Simpan"}</Button>
             </div>
           </form>
         )}
@@ -140,15 +144,15 @@ export function Maintenance({ manager, staff = [] }: { manager: boolean; staff?:
           <form action={saveTask}>
             <div className="flex items-center gap-3 border-b border-line px-5 py-3.5"><h2 className="flex-1 font-display text-xl font-bold">{edit === "new" ? "Tambah tugas" : "Ubah tugas"}</h2><CloseButton onClick={() => setEdit(null)} /></div>
             <div className="flex flex-col gap-3 p-5">
-              <Field label="Nama tugas" htmlFor="mt-name"><input id="mt-name" name="name" className="input" defaultValue={edit === "new" ? "" : edit.name} /></Field>
-              <Field label="Interval (hari)" htmlFor="mt-int"><input id="mt-int" name="interval_days" inputMode="numeric" className="input" defaultValue={edit === "new" ? 14 : edit.interval_days} /></Field>
+              <Field label="Nama tugas" htmlFor="mt-name"><Input id="mt-name" name="name" defaultValue={edit === "new" ? "" : edit.name} /></Field>
+              <Field label="Interval (hari)" htmlFor="mt-int"><Input id="mt-int" name="interval_days" inputMode="numeric" defaultValue={edit === "new" ? 14 : edit.interval_days} /></Field>
               <Field label="Penanggung jawab" htmlFor="mt-pj">
-                <select id="mt-pj" name="assignee" className="input" defaultValue={edit === "new" ? "" : edit.assignee_staff_id ?? ""}>
+                <NativeSelect id="mt-pj" name="assignee" defaultValue={edit === "new" ? "" : edit.assignee_staff_id ?? ""}>
                   <option value="">—</option>{staff.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
+                </NativeSelect>
               </Field>
-              <Field label="Prosedur singkat" htmlFor="mt-proc"><textarea id="mt-proc" name="procedure" rows={3} className="input py-2" defaultValue={edit === "new" ? "" : edit.procedure} /></Field>
-              <button className="btn-ink h-12">Simpan tugas</button>
+              <Field label="Prosedur singkat" htmlFor="mt-proc"><Textarea id="mt-proc" name="procedure" rows={3} className="py-2" defaultValue={edit === "new" ? "" : edit.procedure} /></Field>
+              <Button className="h-12">Simpan tugas</Button>
             </div>
           </form>
         )}

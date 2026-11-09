@@ -1,5 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useOnline, useToast } from "@/components/ui";
 import { jktDate } from "@/lib/domain/format";
@@ -74,13 +77,13 @@ export function MyTargets() {
               {k.measure && <span className="text-xs text-muted">Berhasil bila: {k.measure}</span>}
             </div>
             <div className="flex flex-wrap gap-2">
-              <select aria-label={`Status ${k.title}`} className="input h-11 w-auto" value={k.status} disabled={!online}
+              <NativeSelect aria-label={`Status ${k.title}`} className="w-auto" value={k.status} disabled={!online}
                 onChange={(e) => update(k.id, { status: e.target.value }, "Status disimpan")}>
                 {STATUS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-              <textarea aria-label={`Catatan ${k.title}`} rows={1} className="input min-h-11 min-w-0 flex-1 py-2.5 text-sm" placeholder="Catatan, mis. sudah minta ulasan ke 5 pelanggan"
+              </NativeSelect>
+              <Textarea aria-label={`Catatan ${k.title}`} rows={1} className="min-h-11 min-w-0 flex-1 py-2.5 text-sm" placeholder="Catatan, mis. sudah minta ulasan ke 5 pelanggan"
                 value={draft} onChange={(e) => setDrafts({ ...drafts, [k.id]: e.target.value })} />
-              <button className="btn-ghost h-11" disabled={!online || draft === k.note} onClick={() => update(k.id, { note: draft }, "Catatan disimpan")}>Simpan</button>
+              <Button variant="outline" disabled={!online || draft === k.note} onClick={() => update(k.id, { note: draft }, "Catatan disimpan")}>Simpan</Button>
             </div>
           </div>
         );

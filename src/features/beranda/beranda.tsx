@@ -1,5 +1,6 @@
 "use client";
 
+import { buttonClass } from "@/components/ui/button";
 import { CAT_NAME, CAT_TONE, type Cat } from "@/lib/domain/category";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -104,8 +105,8 @@ export function Beranda({ master }: { master: Master }) {
           <h1 className="font-display text-[28px] font-bold tracking-tight">Selamat datang, {master.userName.split(" ")[0]}</h1>
           <span className="text-[13px] text-muted">{formatTanggal(new Date())} · Ringkasan manajemen</span>
         </div>
-        <Link href={`${b}/kasir`} className="btn-ghost h-11 rounded-[10px]">Buka kasir</Link>
-        <Link href={`${b}/jadwal?new=1`} className="btn-ink h-11">Booking baru</Link>
+        <Link href={`${b}/kasir`} className={buttonClass("outline", "h-11 rounded-[10px]")}>Buka kasir</Link>
+        <Link href={`${b}/jadwal?new=1`} className={buttonClass("default", "h-11")}>Booking baru</Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 min-[1000px]:grid-cols-3 xl:grid-cols-5">

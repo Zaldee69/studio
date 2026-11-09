@@ -1,5 +1,8 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import type { Cat } from "@/lib/domain/category";
 
 import Link from "next/link";
@@ -62,17 +65,17 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={`?bulan=${shiftMonth(month, -1)}`} aria-label="Bulan sebelumnya" className="btn-ghost size-11 p-0">‹</Link>
+        <Link href={`?bulan=${shiftMonth(month, -1)}`} aria-label="Bulan sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
         <b className="min-w-44 text-center font-display text-xl">{monthLabel(month)}</b>
-        <Link href={`?bulan=${shiftMonth(month, 1)}`} aria-label="Bulan berikutnya" className="btn-ghost size-11 p-0">›</Link>
+        <Link href={`?bulan=${shiftMonth(month, 1)}`} aria-label="Bulan berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
         <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : month === current ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
           {closed ? `Ditutup ${formatTanggal(period!.closed_at!)}` : month === current ? "Bulan berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
-          <button onClick={exportCsv} disabled={!rows.length} className="btn-ghost h-11">Ekspor rekap</button>
+          <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor rekap</Button>
           {closed
-            ? <button onClick={() => setReopen(true)} disabled={!online} className="btn-ghost h-11">Buka ulang</button>
-            : <button onClick={() => setClosing(true)} disabled={!online || future} className="btn-ink h-11">Tutup periode</button>}
+            ? <Button onClick={() => setReopen(true)} disabled={!online} variant="outline" className="h-11">Buka ulang</Button>
+            : <Button onClick={() => setClosing(true)} disabled={!online || future} className="h-11">Tutup periode</Button>}
         </div>
       </div>
       {period?.reopen_reason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{period.reopen_reason}”</p>}
@@ -153,7 +156,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
             <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-bold">{formatRupiah(r.total_pay)}</td></tr>)}
               <tr className="border-t-2 border-ink font-bold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>
           </table>
-          <button onClick={close} disabled={!online} className="btn-ink h-12">Tutup & bekukan angka</button>
+          <Button onClick={close} disabled={!online} className="h-12">Tutup & bekukan angka</Button>
         </div>
       </Sheet>
 
@@ -164,8 +167,8 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
           </div>
           <div className="flex flex-col gap-3 p-5">
             <p className="text-sm text-muted">Snapshot & status bayar dihapus; angka dihitung ulang saat ditutup lagi. Alasan tercatat.</p>
-            <Field label="Alasan (wajib)" htmlFor="ro-reason"><input id="ro-reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
-            <button disabled={!reason.trim() || !online} className="btn-ink h-12">Buka ulang</button>
+            <Field label="Alasan (wajib)" htmlFor="ro-reason"><Input id="ro-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+            <Button disabled={!reason.trim() || !online} className="h-12">Buka ulang</Button>
           </div>
         </form>
       </Sheet>
@@ -216,7 +219,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <div className="flex items-baseline justify-between rounded-[14px] bg-ink p-4 text-paper tabular">
           <span className="text-sm text-[#9A9C95]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
         </div>
-        <Link href={`/manajer/sdm/slip/${month}/${row.staff_id}`} className={`btn-ghost h-11 ${closed ? "" : "pointer-events-none opacity-50"}`} aria-disabled={!closed}>
+        <Link href={`/manajer/sdm/slip/${month}/${row.staff_id}`} className={buttonClass("outline", `h-11 ${closed ? "" : "pointer-events-none opacity-50"}`)} aria-disabled={!closed}>
           Slip gaji{closed ? "" : " (tutup periode dulu)"}
         </Link>
 
@@ -241,14 +244,14 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
             <form onSubmit={(e) => { e.preventDefault(); addAdj(); }} className="flex flex-col gap-2 rounded-[12px] border border-line p-3">
               <div className="grid grid-cols-2 gap-2">
                 <Field label="Jenis" htmlFor="pa-kind">
-                  <select id="pa-kind" className="input" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })}>
+                  <NativeSelect id="pa-kind" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })}>
                     <option value="bonus">Bonus</option><option value="deduction">Potongan</option><option value="correction">Koreksi (+)</option>
-                  </select>
+                  </NativeSelect>
                 </Field>
-                <Field label="Jumlah (Rp)" htmlFor="pa-amount"><input id="pa-amount" inputMode="numeric" className="input" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></Field>
+                <Field label="Jumlah (Rp)" htmlFor="pa-amount"><Input id="pa-amount" inputMode="numeric" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></Field>
               </div>
-              <Field label="Alasan (wajib)" htmlFor="pa-reason"><input id="pa-reason" className="input" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></Field>
-              <button disabled={!online || !Number(f.amount.replace(/\D/g, "")) || !f.reason.trim()} className="btn-ink h-11">Tambah bonus/potongan</button>
+              <Field label="Alasan (wajib)" htmlFor="pa-reason"><Input id="pa-reason" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></Field>
+              <Button disabled={!online || !Number(f.amount.replace(/\D/g, "")) || !f.reason.trim()} className="h-11">Tambah bonus/potongan</Button>
             </form>
           )}
         </section>

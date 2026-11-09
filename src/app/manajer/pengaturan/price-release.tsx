@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
@@ -33,7 +34,7 @@ export function PriceRelease({ services }: { services: Svc[] }) {
     <section aria-label="Harga baru menunggu rilis" className="flex flex-col gap-3 rounded-[14px] border-2 border-[#E2C46B] bg-[#FBF3DE] p-4 text-[#3D2E00]">
       <div className="flex flex-wrap items-center gap-2">
         <b className="flex-1">Harga baru menunggu rilis · {pending.length} perubahan</b>
-        <button onClick={release} disabled={!online || busy} className="btn-ink h-11">{busy ? "Merilis…" : "Rilis harga baru"}</button>
+        <Button onClick={release} disabled={!online || busy} className="h-11">{busy ? "Merilis…" : "Rilis harga baru"}</Button>
       </div>
       <div className="overflow-x-auto rounded-[10px] bg-card px-3 text-ink">
         <table className="w-full min-w-[520px] text-sm tabular">

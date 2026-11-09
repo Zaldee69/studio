@@ -1,5 +1,9 @@
 "use client";
 
+import { Button, buttonClass } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
+import { Label } from "@/components/ui/label";
 import { useActionState } from "react";
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatTanggal } from "@/lib/domain/format";
@@ -34,7 +38,7 @@ export function Applicants({ rows }: { rows: App[] }) {
         <div className="flex flex-wrap gap-2">
           {(["capster", "kasir"] as const).map((p) => {
             const n = rows.filter((a) => a.position === p).length;
-            return <button key={p} type="button" disabled={!n} onClick={() => exportCsv(rows, p)} className="btn-ghost h-11">Unduh pelamar {POSITION_NAME[p].toLowerCase()} ({n})</button>;
+            return <Button key={p} type="button" disabled={!n} onClick={() => exportCsv(rows, p)} variant="outline" className="h-11">Unduh pelamar {POSITION_NAME[p].toLowerCase()} ({n})</Button>;
           })}
         </div>
       )}
@@ -42,7 +46,7 @@ export function Applicants({ rows }: { rows: App[] }) {
         <div className="flex flex-wrap gap-2">
           {(["capster", "kasir"] as const).map((p) => {
             const n = rows.filter((a) => a.position === p).length;
-            return n > 0 && <a key={p} href={`/manajer/pengaturan/pelamar?posisi=${p}`} target="_blank" className="btn-ghost h-11">PDF semua pelamar {POSITION_NAME[p].toLowerCase()} ({n})</a>;
+            return n > 0 && <a key={p} href={`/manajer/pengaturan/pelamar?posisi=${p}`} target="_blank" className={buttonClass("outline", "h-11")}>PDF semua pelamar {POSITION_NAME[p].toLowerCase()} ({n})</a>;
           })}
         </div>
       )}
@@ -74,13 +78,13 @@ function Card({ a }: { a: App }) {
       </dl>
       <form action={action} className="flex flex-wrap items-end gap-3 border-t border-line pt-3">
         <input type="hidden" name="id" value={a.id} />
-        <div><label htmlFor={`st-${a.id}`} className="label">Status</label>
-          <select id={`st-${a.id}`} name="status" defaultValue={a.status} className="input w-auto">
+        <div><Label htmlFor={`st-${a.id}`} className="mb-1">Status</Label>
+          <NativeSelect id={`st-${a.id}`} name="status" defaultValue={a.status} className="w-auto">
             {STATUS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-          </select></div>
-        <div className="min-w-56 flex-1"><label htmlFor={`nt-${a.id}`} className="label">Catatan</label>
-          <input id={`nt-${a.id}`} name="note" defaultValue={a.note} maxLength={500} placeholder="mis. tes potong Selasa 3 Nov" className="input" /></div>
-        <button disabled={pending} className="btn-primary">Simpan</button>
+          </NativeSelect></div>
+        <div className="min-w-56 flex-1"><Label htmlFor={`nt-${a.id}`} className="mb-1">Catatan</Label>
+          <Input id={`nt-${a.id}`} name="note" defaultValue={a.note} maxLength={500} placeholder="mis. tes potong Selasa 3 Nov" /></div>
+        <Button disabled={pending} variant="brand" >Simpan</Button>
         {state && <p role={state.error ? "alert" : "status"} className={`text-xs ${state.error ? "text-danger" : "text-green-700"}`}>{state.error ?? state.ok}</p>}
       </form>
     </article>

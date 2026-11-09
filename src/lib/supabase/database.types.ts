@@ -328,28 +328,6 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
-                },"manager_task_log": {
-                  Row: {
-                    "at": string,"by": string | null,"from_value": string | null,"id": number,"kind": string,"task_id": string,"to_value": string | null
-                  }
-                  Insert: {
-                    "at"?: string,"by"?: string | null,"from_value"?: string | null,"id"?: never,"kind": string,"task_id": string,"to_value"?: string | null
-                  }
-                  Update: {
-                    "at"?: string,"by"?: string | null,"from_value"?: string | null,"id"?: never,"kind"?: string,"task_id"?: string,"to_value"?: string | null
-                  }
-                  Relationships: []
-                },"manager_tasks": {
-                  Row: {
-                    "assigned_role": Database["public"]['Enums']["app_role"] | null,"assigned_to": string | null,"created_at": string,"created_by": string | null,"due": string,"grows_customers": boolean,"id": string,"measure": string,"note": string,"pic": string,"status": string,"title": string,"updated_at": string,"updated_by": string | null
-                  }
-                  Insert: {
-                    "assigned_role"?: Database["public"]['Enums']["app_role"] | null,"assigned_to"?: string | null,"created_at"?: string,"created_by"?: string | null,"due": string,"grows_customers"?: boolean,"id"?: string,"measure"?: string,"note"?: string,"pic"?: string,"status"?: string,"title": string,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Update: {
-                    "assigned_role"?: Database["public"]['Enums']["app_role"] | null,"assigned_to"?: string | null,"created_at"?: string,"created_by"?: string | null,"due"?: string,"grows_customers"?: boolean,"id"?: string,"measure"?: string,"note"?: string,"pic"?: string,"status"?: string,"title"?: string,"updated_at"?: string,"updated_by"?: string | null
-                  }
-                  Relationships: []
                 },"commission_deductions": {
                   Row: {
                     "amount": number,"created_at": string,"created_by": string | null,"id": string,"reason": string,"staff_id": string,"transaction_id": string | null
@@ -897,6 +875,86 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"manager_task_log": {
+                  Row: {
+                    "at": string,"by": string | null,"from_value": string | null,"id": number,"kind": string,"task_id": string,"to_value": string | null
+                  }
+                  Insert: {
+                    "at"?: string,"by"?: string | null,"from_value"?: string | null,"id"?: never,"kind": string,"task_id": string,"to_value"?: string | null
+                  }
+                  Update: {
+                    "at"?: string,"by"?: string | null,"from_value"?: string | null,"id"?: never,"kind"?: string,"task_id"?: string,"to_value"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "manager_task_log_by_fkey"
+      columns: ["by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_task_log_by_fkey"
+      columns: ["by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_task_log_task_id_fkey"
+      columns: ["task_id"]
+isOneToOne: false
+      referencedRelation: "manager_tasks"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"manager_tasks": {
+                  Row: {
+                    "assigned_role": Database["public"]['Enums']["app_role"] | null,"assigned_to": string | null,"created_at": string,"created_by": string | null,"due": string,"grows_customers": boolean,"id": string,"measure": string,"note": string,"pic": string,"status": string,"title": string,"updated_at": string,"updated_by": string | null
+                  }
+                  Insert: {
+                    "assigned_role"?: Database["public"]['Enums']["app_role"] | null,"assigned_to"?: string | null,"created_at"?: string,"created_by"?: string | null,"due": string,"grows_customers"?: boolean,"id"?: string,"measure"?: string,"note"?: string,"pic"?: string,"status"?: string,"title": string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Update: {
+                    "assigned_role"?: Database["public"]['Enums']["app_role"] | null,"assigned_to"?: string | null,"created_at"?: string,"created_by"?: string | null,"due"?: string,"grows_customers"?: boolean,"id"?: string,"measure"?: string,"note"?: string,"pic"?: string,"status"?: string,"title"?: string,"updated_at"?: string,"updated_by"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "manager_tasks_assigned_to_fkey"
+      columns: ["assigned_to"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_tasks_assigned_to_fkey"
+      columns: ["assigned_to"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_tasks_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_tasks_created_by_fkey"
+      columns: ["created_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_tasks_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "manager_tasks_updated_by_fkey"
+      columns: ["updated_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"notifications": {
                   Row: {
                     "created_at": string,"id": string,"kind": string,"payload": NonNullable<Json>,"read_at": string | null,"target_role": Database["public"]['Enums']["app_role"],"target_user": string | null
@@ -1322,13 +1380,13 @@ isOneToOne: false
                   ]
                 },"settings": {
                   Row: {
-                    "alert_cash_diff": number,"alert_expense_min": number,"aov_target_barbershop": number,"aov_target_massage": number,"aov_target_nail": number,"auto_followup_on": boolean,"blast_daily_limit": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"cash_tolerance": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"google_review_url": string | null,"groom_text": string,"hidden_features": string[],"hero_text": string,"hero_title": string,"hero_title_accent": string,"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"manager_mfa_required": boolean,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"cashier_bonus_min": number,"cashier_bonus_pct": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"target_customer_pct": number,"target_cuts_senkam": number,"target_cuts_weekend_max": number,"target_cuts_weekly": number,"target_rebook_pct": number,"target_new_weekly": number,"target_returning_weekly": number,"target_upgrade_pct": number,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
+                    "alert_cash_diff": number,"alert_expense_min": number,"aov_target_barbershop": number,"aov_target_massage": number,"aov_target_nail": number,"auto_followup_on": boolean,"blast_daily_limit": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"cash_tolerance": number,"cashier_bonus_min": number,"cashier_bonus_pct": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"google_review_url": string | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"hidden_features": (string)[],"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"manager_mfa_required": boolean,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"target_customer_pct": number,"target_cuts_senkam": number,"target_cuts_weekend_max": number,"target_cuts_weekly": number,"target_new_weekly": number,"target_rebook_pct": number,"target_returning_weekly": number,"target_upgrade_pct": number,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
                   }
                   Insert: {
-                    "alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hidden_features"?: string[],"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_rebook_pct"?: number,"target_new_weekly"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Update: {
-                    "alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hidden_features"?: string[],"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_rebook_pct"?: number,"target_new_weekly"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Relationships: [
                     
@@ -1418,13 +1476,13 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"target_cuts_weekly": number | null,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number,"whatsapp": string | null
+                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number,"target_cuts_weekly": number | null,"whatsapp": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"target_cuts_weekly"?: number | null,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"whatsapp"?: string | null
+                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"target_cuts_weekly"?: number | null,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"whatsapp"?: string | null
+                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -2194,18 +2252,6 @@ isOneToOne: false
 "campaign_report_data":
 { Args: { "p_from": string,"p_to": string }; Returns: Json
                            },
-"cashier_bonus":
-{ Args: { "p_month": string }; Returns: Json
-                           },
-"hidden_features":
-{ Args: Record<PropertyKey, never>; Returns: string[]
-                           },
-"my_targets":
-{ Args: Record<PropertyKey, never>; Returns: Json
-                           },
-"weekly_progress":
-{ Args: { "p_day"?: string }; Returns: Json
-                           },
 "cancel_booking_admin":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
@@ -2223,6 +2269,9 @@ isOneToOne: false
                            },
 "cash_summary_full":
 { Args: { "p_date": string }; Returns: Json
+                           },
+"cashier_bonus":
+{ Args: { "p_month": string }; Returns: Json
                            },
 "checkout":
 { Args: { "p": Json }; Returns: string
@@ -2400,6 +2449,9 @@ isOneToOne: false
 "get_available_slots":
 { Args: { "p_date": string,"p_exclude_group"?: string,"p_service_ids": (string)[],"p_staff_pick"?: Json,"p_together"?: boolean }; Returns: string[]
                            },
+"hidden_features":
+{ Args: Record<PropertyKey, never>; Returns: (string)[]
+                           },
 "import_customers":
 { Args: { "p_rows": Json }; Returns: Json
                            },
@@ -2525,6 +2577,9 @@ isOneToOne: false
                            },
 "my_staff_id":
 { Args: Record<PropertyKey, never>; Returns: string
+                           },
+"my_targets":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "new_unit_cost":
 { Args: { "p_cost": number,"p_method": string,"p_old_cost": number,"p_old_qty": number,"p_qty": number }; Returns: number
@@ -2839,6 +2894,9 @@ isOneToOne: false
                            },
 "voucher_uses":
 { Args: { "p_customer"?: string,"p_voucher": string }; Returns: number
+                           },
+"weekly_progress":
+{ Args: { "p_day"?: string }; Returns: Json
                            },
 "weekly_summary_fallback":
 { Args: Record<PropertyKey, never>; Returns: undefined

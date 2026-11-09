@@ -1,3 +1,5 @@
+import { DateInput } from "@/components/date-input";
+import { Button } from "@/components/ui/button";
 import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { CUSTOMER_SOURCES } from "@/lib/domain/customer";
@@ -75,9 +77,9 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
           <h1 className="font-display text-3xl font-bold">Laporan campaign</h1>
         </div>
         <form className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col text-xs text-muted">Dari<input type="date" name="dari" defaultValue={from} max={today} className="input h-11 w-40" /></label>
-          <label className="flex flex-col text-xs text-muted">Sampai<input type="date" name="sampai" defaultValue={to} max={today} className="input h-11 w-40" /></label>
-          <button className="btn-ink h-11 px-5">Tampilkan</button>
+          <label className="flex flex-col text-xs text-muted">Dari<DateInput name="dari" defaultValue={from} max={today} className="h-11 w-40" /></label>
+          <label className="flex flex-col text-xs text-muted">Sampai<DateInput name="sampai" defaultValue={to} max={today} className="h-11 w-40" /></label>
+          <Button className="h-11 px-5">Tampilkan</Button>
         </form>
       </div>
       {error || !r || !c ? <p role="alert" className="text-sm text-[#A12A2A]">{error?.message ?? "Laporan tidak tersedia."}</p> : (

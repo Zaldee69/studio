@@ -8,6 +8,7 @@ import { ACTION, commissionOnDay, pickCurrent, revertRemaining, serviceTimer } f
 import { STATUS, type ApptStatus } from "@/lib/domain/status";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
+import { MyTargets } from "../rencana/my-targets";
 import { useKapster, type MyAppt } from "./provider";
 
 function useNow(ms: number) {
@@ -106,6 +107,7 @@ export function HariIni() {
           );
         })}
       </section>
+      <MyTargets />
     </>
   );
 }

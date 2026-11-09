@@ -10,7 +10,9 @@ import { addDays } from "@/lib/domain/schedule";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 
-type Task = { id: string; title: string; pic: string; due: string; measure: string; status: string; note: string; grows_customers: boolean; updated_by: string | null; updated_at: string };
+type Task = { id: string; title: string; pic: string; due: string; measure: string; status: string; note: string; grows_customers: boolean; updated_by: string | null; updated_at: string;
+  assigned_to: string | null; assigned_role: "cashier" | "staff" | null };
+type StaffRow = { id: string; name: string; category: string; target_cuts_weekly: number | null };
 type Log = { id: number; task_id: string; at: string; by: string | null; kind: string; from_value: string | null; to_value: string | null };
 type Progress = { week: string; cuts: number; cuts_by_day: Record<string, number>; tx: number; tx_with_wa: number; new: number; returning: number;
   new_by_source: Record<string, number>; target: { cuts: number; returning: number; new: number } };
@@ -22,7 +24,9 @@ const STATUS: Record<string, [string, string, string]> = {
 const LATE: [string, string, string] = ["Lewat tenggat", "#FBE6E3", "#A12A2A"];
 const SOURCE_LABEL: Record<string, string> = { ...Object.fromEntries(CUSTOMER_SOURCES), tidak_tercatat: "Belum dicatat" };
 const DAYS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-const BLANK = { title: "", pic: "Manajer", due: jktDate(), measure: "", grows: true };
+// assign: "" = manajer, "role:cashier"/"role:staff" = semua akun peran itu, selain itu id akun
+const BLANK = { title: "", pic: "Manajer", due: jktDate(), measure: "", grows: true, assign: "" };
+const ROLE_LABEL = { cashier: "Semua kasir", staff: "Semua capster & terapis" } as const;
 
 const monday = (d: string) => addDays(d, -((new Date(d + "T00:00:00Z").getUTCDay() + 6) % 7));
 const shortDate = (d: string) => new Intl.DateTimeFormat("id-ID", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
@@ -37,14 +41,19 @@ export function Rencana() {
   const { data, refresh } = useRealtimeTable(["manager_tasks", "manager_task_log", "transactions"], async () => {
     const supabase = createClient();
     const [tasks, logs, prog] = await Promise.all([
-      supabase.from("manager_tasks").select("id, title, pic, due, measure, status, note, grows_customers, updated_by, updated_at").order("due").order("created_at"),
+      supabase.from("manager_tasks").select("id, title, pic, due, measure, status, note, grows_customers, updated_by, updated_at, assigned_to, assigned_role").order("due").order("created_at"),
       supabase.from("manager_task_log").select("id, task_id, at, by, kind, from_value, to_value").order("at", { ascending: false }).limit(60),
       supabase.rpc("weekly_progress", { p_day: day }),
+    ]);
+    const [{ data: team }, { data: staff }] = await Promise.all([
+      supabase.from("profiles").select("id, full_name, role").in("role", ["cashier", "staff"]).eq("active", true).order("full_name"),
+      supabase.from("staff").select("id, name, category, target_cuts_weekly").eq("active", true).order("sort"),
     ]);
     const ids = [...new Set([...(tasks.data ?? []).map((t) => t.updated_by), ...(logs.data ?? []).map((l) => l.by)].filter((v): v is string => !!v))];
     const people = ids.length ? (await supabase.from("profiles").select("id, full_name").in("id", ids)).data ?? [] : [];
     return { tasks: (tasks.data ?? []) as Task[], logs: (logs.data ?? []) as Log[], progress: prog.data as Progress | null,
-      names: Object.fromEntries(people.map((p) => [p.id, p.full_name])) as Record<string, string> };
+      names: Object.fromEntries(people.map((p) => [p.id, p.full_name])) as Record<string, string>,
+      team: (team ?? []) as { id: string; full_name: string; role: string }[], staff: (staff ?? []) as StaffRow[] };
   }, day);
 
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -64,7 +73,9 @@ export function Rencana() {
     if (await update(t.id, { note: drafts[t.id] ?? t.note }, "Catatan disimpan")) setDrafts((d) => { const n = { ...d }; delete n[t.id]; return n; });
   }
   async function submit() {
-    const row = { title: form.title.trim(), pic: form.pic.trim() || "Manajer", due: form.due, measure: form.measure.trim(), grows_customers: form.grows };
+    const role = form.assign.startsWith("role:") ? form.assign.slice(5) as "cashier" | "staff" : null;
+    const row = { title: form.title.trim(), pic: form.pic.trim() || "Manajer", due: form.due, measure: form.measure.trim(), grows_customers: form.grows,
+      assigned_role: role, assigned_to: form.assign && !role ? form.assign : null };
     if (!row.title) return toast("Isi nama tugas", "error");
     if (editing) { if (await update(editing, row, "Tugas diubah")) { setEditing(null); setForm(BLANK); } return; }
     const { error } = await createClient().from("manager_tasks").insert(row);
@@ -72,7 +83,8 @@ export function Rencana() {
     toast("Tugas ditambahkan"); setForm(BLANK); refresh();
   }
   function edit(t: Task) {
-    setEditing(t.id); setForm({ title: t.title, pic: t.pic, due: t.due, measure: t.measure, grows: t.grows_customers });
+    setEditing(t.id); setForm({ title: t.title, pic: t.pic, due: t.due, measure: t.measure, grows: t.grows_customers,
+      assign: t.assigned_role ? `role:${t.assigned_role}` : t.assigned_to ?? "" });
     document.getElementById("tugas-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -134,7 +146,8 @@ export function Rencana() {
                   ? Object.entries(p.new_by_source).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${SOURCE_LABEL[k] ?? k} ${n}`).join(" · ")
                   : "belum ada"}
               </div>
-              <Link href="/manajer/analitik#target" className="text-sm font-bold underline">Ubah target mingguan</Link>
+              <StaffTargets staff={data?.staff ?? []} studio={p.target.cuts} onSaved={refresh} />
+              <Link href="/manajer/analitik#target" className="text-sm font-bold underline">Ubah target mingguan studio</Link>
             </>
           )}
         </section>
@@ -200,6 +213,18 @@ export function Rencana() {
       <form id="tugas-form" onSubmit={(e) => { e.preventDefault(); submit(); }} className="flex scroll-mt-16 flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">{editing ? "Ubah tugas" : "Tambah tugas"}</h2>
         <Field label="Tugas" htmlFor="tg-title"><textarea id="tg-title" rows={2} className="input py-2" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field>
+        <Field label="Ditugaskan ke" htmlFor="tg-assign" hint="Kasir/capster melihat tugas ini di layarnya dan bisa mengisi status & catatan">
+          <select id="tg-assign" className="input" value={form.assign} onChange={(e) => {
+            const v = e.target.value;
+            const label = !v ? "Manajer" : v.startsWith("role:") ? ROLE_LABEL[v.slice(5) as "cashier" | "staff"] : data?.team.find((p) => p.id === v)?.full_name ?? form.pic;
+            setForm({ ...form, assign: v, pic: label });
+          }}>
+            <option value="">Manajer (tidak didelegasikan)</option>
+            <option value="role:cashier">{ROLE_LABEL.cashier}</option>
+            <option value="role:staff">{ROLE_LABEL.staff}</option>
+            {(data?.team ?? []).map((p) => <option key={p.id} value={p.id}>{p.full_name} · {p.role === "cashier" ? "kasir" : "capster/terapis"}</option>)}
+          </select>
+        </Field>
         <div className="grid grid-cols-2 gap-2">
           <Field label="Penanggung jawab" htmlFor="tg-pic"><input id="tg-pic" className="input" value={form.pic} onChange={(e) => setForm({ ...form, pic: e.target.value })} /></Field>
           <Field label="Tenggat" htmlFor="tg-due"><input id="tg-due" type="date" className="input" value={form.due} onChange={(e) => e.target.value && setForm({ ...form, due: e.target.value })} /></Field>
@@ -212,6 +237,36 @@ export function Rencana() {
         {editing && <button type="button" className="btn-ghost h-11" onClick={() => { setEditing(null); setForm(BLANK); }}>Batal mengubah</button>}
         <p className="text-xs text-muted">Tugas tidak bisa dihapus. Pilih status Dibatalkan bila tidak jadi dikerjakan, supaya riwayatnya tetap ada.</p>
       </form>
+    </div>
+  );
+}
+
+/** Target layanan per staf per minggu (staff.target_cuts_weekly). Kosong = target studio dibagi capster barbershop aktif; terapis tanpa target. */
+function StaffTargets({ staff, studio, onSaved }: { staff: StaffRow[]; studio: number; onSaved: () => void }) {
+  const toast = useToast();
+  const barbers = staff.filter((s) => s.category === "barbershop").length || 1;
+  async function save(s: StaffRow, raw: string) {
+    const v = raw.trim() === "" ? null : Number(raw);
+    if (v === s.target_cuts_weekly) return;
+    if (v !== null && (!Number.isInteger(v) || v < 0 || v > 500)) return toast("Target 0–500 layanan", "error");
+    const { error } = await createClient().from("staff").update({ target_cuts_weekly: v }).eq("id", s.id);
+    if (error) return toast(error.message, "error");
+    toast(`Target ${s.name} disimpan`); onSaved();
+  }
+  if (!staff.length) return null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-bold">Target pribadi per minggu</span>
+      <span className="text-xs text-muted">Terlihat oleh staf itu sendiri di HP-nya. Kosongkan untuk memakai pembagian otomatis.</span>
+      <div className="grid grid-cols-2 gap-2 min-[700px]:grid-cols-4">
+        {staff.map((s) => (
+          <Field key={s.id} label={s.name} htmlFor={`st-t-${s.id}`}>
+            <input id={`st-t-${s.id}`} inputMode="numeric" className="input" defaultValue={s.target_cuts_weekly ?? ""}
+              placeholder={s.category === "barbershop" ? `otomatis ${Math.ceil(studio / barbers)}` : "tanpa target"}
+              onBlur={(e) => save(s, e.target.value)} />
+          </Field>
+        ))}
+      </div>
     </div>
   );
 }

@@ -7,8 +7,10 @@ import type { DayAppt, Master } from "../counter/types";
 import { Closing } from "./closing";
 import { History } from "./history";
 import { Pos } from "./pos";
+import { MyTargets } from "../rencana/my-targets";
 
-const TABS = [["kasir", "Kasir"], ["riwayat", "Riwayat transaksi"], ["tutup", "Tutup kasir"]] as const;
+// "Target & tugas" hanya untuk akun kasir (delegasi manajer 10 Nov)
+const TABS = [["kasir", "Kasir"], ["riwayat", "Riwayat transaksi"], ["tutup", "Tutup kasir"], ["target", "Target & tugas"]] as const;
 type Tab = (typeof TABS)[number][0];
 
 export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master; initialAppt: DayAppt | null; bonusLine?: string }) {
@@ -20,7 +22,7 @@ export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master
       <div className="no-print flex min-h-12 flex-wrap items-center gap-4">
         <h1 className="font-display text-[28px] font-bold tracking-tight">Kasir</h1>
         <div role="tablist" aria-label="Bagian kasir" className="flex max-w-full gap-1.5 overflow-x-auto">
-          {TABS.map(([k, l]) => (
+          {TABS.filter(([k]) => k !== "target" || master.role === "cashier").map(([k, l]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
               className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l}</button>
           ))}
@@ -32,6 +34,7 @@ export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master
       {tab === "kasir" && <Pos master={master} initialAppt={initialAppt} />}
       {tab === "riwayat" && <History master={master} txParam={params.get("tx")} />}
       {tab === "tutup" && <Closing master={master} />}
+      {tab === "target" && master.role === "cashier" && <div className="max-w-3xl"><MyTargets /></div>}
     </div>
   );
 }

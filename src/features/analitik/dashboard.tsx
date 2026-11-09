@@ -34,7 +34,7 @@ export type AnalyticsData = {
   settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; aov_target_massage: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
     insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number;
     target_cuts_senkam: number; target_cuts_weekend_max: number; target_upgrade_pct: number; target_customer_pct: number;
-    target_cuts_weekly: number; target_returning_weekly: number; target_new_weekly: number };
+    target_cuts_weekly: number; target_returning_weekly: number; target_new_weekly: number; target_rebook_pct: number };
 };
 
 type Cat = "barbershop" | "nail" | "massage";
@@ -314,6 +314,7 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     ["target_upgrade_pct", "Potong yang naik paket (%)"], ["target_customer_pct", "Transaksi dengan pelanggan (%)"],
     ["target_cuts_weekly", "Potong per minggu (Rencana & Target)"], ["target_returning_weekly", "Pelanggan kembali per minggu"],
     ["target_new_weekly", "Pelanggan baru per minggu (0 = tanpa target)"],
+    ["target_rebook_pct", "Pelanggan dibookingkan jadwal berikutnya oleh kasir (%)"],
     ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],
     ["kpi_min_tx_for_stable", "Catatan \"data masih sedikit\" di bawah (transaksi)"],
   ];
@@ -321,7 +322,7 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     const row = Object.fromEntries(fields.map(([k]) => [k, Number(f[k].replace(/[^\d.,]/g, "").replace(",", "."))])) as AnalyticsData["settings"];
     if (Object.values(row).some((v) => !Number.isFinite(v) || v < 0)) return toast("Isi semua angka target", "error");
     if (row.retail_ratio_min > row.retail_ratio_max) return toast("Rasio ritel minimum harus ≤ maksimum", "error");
-    const pct = ["retail_ratio_min", "retail_ratio_max", "utilization_target", "target_upgrade_pct", "target_customer_pct"] as const;
+    const pct = ["retail_ratio_min", "retail_ratio_max", "utilization_target", "target_upgrade_pct", "target_customer_pct", "target_rebook_pct"] as const;
     if (pct.some((k) => row[k] > 100)) return toast("Target persen maksimal 100%", "error");
     const { error } = await createClient().from("settings").update(row).eq("id", true);
     if (error) return toast(error.message, "error");

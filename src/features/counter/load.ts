@@ -25,7 +25,7 @@ export async function loadMaster(role: "manager" | "cashier"): Promise<Master> {
     shop: {
       name: shop?.shop_name ?? BRAND,
       // rentang tampilan jadwal = jam buka paling awal s/d tutup paling akhir dari Jam buka & libur
-      open: (open.length ? open.map((h) => h.open_time).sort()[0] : "09:00").slice(0, 5),
+      open: (open.length ? open.map((h) => h.open_time).sort()[0] : "10:00").slice(0, 5),
       close: (open.length ? open.map((h) => h.close_time).sort().at(-1)! : "21:00").slice(0, 5),
       bundlePct: shop?.bundle_pct ?? 10, churnWeeks: shop?.churn_weeks ?? 4,
       waTemplate: shop?.wa_followup_template ?? "",

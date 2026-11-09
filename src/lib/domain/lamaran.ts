@@ -58,7 +58,7 @@ export const QUESTIONS: Question[] = [
   { key: "menawarkan", label: "Bagaimana Anda menawarkan paket atau produk ke pelanggan tanpa terkesan memaksa?", type: "textarea", section: K },
 
   // Kesiapan kerja
-  { key: "jam_kerja", label: "Bisa bekerja 09.00–21.00, termasuk Sabtu dan Minggu?", type: "select", options: ["Bisa", "Bisa dengan catatan", "Tidak bisa"], section: S },
+  { key: "jam_kerja", label: "Bisa bekerja dalam shift antara 10.00–21.00, termasuk Sabtu dan Minggu?", type: "select", options: ["Bisa", "Bisa dengan catatan", "Tidak bisa"], section: S },
   { key: "libur", label: "Hari libur yang diharapkan per bulan", type: "select", options: ["2 hari", "4 hari", "Lainnya"], section: S },
   { key: "kontrak", label: "Bersedia kontrak 3 bulan pertama lalu dievaluasi?", type: "select", options: ["Bersedia", "Ingin dibicarakan dulu"], section: S },
   { key: "konten", label: "Bersedia difoto / divideo untuk konten Instagram studio?", type: "select", options: ["Bersedia", "Lebih suka tidak"], section: S },

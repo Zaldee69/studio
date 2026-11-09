@@ -15,9 +15,10 @@ import { BRAND_INITIALS } from "@/lib/brand";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 const BASE_TABS = [["/kapster", "Hari ini"], ["/kapster/jadwal", "Jadwal"], ["/kapster/komisi", "Komisi"], ["/kapster/sop", "SOP"]] as const;
-// Konsultasi gaya rambut hanya untuk capster barbershop
-const tabsFor = (cat: Cat): readonly (readonly [string, string])[] =>
-  cat === "barbershop" ? [...BASE_TABS.slice(0, 2), ["/kapster/gaya", "Gaya"], ...BASE_TABS.slice(2)] : BASE_TABS;
+// Konsultasi gaya rambut hanya untuk capster barbershop; Gaya & SOP bisa disembunyikan (settings.hidden_features, audit 10 Nov)
+const tabsFor = (cat: Cat, hidden: string[]): readonly (readonly [string, string])[] =>
+  (cat === "barbershop" ? [...BASE_TABS.slice(0, 2), ["/kapster/gaya", "Gaya"] as const, ...BASE_TABS.slice(2)] : BASE_TABS)
+    .filter(([href]) => !(href === "/kapster/gaya" && hidden.includes("gaya")) && !(href === "/kapster/sop" && hidden.includes("sop")));
 const IDLE_MS = 5 * 60 * 1000;
 
 /** Mode stasiun: keluar otomatis setelah 5 menit tanpa aktivitas; aktivitas memperpanjang sesi di server. */
@@ -40,7 +41,7 @@ function useStationIdle(enabled: boolean) {
 
 export function KapsterShell({ children }: { children: React.ReactNode }) {
   const { me, appts, offs, muted, setMuted } = useKapster();
-  const TABS = tabsFor(me.category);
+  const TABS = tabsFor(me.category, me.hidden);
   const path = usePathname();
   const toast = useToast();
   const [menu, setMenu] = useState(false);

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { FEATURES } from "@/lib/features";
 import { log } from "@/lib/log";
 import { passwordError, PASSWORD_HINT } from "@/lib/password";
 import { getProfile } from "@/lib/auth";
@@ -193,4 +194,15 @@ export async function updateApplication(_: SaveState, fd: FormData): Promise<Sav
   if (!data?.length) return { error: "Akses ditolak." };
   revalidatePath("/manajer/pengaturan");
   return { ok: "Tersimpan" };
+}
+
+/** Pengaturan → Profil studio → Fitur yang ditampilkan (settings.hidden_features). */
+export async function saveHiddenFeatures(_: SaveState, fd: FormData): Promise<SaveState> {
+  const shown = new Set(fd.getAll("show").map(String));
+  const hidden = FEATURES.map(([k]) => k).filter((k) => !shown.has(k));
+  const { error } = await (await createClient()).from("settings").update({ hidden_features: hidden }).eq("id", true);
+  if (error) return { error: friendly(error) };
+  revalidatePath("/manajer", "layout");
+  revalidatePath("/kapster", "layout");
+  return { ok: "Fitur disimpan" };
 }

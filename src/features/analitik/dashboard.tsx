@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -104,9 +105,8 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Analitik KPI</h1>
-        <Link href="/manajer/analitik/campaign" className="btn-ghost h-11">Laporan campaign</Link>
-        <Link href="/manajer/analitik/laporan" className="btn-ghost h-11">Laporan owner (PDF)</Link>
       </div>
+      <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <div role="group" aria-label="Periode" className="flex flex-wrap gap-1.5">
           {PERIODS.map(([k, l]) => (

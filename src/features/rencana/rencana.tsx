@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useState } from "react";
 import { Empty, Field, useOnline, useToast } from "@/components/ui";
@@ -87,6 +88,7 @@ export function Rencana() {
     <div className="grid gap-4 min-[1100px]:grid-cols-[1fr_360px]">
       <div className="flex min-w-0 flex-col gap-4">
         <h1 className="font-display text-[28px] font-bold tracking-tight">Rencana & Target</h1>
+        <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
 
         <section aria-label="Progres minggu" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">

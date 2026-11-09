@@ -20,13 +20,15 @@ export default async function KapsterLayout({ children }: LayoutProps<"/kapster"
   const p = await requireRole("staff");
   const supabase = await createClient();
   const store = await cookies();
-  const [{ data: staff }, { data: services }] = await Promise.all([
+  const [{ data: staff }, { data: services }, { data: hidden }] = await Promise.all([
     supabase.from("staff").select("id, name, category").eq("id", p.staff_id!).single(),
     supabase.from("services").select("id, name, duration_min").order("sort"),
+    supabase.rpc("hidden_features"),
   ]);
   const me = {
     name: p.full_name || staff?.name || "Capster", staffId: p.staff_id!, category: staff?.category ?? "barbershop",
     station: !!store.get(STATION_COOKIE) && !!store.get(STATION_ACTIVE),
+    hidden: hidden ?? [],
   };
   return (
     <ToastProvider>

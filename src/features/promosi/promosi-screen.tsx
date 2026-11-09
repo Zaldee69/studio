@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteTabs, PELANGGAN_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
@@ -129,6 +130,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
 
   return (
     <div className="flex flex-col gap-4">
+      <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />
       {!waReady && (
         <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-sm text-[#5A4300]">
           WhatsApp (Wablas) belum dikonfigurasi di server — pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.

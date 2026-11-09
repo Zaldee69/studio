@@ -15,6 +15,7 @@ import { StationSettings } from "./station-settings";
 import { HairstyleCatalog } from "./hairstyle-catalog";
 import { TelegramTest, WhatsAppTest } from "./telegram-test";
 import { Applicants } from "./applicants";
+import { FeatureToggles } from "./feature-toggles";
 
 export const metadata = { title: "Pengaturan" };
 
@@ -33,9 +34,13 @@ const navLink = "inline-flex min-h-11 shrink-0 items-center border-b-2 border-tr
 
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
   const asked = String((await searchParams).tab ?? "umum");
-  const group = MENU.find(([, subs]) => subs.some(([k]) => k === asked)) ?? MENU[0];
-  const tab = group === MENU[0] && !group[1].some(([k]) => k === asked) ? "umum" : asked;
   const supabase = await createClient();
+  // tab modul yang disembunyikan (settings.hidden_features) tidak tampil; kuncinya sama dengan nama fitur
+  const { data: hiddenData } = await supabase.rpc("hidden_features");
+  const hidden: string[] = hiddenData ?? [];
+  const menu = MENU.map(([l, subs]) => [l, subs.filter(([k]) => !hidden.includes(k))] as const);
+  const group = menu.find(([, subs]) => subs.some(([k]) => k === asked)) ?? menu[0];
+  const tab = group === menu[0] && !group[1].some(([k]) => k === asked) ? "umum" : asked;
   const settingsForm = async (sub: string) => {
     const { data: st } = await supabase.from("settings").select("*").single();
     const std = (st?.standards as { title: string; text: string }[] | null) ?? [];
@@ -203,6 +208,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = (
       <div className="flex flex-col gap-6">
         {await settingsForm("umum")}
+        <FeatureToggles hidden={hidden} />
         <p className="text-sm text-muted">Jam buka diatur di <Link href="?tab=jam" className="font-semibold text-accent underline">Jam buka & libur</Link> — dipakai booking online dan jadwal kasir.</p>
       </div>
     );
@@ -212,7 +218,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     <div>
       <h1 className="font-display text-3xl font-bold">Pengaturan</h1>
       <nav aria-label="Kelompok pengaturan" className="mt-4 flex gap-1 overflow-x-auto border-b border-line">
-        {MENU.map(([label, subs]) => (
+        {menu.map(([label, subs]) => (
           <Link key={label} href={`?tab=${subs[0][0]}`} aria-current={group[0] === label ? "page" : undefined} className={navLink}>{label}</Link>
         ))}
       </nav>

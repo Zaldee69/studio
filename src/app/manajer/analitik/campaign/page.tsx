@@ -1,3 +1,4 @@
+import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { CUSTOMER_SOURCES } from "@/lib/domain/customer";
 import { formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -68,9 +69,9 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
 
   return (
     <div className="flex flex-col gap-6">
+      <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-1 flex-col gap-1">
-          <Link href="/manajer/analitik" className="text-sm text-muted underline">← Analitik</Link>
           <h1 className="font-display text-3xl font-bold">Laporan campaign</h1>
         </div>
         <form className="flex flex-wrap items-end gap-2">

@@ -7,7 +7,7 @@
 --  3. Sumber pelanggan baru ditambah 'perumahan' (brosur, grup warga) dan 'iklan' (iklan IG/FB) supaya hasil kedua jalan itu terukur.
 --  4. manager_tasks + manager_task_log: daftar tugas manajer dengan penanggung jawab, tenggat, ukuran berhasil, status, catatan bukti.
 --     Tugas tidak bisa dihapus, hanya dibatalkan; setiap perubahan tercatat otomatis (trigger) dengan siapa dan kapan → bisa
---     dipertanggungjawabkan. Isi awal = 34 tugas rencana 10 Nov–6 Des (tracker Artifact 1cGEZ3fV, revisi manajer 9 Nov).
+--     dipertanggungjawabkan. Isi awal = 30 tugas rencana 10 Nov–6 Des (tracker Artifact 1cGEZ3fV, revisi manajer 9 Nov).
 
 alter table customers drop constraint customers_source_check;
 alter table customers add constraint customers_source_check
@@ -140,7 +140,7 @@ insert into manager_tasks (title, pic, due, measure, grows_customers) values
   ('Hitung ulang stok, dicatat sebagai penyesuaian (bukan pembelian); beli pisau dan sampo lewat Terima stok', 'Manajer bersama Dwi', date '2026-11-11', '0 bahan dengan stok minus pada Minggu 15 Nov', false),
   ('Isi link ulasan Google di Pengaturan; kasir meminta ulasan saat pelanggan membayar', 'Manajer dan kasir', date '2026-11-11', '≥3 ulasan Google baru per minggu, ≥10 sampai 6 Des', true),
   ('Latih Dwi: catat nama, No. WA, dan sumber pelanggan (lewat, teman, perumahan, iklan, Maps), kasbon pakai nama staf, tips dicatat terpisah, setor laci', 'Manajer', date '2026-11-11', 'No. WA tercatat ≥80% di shift Dwi', false),
-  ('WA personal ke kontak lama yang belum pernah datang (186 nomor dari HP owner): 20 nomor per hari Senin–Kamis, satu per satu, tawarkan "kami bookingkan" untuk Senin–Kamis', 'Manajer', date '2026-11-12', '≥4 kontak datang per minggu; ≥15% membalas', true),
+  ('WA satu per satu ke ±25 pelanggan yang sudah waktunya potong lagi, ajak datang Senin–Kamis', 'Manajer', date '2026-11-12', '≥5 pelanggan datang dalam 7 hari', true),
   ('Kasir mulai menawarkan Fresh sekali kepada pelanggan Essential, tanpa diskon', 'Rohman dan Dwi, diawasi manajer', date '2026-11-12', 'porsi Fresh ke atas ≥33%', false),
   ('Kasir menawarkan jadwal kunjungan berikutnya saat pelanggan membayar (diarahkan ke Senin–Kamis), dicatat sebagai booking', 'Rohman dan Dwi, diawasi manajer', date '2026-11-12', '≥20% pelanggan mengambil jadwal berikutnya', true),
   ('Lengkapi Google Maps: ≥10 foto studio dan hasil potong, daftar harga, jam buka, nomor WA', 'Manajer', date '2026-11-13', 'profil Maps lengkap; tampil saat dicari "barbershop Cimanggis"', true),
@@ -148,21 +148,17 @@ insert into manager_tasks (title, pic, due, measure, grows_customers) values
   ('Cari calon capster ketiga dan jadwalkan tes potong', 'Manajer', date '2026-11-14', 'minimal 1 calon dengan jadwal tes', false),
   ('Kumpulkan grup WA warga dan kontak pengelola/satpam Cimanggis Golf Estate dan 2 perumahan terdekat', 'Manajer', date '2026-11-14', '≥3 grup atau kontak yang bersedia menyebarkan info', true),
   ('Rilis aplikasi: absen staf, Kartu Potong, kabar giliran WA akhir pekan', 'Manajer', date '2026-11-16', 'absen tercatat ≥95% di minggu pertama', false),
-  ('WA personal ke kontak lama gelombang 2 (lanjutan 186 nomor), 20 per hari Senin–Kamis', 'Manajer', date '2026-11-16', '≥4 kontak datang per minggu', true),
-  ('Siapkan iklan Meta (IG/FB) radius ±3 km, Rp750 rb untuk 2 minggu, tayang Senin–Kamis 09.00–16.00 mulai Kamis 19 Nov dengan pesan "siang hari kerja langsung dilayani"; kasir mencatat sumber "iklan"', 'Manajer (dana dari owner)', date '2026-11-16', 'iklan tayang 19 Nov; ≥8 pelanggan baru dari iklan per minggu', true),
-  ('Cetak brosur atau kartu kecil (≤Rp300 rb) berisi "Senin–Kamis siang langsung dilayani", titip ke pos satpam dan pengelola, kirim ke grup WA warga', 'Manajer', date '2026-11-18', '≥5 pelanggan per minggu bersumber perumahan mulai minggu 3', true),
+  ('WA personal rutin Senin 16 dan Kamis 19 Nov ke pelanggan yang 3–4 minggu belum potong, ajak datang Senin–Kamis', 'Manajer', date '2026-11-16', '≥5 pelanggan lama kembali minggu ini', true),
+  ('Siapkan iklan Meta (IG/FB) radius ±3 km, Rp750 rb untuk 2 minggu, tayang mulai Kamis 19 Nov; kasir mencatat sumber "iklan"', 'Manajer (dana dari owner)', date '2026-11-16', 'iklan tayang 19 Nov; sumber "iklan" tercatat di kasir', true),
+  ('Cetak brosur atau kartu kecil (≤Rp300 rb), titip ke pos satpam dan pengelola, kirim ke grup WA warga', 'Manajer', date '2026-11-18', '≥5 pelanggan per minggu bersumber perumahan mulai minggu 3', true),
   ('Dirga mulai kerja (bila lolos tes); aturan giliran walk-in ditulis dan ditempel (yang tidak meminta capster tertentu masuk giliran)', 'Manajer', date '2026-11-19', 'aturan tertempel; tanda "diminta pelanggan" terisi ≥95%', false),
-  ('Titip brosur "Kids Cut pulang sekolah, Senin–Kamis 14.00–17.00" ke 2 sekolah/TK terdekat dan masjid perumahan', 'Manajer', date '2026-11-19', '≥3 Kids Cut Senin–Kamis per minggu', true),
   ('Papan kecil di pintu: "Senin–Kamis langsung dilayani" (biaya ≤Rp30 rb)', 'Manajer', date '2026-11-20', 'terpasang; potong Sen–Kam ≥5,5 per hari', true),
   ('Tes potong calon capster ketiga 1 kepala; kalau lolos, PKWT ditandatangani sebelum mulai kerja', 'Manajer', date '2026-11-21', 'hasil potong rapi dan sesuai permintaan model, selesai ≤35 menit; PKWT ditandatangani', false),
-  ('WA personal ke pelanggan yang datang 26 Okt–8 Nov (±60 orang, mulai jatuh tempo potong ulang), Senin 23 dan Kamis 26 Nov', 'Manajer', date '2026-11-23', '≥8 pelanggan lama kembali minggu ini', true),
+  ('WA personal rutin Senin 23 dan Kamis 26 Nov ke pelanggan yang 3–4 minggu belum potong', 'Manajer', date '2026-11-23', '≥5 pelanggan lama kembali minggu ini', true),
   ('Evaluasi iklan Meta: lanjutkan, ubah, atau hentikan', 'Manajer', date '2026-11-26', 'biaya per pelanggan baru dari iklan ≤Rp25 rb; kalau lebih, iklan diubah atau dihentikan', true),
   ('Evaluasi tertulis capster baru: waktu potong, komplain, kehadiran', 'Manajer', date '2026-11-27', 'evaluasi ditandatangani; waktu potong ≤35 menit, komplain ≤1', false),
   ('Kalau capster baru lolos evaluasi: satu posting perkenalan tanpa diskon, foto dengan izinnya', 'Manajer', date '2026-11-28', 'terposting', true),
   ('Capster ketiga mulai kerja; jadwal shift dan giliran walk-in dibagi untuk 3 capster', 'Manajer', date '2026-11-30', '3 capster aktif di jadwal; tunggu akhir pekan ≤15 menit', false),
   ('Tutup buku November dengan laba lengkap (sewa, kasir, capster) dan kirim ke owner', 'Manajer', date '2026-11-30', 'laporan terkirim ke owner', false),
   ('Slip bayaran 4 minggu dibagikan ke setiap staf', 'Manajer', date '2026-11-30', 'slip diterima 6 dari 6 staf', false),
-  ('WA personal ke pelanggan yang 3–4 minggu belum potong, Senin 30 Nov dan Kamis 3 Des', 'Manajer', date '2026-11-30', '≥10 pelanggan lama kembali minggu ini', true),
-  ('Senin pagi: cek progres minggu lalu di Rencana & Target; kalau potong di bawah jalur, tambah 20 WA personal minggu ini', 'Manajer', date '2026-11-16', 'progres dicek dan tindakan tambahan dicatat di catatan', true),
-  ('Senin pagi: cek progres minggu lalu di Rencana & Target; kalau potong di bawah jalur, tambah 20 WA personal minggu ini', 'Manajer', date '2026-11-23', 'progres dicek dan tindakan tambahan dicatat di catatan', true),
-  ('Senin pagi: cek progres minggu lalu di Rencana & Target; kalau potong di bawah jalur, tambah 20 WA personal minggu ini', 'Manajer', date '2026-11-30', 'progres dicek dan tindakan tambahan dicatat di catatan', true);
+  ('WA personal rutin Senin 30 Nov dan Kamis 3 Des ke pelanggan yang 3–4 minggu belum potong', 'Manajer', date '2026-11-30', '≥5 pelanggan lama kembali minggu ini', true);

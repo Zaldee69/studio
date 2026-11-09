@@ -31,7 +31,7 @@ function FieldInput({ f, value, options, id }: { f: Field; value: unknown; optio
   );
 }
 
-function Msg({ s }: { s: SaveState }) {
+export function Msg({ s }: { s: SaveState }) {
   if (!s) return null;
   return <p role={s.error ? "alert" : "status"} className={`text-xs ${s.error ? "text-danger" : "text-green-700"}`}>{s.error ?? s.ok}</p>;
 }

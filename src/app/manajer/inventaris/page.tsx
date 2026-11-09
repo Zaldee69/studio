@@ -22,8 +22,10 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "
 
 export default async function Inventaris({ searchParams }: PageProps<"/manajer/inventaris">) {
   const sp = await searchParams;
-  const tab = TABS.some(([k]) => k === sp.tab) ? one(sp.tab) : "bahan";
   const supabase = await createClient();
+  const { data: hidden } = await supabase.rpc("hidden_features");
+  const tabs = TABS.filter(([k]) => k !== "pemasok" || !(hidden ?? []).includes("pemasok"));
+  const tab = tabs.some(([k]) => k === sp.tab) ? one(sp.tab) : "bahan";
   const [{ data: levels }, { data: sups }, { data: st }] = await Promise.all([
     supabase.from("stock_levels").select("*").order("name"),
     supabase.from("suppliers").select("id, name, whatsapp, active, notes").order("name"),
@@ -123,7 +125,7 @@ export default async function Inventaris({ searchParams }: PageProps<"/manajer/i
       <div className="flex flex-col gap-4">
         <InvHeader />
         <ReorderBanner />
-        <TabNav tabs={TABS} current={tab} label="Bagian inventaris" />
+        <TabNav tabs={tabs} current={tab} label="Bagian inventaris" />
         <div>{body}</div>
       </div>
     </InventoryProvider>

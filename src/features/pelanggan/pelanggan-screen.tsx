@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteTabs, PELANGGAN_TABS } from "@/components/route-tabs";
 import { useSearchParams } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { Empty, Sheet, useOnline, useToast } from "@/components/ui";
@@ -12,6 +13,8 @@ import { ImportCustomers } from "./import-customers";
 import { Profile, type CustRow } from "./profile";
 
 const PAGE = 50;
+type Filter = "all" | "follow" | "due" | "never";
+const daysAgo = (n: number) => new Date(Date.now() - n * 864e5).toISOString();
 const wideQuery = "(min-width: 1000px)";
 const useWide = () => useSyncExternalStore(
   (cb) => { const m = matchMedia(wideQuery); m.addEventListener("change", cb); return () => m.removeEventListener("change", cb); },
@@ -23,7 +26,8 @@ export function PelangganScreen({ master }: { master: Master }) {
   const wide = useWide();
   const [q, setQ] = useState("");
   const params = useSearchParams();
-  const [filter, setFilter] = useState<"all" | "follow">(params.get("filter") === "follow" ? "follow" : "all");
+  const asked = params.get("filter");
+  const [filter, setFilter] = useState<Filter>(asked === "follow" || asked === "due" || asked === "never" ? asked : "all");
   const [limit, setLimit] = useState(PAGE);
   const [selId, setSelId] = useState<string | null>(null);
   const [modal, setModal] = useState<"new" | "import" | null>(null);
@@ -40,6 +44,16 @@ export function PelangganScreen({ master }: { master: Master }) {
     if (filter === "follow") {
       const { data: churn } = await supabase.from("customer_stats").select("customer_id").eq("is_churn", true);
       query = query.in("id", (churn ?? []).map((c) => c.customer_id!));
+    }
+    // Ajak kembali (rencana volume 10 Nov): jatuh tempo potong ulang 3–5 minggu, dan kontak ber-WA yang belum pernah datang
+    if (filter === "due") {
+      const { data: due } = await supabase.from("customer_stats").select("customer_id")
+        .gte("last_visit_at", daysAgo(35)).lt("last_visit_at", daysAgo(21));
+      query = query.in("id", (due ?? []).map((c) => c.customer_id!));
+    }
+    if (filter === "never") {
+      const { data: none } = await supabase.from("customer_stats").select("customer_id").eq("visit_count", 0);
+      query = query.not("whatsapp", "is", null).in("id", (none ?? []).map((c) => c.customer_id!));
     }
     const { data: rows, count } = await query.range(0, limit - 1);
     const { data: stats } = await supabase.from("customer_stats").select("*").in("customer_id", (rows ?? []).map((r) => r.id));
@@ -70,10 +84,12 @@ export function PelangganScreen({ master }: { master: Master }) {
           {master.role === "manager" && <button onClick={() => setModal("import")} className="btn-ghost h-11 rounded-[10px]">Impor</button>}
           <button onClick={() => setModal("new")} className="btn-ink h-11">Pelanggan baru</button>
         </div>
-        <div role="tablist" aria-label="Filter pelanggan" className="flex gap-1.5">
-          {([["all", `Semua${data ? ` · ${filter === "all" ? data.total : "…"}` : ""}`], ["follow", `Perlu follow-up · ${data?.followCount ?? 0}`]] as const).map(([k, l]) => (
+        {master.role === "manager" && <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />}
+        <div role="tablist" aria-label="Filter pelanggan" className="flex flex-wrap gap-1.5">
+          {([["all", "Semua"], ["follow", `Perlu follow-up · ${data?.followCount ?? 0}`], ["due", "Jatuh tempo 3–5 minggu"], ["never", "Belum pernah datang"]] as const).map(([k, l]) => (
             <button key={k} role="tab" aria-selected={filter === k} onClick={() => { setFilter(k); setLimit(PAGE); }}
-              className={`h-11 rounded-full border px-4 text-[13px] font-bold ${filter === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l}</button>
+              className={`h-11 rounded-full border px-4 text-[13px] font-bold ${filter === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>
+              {l}{filter === k && k !== "follow" && data ? ` · ${data.total}` : ""}</button>
           ))}
         </div>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px] border border-line bg-card">

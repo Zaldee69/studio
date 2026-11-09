@@ -9,19 +9,21 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "SDM & Komisi" };
 
-const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan upah"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
+const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Bulanan & bonus kasir"], ["aturan", "Aturan upah"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi tahunan"]] as const;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   const sp = await searchParams;
   // tautan lama ?bulan=… (navigasi bulan, slip) tetap membuka Gaji bulanan
-  const tab = TABS.some(([k]) => k === sp.tab) ? one(sp.tab) : sp.bulan ? "bulanan" : "mingguan";
+  const supabase = await createClient();
+  const { data: hidden } = await supabase.rpc("hidden_features");
+  const tabs = TABS.filter(([k]) => k !== "evaluasi" || !(hidden ?? []).includes("evaluasi"));
+  const tab = tabs.some(([k]) => k === sp.tab) ? one(sp.tab) : sp.bulan ? "bulanan" : "mingguan";
   const thisWeek = mondayOf(jktDate());
   const week = /^\d{4}-\d{2}-\d{2}$/.test(one(sp.minggu)) ? mondayOf(one(sp.minggu)) : thisWeek;
   const current = jktDate().slice(0, 7);
   const month = /^\d{4}-\d{2}$/.test(one(sp.bulan)) ? one(sp.bulan) : current;
   const year = /^\d{4}$/.test(one(sp.tahun)) ? Number(one(sp.tahun)) : Number(current.slice(0, 4));
-  const supabase = await createClient();
   const { data: st } = await supabase.from("settings").select("commission_pct, retail_commission_pct, commission_basis, commission_deduct_hpp").single();
 
   let body: React.ReactNode;
@@ -96,7 +98,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="font-display text-[28px] font-bold tracking-tight">SDM &amp; Komisi</h1>
-      <TabNav tabs={TABS} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : tab === "mingguan" ? `&minggu=${week}` : ""} />
+      <TabNav tabs={tabs} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : tab === "mingguan" ? `&minggu=${week}` : ""} />
       {body}
     </div>
   );

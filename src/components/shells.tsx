@@ -14,8 +14,9 @@ import { BRAND, BRAND_INITIALS } from "@/lib/brand";
 function useActive(menu: MenuItem[]) {
   const path = usePathname();
   // item terpanjang yang cocok (agar "/manajer" tidak aktif di "/manajer/jadwal")
-  return menu.filter((m) => path === m.href || path.startsWith(m.href + "/"))
-    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
+  const hit = (h: string) => path === h || path.startsWith(h + "/");
+  return menu.flatMap((m) => [m.href, ...(m.also ?? [])].filter(hit).map((h) => ({ m, h })))
+    .sort((a, b) => b.h.length - a.h.length)[0]?.m.href;
 }
 
 /** Manajer & kasir: sidebar putih 224px ≥1280px, rail ikon 84px 768–1279px,

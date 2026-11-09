@@ -1,4 +1,5 @@
 import "server-only";
+import { formatRupiah, jktDate } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/server";
 import { JadwalScreen } from "../jadwal/jadwal-screen";
 import { KasirScreen } from "../kasir/kasir-screen";
@@ -27,7 +28,17 @@ export async function KasirPage({ role, searchParams }: { role: "manager" | "cas
       .not("status", "in", "(paid,cancelled)").maybeSingle();
     appt = data as unknown as DayAppt | null;
   }
-  return <KasirScreen master={master} initialAppt={appt} />;
+  return <KasirScreen master={master} initialAppt={appt} bonusLine={role === "cashier" ? await cashierBonusLine() : undefined} />;
+}
+
+/** Progres bonus kasir bulan ini (1% omzet bersih bila ≥ batas) — hanya di layar kasir. */
+async function cashierBonusLine() {
+  const { data } = await (await createClient()).rpc("cashier_bonus", { p_month: `${jktDate().slice(0, 7)}-01` });
+  const b = data as { revenue: number; min: number; pct: number; bonus: number } | null;
+  if (!b || !b.min) return undefined;
+  return b.bonus
+    ? `Omzet bulan ini ${formatRupiah(b.revenue)} · bonus ${b.pct}% tercapai: ${formatRupiah(b.bonus)}`
+    : `Omzet bulan ini ${formatRupiah(b.revenue)} dari ${formatRupiah(b.min)} untuk bonus ${b.pct}%`;
 }
 
 export async function PelangganPage({ role }: { role: "manager" | "cashier" }) {

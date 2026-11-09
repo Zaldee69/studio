@@ -4,7 +4,7 @@ import { MonthlyPayroll, type PayRow, type Period } from "@/features/sdm/monthly
 import { WeeklyCommission, type WeekRow } from "@/features/sdm/weekly";
 import { mondayOf } from "@/features/sdm/shared";
 import { AnnualReview, CommissionRules, Leaderboard, type LeaderRow, type ReviewRow } from "@/features/sdm/rules";
-import { jktDate } from "@/lib/domain/format";
+import { formatRupiah, jktDate } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "SDM & Komisi" };
@@ -33,17 +33,32 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
     body = <WeeklyCommission key={week} week={week} thisWeek={thisWeek} rows={(rows ?? []) as WeekRow[]}
       reopenReason={wk?.status === "open" ? wk.reopen_reason : null} />;
   } else if (tab === "bulanan") {
-    // gaji bulanan hanya untuk staf yang dibayar bulanan (keputusan owner 1 Nov); staf mingguan cukup di Komisi mingguan
-    const [{ data: all }, { data: period }, { data: weekly }, { data: priv }] = await Promise.all([
+    // gaji bulanan untuk staf yang dibayar bulanan (keputusan owner 1 Nov); staf mingguan tanpa gaji pokok cukup di Komisi mingguan
+    const [{ data: all }, { data: period }, { data: weekly }, { data: priv }, { data: cb }] = await Promise.all([
       supabase.rpc("commission_for_period", { p_month: `${month}-01` }),
       supabase.from("payroll_periods").select("status, closed_at, reopen_reason").eq("month", `${month}-01`).maybeSingle(),
       supabase.rpc("commission_weekly_for_month", { p_month: `${month}-01` }),
       supabase.rpc("staff_private"),
+      supabase.rpc("cashier_bonus", { p_month: `${month}-01` }),
     ]);
-    const rows = (all ?? []).filter((r) => (priv ?? []).some((p) => p.id === r.staff_id && p.pay_monthly));
-    body = <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
+    const bonus = cb as { revenue: number; min: number; pct: number; bonus: number } | null;
+    // + staf bergaji pokok yang komisinya mingguan: gaji pokok tetap dibayar di sini (sisa = total − dibayar mingguan)
+    const rows = (all ?? []).filter((r) => (priv ?? []).some((p) => p.id === r.staff_id && (p.pay_monthly || p.base_salary)));
+    body = <>
+      {bonus && (
+        <section className="mb-4 rounded-2xl border border-[#E4E4DE] bg-card p-4 text-sm">
+          <h2 className="font-bold">Bonus kasir</h2>
+          <p className="text-muted">
+            Omzet bersih {formatRupiah(bonus.revenue)} · syarat ≥ {formatRupiah(bonus.min)} ·{" "}
+            {bonus.bonus ? <>bonus {bonus.pct}% = <b className="text-ink">{formatRupiah(bonus.bonus)}</b></> : "belum tercapai, bonus Rp0"}.
+            {" "}Gaji pokok &amp; bonus dicatat di Pengeluaran → Gaji kasir; bonus dibayar bersama gaji bulan berikutnya.
+          </p>
+        </section>
+      )}
+      <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
       weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
-      ratio={st?.commission_pct ?? 40} />;
+      ratio={st?.commission_pct ?? 40} />
+    </>;
   } else if (tab === "aturan") {
     // gaji & aturan komisi per staf hanya terbaca manajer (staff_private)
     const [{ data: base }, { data: priv }] = await Promise.all([

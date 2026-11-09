@@ -11,7 +11,7 @@ import { Pos } from "./pos";
 const TABS = [["kasir", "Kasir"], ["riwayat", "Riwayat transaksi"], ["tutup", "Tutup kasir"]] as const;
 type Tab = (typeof TABS)[number][0];
 
-export function KasirScreen({ master, initialAppt }: { master: Master; initialAppt: DayAppt | null }) {
+export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master; initialAppt: DayAppt | null; bonusLine?: string }) {
   const params = useSearchParams();
   const [tab, setTab] = useState<Tab>((TABS.find(([k]) => k === params.get("tab"))?.[0]) ?? "kasir");
   // ≥1000px: satu layar tanpa scroll halaman; di bawahnya kolom bertumpuk & halaman bisa di-scroll
@@ -26,6 +26,7 @@ export function KasirScreen({ master, initialAppt }: { master: Master; initialAp
           ))}
         </div>
         <span className="hidden text-[13px] text-muted xl:inline">Gabungkan layanan barbershop &amp; nail dalam satu tagihan</span>
+        {bonusLine && <span className="text-[13px] text-muted">{bonusLine}</span>}
         <span className="ml-auto"><PrinterButton /></span>
       </div>
       {tab === "kasir" && <Pos master={master} initialAppt={initialAppt} />}

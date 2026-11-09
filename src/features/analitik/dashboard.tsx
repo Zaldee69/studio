@@ -32,7 +32,8 @@ export type AnalyticsData = {
   staffList: { id: string; name: string }[];
   settings: { revenue_target_monthly: number; aov_target_barbershop: number; aov_target_nail: number; aov_target_massage: number; retail_ratio_min: number; retail_ratio_max: number; utilization_target: number;
     insight_aov_gap_pct: number; insight_low_util_pct: number; kpi_min_tx_for_stable: number;
-    target_cuts_senkam: number; target_cuts_weekend_max: number; target_upgrade_pct: number; target_customer_pct: number };
+    target_cuts_senkam: number; target_cuts_weekend_max: number; target_upgrade_pct: number; target_customer_pct: number;
+    target_cuts_weekly: number; target_returning_weekly: number; target_new_weekly: number };
 };
 
 type Cat = "barbershop" | "nail" | "massage";
@@ -311,6 +312,8 @@ function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: ()
     ["retail_ratio_min", "Rasio ritel minimum (%)"], ["retail_ratio_max", "Rasio ritel maksimum (%)"], ["utilization_target", "Target utilisasi (%)"],
     ["target_cuts_senkam", "Potong per hari Senin–Kamis"], ["target_cuts_weekend_max", "Batas nyaman potong per hari Jumat–Minggu"],
     ["target_upgrade_pct", "Potong yang naik paket (%)"], ["target_customer_pct", "Transaksi dengan pelanggan (%)"],
+    ["target_cuts_weekly", "Potong per minggu (Rencana & Target)"], ["target_returning_weekly", "Pelanggan kembali per minggu"],
+    ["target_new_weekly", "Pelanggan baru per minggu (0 = tanpa target)"],
     ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],
     ["kpi_min_tx_for_stable", "Catatan \"data masih sedikit\" di bawah (transaksi)"],
   ];

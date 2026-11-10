@@ -35,6 +35,9 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
   const [f, setF] = useState({ ratio, retail: String(retailPct), basis, hpp: deductHpp });
   const [rows, setRows] = useState<Record<string, Row>>(Object.fromEntries(staff.map((s) => [s.id, toRow(s)])));
+  // staf yang sudah keluar disembunyikan bawaan (manajer 10 Nov); datanya tetap untuk riwayat komisi
+  const [showInactive, setShowInactive] = useState(false);
+  const inactive = staff.filter((s) => !s.active).length;
   const set = (id: string, patch: Partial<Row>) => setRows({ ...rows, [id]: { ...rows[id], ...patch } });
   async function save() {
     const supabase = createClient();
@@ -76,7 +79,7 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="mb-1 block text-xs font-semibold text-muted mb-1">Komisi dihitung dari</legend>
+          <legend className="mb-1 block text-xs font-semibold text-muted">Komisi dihitung dari</legend>
           <div role="radiogroup" aria-label="Dasar komisi" className="grid gap-2 min-[560px]:grid-cols-2">
             {([["net", "Harga setelah diskon", "Promo & diskon paket ikut mengurangi komisi"], ["gross", "Harga normal", "Diskon & promo ditanggung toko — komisi staf utuh"]] as const).map(([v, l, d]) => (
               <button type="button" key={v} role="radio" aria-checked={f.basis === v} onClick={() => setF({ ...f, basis: v })}
@@ -113,7 +116,7 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
               <th className="py-2 pr-2 font-semibold">Bayar bulanan</th><th className="py-2 font-semibold">Jaring harian (Rp)</th>
             </tr></thead>
             <tbody>
-              {staff.map((s) => { const r = rows[s.id]; return (
+              {staff.filter((s) => s.active || showInactive).map((s) => { const r = rows[s.id]; return (
                 <tr key={s.id} className="border-t border-[#EEEEEA] align-top">
                   <td className="py-2 pr-2">
                     <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
@@ -134,6 +137,11 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
             </tbody>
           </table>
         </div>
+        {inactive > 0 && (
+          <button type="button" onClick={() => setShowInactive(!showInactive)} className="self-start text-sm text-muted underline">
+            {showInactive ? "Sembunyikan staf nonaktif" : `Tampilkan staf nonaktif (${inactive})`}
+          </button>
+        )}
         <Button disabled={!online} className="mt-2 h-12 self-start px-6">Simpan aturan upah</Button>
       </section>
     </form>

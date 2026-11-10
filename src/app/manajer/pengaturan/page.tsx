@@ -33,7 +33,9 @@ const MENU = [
 const navLink = "inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent";
 
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
-  const asked = String((await searchParams).tab ?? "umum");
+  const sp = await searchParams;
+  const asked = String(sp.tab ?? "umum");
+  const showInactive = sp.nonaktif === "1"; // staf yang sudah keluar disembunyikan bawaan (manajer 10 Nov)
   const supabase = await createClient();
   // tab modul yang disembunyikan (settings.hidden_features) tidak tampil; kuncinya sama dengan nama fitur
   const { data: hiddenData } = await supabase.rpc("hidden_features");
@@ -70,7 +72,9 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       tab === "staf" ? supabase.rpc("staff_private") : Promise.resolve({ data: [] }),
     ]);
     // No. WA staf hanya terbaca manajer (staff_private), digabung ke baris tabel
-    const rows = (data ?? []).map((r) => ({ ...r, ...(priv ?? []).find((p) => p.id === r.id) }));
+    const all = (data ?? []).map((r) => ({ ...r, ...(priv ?? []).find((p) => p.id === r.id) }));
+    const inactive = tab === "staf" ? all.filter((r) => !(r as { active?: boolean }).active).length : 0;
+    const rows = tab === "staf" && !showInactive ? all.filter((r) => (r as { active?: boolean }).active) : all;
     // kursi utama: diutamakan saat booking, harus sekategori (dijaga trigger DB)
     const resources = (res ?? []).map((r) => [r.id, `${r.name} (${CAT_NAME[r.type]})`] as [string, string]);
     const hidden = (["barbershop", "nail"] as const).filter((c) => !(open ?? []).includes(c));
@@ -83,6 +87,11 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
           </p>
         )}
         <CrudTable table={tab === "kursi" ? "resources" : "staff"} rows={rows} options={{ resources }} />
+        {inactive > 0 && (
+          <Link href={showInactive ? "?tab=staf" : "?tab=staf&nonaktif=1"} className="inline-block text-sm text-muted underline">
+            {showInactive ? "Sembunyikan staf nonaktif" : `Tampilkan staf nonaktif (${inactive})`}
+          </Link>
+        )}
       </div>
     );
   } else if (tab === "jam") {

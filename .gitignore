@@ -49,6 +49,11 @@ next-env.d.ts
 # gambar antara pratinjau gaya (HAIR_DEBUG_DIR) — berisi foto pelanggan, jangan di-commit
 .debug-gaya/
 
-# Skill Claude berisi konteks bisnis internal (repo publik) — jangan di-commit
-.claude/skills/
-.claude/agents/
+# Konteks bisnis internal (repo ini publik) — jangan di-commit. Sejak 11 Nov 2026 isinya di repo privat
+# Zaldee69/dpras-ops; di sini hanya tautan (symlink), jadi pola tanpa garis miring akhir.
+.claude/skills
+.claude/agents
+.claude/pelajaran
+.claude/ORGANISASI.md
+.hermes.md
+hermes/

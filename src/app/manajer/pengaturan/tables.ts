@@ -237,7 +237,7 @@ function fieldSchema(f: Field): z.ZodType {
     default: {
       let s = z.string().trim();
       if (f.min) s = s.min(f.min, `${f.label}: minimal ${f.min} karakter`);
-      return f.nullable ? s.default("") : s.min(1, `${f.label} wajib diisi`);
+      return f.nullable ? z.preprocess((v: unknown) => (empty(v) ? null : v), s.nullable()) : s.min(1, `${f.label} wajib diisi`);
     }
   }
 }

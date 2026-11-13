@@ -16,7 +16,7 @@ export type MyAppt = {
   arrived_at: string | null; service_started_at: string | null; service_ended_at: string | null; status_changed_at: string | null;
   changed_by_me: boolean | null; change_request: string | null; change_requested_at: string | null; service_ids: string[];
 };
-export type TimeOff = { id: string; staff_id: string; start_at: string; end_at: string; all_day: boolean; reason: string; status: "pending" | "approved" | "rejected" | "cancelled"; created_at: string };
+export type TimeOff = { id: string; staff_id: string; start_at: string; end_at: string; all_day: boolean; reason: string; status: "pending" | "approved" | "rejected" | "cancelled"; created_at: string; kind: "izin" | "libur" };
 export type Me = { name: string; staffId: string; category: Cat; station: boolean; hidden: string[] };
 export type SvcLite = { id: string; name: string; duration_min: number };
 
@@ -47,7 +47,7 @@ export function KapsterProvider({ me, services, children }: { me: Me; services: 
     const supabase = createClient();
     const [{ data: a }, { data: o }] = await Promise.all([
       supabase.from("staff_my_appointments").select("*").gte("start_at", dayRange(today)[0]).lt("start_at", dayRange(addDays(today, 6))[1]).order("start_at"),
-      supabase.from("staff_time_off").select("id, staff_id, start_at, end_at, all_day, reason, status, created_at").order("start_at", { ascending: false }).limit(60),
+      supabase.from("staff_time_off").select("id, staff_id, start_at, end_at, all_day, reason, status, created_at, kind").order("start_at", { ascending: false }).limit(60),
     ]);
     const rows = (a ?? []) as MyAppt[];
     const old = prev.current;

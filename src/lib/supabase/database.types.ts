@@ -447,6 +447,31 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"day_off_swaps": {
+                  Row: {
+                    "created_at": string,"decided_at": string | null,"decided_by": string | null,"id": string,"new_date": string | null,"off_id": string,"partner_off_id": string | null,"partner_ok": boolean | null,"reason": string,"requested_by": string,"status": Database["public"]['Enums']["time_off_status"]
+                  }
+                  Insert: {
+                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"new_date"?: string | null,"off_id": string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"]
+                  }
+                  Update: {
+                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"new_date"?: string | null,"off_id"?: string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"]
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "day_off_swaps_off_id_fkey"
+      columns: ["off_id"]
+isOneToOne: false
+      referencedRelation: "staff_time_off"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "day_off_swaps_partner_off_id_fkey"
+      columns: ["partner_off_id"]
+isOneToOne: false
+      referencedRelation: "staff_time_off"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"deposit_packages": {
                   Row: {
                     "active": boolean,"amount_credited": number,"amount_paid": number,"created_at": string,"id": string,"name": string
@@ -1133,13 +1158,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "active": boolean,"created_at": string,"customer_id": string | null,"email": string | null,"full_name": string,"id": string,"mfa_enabled": boolean,"phone": string | null,"role": Database["public"]['Enums']["app_role"],"staff_id": string | null
+                    "active": boolean,"created_at": string,"customer_id": string | null,"day_off": number | null,"email": string | null,"full_name": string,"id": string,"mfa_enabled": boolean,"phone": string | null,"role": Database["public"]['Enums']["app_role"],"staff_id": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id": string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
+                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"day_off"?: number | null,"email"?: string | null,"full_name"?: string,"id": string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"email"?: string | null,"full_name"?: string,"id"?: string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
+                    "active"?: boolean,"created_at"?: string,"customer_id"?: string | null,"day_off"?: number | null,"email"?: string | null,"full_name"?: string,"id"?: string,"mfa_enabled"?: boolean,"phone"?: string | null,"role"?: Database["public"]['Enums']["app_role"],"staff_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1476,13 +1501,13 @@ isOneToOne: false
                   ]
                 },"staff": {
                   Row: {
-                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number,"target_cuts_weekly": number | null,"whatsapp": string | null
+                    "active": boolean,"base_salary": number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override": number | null,"created_at": string,"daily_min_pay": number | null,"day_off": number | null,"deduct_hpp": boolean | null,"home_resource_id": string | null,"id": string,"name": string,"pay_monthly": boolean,"photo_path": string | null,"retail_pct_override": number | null,"sort": number,"target_cuts_weekly": number | null,"whatsapp": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
+                    "active"?: boolean,"base_salary"?: number | null,"category": Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"day_off"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name": string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
+                    "active"?: boolean,"base_salary"?: number | null,"category"?: Database["public"]['Enums']["staff_category"],"commission_pct_override"?: number | null,"created_at"?: string,"daily_min_pay"?: number | null,"day_off"?: number | null,"deduct_hpp"?: boolean | null,"home_resource_id"?: string | null,"id"?: string,"name"?: string,"pay_monthly"?: boolean,"photo_path"?: string | null,"retail_pct_override"?: number | null,"sort"?: number,"target_cuts_weekly"?: number | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     {
@@ -1545,16 +1570,28 @@ isOneToOne: false
                   ]
                 },"staff_time_off": {
                   Row: {
-                    "all_day": boolean,"created_at": string,"decided_at": string | null,"decided_by": string | null,"end_at": string,"id": string,"reason": string,"requested_by": string | null,"staff_id": string,"start_at": string,"status": Database["public"]['Enums']["time_off_status"]
+                    "all_day": boolean,"created_at": string,"decided_at": string | null,"decided_by": string | null,"end_at": string,"id": string,"kind": string,"profile_id": string | null,"reason": string,"requested_by": string | null,"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["time_off_status"],"swapped": boolean
                   }
                   Insert: {
-                    "all_day"?: boolean,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"end_at": string,"id"?: string,"reason"?: string,"requested_by"?: string | null,"staff_id": string,"start_at": string,"status"?: Database["public"]['Enums']["time_off_status"]
+                    "all_day"?: boolean,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"end_at": string,"id"?: string,"kind"?: string,"profile_id"?: string | null,"reason"?: string,"requested_by"?: string | null,"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["time_off_status"],"swapped"?: boolean
                   }
                   Update: {
-                    "all_day"?: boolean,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"end_at"?: string,"id"?: string,"reason"?: string,"requested_by"?: string | null,"staff_id"?: string,"start_at"?: string,"status"?: Database["public"]['Enums']["time_off_status"]
+                    "all_day"?: boolean,"created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"end_at"?: string,"id"?: string,"kind"?: string,"profile_id"?: string | null,"reason"?: string,"requested_by"?: string | null,"staff_id"?: string | null,"start_at"?: string,"status"?: Database["public"]['Enums']["time_off_status"],"swapped"?: boolean
                   }
                   Relationships: [
                     {
+      foreignKeyName: "staff_time_off_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "staff_time_off_profile_id_fkey"
+      columns: ["profile_id"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "staff_time_off_staff_id_fkey"
       columns: ["staff_id"]
 isOneToOne: false
@@ -2255,6 +2292,9 @@ isOneToOne: false
 "cancel_booking_admin":
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
+"cancel_day_off_swap":
+{ Args: { "p_id": string }; Returns: undefined
+                           },
 "cancel_my_booking":
 { Args: { "p_id": string }; Returns: undefined
                            },
@@ -2272,6 +2312,9 @@ isOneToOne: false
                            },
 "cashier_bonus":
 { Args: { "p_month": string }; Returns: Json
+                           },
+"check_day_off":
+{ Args: { "p_date": string,"p_ignore": (string)[],"p_profile": string,"p_staff": string }; Returns: undefined
                            },
 "checkout":
 { Args: { "p": Json }; Returns: string
@@ -2376,10 +2419,16 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"day_off_board":
+{ Args: { "p_from": string,"p_to": string }; Returns: Json
+                           },
 "day_window":
 { Args: { "p_date": string }; Returns: {
               "close_m": number,"open_m": number
             }[]
+                           },
+"decide_day_off_swap":
+{ Args: { "p_approve": boolean,"p_id": string }; Returns: undefined
                            },
 "decide_time_off":
 { Args: { "p_approve": boolean,"p_id": string }; Returns: undefined
@@ -2415,6 +2464,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "petty_cash_limit": number,"receipt_required_above": number
             }[]
+                           },
+"fill_days_off":
+{ Args: { "p_weeks"?: number }; Returns: number
                            },
 "fill_nama":
 { Args: { "p_name": string,"p_text": string }; Returns: string
@@ -2596,6 +2648,9 @@ isOneToOne: false
 "occupied_until":
 { Args: { "a": Database["public"]['Tables']["appointments"]['Row'] }; Returns: string
                            },
+"off_group":
+{ Args: { "p_profile": string,"p_staff": string }; Returns: string
+                           },
 "open_minutes":
 { Args: { "p_from": string,"p_to": string }; Returns: number
                            },
@@ -2646,6 +2701,9 @@ isOneToOne: false
                            },
 "owner_top_customers":
 { Args: { "p_from": string,"p_limit"?: number,"p_to": string }; Returns: Json
+                           },
+"owns_off":
+{ Args: { "p_profile": string,"p_staff": string }; Returns: boolean
                            },
 "pay_label":
 { Args: { "m": string }; Returns: string
@@ -2698,6 +2756,9 @@ isOneToOne: false
 "release_prices":
 { Args: Record<PropertyKey, never>; Returns: Json
                            },
+"request_day_off_swap":
+{ Args: { "p_new_date": string,"p_off_id": string,"p_partner_off_id": string,"p_reason": string }; Returns: string
+                           },
 "request_schedule_change":
 { Args: { "p_id": string,"p_message": string }; Returns: undefined
                            },
@@ -2711,6 +2772,9 @@ isOneToOne: false
 { Args: { "p_a": string,"p_b": string }; Returns: {
               "actual_minus_planned": number,"day": string,"n_actual": number,"planned_minutes": number,"resource_id": string,"sold_minutes": number,"staff_id": string
             }[]
+                           },
+"respond_day_off_swap":
+{ Args: { "p_accept": boolean,"p_id": string }; Returns: undefined
                            },
 "revert_my_status":
 { Args: { "p_id": string }; Returns: Database["public"]['Enums']["appt_status"]
@@ -2749,6 +2813,9 @@ isOneToOne: false
                            },
 "set_appointment_status":
 { Args: { "p_id": string,"p_status": Database["public"]['Enums']["appt_status"] }; Returns: undefined
+                           },
+"set_day_off":
+{ Args: { "p_day": number,"p_profile_id": string,"p_staff_id": string }; Returns: undefined
                            },
 "set_staff_pin":
 { Args: { "p_pin": string,"p_staff_id": string }; Returns: undefined

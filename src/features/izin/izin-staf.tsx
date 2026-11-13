@@ -23,7 +23,7 @@ export function IzinStaf({ master }: { master: Master }) {
   const { data, refresh } = useRealtimeTable(["staff_time_off", "appointments"], async () => {
     const supabase = createClient();
     const { data: rows } = await supabase.from("staff_time_off").select("id, staff_id, start_at, end_at, all_day, reason, status, created_at")
-      .gte("end_at", new Date(Date.now() - 30 * 864e5).toISOString()).order("start_at");
+      .eq("kind", "izin").gte("end_at", new Date(Date.now() - 30 * 864e5).toISOString()).order("start_at");
     const now = Date.now();
     const list = ((rows ?? []) as (TimeOffRow & { created_at: string })[]).map((o) => ({ ...o, upcoming: Date.parse(o.end_at) > now }));
     const live = list.filter((o) => (o.status === "approved" || o.status === "pending") && o.upcoming);

@@ -166,6 +166,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
           <span>Omzet <b className="text-ink">{formatRupiah(revenue)}</b></span>
         </div>
         {master.role === "manager" && <Link href="/manajer/izin" className={buttonClass("outline", "h-11 px-4")}>Izin staf</Link>}
+        {master.role === "manager" && <Link href="/manajer/libur" className={buttonClass("outline", "h-11 px-4")}>Jadwal libur</Link>}
         <Button onClick={newBooking} variant={date === today ? "outline" : "default"} className="h-11 px-[18px]">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
           Booking baru

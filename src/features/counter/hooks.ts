@@ -35,7 +35,7 @@ export function useDayTimeOff(date: string) {
   return useRealtimeTable(["staff_time_off"], async () => {
     const [a, b] = dayRange(date);
     const { data } = await createClient().from("staff_time_off").select("id, staff_id, start_at, end_at, all_day, reason, status")
-      .eq("status", "approved").lt("start_at", b).gt("end_at", a);
+      .eq("status", "approved").not("staff_id", "is", null).lt("start_at", b).gt("end_at", a);
     return (data ?? []) as TimeOffRow[];
   }, date);
 }

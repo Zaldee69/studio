@@ -94,6 +94,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
               <Link href="/kapster/izin" onClick={() => setMenu(false)} className="flex min-h-12 items-center justify-between rounded-xl px-3 text-sm font-semibold hover:bg-paper">
                 Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D23B3B] px-2 text-[11px] text-white tabular">{pending}</span>}
               </Link>
+              {!me.station && <Link href="/kapster/libur" onClick={() => setMenu(false)} className="flex min-h-12 items-center rounded-xl px-3 text-sm font-semibold hover:bg-paper">Jadwal libur</Link>}
               <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-sm font-semibold hover:bg-paper">
                 Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${muted ? "bg-[#EDEDE9] text-muted" : "bg-[#E6F1E4] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
               </button>

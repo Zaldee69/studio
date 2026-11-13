@@ -12,7 +12,8 @@ import { useKapster } from "./provider";
 
 /** Ajukan izin/cuti (sehari penuh / rentang jam) & lihat status. */
 export function IzinKapster() {
-  const { offs, refresh } = useKapster();
+  const { offs: all, refresh } = useKapster();
+  const offs = all?.filter((o) => o.kind === "izin") ?? null; // libur mingguan tampil di Jadwal libur
   const toast = useToast();
   const online = useOnline();
   const [date, setDate] = useState(addDays(jktDate(), 1));

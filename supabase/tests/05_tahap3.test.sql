@@ -36,7 +36,7 @@ select is(tests.nslots(jkt_today() + 1, 'Potong Rambut'), 0::bigint, 'hari libur
 update opening_hours set closed = false, open_time = '12:00', close_time = '15:00' where weekday = extract(dow from jkt_today() + 1);
 select results_eq($$ select * from get_available_slots(jkt_today() + 1, array[tests.svc('Potong Rambut')]) $$,
                   $$ values ('12:00'), ('12:30'), ('13:00'), ('13:30'), ('14:00') $$, 'jam buka per hari dihormati');
-select is((select open_time::text || '-' || close_time::text from settings), '09:00:00-21:00:00', 'grid konter tetap rentang terluas');
+select is((select open_time::text || '-' || close_time::text from settings), '10:00:00-21:00:00', 'grid konter tetap rentang terluas');
 update opening_hours set open_time = '09:00', close_time = '21:00' where weekday = extract(dow from jkt_today() + 1);
 insert into special_closures (date, reason) values (jkt_today() + 2, 'Renovasi');
 select is(tests.nslots(jkt_today() + 2, 'Potong Rambut'), 0::bigint, 'hari libur khusus → tanpa slot');

@@ -10,7 +10,7 @@ export type MenuItem = { href: string; label: string; short?: string; icon: Icon
 export const MANAGER_MENU: MenuItem[] = [
   { href: "/manajer", label: "Beranda", icon: "home" },
   { href: "/manajer/rencana", label: "Rencana & Target", short: "Rencana", icon: "target", also: ["/manajer/analitik"] },
-  { href: "/manajer/jadwal", label: "Jadwal", icon: "calendar", badge: "online", also: ["/manajer/izin"] },
+  { href: "/manajer/jadwal", label: "Jadwal", icon: "calendar", badge: "online", also: ["/manajer/izin", "/manajer/libur"] },
   { href: "/manajer/pelanggan", label: "Pelanggan", icon: "users", badge: "follow", also: ["/manajer/promosi"] },
   { href: "/manajer/kasir", label: "Kasir", icon: "cash", badge: "ready" },
   { href: "/manajer/sdm", label: "SDM & Komisi", short: "SDM", icon: "badge" },
@@ -27,4 +27,5 @@ export const CASHIER_MENU: MenuItem[] = [
   { href: "/kasir/pelanggan", label: "Pelanggan", icon: "users", badge: "follow" },
   { href: "/kasir/pengeluaran", label: "Pengeluaran", short: "Biaya", icon: "receipt" },
   { href: "/kasir/opname", label: "Stok opname", short: "Opname", icon: "box" },
+  { href: "/kasir/libur", label: "Jadwal libur", short: "Libur", icon: "calendar" },
 ];

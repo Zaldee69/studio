@@ -1,5 +1,7 @@
 begin;
 \ir helpers.psql
+-- data uji memakai capster di kursi lain; aturan kursi terikat diuji di 10_kursi_utama
+alter table appointments disable trigger appointments_z_bound_chair;
 select plan(72);
 
 create table tests.v (k text primary key, v text);

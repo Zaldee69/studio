@@ -449,13 +449,13 @@ isOneToOne: false
                   ]
                 },"day_off_swaps": {
                   Row: {
-                    "created_at": string,"decided_at": string | null,"decided_by": string | null,"id": string,"new_date": string | null,"off_id": string,"partner_off_id": string | null,"partner_ok": boolean | null,"reason": string,"requested_by": string,"status": Database["public"]['Enums']["time_off_status"]
+                    "created_at": string,"decided_at": string | null,"decided_by": string | null,"from_date": string | null,"id": string,"new_date": string | null,"off_id": string,"partner_off_id": string | null,"partner_ok": boolean | null,"reason": string,"requested_by": string,"status": Database["public"]['Enums']["time_off_status"],"to_date": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"new_date"?: string | null,"off_id": string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"]
+                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"from_date"?: string | null,"id"?: string,"new_date"?: string | null,"off_id": string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"],"to_date"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"id"?: string,"new_date"?: string | null,"off_id"?: string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"]
+                    "created_at"?: string,"decided_at"?: string | null,"decided_by"?: string | null,"from_date"?: string | null,"id"?: string,"new_date"?: string | null,"off_id"?: string,"partner_off_id"?: string | null,"partner_ok"?: boolean | null,"reason"?: string,"requested_by"?: string,"status"?: Database["public"]['Enums']["time_off_status"],"to_date"?: string | null
                   }
                   Relationships: [
                     {
@@ -2312,6 +2312,9 @@ isOneToOne: false
                            },
 "cashier_bonus":
 { Args: { "p_month": string }; Returns: Json
+                           },
+"chair_owner":
+{ Args: { "p_resource": string }; Returns: string
                            },
 "check_day_off":
 { Args: { "p_date": string,"p_ignore": (string)[],"p_profile": string,"p_staff": string }; Returns: undefined

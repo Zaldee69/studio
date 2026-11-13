@@ -12,7 +12,7 @@ import { bundleDiscount } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, normalizeWhatsApp } from "@/lib/domain/format";
 import { dayWindow } from "@/lib/domain/hours";
 import { findConflicts, jktIso, jktMinutes, minToTime, timeToMin } from "@/lib/domain/schedule";
-import { approvedOffFor, offLabel } from "@/lib/domain/staff";
+import { approvedOffFor, boundChair, chairOwner, offLabel } from "@/lib/domain/staff";
 import { createClient } from "@/lib/supabase/client";
 import { CustomerCombobox } from "../counter/customer-combobox";
 import { useDayAppointments, useDayTimeOff } from "../counter/hooks";
@@ -105,6 +105,8 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   /** Staf kategori itu: tidak izin, utamakan pemilik kursi ini, lalu yang kosong di jam itu. */
   const defaultStaffFor = (c: Cat, resId: string | null, s: string, e: string, exclude?: string | null) => {
     const pool = activeStaff.filter((x) => x.category === c && x.id !== exclude && !approvedOffFor(dayOffs ?? [], x.id, s, e));
+    const owner = chairOwner(activeStaff, resId);
+    if (owner) return owner; // kursi terikat: kursi ini hanya untuk pemiliknya
     const free = pool.filter((x) => !busy({ resourceId: "-", staffId: x.id, s, e }).length);
     return (free.find((x) => x.home_resource_id === resId) ?? free[0] ?? pool[0])?.id ?? null;
   };
@@ -259,7 +261,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
           </NativeSelect>
         </Field>
         <Field label={STAFF_TITLE[cat]} htmlFor="f-staff">
-          <NativeSelect id="f-staff" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setServerConflicts(null); }}>
+          <NativeSelect id="f-staff" value={staffId ?? ""} onChange={(e) => { setStaffPick(e.target.value); setResourceId(boundChair(activeStaff, e.target.value) ?? resourceId); setServerConflicts(null); }}>
             {!staffId && <option value="">— tidak ada staf aktif —</option>}
             {staffOptions(cat, startIso, endIso)}
           </NativeSelect>
@@ -380,7 +382,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
               </NativeSelect>
             </Field>
             <Field label={STAFF_TITLE[pairCat]} htmlFor="f-staff2">
-              <NativeSelect id="f-staff2" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value }); setServerConflicts(null); }}>
+              <NativeSelect id="f-staff2" value={pairStaff ?? ""} onChange={(e) => { setPair({ ...pair, staffPick: e.target.value, resourceId: boundChair(activeStaff, e.target.value) ?? pairResource }); setServerConflicts(null); }}>
                 {!pairStaff && <option value="">— tidak ada staf aktif —</option>}
                 {staffOptions(pairCat, startIso, pairEndIso)}
               </NativeSelect>

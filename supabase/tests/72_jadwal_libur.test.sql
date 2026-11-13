@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(21);
+select plan(22);
 
 -- Jadwal libur (13 Nov): libur tetap, baris libur otomatis, pindah hari, tukar dengan rekan, papan libur.
 select tests.su();
@@ -14,6 +14,12 @@ create function tests.off_id(sid uuid, n int) returns uuid language sql stable s
   select id from public.staff_time_off
   where staff_id = sid and kind = 'libur' and start_at >= jkt(tests.wk(n, 1), '00:00') and start_at < jkt(tests.wk(n, 1) + 7, '00:00') $$;
 grant execute on all functions in schema tests to authenticated;
+
+-- mulai dari keadaan bersih (DB lokal bisa berisi sisa uji manual)
+update staff set day_off = null; update profiles set day_off = null;
+delete from staff_time_off where kind = 'libur';
+create function tests.roster_size() returns int language sql stable security definer as
+  $$ select (select count(*)::int from public.staff where active) + (select count(*)::int from public.profiles where active and role = 'cashier') $$;
 
 -- akun kapster ke-2 (Rizky) untuk uji tukar
 insert into auth.users (id, email, raw_user_meta_data) values ('00000000-0000-0000-0002-000000000009', 'rizky@t.test',
@@ -68,11 +74,17 @@ select tests.su();
 select results_eq($$ select tests.off_of(tests.staff_andi(), 2), tests.off_of(tests.staff_rizky(), 2) $$,
   $$ select tests.wk(2, 2), tests.wk(2, 1) $$, 'minggu ke-2: Andi libur Selasa, Rizky Senin');
 
+select tests.login(tests.mgr());
+select results_eq($$ select (x ->> 'from_date')::date, (x ->> 'new_date')::date from jsonb_array_elements(
+                       (select day_off_board(tests.wk(0, 1), tests.wk(3, 7)) -> 'swaps')) x where x ->> 'partner' is null $$,
+  $$ select tests.wk(1, 1), tests.wk(1, 3) $$, 'riwayat pindah tetap Senin → Rabu setelah disetujui');
+
 -- ---------- papan libur ----------
 select tests.login(tests.andi());
-select ok((select jsonb_array_length(day_off_board(tests.wk(0, 1), tests.wk(3, 7)) -> 'people') = 1
-           and jsonb_array_length(day_off_board(tests.wk(0, 1), tests.wk(3, 7)) -> 'offs') > 4),
-  'kapster melihat libur semua orang, tetapi daftar orang hanya dirinya');
+select results_eq($$ select count(*)::int, count(*) filter (where (x ->> 'me')::boolean)::int
+                     from jsonb_array_elements(day_off_board(tests.wk(0, 1), tests.wk(3, 7)) -> 'people') x $$,
+  $$ select tests.roster_size(), 1 $$,
+  'kapster melihat semua staf & kasir di tabel, satu baris ditandai dirinya');
 
 select * from finish();
 rollback;

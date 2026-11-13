@@ -13,10 +13,10 @@ import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
 
 type Group = Cat | "cashier";
-type Off = { id: string; name: string; group: Group; kind: "izin" | "libur"; start_at: string; end_at: string; swapped: boolean; mine: boolean; bookings: number };
+type Off = { id: string; staff_id: string | null; profile_id: string | null; name: string; group: Group; kind: "izin" | "libur"; start_at: string; end_at: string; swapped: boolean; mine: boolean; bookings: number };
 type Swap = { id: string; status: keyof typeof OFF_STATUS; partner_ok: boolean | null; reason: string; name: string; partner: string | null;
   from_date: string; new_date: string; mine: boolean; to_me: boolean; bookings: number };
-type Person = { staff_id: string | null; profile_id: string | null; name: string; group: Group; day_off: number | null };
+type Person = { staff_id: string | null; profile_id: string | null; name: string; group: Group; day_off: number | null; me: boolean };
 type Board = { offs: Off[]; swaps: Swap[]; people: Person[] };
 type Fn = "set_day_off" | "request_day_off_swap" | "respond_day_off_swap" | "cancel_day_off_swap" | "decide_day_off_swap";
 
@@ -39,8 +39,8 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
   const from = monday(month), to = addDays(monday(shiftMonth(month, 1)), 6);
   const { data, refresh } = useRealtimeTable(["staff_time_off", "day_off_swaps"], async () => {
     const { data, error } = await createClient().rpc("day_off_board", { p_from: from, p_to: to });
-    if (error) throw error;
-    return data as unknown as Board;
+    // Error ditampilkan, bukan "Memuat…" selamanya (mis. migrasi jadwal libur belum dijalankan di server)
+    return error ? { error: error.message } : (data as unknown as Board);
   }, month);
 
   async function call(fn: Fn, args: Record<string, unknown>, ok: string) {
@@ -51,13 +51,7 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
   }
 
   if (!data) return <Empty>Memuat…</Empty>;
-  const offsByDay = new Map<string, Off[]>();
-  for (const o of data.offs) {
-    for (let d = dayOf(o), last = jktDate(new Date(Date.parse(o.end_at) - 1)); d <= last; d = addDays(d, 1)) {
-      if (d.slice(0, 7) === month.slice(0, 7)) offsByDay.set(d, [...(offsByDay.get(d) ?? []), o]);
-    }
-  }
-  const days = [...offsByDay.keys()].sort();
+  if ("error" in data) return <Empty>Jadwal libur belum bisa dibuka: {data.error}</Empty>;
   const mine = data.offs.filter((o) => o.mine && o.kind === "libur" && dayOf(o) >= today);
   const swaps = data.swaps.filter((s) => s.status === "pending" || manager);
 
@@ -69,6 +63,44 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
         <span className="min-w-36 text-center text-sm font-bold capitalize">{monthName(month)}</span>
         <Button variant="outline" className="h-11 px-3" aria-label="Bulan berikutnya" onClick={() => setMonth(shiftMonth(month, 1))}>›</Button>
       </div>
+
+      {(manager || swaps.length > 0) && (
+        <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
+          <h2 className="text-base font-bold">Pengajuan tukar libur <span className="text-muted tabular">· {swaps.length}</span></h2>
+          {!swaps.length && <span className="text-sm text-muted">Tidak ada.</span>}
+          {swaps.map((s) => {
+            const [l, bg, fg] = OFF_STATUS[s.status];
+            const waitPartner = s.partner && s.partner_ok === null && s.status === "pending";
+            return (
+              <div key={s.id} className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-2.5">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="flex min-w-0 flex-1 flex-col text-sm">
+                    <b>{s.partner ? `${s.name} tukar dengan ${s.partner}` : `${s.name} pindah libur`}</b>
+                    <span className="text-xs text-muted">{fmt(s.from_date)} → {fmt(s.new_date)}{s.reason && ` · ${s.reason}`}
+                      {waitPartner && ` · menunggu ${s.partner}`}</span>
+                  </span>
+                  <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
+                  {s.status === "pending" && manager && !waitPartner && <>
+                    <Button disabled={!online} variant="outline" className="h-11 text-[#A12A2A]" onClick={() => call("decide_day_off_swap", { p_id: s.id, p_approve: false }, "Tukar libur ditolak")}>Tolak</Button>
+                    <Button disabled={!online} className="h-11" onClick={() => call("decide_day_off_swap", { p_id: s.id, p_approve: true }, "Tukar libur disetujui")}>Setujui</Button>
+                  </>}
+                  {s.status === "pending" && s.to_me && s.partner_ok === null && <>
+                    <Button disabled={!online} variant="outline" className="h-11 text-[#A12A2A]" onClick={() => call("respond_day_off_swap", { p_id: s.id, p_accept: false }, "Tukar libur ditolak")}>Tolak</Button>
+                    <Button disabled={!online} className="h-11" onClick={() => call("respond_day_off_swap", { p_id: s.id, p_accept: true }, "Anda setuju, menunggu manajer")}>Setuju</Button>
+                  </>}
+                  {s.status === "pending" && s.mine && <Button disabled={!online} variant="outline" className="h-11" onClick={() => call("cancel_day_off_swap", { p_id: s.id }, "Pengajuan dibatalkan")}>Batalkan</Button>}
+                </div>
+                {manager && s.status === "pending" && s.bookings > 0 && (
+                  <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+                    Ada {s.bookings} booking di hari libur barunya. Pindahkan dulu ke capster lain setelah disetujui.</p>
+                )}
+              </div>
+            );
+          })}
+        </section>
+      )}
+
+      <TabelLibur month={month} today={today} people={data.people} offs={data.offs} manager={manager} />
 
       {manager && (
         <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
@@ -91,57 +123,7 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
 
       {!manager && <LiburSaya mine={mine} offs={data.offs} today={today} online={online} call={call} />}
 
-      <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
-        <h2 className="text-base font-bold">Pengajuan tukar libur <span className="text-muted tabular">· {swaps.length}</span></h2>
-        {!swaps.length && <span className="text-sm text-muted">Tidak ada.</span>}
-        {swaps.map((s) => {
-          const [l, bg, fg] = OFF_STATUS[s.status];
-          const waitPartner = s.partner && s.partner_ok === null && s.status === "pending";
-          return (
-            <div key={s.id} className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-2.5">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <span className="flex min-w-0 flex-1 flex-col text-sm">
-                  <b>{s.partner ? `${s.name} tukar dengan ${s.partner}` : `${s.name} pindah libur`}</b>
-                  <span className="text-xs text-muted">{fmt(s.from_date)} → {fmt(s.new_date)}{s.reason && ` · ${s.reason}`}
-                    {waitPartner && ` · menunggu ${s.partner}`}</span>
-                </span>
-                <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
-                {s.status === "pending" && manager && !waitPartner && <>
-                  <Button disabled={!online} variant="outline" className="h-11 text-[#A12A2A]" onClick={() => call("decide_day_off_swap", { p_id: s.id, p_approve: false }, "Tukar libur ditolak")}>Tolak</Button>
-                  <Button disabled={!online} className="h-11" onClick={() => call("decide_day_off_swap", { p_id: s.id, p_approve: true }, "Tukar libur disetujui")}>Setujui</Button>
-                </>}
-                {s.status === "pending" && s.to_me && s.partner_ok === null && <>
-                  <Button disabled={!online} variant="outline" className="h-11 text-[#A12A2A]" onClick={() => call("respond_day_off_swap", { p_id: s.id, p_accept: false }, "Tukar libur ditolak")}>Tolak</Button>
-                  <Button disabled={!online} className="h-11" onClick={() => call("respond_day_off_swap", { p_id: s.id, p_accept: true }, "Anda setuju, menunggu manajer")}>Setuju</Button>
-                </>}
-                {s.status === "pending" && s.mine && <Button disabled={!online} variant="outline" className="h-11" onClick={() => call("cancel_day_off_swap", { p_id: s.id }, "Pengajuan dibatalkan")}>Batalkan</Button>}
-              </div>
-              {manager && s.status === "pending" && s.bookings > 0 && (
-                <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
-                  Ada {s.bookings} booking di hari libur barunya. Pindahkan dulu ke capster lain setelah disetujui.</p>
-              )}
-            </div>
-          );
-        })}
-      </section>
 
-      <section className="flex flex-col gap-1 rounded-[14px] border border-line bg-card p-4">
-        <h2 className="pb-1 text-base font-bold">Siapa libur di <span className="capitalize">{monthName(month)}</span></h2>
-        {!days.length && <span className="text-sm text-muted">Belum ada libur di bulan ini.</span>}
-        {days.map((d) => (
-          <div key={d} className={`flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-[#EEEEEA] py-2 text-sm ${d < today ? "opacity-50" : ""}`}>
-            <span className={`w-40 shrink-0 ${d === today ? "font-bold" : ""}`}>{fmt(d)}{d === today && " · hari ini"}</span>
-            <span className="flex flex-1 flex-wrap gap-1.5">
-              {offsByDay.get(d)!.map((o) => (
-                <span key={o.id} className={`rounded-full px-2.5 py-0.5 text-[13px] ${o.mine ? "bg-ink text-white" : "bg-paper"}`}>
-                  {o.name} · {o.kind === "izin" ? "izin" : o.swapped ? "libur (ditukar)" : "libur"}
-                  {manager && o.bookings > 0 && d >= today && <b className="text-[#A12A2A]"> · {o.bookings} booking</b>}
-                </span>
-              ))}
-            </span>
-          </div>
-        ))}
-      </section>
     </div>
   );
 }
@@ -200,6 +182,104 @@ function LiburSaya({ mine, offs, today, online, call }: {
           )}
         </div>
       ))}
+    </section>
+  );
+}
+
+const ORDER: Record<Group, number> = { barbershop: 0, cashier: 1, massage: 2, nail: 3 };
+const SHORT = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+const dayNum = (d: string) => +d.slice(8);
+const weekLabel = (w: string) => {
+  const end = addDays(w, 6), m = (d: string) => new Intl.DateTimeFormat("id-ID", { month: "short", timeZone: "UTC" }).format(new Date(d + "T00:00:00Z"));
+  return m(w) === m(end) ? `${dayNum(w)}–${dayNum(end)} ${m(end)}` : `${dayNum(w)} ${m(w)} – ${dayNum(end)} ${m(end)}`;
+};
+
+/** Jadwal libur bentuk tabel per minggu (seperti jadwal shift): baris = orang, kolom = Senin–Minggu. */
+function TabelLibur({ month, today, people, offs, manager }: { month: string; today: string; people: Person[]; offs: Off[]; manager: boolean }) {
+  const [showPast, setShowPast] = useState(false);
+  const last = addDays(shiftMonth(month, 1), -1);
+  const all: string[] = [];
+  for (let w = monday(month); w <= last; w = addDays(w, 7)) all.push(w);
+  const past = all.filter((w) => addDays(w, 6) < today && last >= today); // hanya disembunyikan di bulan yang sedang berjalan
+  const weeks = showPast ? all : all.filter((w) => !past.includes(w));
+  const who = (x: { staff_id: string | null; profile_id: string | null }) => x.staff_id ?? x.profile_id;
+  const cell = new Map<string, Off>();
+  for (const o of offs) {
+    for (let d = dayOf(o), end = jktDate(new Date(Date.parse(o.end_at) - 1)); d <= end; d = addDays(d, 1)) {
+      if (!cell.has(`${who(o)}|${d}`) || o.kind === "libur") cell.set(`${who(o)}|${d}`, o);
+    }
+  }
+  const sorted = [...people].sort((a, b) => ORDER[a.group] - ORDER[b.group] || a.name.localeCompare(b.name));
+  // Orang tanpa libur tetap & tanpa libur/izin bulan ini tidak diberi baris — disebut sekali di bawah tabel
+  const rows = sorted.filter((p) => p.me || p.day_off || offs.some((o) => who(o) === who(p)));
+  const always = sorted.filter((p) => !rows.includes(p));
+
+  return (
+    <section className="flex flex-col gap-3">
+      {past.length > 0 && (
+        <button onClick={() => setShowPast(!showPast)} className="self-start text-sm font-semibold text-muted underline underline-offset-4">
+          {showPast ? "Sembunyikan minggu yang sudah lewat" : `Tampilkan ${past.length} minggu yang sudah lewat`}
+        </button>
+      )}
+      {weeks.map((w) => {
+        const days = Array.from({ length: 7 }, (_, i) => addDays(w, i));
+        return (
+          <div key={w} className="overflow-x-auto rounded-[14px] border border-line bg-card">
+            <table className="w-full border-separate border-spacing-0 text-sm">
+              <caption className="px-4 pb-1 pt-3 text-left text-sm font-bold">
+                {weekLabel(w)}{w <= today && today <= addDays(w, 6) && <span className="ml-2 font-normal text-muted">minggu ini</span>}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" className="sticky left-0 z-10 w-20 bg-card py-2 pl-4 pr-1 text-left text-xs font-semibold text-muted">Nama</th>
+                  {days.map((d, i) => (
+                    <th key={d} scope="col" className={`min-w-9 px-0.5 py-2 text-center font-normal ${d.slice(0, 7) !== month.slice(0, 7) ? "opacity-40" : ""}`}>
+                      <span className="block text-[11px] text-muted">{SHORT[i]}</span>
+                      <span className={`mx-auto mt-0.5 flex size-7 items-center justify-center rounded-full text-[13px] font-bold tabular ${d === today ? "bg-ink text-white" : ""}`}>{dayNum(d)}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((p) => (
+                  <tr key={who(p)} className={p.me ? "bg-[#F3F1EC]" : ""}>
+                    <th scope="row" className={`sticky left-0 z-10 max-w-20 border-t border-[#EEEEEA] py-1.5 pl-4 pr-1 text-left font-normal ${p.me ? "bg-[#F3F1EC]" : "bg-card"}`}>
+                      <span className="block truncate text-[13px] font-semibold">{p.me ? "Saya" : p.name}</span>
+                      <span className="block truncate text-[11px] text-muted">{title(p.group)}</span>
+                    </th>
+                    {days.map((d) => {
+                      const o = cell.get(`${who(p)}|${d}`);
+                      const dim = d.slice(0, 7) !== month.slice(0, 7) ? "opacity-40" : d < today ? "opacity-60" : "";
+                      const warn = manager && o && o.bookings > 0 && d >= today;
+                      return (
+                        <td key={d} className={`border-t border-[#EEEEEA] px-0.5 py-1.5 text-center ${d === today ? "bg-[#EEF1EA]" : ""} ${dim}`}>
+                          {!o ? <span aria-label="Masuk" className="mx-auto block size-1.5 rounded-full bg-[#D9D9D3]" />
+                            : (
+                              <span title={warn ? `${o.bookings} booking perlu dipindah` : undefined}
+                                className={`relative mx-auto flex h-8 max-w-12 items-center justify-center rounded-lg px-0.5 text-[10.5px] font-semibold ${
+                                  o.kind === "izin" ? "bg-[#FBF3DE] text-[#5A4300]" : o.swapped ? "border-2 border-ink text-ink" : "bg-ink text-white"}`}>
+                                {o.kind === "izin" ? "Izin" : o.swapped ? "Tukar" : "Libur"}
+                                {warn && <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#D23B3B] ring-2 ring-card" />}
+                              </span>
+                            )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      })}
+      <p className="flex flex-wrap items-center gap-x-4 gap-y-1.5 px-1 text-xs text-muted">
+        <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded bg-ink" />Libur</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded border-2 border-ink" />Libur hasil tukar</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded bg-[#FBF3DE]" />Izin</span>
+        <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[#D9D9D3]" />Masuk</span>
+        {manager && <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#D23B3B]" />Ada booking di hari libur</span>}
+      </p>
+      {always.length > 0 && <p className="px-1 text-xs text-muted">Belum punya jadwal libur: {always.map((p) => p.name).join(", ")}.</p>}
     </section>
   );
 }

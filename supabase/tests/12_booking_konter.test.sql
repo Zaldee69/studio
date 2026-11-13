@@ -1,5 +1,7 @@
 begin;
 \ir helpers.psql
+-- data uji memakai capster di kursi lain; aturan kursi terikat diuji di 10_kursi_utama
+alter table appointments disable trigger appointments_z_bound_chair;
 select plan(15);
 
 create function tests.res(n text) returns uuid language sql security definer as $$ select id from public.resources where name = n $$;

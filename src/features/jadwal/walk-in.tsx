@@ -1,5 +1,6 @@
 "use client";
 
+import { boundChair, chairOwner } from "@/lib/domain/staff";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -52,7 +53,9 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
 
   /** Kursi milik capster bila kosong sekarang, selain itu kursi sekategori yang kosong, selain itu kursi milik capster. */
   function pickResource(startIso: string, endIso: string) {
-    const pool = master.resources.filter((r) => r.type === cat)
+    const bound = boundChair(master.staff, who?.id ?? null);
+    if (bound) return bound; // kursi terikat: capster berkursi selalu di kursinya
+    const pool = master.resources.filter((r) => r.type === cat && !chairOwner(master.staff, r.id))
       .sort((x, y) => Number(y.id === who?.home_resource_id) - Number(x.id === who?.home_resource_id));
     return (pool.find((r) => !findConflicts(appts, { resourceId: r.id, staffId: null, start: startIso, end: endIso }).length) ?? pool[0])?.id;
   }

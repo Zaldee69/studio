@@ -62,3 +62,12 @@ export const offLabel = (o: { start_at: string; end_at: string; all_day: boolean
   return o.all_day ? (d0 === d1 ? `${d0} · sehari penuh` : `${d0} – ${d1}`) : `${d0} · ${formatJam(o.start_at)}–${formatJam(o.end_at)}`;
 };
 
+
+/** Kursi terikat (13 Nov, cermin chair_owner/guard_bound_chair di DB): kursi barbershop milik capster aktif hanya untuknya. */
+type ChairStaff = { id: string; category: string; active: boolean; home_resource_id: string | null };
+export const chairOwner = (staff: ChairStaff[], resourceId: string | null) =>
+  staff.find((s) => s.active && s.category === "barbershop" && !!resourceId && s.home_resource_id === resourceId)?.id ?? null;
+export const boundChair = (staff: ChairStaff[], staffId: string | null) => {
+  const s = staff.find((x) => x.id === staffId);
+  return s?.active && s.category === "barbershop" ? s.home_resource_id : null;
+};

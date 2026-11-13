@@ -8,7 +8,7 @@ import { Sheet, useToast } from "@/components/ui";
 import { CAT_STYLE } from "@/components/ui";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
 import { addDays, conflictingIds, jktMinutes, minToTime, nextQuarter, occupiedEnd, timeToMin } from "@/lib/domain/schedule";
-import { approvedOffFor, offLabel } from "@/lib/domain/staff";
+import { approvedOffFor, chairOwner, offLabel } from "@/lib/domain/staff";
 import { nextStatus, STATUS, type ApptStatus } from "@/lib/domain/status";
 import { createClient } from "@/lib/supabase/client";
 import { useDayAppointments, useDayTimeOff, useDayTransactions } from "../counter/hooks";
@@ -78,6 +78,12 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         resourceId: master.resources[0]?.id ?? "", staffId: undefined, has: (a: DayAppt) => !a.staff_id }] : [])]
     : master.resources.map((r) => ({ id: r.id, title: r.name, label: r.is_pedicure ? "Pedicure" : CAT_STYLE[r.type].label, tone: CAT_STYLE[r.type],
         sub: chairStaff(r.id) || "—", resourceId: r.id, staffId: undefined as string | undefined, has: (a: DayAppt) => a.resource_id === r.id }));
+  /** Libur/izin sehari penuh pemilik kolom (capster, atau pemilik kursi terikat) → kolom tidak aktif hari itu. */
+  const dayOff = (c: { id: string; staffId?: string; resourceId: string }) => {
+    const owner = c.staffId ?? (view === "capster" ? null : chairOwner(master.staff, c.id));
+    const o = owner ? (offs ?? []).find((x) => x.staff_id === owner && x.all_day) : undefined;
+    return o ? master.staff.find((x) => x.id === owner)?.name ?? "" : null;
+  };
   const revenue = (txs ?? []).filter((t) => !t.voided_at).reduce((a, t) => a + t.total, 0);
 
   // Rentang grid = jam buka, diperlebar bila ada booking di luar jam buka (walk-in larut / datang awal).
@@ -197,7 +203,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                   <span className="truncate text-[13px] font-bold">{c.title}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="shrink-0 rounded-md px-1.5 py-px text-[11px] font-semibold" style={{ background: c.tone.bg, color: c.tone.fg }}>{c.label}</span>
-                    <span className="truncate text-xs text-muted">{c.sub}</span>
+                    <span className="truncate text-xs text-muted">{dayOff(c) !== null ? `Libur · ${dayOff(c)}` : c.sub}</span>
                   </span>
                 </div>
               ))}
@@ -214,7 +220,13 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                   {/* di luar jam buka: arsir abu-abu (tetap bisa melihat kartu walk-in larut) */}
                   {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F4F2ED]/70" style={{ height: (open - gOpen) * px }} />}
                   {gClose > close && <div aria-hidden="true" className="absolute inset-x-0 bg-[#F4F2ED]/70" style={{ top: (close - gOpen) * px, height: (gClose - close) * px }} />}
-                  {slots.map((t) => (
+                  {dayOff(c) !== null && (
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-start justify-center pt-6 text-[13px] font-semibold text-muted"
+                      style={{ backgroundImage: "repeating-linear-gradient(135deg, #F4F2ED 0, #F4F2ED 8px, transparent 8px, transparent 16px)" }}>
+                      <span className="sticky top-16 rounded-full bg-card px-3 py-1 shadow-sm">Tidak aktif · {dayOff(c)} libur</span>
+                    </div>
+                  )}
+                  {dayOff(c) === null && slots.map((t) => (
                     <button key={t} aria-label={`Booking baru ${c.title} ${minToTime(t)}`}
                       onClick={() => setForm({ date, startMin: t, resourceId: c.resourceId, staffId: c.staffId })}
                       className="absolute inset-x-0 hover:bg-accent/5 focus-visible:bg-accent/10" style={{ top: (t - gOpen) * px, height: 30 * px }} />

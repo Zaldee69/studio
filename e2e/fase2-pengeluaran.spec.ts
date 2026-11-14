@@ -59,3 +59,18 @@ test("pengeluaran rutin: tambah IPL → catat dari templat → dicatat bulan ini
     sql(`update expense_templates set active = false where description = '${name}'`);
   }
 });
+
+// Kasir memilih sumber non-laci (transfer): nota wajib, tidak kena batas kas kecil.
+test("kasir pilih sumber transfer → nota wajib", async ({ browser }, info) => {
+  const k = await newSession(browser, info, "cashier");
+  try {
+    await k.goto("/kasir/pengeluaran");
+    await k.getByRole("button", { name: "+ Catat pengeluaran" }).click();
+    const form = k.getByRole("dialog", { name: "Catat pengeluaran" });
+    await form.getByLabel("Dibayar dari").selectOption("transfer");
+    await form.getByLabel("Jumlah (Rp)").fill("25000");
+    await expect(form.getByText("Foto nota (wajib)")).toBeVisible();
+  } finally {
+    await k.context().close();
+  }
+});

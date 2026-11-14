@@ -21,7 +21,7 @@ type Tpl = { id: string; category: ExpenseCat; description: string; amount: numb
 type Prefill = Omit<Tpl, "day_of_month"> & { templateId: string };
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
 
-/** Pengeluaran operasional. Manajer: per bulan, semua sumber, bisa membatalkan. Kasir: hari ini, hanya dari laci (kas kecil). */
+/** Pengeluaran operasional. Manajer: per bulan, semua sumber, bisa membatalkan. Kasir: hari ini; laci dibatasi kas kecil, sumber lain wajib nota. */
 export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   const toast = useToast(); const online = useOnline();
   const manager = role === "manager";
@@ -79,7 +79,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
       <p className="text-sm text-muted">
         {manager
           ? "Biaya operasional di luar stok, perawatan fasilitas, dan gaji. Kasbon staf otomatis menjadi potongan gaji bulan itu. Pengeluaran dari laci mengurangi kas diharapkan di tutup kasir; semuanya masuk laporan owner sampai laba bersih."
-          : `Belanja kecil hari ini yang dibayar dari laci kas (maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)}). Mengurangi kas diharapkan saat tutup kasir. Di atas itu, minta manajer yang mencatat.`}
+          : `Pengeluaran hari ini. Pilih Dibayar dari sesuai sumber uangnya. Dari laci maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)} dan mengurangi kas diharapkan saat tutup kasir; sumber lain wajib foto nota.`}
         {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
       </p>
       {!manager && data?.todayClosed && <p className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
@@ -161,8 +161,8 @@ function AddForm({ manager, lim, staff, prefill, onDone }: {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const amount = Number(f.amount) || 0;
-  const needReceipt = amount > lim.receipt_required_above;
-  const overLimit = !manager && amount > lim.petty_cash_limit;
+  const needReceipt = amount > lim.receipt_required_above || (!manager && f.source !== "laci");
+  const overLimit = !manager && f.source === "laci" && amount > lim.petty_cash_limit;
   const kasbon = f.category === "kasbon";
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
 
@@ -220,17 +220,15 @@ function AddForm({ manager, lim, staff, prefill, onDone }: {
       <Field label="Keterangan" htmlFor="ex-desc">
         <Input id="ex-desc" required minLength={2} maxLength={200} placeholder={kasbon ? "mis. Keperluan keluarga" : "mis. Galon air minum 2 buah"} value={f.description} onChange={set("description")} />
       </Field>
-      {manager && (
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Tanggal" htmlFor="ex-date"><DateInput id="ex-date" required max={today} value={f.date} onChange={set("date")} /></Field>
-          <Field label="Dibayar dari" htmlFor="ex-src">
-            <NativeSelect id="ex-src" value={f.source} onChange={set("source")}>
-              {Object.entries(EXPENSE_SOURCE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-            </NativeSelect>
-          </Field>
-        </div>
-      )}
-      <Field label={needReceipt ? "Foto nota (wajib)" : "Foto nota (opsional)"} htmlFor="ex-file" hint={`Wajib untuk pengeluaran di atas ${formatRupiah(lim.receipt_required_above)}.`}>
+      <div className="grid grid-cols-2 gap-3">
+        {manager && <Field label="Tanggal" htmlFor="ex-date"><DateInput id="ex-date" required max={today} value={f.date} onChange={set("date")} /></Field>}
+        <Field label="Dibayar dari" htmlFor="ex-src">
+          <NativeSelect id="ex-src" value={f.source} onChange={set("source")}>
+            {Object.entries(EXPENSE_SOURCE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </NativeSelect>
+        </Field>
+      </div>
+      <Field label={needReceipt ? "Foto nota (wajib)" : "Foto nota (opsional)"} htmlFor="ex-file" hint={!manager && f.source !== "laci" ? "Wajib untuk pengeluaran non-laci." : `Wajib untuk pengeluaran di atas ${formatRupiah(lim.receipt_required_above)}.`}>
         <Input id="ex-file" type="file" accept={`${IMAGE_ACCEPT},application/pdf`} required={needReceipt} className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
       </Field>
       {f.source === "laci" && <p className="text-xs text-muted">Diambil dari laci kas — mengurangi kas diharapkan saat tutup kasir {manager ? "tanggal itu" : "hari ini"}.</p>}

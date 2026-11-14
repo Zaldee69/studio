@@ -29,12 +29,17 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
 
   let body: React.ReactNode;
   if (tab === "mingguan") {
-    const [{ data: rows }, { data: wk }] = await Promise.all([
+    // minggu lintas bulan: komisinya ikut payroll bulanan → jangan dibayar sebelum kedua bulan ditutup
+    const endMonth = new Date(Date.parse(`${week}T00:00:00Z`) + 6 * 864e5).toISOString().slice(0, 7);
+    const months = [...new Set([week.slice(0, 7), endMonth])];
+    const [{ data: rows }, { data: wk }, { data: pp }] = await Promise.all([
       supabase.rpc("commission_week", { p_week: week }),
       supabase.from("commission_weeks").select("status, reopen_reason").eq("week_start", week).maybeSingle(),
+      supabase.from("payroll_periods").select("month, status").in("month", months.map((m) => `${m}-01`)),
     ]);
+    const openMonths = months.length > 1 ? months.filter((m) => (pp ?? []).find((x) => x.month === `${m}-01`)?.status !== "closed") : [];
     body = <WeeklyCommission key={week} week={week} thisWeek={thisWeek} rows={(rows ?? []) as WeekRow[]}
-      reopenReason={wk?.status === "open" ? wk.reopen_reason : null} />;
+      reopenReason={wk?.status === "open" ? wk.reopen_reason : null} holdMonths={openMonths} />;
   } else if (tab === "bulanan") {
     // gaji bulanan untuk staf yang dibayar bulanan (keputusan owner 1 Nov); staf mingguan tanpa gaji pokok cukup di Komisi mingguan
     const [{ data: all }, { data: period }, { data: weekly }, { data: priv }, { data: cb }] = await Promise.all([

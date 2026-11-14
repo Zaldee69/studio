@@ -32,6 +32,8 @@ const num = (v: string) => (v.trim() === "" ? null : Number(v.replace(/\D/g, "")
 
 /** Kasir: tagihan dari booking + katalog (kiri), keranjang (kanan). Angka final dihitung ulang server (checkout). */
 export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayAppt | null }) {
+  const [nowMs, setNowMs] = useState(0);
+  useEffect(() => { const t0 = setTimeout(() => setNowMs(Date.now()), 0), t = setInterval(() => setNowMs(Date.now()), 60000); return () => { clearTimeout(t0); clearInterval(t); }; }, []);
   const toast = useToast();
   const confirm = useConfirm();
   const online = useOnline();
@@ -232,7 +234,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       <span className="text-xs font-semibold text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
                     <span className="w-full truncate text-xs text-[#4A4C46]">
-                      {S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
+                      {a.status === "in_service" && a.service_started_at && nowMs > 0 && nowMs - Date.parse(a.service_started_at) > 120 * 6e4 && <b className="text-[#A12A2A]">Lama ({Math.round((nowMs - Date.parse(a.service_started_at)) / 6e4)} mnt) · </b>}{S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
                     </span>
                   </button>
                 );

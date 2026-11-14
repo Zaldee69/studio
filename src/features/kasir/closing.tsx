@@ -31,7 +31,7 @@ export function Closing({ master }: { master: Master }) {
   const [physical, setPhysical] = useState("");
   const [note, setNote] = useState("");
   const [deposit, setDeposit] = useState(""); // disetor / diambil dari laci saat tutup (opsional)
-  const [byDenom, setByDenom] = useState(false);
+  const [byDenom, setByDenom] = useState(true); // wajib hitung per pecahan
   const [counts, setCounts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const printer = usePrinter();
@@ -174,7 +174,7 @@ export function Closing({ master }: { master: Master }) {
 
       <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
         <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
-        <label className="flex min-h-11 items-center gap-2.5 text-sm font-semibold">
+        <label className={`${master.role === "cashier" ? "hidden " : ""}flex min-h-11 items-center gap-2.5 text-sm font-semibold`}>
           <Checkbox className="size-5" checked={byDenom} onCheckedChange={(v) => setByDenom(v === true)} />
           Hitung per pecahan (disarankan)
         </label>

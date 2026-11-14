@@ -19,7 +19,7 @@ export type WeekRow = {
 };
 
 /** Komisi mingguan (Senin–Minggu): tutup minggu → bayar per staf. Subsidi jaring harian ikut mingguan; jaring bulanan & penyesuaian diselesaikan bulanan. */
-export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week: string; thisWeek: string; rows: WeekRow[]; reopenReason: string | null }) {
+export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonths = [] }: { week: string; thisWeek: string; rows: WeekRow[]; reopenReason: string | null; holdMonths?: string[] }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline(); const confirm = useConfirm();
   const [paying, setPaying] = useState<WeekRow | null>(null);
   const [reopen, setReopen] = useState(false);
@@ -68,6 +68,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
             : <Button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="h-11">Tutup minggu</Button>}
         </div>
       </div>
+      {!!holdMonths.length && closed && <p role="note" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">Minggu ini lintas bulan. Komisinya ikut payroll {holdMonths.join(", ")} yang belum ditutup, jadi pembayaran ditahan sampai payroll ditutup.</p>}
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
       <p className="text-sm text-muted">
         Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
@@ -100,7 +101,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason }: { week:
                   <td className="py-2 pr-2">
                     {!r.closed ? <span className="text-xs text-muted">Belum final</span>
                       : r.paid_at ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-0.5 text-xs font-bold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)} · {r.paid_method}</span>
-                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online} className="rounded-full bg-[#FBF3DE] px-3 py-1.5 text-xs font-bold text-[#5A4300]">Tandai dibayar</button>
+                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online || !!holdMonths.length} title={holdMonths.length ? "Minggu lintas bulan: tutup payroll bulanan dulu" : undefined} className="rounded-full bg-[#FBF3DE] px-3 py-1.5 text-xs font-bold text-[#5A4300]">Tandai dibayar</button>
                       : <span className="text-xs text-muted">—</span>}
                   </td>
                   <td className="py-2"><Link href={`/manajer/sdm/slip-minggu/${week}/${r.staff_id}`} className={buttonClass("outline", "h-9 px-3 text-xs")}>Slip</Link></td>

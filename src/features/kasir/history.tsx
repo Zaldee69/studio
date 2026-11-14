@@ -28,6 +28,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const [extra, setExtra] = useState<TxRow | null>(null); // transaksi dari tanggal lain (tautan dari Jadwal)
   const [voiding, setVoiding] = useState(false);
   const [reason, setReason] = useState("");
+  const [refund, setRefund] = useState(true); // uang tunai dikembalikan ke pelanggan?
   const [f, setF] = useState({ q: "", method: "", status: "", staff: "", item: "" });
 
   useEffect(() => {
@@ -60,10 +61,10 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const sum = dailySummary(all, []);
 
   async function doVoid() {
-    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason });
+    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason, p_refund: refund });
     if (error) return toast(error.message, "error");
     toast("Transaksi dibatalkan · stok & booking dikembalikan");
-    setVoiding(false); setReason(""); refresh();
+    setVoiding(false); setReason(""); setRefund(true); refresh();
     if (extra) setExtra({ ...extra, voided_at: new Date().toISOString(), void_reason: reason });
   }
 
@@ -147,6 +148,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
                   <Input id="void-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
+                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={refund} onChange={(e) => setRefund(e.target.checked)} />Uang tunai dikembalikan ke pelanggan (kurangi kas laci)</label>
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
                     <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>

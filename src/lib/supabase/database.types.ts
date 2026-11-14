@@ -2946,7 +2946,7 @@ isOneToOne: false
 { Args: { "p_id": string,"p_reason": string }; Returns: undefined
                            },
 "void_transaction":
-{ Args: { "p_id": string,"p_reason": string }; Returns: undefined
+{ Args: { "p_id": string,"p_reason": string,"p_refund"?: boolean }; Returns: undefined
                            },
 "voucher_check":
 { Args: { "p_code": string,"p_customer"?: string,"p_date"?: string,"p_service_ids": (string)[] }; Returns: Json

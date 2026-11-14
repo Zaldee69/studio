@@ -62,6 +62,7 @@ export function Closing({ master }: { master: Master }) {
 
   async function save() {
     if (phys == null) return;
+    if (dep > 0 && !window.confirm(`Kamu mengambil ${formatRupiah(dep)} keluar dari laci. Sisa di laci besok: ${formatRupiah(phys - dep)}. Lanjut?`)) return;
     setSaving(true);
     const { error } = await createClient().rpc("save_cash_closing", { p_date: date, p_physical_cash: phys, p_note: note, p_deposit_out: dep, p_denoms: denoms ?? undefined });
     setSaving(false);
@@ -206,7 +207,7 @@ export function Closing({ master }: { master: Master }) {
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : inTol(diff) ? `· dalam toleransi ${formatRupiah(tol)}` : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}
-        <Field label="Disetor ke brankas / owner (Rp, opsional)" htmlFor="cl-dep" hint="Pemindahan uang, bukan biaya. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
+        <Field label="Uang yang DIAMBIL KELUAR dari laci (Rp, opsional)" htmlFor="cl-dep" hint="Isi hanya uang yang benar-benar kamu keluarkan dari laci (setor ke brankas/owner). Jangan isi total laci. Kalau tidak ada yang diambil, kosongkan. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
           <Input id="cl-dep" inputMode="numeric" className="text-right tabular"
             value={deposit ? Number(deposit).toLocaleString("id-ID") : ""} onChange={(e) => setDeposit(e.target.value.replace(/\D/g, ""))} />
         </Field>

@@ -213,7 +213,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   return (
     <div className="flex flex-col gap-4 min-[1000px]:min-h-0 min-[1000px]:flex-1 min-[1000px]:flex-row xl:gap-6">
       {/* KIRI */}
-      <div className="flex min-w-0 flex-col gap-3 min-[1000px]:min-h-0 min-[1000px]:flex-1">
+      <div className="flex min-w-0 flex-col gap-3 min-[1000px]:flex-1">
         <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Tagihan dari booking hari ini">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-bold">Tagihan dari booking hari ini</h2>
@@ -249,7 +249,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           )}
         </section>
 
-        <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4 min-[1000px]:min-h-[260px] min-[1000px]:flex-1" aria-label="Katalog">
+        <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4 min-[1000px]:flex-1" aria-label="Katalog">
           <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5 overflow-x-auto">
             {(["barbershop", "nail", "massage", "retail"] as const).filter((c) => master.services.some((s) => s.active && s.category === c)).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
@@ -258,7 +258,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               </button>
             ))}
           </div>
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+          <div className="flex flex-col gap-3">
             {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
               <div key={title} className="flex shrink-0 flex-col gap-2">
                 {tab !== "retail" && <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h3>}

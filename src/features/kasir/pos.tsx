@@ -258,23 +258,30 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               </button>
             ))}
           </div>
-          <div className="grid min-h-0 grid-cols-2 content-start gap-2.5 overflow-y-auto xl:grid-cols-3">
-            {catalog.map((s) => {
-              const qty = stock?.get(s.id);
-              const out = s.category === "retail" && qty != null && qty <= 0;
-              return (
-                <button key={s.id} onClick={() => addService(s.id)} aria-label={`Tambah ${s.name}${out ? " (stok habis)" : ""}`}
-                  className="flex min-h-[88px] flex-col gap-1.5 rounded-xl border border-line bg-card px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-24">
-                  <span className="text-sm font-bold">{s.name}</span>
-                  <span className="flex w-full justify-between text-[13px] tabular">
-                    <b>{formatRupiah(s.price)}</b>
-                    <span className={out ? "font-bold text-[#A12A2A]" : "text-muted"}>
-                      {s.category === "retail" ? (out ? "Stok habis" : qty != null ? `Produk · stok ${qty}` : "Produk") : `${s.duration_min} mnt`}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
+          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+            {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
+              <div key={title} className="flex flex-col gap-2">
+                {tab !== "retail" && <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h3>}
+                <div className="grid grid-cols-2 content-start gap-2.5 xl:grid-cols-3">
+                  {list.map((s) => {
+                    const qty = stock?.get(s.id);
+                    const out = s.category === "retail" && qty != null && qty <= 0;
+                    return (
+                      <button key={s.id} onClick={() => addService(s.id)} aria-label={`Tambah ${s.name}${out ? " (stok habis)" : ""}`}
+                        className={`flex flex-col gap-1.5 rounded-xl border px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-24 ${s.is_addon ? "min-h-[64px] border-dashed border-[#DCDCD6] bg-paper" : "min-h-[88px] border-line bg-card"}`}>
+                        <span className="text-sm font-bold">{s.is_addon && "+ "}{s.name}</span>
+                        <span className="flex w-full justify-between text-[13px] tabular">
+                          <b>{formatRupiah(s.price)}</b>
+                          <span className={out ? "font-bold text-[#A12A2A]" : "text-muted"}>
+                            {s.category === "retail" ? (out ? "Stok habis" : qty != null ? `Produk · stok ${qty}` : "Produk") : `${s.duration_min} mnt`}
+                          </span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </div>

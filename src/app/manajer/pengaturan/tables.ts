@@ -31,6 +31,7 @@ export const TABLES = {
       { name: "needs_pedicure", label: "Kursi pedicure", type: "bool", w: "5rem" },
       { name: "online_bookable", label: "Booking online", type: "bool", w: "5.5rem" },
       { name: "is_cut", label: "Dihitung potong", type: "bool", w: "5.5rem" },
+      { name: "is_addon", label: "Tambahan", type: "bool", w: "5rem" },
       { name: "is_upgrade", label: "Naik paket", type: "bool", w: "5rem" },
       { name: "public_description", label: "Deskripsi publik", type: "text", nullable: true, w: "16rem" },
       { name: "sort", label: "Urut", type: "int", w: "4.5rem" },

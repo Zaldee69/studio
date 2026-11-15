@@ -1350,13 +1350,13 @@ isOneToOne: false
                   ]
                 },"services": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"is_cut": boolean,"is_upgrade": boolean,"name": string,"needs_pedicure": boolean,"next_price": number | null,"online_bookable": boolean,"price": number,"public_description": string,"release_action": string | null,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"is_cut": boolean,"is_addon": boolean,"is_upgrade": boolean,"name": string,"needs_pedicure": boolean,"next_price": number | null,"online_bookable": boolean,"price": number,"public_description": string,"release_action": string | null,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_upgrade"?: boolean,"name": string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price": number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_addon"?: boolean,"is_upgrade"?: boolean,"name": string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price": number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_upgrade"?: boolean,"name"?: string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_addon"?: boolean,"is_upgrade"?: boolean,"name"?: string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Relationships: [
                     {

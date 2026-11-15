@@ -9,7 +9,7 @@ export async function loadMaster(role: "manager" | "cashier"): Promise<Master> {
   const profile = await requireRole(role);
   const supabase = await createClient();
   const [{ data: services }, { data: staff }, { data: resources }, { data: shop }, { data: packs }, { data: hours }, { data: closures }] = await Promise.all([
-    supabase.from("services").select("id, name, category, price, duration_min, upsell_service_id, stock_item_id, needs_pedicure, active, sort").order("sort"),
+    supabase.from("services").select("id, name, category, price, duration_min, upsell_service_id, stock_item_id, needs_pedicure, is_addon, active, sort").order("sort"),
     supabase.from("staff").select("id, name, category, active, sort, home_resource_id").order("sort"),
     supabase.from("resources").select("id, name, type, is_pedicure, active, sort").eq("active", true).order("sort"),
     supabase.from("public_settings").select("*").single(),

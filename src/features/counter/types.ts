@@ -5,7 +5,7 @@ import type { OnlinePromo, PayMethod, Voucher } from "@/lib/domain/cart";
 import type { Cat } from "@/lib/domain/category";
 export type { Cat };
 export type SvcCat = Cat | "retail";
-export type Svc = { id: string; name: string; category: SvcCat; price: number; duration_min: number; upsell_service_id: string | null; stock_item_id: string | null; needs_pedicure: boolean; active: boolean; sort: number };
+export type Svc = { id: string; name: string; category: SvcCat; price: number; duration_min: number; upsell_service_id: string | null; stock_item_id: string | null; needs_pedicure: boolean; is_addon: boolean; active: boolean; sort: number };
 export type Staff = { id: string; name: string; category: Cat; active: boolean; sort: number; home_resource_id: string | null };
 export type Resource = { id: string; name: string; type: Cat; is_pedicure: boolean; active: boolean; sort: number };
 export type Pack = { id: string; name: string; amount_paid: number; amount_credited: number };

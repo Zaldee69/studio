@@ -48,7 +48,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [newInit, setNewInit] = useState(""); // nama/nomor yang diketik di pencarian → isian awal pelanggan baru
   const [useDeposit, setUseDeposit] = useState(false);
   const [waInput, setWaInput] = useState("");
-  const [noCustOk, setNoCustOk] = useState(false); // kasir menyatakan pelanggan tidak mau memberi nama/nomor
+  const [noWaReason, setNoWaReason] = useState(""); // alasan tamu tanpa pelanggan/WA; tersimpan di transactions.no_wa_reason
+  const noCustOk = noWaReason !== "";
   const [method, setMethod] = useState<BaseMethod>("cash");
   // anti bayar dobel: id yang sama selama isi keranjang tidak berubah → kirim ulang setelah koneksi putus tidak membuat transaksi kedua
   const requestId = useRef("");
@@ -174,7 +175,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoCustOk(false); setWaInput("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoWaReason(""); setWaInput("");
   }
 
   async function pay() {
@@ -187,6 +188,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     setPaying(true);
     const supabase = createClient();
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
+      no_wa_reason: customer ? null : noWaReason || null,
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
       tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt, client_request_id: requestId.current,
@@ -329,10 +331,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {!customer && items.length > 0 && (
                 <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
                   <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
-                  <label className="flex min-h-11 items-center gap-2 font-semibold">
-                    <Checkbox checked={noCustOk} onCheckedChange={(v) => setNoCustOk(v === true)} className="size-5" />
-                    Pelanggan tidak mau memberi nama/nomor
-                  </label>
+                  <span className="font-semibold">Kalau tidak bisa, pilih alasannya:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {([["menolak", "Menolak memberi"], ["tidak_bawa_hp", "Tidak bawa HP"], ["lainnya", "Lainnya"]] as const).map(([v, l]) => (
+                      <Button key={v} type="button" variant={noWaReason === v ? "default" : "outline"} className="h-11 rounded-[10px]"
+                        onClick={() => setNoWaReason(noWaReason === v ? "" : v)}>{l}</Button>
+                    ))}
+                  </div>
                 </div>
               )}
               {recorded && recorded.total > 0 && (

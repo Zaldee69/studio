@@ -1,0 +1,24 @@
+# Migrasi DB produksi. Manual (workflow_dispatch). Job "apply" berhenti sampai reviewer environment "production" klik Approve.
+# Secret: SUPABASE_DB_URL (sama dengan backup-db.yml). Setup sekali: Settings -> Environments -> production -> Required reviewers.
+name: Migrasi DB prod
+on: workflow_dispatch
+concurrency: db-migrate-prod
+jobs:
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with: { version: 2.118.0 }
+      - run: supabase db push --db-url "$DB_URL" --dry-run
+        env: { DB_URL: "${{ secrets.SUPABASE_DB_URL }}" }
+  apply:
+    needs: dry-run
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with: { version: 2.118.0 }
+      - run: supabase db push --db-url "$DB_URL"
+        env: { DB_URL: "${{ secrets.SUPABASE_DB_URL }}" }

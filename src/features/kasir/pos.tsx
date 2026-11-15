@@ -260,7 +260,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           </div>
           <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
             {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
-              <div key={title} className="flex flex-col gap-2">
+              <div key={title} className="flex shrink-0 flex-col gap-2">
                 {tab !== "retail" && <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h3>}
                 <div className="grid grid-cols-2 content-start gap-2.5 xl:grid-cols-3">
                   {list.map((s) => {

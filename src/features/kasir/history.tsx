@@ -13,6 +13,7 @@ import { TX_SELECT, useDayTransactions } from "../counter/hooks";
 import type { Master, TxRow } from "../counter/types";
 import { ReceiptView, toReceipt } from "./receipt-view";
 import { receiptName } from "@/lib/domain/guest";
+import { noRefundReason } from "./void-reason";
 
 const COLS = "grid gap-3 px-4 grid-cols-[64px_1.5fr_1fr_0.9fr] min-[760px]:grid-cols-[64px_1.2fr_1.8fr_1fr_0.9fr] min-[1100px]:grid-cols-[64px_1.2fr_1.8fr_1fr_0.9fr_0.9fr]";
 
@@ -28,7 +29,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const [extra, setExtra] = useState<TxRow | null>(null); // transaksi dari tanggal lain (tautan dari Jadwal)
   const [voiding, setVoiding] = useState(false);
   const [reason, setReason] = useState("");
-  const [refund, setRefund] = useState(true); // uang tunai dikembalikan ke pelanggan?
+  const [refund, setRefund] = useState<boolean | null>(null); // uang tunai dikembalikan ke pelanggan? null = belum dipilih (wajib)
   const [f, setF] = useState({ q: "", method: "", status: "", staff: "", item: "" });
 
   useEffect(() => {
@@ -61,10 +62,10 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const sum = dailySummary(all, []);
 
   async function doVoid() {
-    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason, p_refund: refund });
+    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason, p_refund: refund! });
     if (error) return toast(error.message, "error");
     toast("Transaksi dibatalkan · stok & booking dikembalikan");
-    setVoiding(false); setReason(""); setRefund(true); refresh();
+    setVoiding(false); setReason(""); setRefund(null); refresh();
     if (extra) setExtra({ ...extra, voided_at: new Date().toISOString(), void_reason: reason });
   }
 
@@ -147,12 +148,17 @@ export function History({ master, txParam }: { master: Master; txParam: string |
               {master.role === "manager" && !open.voided_at && (voiding ? (
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
-                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={refund} onChange={(e) => setRefund(e.target.checked)} />Uang tunai dikembalikan ke pelanggan (kurangi kas laci)</label>
+                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => { setReason(e.target.value); if (noRefundReason(e.target.value)) setRefund(false); }} />
+                  <fieldset className="flex flex-col gap-1 text-xs">
+                    <legend className="font-bold">Uang tunai dikembalikan ke pelanggan? (wajib dipilih)</legend>
+                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === true} onChange={() => setRefund(true)} />Ya, kurangi kas laci</label>
+                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === false} onChange={() => setRefund(false)} />Tidak, kas laci tidak berubah</label>
+                  </fieldset>
+                  {noRefundReason(reason) && refund !== false && <p role="alert" className="text-xs font-bold text-[#A12A2A]">Alasan menyebut salah sumber/test: biasanya tidak ada uang keluar. Pilih &quot;Tidak&quot; bila memang begitu.</p>}
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
                     <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
-                    <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</Button>
+                    <Button disabled={!reason.trim() || refund === null || !online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</Button>
                   </div>
                 </form>
               ) : (

@@ -1,6 +1,6 @@
 "use client";
 
-import { CAT_TONE, STAFF_TITLE, type Cat } from "@/lib/domain/category";
+import { CAT_TONE, toneOf, STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 import { useActionState, useState } from "react";
 import { stationLogin } from "./actions";
@@ -20,7 +20,7 @@ export function StationLogin({ staff }: { staff: S[] }) {
           <button key={s.staff_id} onClick={() => { setSel(s); setPin(""); }} disabled={!s.has_pin}
             className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl bg-paper p-4 text-ink disabled:opacity-40">
             <span className="flex size-14 items-center justify-center rounded-full text-xl font-bold"
-              style={{ background: CAT_TONE[s.category].bg, color: CAT_TONE[s.category].fg }}>{s.name.charAt(0)}</span>
+              style={{ background: toneOf(s.category).bg, color: toneOf(s.category).fg }}>{s.name.charAt(0)}</span>
             <b className="text-lg">{s.name}</b>
             <span className="text-xs text-muted">{s.has_pin ? STAFF_TITLE[s.category] : "PIN belum diatur"}</span>
           </button>

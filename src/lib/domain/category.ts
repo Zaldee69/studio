@@ -17,3 +17,6 @@ export const CAT_TONE: Record<Cat, { bg: string; fg: string }> = {
   nail: { bg: "#F4E6E7", fg: "#7A3A40" },
   massage: { bg: "#F1E8DC", fg: "#6A4826" },
 };
+/** Staf bukan layanan (mis. kasir) tak punya CAT_TONE/CAT_NAME; pakai fallback netral. */
+export const toneOf = (c: string) => (CAT_TONE as Record<string, { bg: string; fg: string }>)[c] ?? { bg: "#ECECE8", fg: "#4A4D45" };
+export const catNameOf = (c: string) => (c === "kasir" ? "Kasir" : (CAT_NAME as Record<string, string>)[c] ?? c);

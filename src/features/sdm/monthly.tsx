@@ -68,7 +68,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
         <Link href={`?bulan=${shiftMonth(month, -1)}`} aria-label="Bulan sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
         <b className="min-w-44 text-center font-display text-xl">{monthLabel(month)}</b>
         <Link href={`?bulan=${shiftMonth(month, 1)}`} aria-label="Bulan berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
-        <span className={`rounded-full px-3 py-1 text-xs font-bold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : month === current ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : month === current ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
           {closed ? `Ditutup ${formatTanggal(period!.closed_at!)}` : month === current ? "Bulan berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -88,8 +88,8 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
           ["Komisi staf", formatRupiah(comm), `rasio ${ratio}% dari margin`],
           ["Subsidi jaring harian", formatRupiah(sum("subsidy")), `${under} staf`],
         ].map(([k, v, s]) => (
-          <div key={k} className="flex flex-col gap-0.5 rounded-[14px] border border-line bg-card p-4">
-            <span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span>
+          <div key={k} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
+            <span className="text-xs font-medium text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span>
           </div>
         ))}
       </div>
@@ -99,11 +99,11 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
           <thead><tr className="text-left text-xs text-muted">
             {["Staf", "Layanan", "Pendapatan", "HPP", ...(hasBase ? ["Gaji pokok"] : []), "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", hasWeekly ? "Total gaji" : "Total dibayar",
               ...(hasWeekly ? ["Dibayar mingguan", "Sisa akhir bulan"] : []), "Status bayar"].map((h, i, all) =>
-              <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
+              <th key={h} className={`py-2.5 pr-2 font-medium ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
           </tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#EEEEEA] hover:bg-paper">
+              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#EFEAEF] hover:bg-paper">
                 <td className="py-2 pr-2">
                   <button className="flex min-h-11 items-center gap-2 text-left" onClick={(e) => { e.stopPropagation(); setDetail(r); }}>
                     <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
@@ -118,19 +118,19 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
                 <td className="pr-2 text-right">{formatRupiah(r.commission_retail)}</td>
                 <td className="pr-2 text-right">{r.subsidy ? formatRupiah(r.subsidy) : "—"}</td>
                 <td className="pr-2 text-right">{r.adjustments ? signed(r.adjustments) : "—"}</td>
-                <td className={`pr-2 text-right ${hasWeekly ? "" : "text-base font-bold"}`}>{formatRupiah(r.total_pay)}</td>
+                <td className={`pr-2 text-right ${hasWeekly ? "" : "text-base font-semibold"}`}>{formatRupiah(r.total_pay)}</td>
                 {hasWeekly && <>
                   <td className="pr-2 text-right text-muted">{wk(r) ? `−${formatRupiah(wk(r))}` : "—"}</td>
-                  <td className={`pr-2 text-right text-base font-bold ${rest(r) < 0 ? "text-danger" : ""}`}>{rest(r) < 0 ? `−${formatRupiah(-rest(r))}` : formatRupiah(rest(r))}</td>
+                  <td className={`pr-2 text-right text-base font-semibold ${rest(r) < 0 ? "text-danger" : ""}`}>{rest(r) < 0 ? `−${formatRupiah(-rest(r))}` : formatRupiah(rest(r))}</td>
                 </>}
                 <td className="pr-2">
                   {!closed ? <span className="text-xs text-muted">Belum final</span>
-                    : r.paid_at ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-0.5 text-xs font-bold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)}</span>
-                    : <Link onClick={(e) => e.stopPropagation()} href={`/manajer/sdm/slip/${month}/${r.staff_id}`} className="rounded-full bg-[#FBF3DE] px-2.5 py-1 text-xs font-bold text-[#5A4300]">Belum dibayar · Slip</Link>}
+                    : r.paid_at ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-0.5 text-xs font-semibold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)}</span>
+                    : <Link onClick={(e) => e.stopPropagation()} href={`/manajer/sdm/slip/${month}/${r.staff_id}`} className="rounded-full bg-[#FBF3DE] px-2.5 py-1 text-xs font-semibold text-[#5A4300]">Belum dibayar · Slip</Link>}
                 </td>
               </tr>
             ))}
-            <tr className="border-t-2 border-ink font-bold">
+            <tr className="border-t-2 border-accent font-semibold">
               <td className="py-2.5 pr-2">Total</td><td className="pr-2 text-right">{sum("service_count")}</td><td className="pr-2 text-right">{formatRupiah(rev)}</td>
               <td className="pr-2 text-right">{formatRupiah(hpp)}</td>{hasBase && <td className="pr-2 text-right">{formatRupiah(sum("base_salary"))}</td>}<td className="pr-2 text-right">{formatRupiah(sum("commission_service"))}</td>
               <td className="pr-2 text-right">{formatRupiah(sum("commission_retail"))}</td><td className="pr-2 text-right">{formatRupiah(sum("subsidy"))}</td>
@@ -148,13 +148,13 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
 
       <Sheet open={closing} onClose={() => setClosing(false)} label="Tutup periode" width={640}>
         <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-          <h2 className="flex-1 font-display text-xl font-bold">Tutup periode {monthLabel(month)}</h2><CloseButton onClick={() => setClosing(false)} />
+          <h2 className="flex-1 font-display text-xl font-semibold">Tutup periode {monthLabel(month)}</h2><CloseButton onClick={() => setClosing(false)} />
         </div>
         <div className="flex flex-col gap-3 p-5">
           <p className="text-sm text-muted">Angka dibekukan sebagai final: slip gaji terbentuk, tab Komisi capster menampilkan <b>Final</b>, dan void transaksi bulan ini dikunci sampai periode dibuka ulang.</p>
           <table className="w-full text-sm tabular">
-            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-bold">{formatRupiah(r.total_pay)}</td></tr>)}
-              <tr className="border-t-2 border-ink font-bold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>
+            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#EFEAEF]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-semibold">{formatRupiah(r.total_pay)}</td></tr>)}
+              <tr className="border-t-2 border-accent font-semibold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>
           </table>
           <Button onClick={close} disabled={!online} className="h-12">Tutup & bekukan angka</Button>
         </div>
@@ -163,12 +163,12 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
       <Sheet open={reopen} onClose={() => setReopen(false)} label="Buka ulang periode" width={480}>
         <form onSubmit={(e) => { e.preventDefault(); doReopen(); }}>
           <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-            <h2 className="flex-1 font-display text-xl font-bold">Buka ulang {monthLabel(month)}</h2><CloseButton onClick={() => setReopen(false)} />
+            <h2 className="flex-1 font-display text-xl font-semibold">Buka ulang {monthLabel(month)}</h2><CloseButton onClick={() => setReopen(false)} />
           </div>
           <div className="flex flex-col gap-3 p-5">
             <p className="text-sm text-muted">Snapshot & status bayar dihapus; angka dihitung ulang saat ditutup lagi. Alasan tercatat.</p>
             <Field label="Alasan (wajib)" htmlFor="ro-reason"><Input id="ro-reason" value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
-            <Button disabled={!reason.trim() || !online} className="h-12">Buka ulang</Button>
+            <Button variant="outline" disabled={!reason.trim() || !online} className="h-12">Buka ulang</Button>
           </div>
         </form>
       </Sheet>
@@ -213,11 +213,11 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-        <h2 className="flex-1 font-display text-xl font-bold">{row.staff_name} · {monthLabel(month)}</h2><CloseButton onClick={onClose} />
+        <h2 className="flex-1 font-display text-xl font-semibold">{row.staff_name} · {monthLabel(month)}</h2><CloseButton onClick={onClose} />
       </div>
       <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
-        <div className="flex items-baseline justify-between rounded-[14px] bg-ink p-4 text-paper tabular">
-          <span className="text-sm text-[#9A9C95]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
+        <div className="flex items-baseline justify-between rounded-[14px] bg-accent p-4 text-paper tabular">
+          <span className="text-sm text-[#9C98A3]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
         </div>
         <Link href={`/manajer/sdm/slip/${month}/${row.staff_id}`} className={buttonClass("outline", `h-11 ${closed ? "" : "pointer-events-none opacity-50"}`)} aria-disabled={!closed}>
           Slip gaji{closed ? "" : " (tutup periode dulu)"}
@@ -239,9 +239,9 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-2">
           <b className="text-sm">Bonus & potongan</b>
           {!adj.length && <span className="text-sm text-muted">Belum ada.</span>}
-          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#EEEEEA] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
+          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#EFEAEF] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
           {!closed && (
-            <form onSubmit={(e) => { e.preventDefault(); addAdj(); }} className="flex flex-col gap-2 rounded-[12px] border border-line p-3">
+            <form onSubmit={(e) => { e.preventDefault(); addAdj(); }} className="flex flex-col gap-2 rounded-[14px] border border-line p-3">
               <div className="grid grid-cols-2 gap-2">
                 <Field label="Jenis" htmlFor="pa-kind">
                   <NativeSelect id="pa-kind" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })}>
@@ -251,7 +251,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
                 <Field label="Jumlah (Rp)" htmlFor="pa-amount"><Input id="pa-amount" inputMode="numeric" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></Field>
               </div>
               <Field label="Alasan (wajib)" htmlFor="pa-reason"><Input id="pa-reason" value={f.reason} onChange={(e) => setF({ ...f, reason: e.target.value })} /></Field>
-              <Button disabled={!online || !Number(f.amount.replace(/\D/g, "")) || !f.reason.trim()} className="h-11">Tambah bonus/potongan</Button>
+              <Button variant="outline" disabled={!online || !Number(f.amount.replace(/\D/g, "")) || !f.reason.trim()} className="h-11">Tambah bonus/potongan</Button>
             </form>
           )}
         </section>
@@ -259,8 +259,8 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-1">
           <b className="text-sm">Rincian item</b>
           {items === null ? <span className="text-sm text-muted">Memuat…</span> : !items.length ? <span className="text-sm text-muted">Belum ada item bulan ini.</span> : items.map((i) => (
-            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#EEEEEA] py-1.5 text-sm tabular">
-              <span className="font-semibold">{i.name}{i.category === "retail" && " · ritel"}</span><b>{formatRupiah(i.commission)}</b>
+            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#EFEAEF] py-1.5 text-sm tabular">
+              <span className="font-medium">{i.name}{i.category === "retail" && " · ritel"}</span><b>{formatRupiah(i.commission)}</b>
               <span className="text-xs text-muted">{formatTanggal(i.created_at)} {formatJam(i.created_at)}</span>
               <span className="text-right text-xs text-muted">net {formatRupiah(i.net_amount)} · HPP {formatRupiah(i.hpp ?? 0)}</span>
             </div>

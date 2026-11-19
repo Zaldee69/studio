@@ -18,10 +18,12 @@ export function TelegramTest() {
     toast("Pesan tes masuk antrean. Cek Telegram dalam 1 menit; bila tidak masuk, lihat log pengiriman di tab Halaman publik.");
   }
   return (
-    <section aria-labelledby="tg-h" className="mt-6 max-w-xl space-y-3 rounded-2xl border border-line bg-card p-6">
-      <h2 id="tg-h" className="font-display text-xl font-bold">Notifikasi Telegram</h2>
+    <section aria-labelledby="tg-h" className="space-y-3 rounded-3xl border border-line bg-card p-6">
+      <h2 id="tg-h" className="font-display text-xl font-semibold">Notifikasi Telegram</h2>
       <p className="text-sm text-muted">Dikirim ke owner/manajer. Bot &amp; penerima diatur di server (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID).</p>
-      <ul className="list-disc space-y-1 pl-5 text-sm text-muted">
+      <details className="group rounded-[14px] bg-paper px-4 py-3 text-sm text-muted">
+      <summary className="cursor-pointer font-medium text-ink">Pesan apa saja yang dikirim</summary>
+      <ul className="mt-2 list-disc space-y-1 pl-5">
         <li>Langsung: transaksi dibatalkan/refund, kasbon baru, pengeluaran besar atau kasbon salah kategori, transaksi tercatat terlambat,
           akun tim baru/diaktifkan, perubahan harga layanan, pengaturan uang, aturan bayaran staf, dan voucher.</li>
         <li>Tiap tutup kasir: ringkasan harian (omzet, pelanggan per staf, pengeluaran, kasbon, selisih).</li>
@@ -30,6 +32,7 @@ export function TelegramTest() {
         <li>15.00: staf yang belum dapat pelanggan.</li>
         <li>Senin 08.20: notulen rapat tim AI (dibuka dengan rapor tindakan minggu sebelumnya). Kamis 16.00: cek tengah minggu potong Sen–Kam vs target.</li>
       </ul>
+      </details>
       <Button onClick={send} disabled={busy} variant="outline" className="h-11">Kirim pesan tes</Button>
     </section>
   );
@@ -49,8 +52,8 @@ export function WhatsAppTest() {
     toast("WA tes masuk antrean. Cek WhatsApp dalam 1 menit; bila tidak masuk, lihat alasannya di Pesan keluar (tab Halaman publik).");
   }
   return (
-    <section aria-labelledby="wa-h" className="mt-6 max-w-xl space-y-3 rounded-2xl border border-line bg-card p-6">
-      <h2 id="wa-h" className="font-display text-xl font-bold">Notifikasi WhatsApp</h2>
+    <section aria-labelledby="wa-h" className="space-y-3 rounded-3xl border border-line bg-card p-6">
+      <h2 id="wa-h" className="font-display text-xl font-semibold">Notifikasi WhatsApp</h2>
       <p className="text-sm text-muted">Konfirmasi booking, pengingat H-1, kode masuk, dan blast dikirim lewat Wablas (WABLAS_URL, WABLAS_TOKEN,
         WABLAS_SECRET_KEY). Tes memakai 1 dari kuota harian Wablas; maksimal 3 tes per 10 menit.</p>
       <form onSubmit={send} className="flex flex-wrap gap-2">

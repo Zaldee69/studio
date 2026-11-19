@@ -85,19 +85,19 @@ export function Closing({ master }: { master: Master }) {
   }
 
   const row = (k: string, v: number | string, strong = false) => (
-    <div className={`flex justify-between gap-3 py-1.5 tabular ${strong ? "text-base font-bold" : "text-sm"}`}><span>{k}</span><span>{typeof v === "number" ? formatRupiah(v) : v}</span></div>
+    <div className={`flex justify-between gap-3 py-1.5 tabular ${strong ? "text-base font-semibold" : "text-sm"}`}><span>{k}</span><span>{typeof v === "number" ? formatRupiah(v) : v}</span></div>
   );
 
   const body = !s ? <Empty>Memuat…</Empty> : s.blind ? (
     <>
-      <div className="divide-y divide-[#EEEEEA]">{row("Jumlah transaksi", String(s.tx_count))}</div>
-      <p className="rounded-[10px] bg-paper px-3.5 py-3 text-sm">
+      <div className="divide-y divide-[#EFEAEF]">{row("Jumlah transaksi", String(s.tx_count))}</div>
+      <p className="rounded-[14px] bg-paper px-3.5 py-3 text-sm">
         Hitung <b>seluruh uang di laci</b> (termasuk sisa kemarin) lalu isi kolom di samping. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
       </p>
     </>
   ) : (
     <>
-      <div className="divide-y divide-[#EEEEEA]">
+      <div className="divide-y divide-[#EFEAEF]">
         {row("Jumlah transaksi", String(s.tx_count))}
         {row("Omzet (setelah diskon)", s.gross_total)}
         {row("Total diskon", s.discount_total)}
@@ -115,22 +115,22 @@ export function Closing({ master }: { master: Master }) {
         {!!s.refund_cash && row(`Refund tunai transaksi yang di-void (${s.refund_count}×)`, -s.refund_cash)}
         {row(`Tips QRIS/transfer diserahkan tunai ke staf (${s.tip_count}×)`, -s.tip_qris)}
       </div>
-      <div className="rounded-[10px] bg-paper px-3 py-2">{row("Kas diharapkan di laci (saldo awal + tunai masuk − tunai keluar)", s.expected_cash, true)}</div>
+      <div className="rounded-[14px] bg-paper px-3 py-2">{row("Kas diharapkan di laci (saldo awal + tunai masuk − tunai keluar)", s.expected_cash, true)}</div>
       <div>
-        <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
+        <span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted">Transaksi void</span>
         {!s.voided.length ? <p className="py-1.5 text-sm text-muted">Tidak ada.</p> : s.voided.map((v) => (
           <div key={v.id} className="flex justify-between gap-3 py-1.5 text-sm tabular"><span>{formatJam(v.created_at)} · {v.reason}</span><span>{formatRupiah(v.total)}</span></div>
         ))}
       </div>
       {/* Angka penutupan = saat ditutup (resmi). Bila ada transaksi/void/pengeluaran sesudahnya, rekap di atas sudah berubah → beri tahu. */}
       {closings?.[0] && closings[0].expected_cash !== s.expected_cash && (
-        <p role="note" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+        <p role="note" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
           Ada perubahan setelah kasir ditutup (transaksi, void, atau pengeluaran): kas diharapkan saat ditutup {formatRupiah(closings[0].expected_cash)},
           sekarang {formatRupiah(s.expected_cash)}. Selisih di bawah dihitung saat penutupan.
         </p>
       )}
       {closings?.map((c, i) => (
-        <div key={c.id} className="keep rounded-[10px] border border-line p-3 text-sm">
+        <div key={c.id} className="keep rounded-[14px] border border-line p-3 text-sm">
           <b>Penutupan {formatJam(c.created_at)}{names.get(c.cashier_id ?? "") ? ` · oleh ${names.get(c.cashier_id ?? "")}` : ""}
             {closings.length > 1 && <span className="font-normal text-muted">{i === 0 ? " · terakhir (dipakai laporan)" : " · digantikan penutupan sesudahnya"}</span>}</b>
           {row("Kas diharapkan saat ditutup", c.expected_cash)}
@@ -149,20 +149,20 @@ export function Closing({ master }: { master: Master }) {
   return (
     <div className="grid min-h-0 flex-1 gap-4 overflow-y-auto min-[1000px]:grid-cols-[1fr_380px]">
       <PrintSheet page="size: A4; margin: 14mm">
-        <div className="flex flex-col gap-4 text-[#1f2320]">
-          <div><h1 className="font-display text-2xl font-bold">Rekap kasir</h1>
+        <div className="flex flex-col gap-4 text-[#1D1E20]">
+          <div><h1 className="font-display text-2xl font-medium">Rekap kasir</h1>
             <span className="text-[13px]">{master.shop.name}{master.shop.address ? ` · ${master.shop.address}` : ""} · {formatTanggal(`${date}T12:00:00+07:00`)} · dicetak {formatJam(new Date())}</span></div>
           {body}
           {/* hanya di lembar cetak/PDF */}
           <div className="keep mt-6 grid grid-cols-2 gap-10 text-sm">
-            {["Kasir", "Manajer"].map((r) => <div key={r} className="flex flex-col gap-12"><span>{r}</span><span className="border-t border-[#1f2320] pt-1 text-xs">Nama & tanda tangan</span></div>)}
+            {["Kasir", "Manajer"].map((r) => <div key={r} className="flex flex-col gap-12"><span>{r}</span><span className="border-t border-[#1D1E20] pt-1 text-xs">Nama & tanda tangan</span></div>)}
           </div>
         </div>
       </PrintSheet>
-      <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
+      <section className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-5">
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex-1">
-            <h2 className="font-display text-xl font-bold">Rekap kasir</h2>
+            <h2 className="font-display text-xl font-semibold">Rekap kasir</h2>
             <span className="text-[13px] text-muted">{master.shop.name} · {formatTanggal(`${date}T12:00:00+07:00`)}</span>
           </div>
           <div className="no-print"><Field label="Tanggal" htmlFor="cl-date">
@@ -172,29 +172,29 @@ export function Closing({ master }: { master: Master }) {
         {body}
       </section>
 
-      <section className="no-print flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
-        <h2 className="font-display text-xl font-bold">Hitung kas fisik</h2>
-        <label className={`${master.role === "cashier" ? "hidden " : ""}flex min-h-11 items-center gap-2.5 text-sm font-semibold`}>
+      <section className="no-print flex flex-col gap-3 self-start rounded-3xl border border-line bg-card p-5">
+        <h2 className="font-display text-xl font-semibold">Hitung kas fisik</h2>
+        <label className={`${master.role === "cashier" ? "hidden " : ""}flex min-h-11 items-center gap-2.5 text-sm font-medium`}>
           <Checkbox className="size-5" checked={byDenom} onCheckedChange={(v) => setByDenom(v === true)} />
           Hitung per pecahan (disarankan)
         </label>
         {byDenom ? (
-          <div className="flex flex-col gap-1.5 rounded-[10px] bg-paper p-3 tabular">
+          <div className="flex flex-col gap-1.5 rounded-[14px] bg-paper p-3 tabular">
             {DENOMS.map((d) => (
               <div key={d} className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
-                <label htmlFor={`dn-${d}`} className="font-bold">{rb(d)}</label>
+                <label htmlFor={`dn-${d}`} className="font-semibold">{rb(d)}</label>
                 <Input id={`dn-${d}`} inputMode="numeric" placeholder="0 lembar" aria-label={`Jumlah lembar ${rb(d)}`} className="h-10 text-right"
                   value={counts[d] ?? ""} onChange={(e) => setCounts({ ...counts, [d]: e.target.value.replace(/\D/g, "") })} />
                 <span className="w-24 text-right text-muted">{formatRupiah(d * Number(counts[d] || 0))}</span>
               </div>
             ))}
             <div className="grid grid-cols-[64px_1fr_auto] items-center gap-2 text-sm">
-              <label htmlFor="dn-coins" className="font-bold">Koin</label>
+              <label htmlFor="dn-coins" className="font-semibold">Koin</label>
               <Input id="dn-coins" inputMode="numeric" placeholder="total Rp" className="h-10 text-right"
                 value={counts.coins ? Number(counts.coins).toLocaleString("id-ID") : ""} onChange={(e) => setCounts({ ...counts, coins: e.target.value.replace(/\D/g, "") })} />
               <span className="w-24" />
             </div>
-            <div className="flex justify-between border-t border-line pt-2 text-base font-bold"><span>Total uang di laci</span><span>{formatRupiah(denomTotal)}</span></div>
+            <div className="flex justify-between border-t border-line pt-2 text-base font-semibold"><span>Total uang di laci</span><span>{formatRupiah(denomTotal)}</span></div>
           </div>
         ) : (
           <Field label="Total uang di laci (Rp)" htmlFor="cl-phys" hint="Hitung semua uang di laci saat ini — uang hari ini & sisa kemarin — sebelum disetor. Termasuk koin.">
@@ -203,16 +203,16 @@ export function Closing({ master }: { master: Master }) {
           </Field>
         )}
         {diff != null && (
-          <div className={`rounded-[10px] px-3 py-2.5 text-[15px] font-bold tabular ${inTol(diff) ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
+          <div className={`rounded-[14px] px-3 py-2.5 text-[15px] font-semibold tabular ${inTol(diff) ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : inTol(diff) ? `· dalam toleransi ${formatRupiah(tol)}` : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}
-        <Field label="Uang yang DIAMBIL KELUAR dari laci (Rp, opsional)" htmlFor="cl-dep" hint="Isi hanya uang yang benar-benar kamu keluarkan dari laci (setor ke brankas/owner). Jangan isi total laci. Kalau tidak ada yang diambil, kosongkan. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
+        <Field label="Uang yang diambil keluar dari laci (opsional)" htmlFor="cl-dep" hint="Isi hanya uang yang benar-benar kamu keluarkan dari laci (setor ke brankas/owner). Jangan isi total laci. Kalau tidak ada yang diambil, kosongkan. Belanja kebutuhan operasional dicatat di menu Pengeluaran (sumber: laci). Sisanya jadi saldo awal laci besok.">
           <Input id="cl-dep" inputMode="numeric" className="text-right tabular"
             value={deposit ? Number(deposit).toLocaleString("id-ID") : ""} onChange={(e) => setDeposit(e.target.value.replace(/\D/g, ""))} />
         </Field>
         {phys != null && (
-          <div className={`flex justify-between rounded-[10px] bg-paper px-3 py-2 text-sm tabular ${dep > phys ? "text-[#A12A2A]" : ""}`}>
+          <div className={`flex justify-between rounded-[14px] bg-paper px-3 py-2 text-sm tabular ${dep > phys ? "text-[#A12A2A]" : ""}`}>
             <span>Sisa di laci untuk besok</span><b>{formatRupiah(phys - dep)}</b>
           </div>
         )}
@@ -221,9 +221,9 @@ export function Closing({ master }: { master: Master }) {
         </Field>
         <Button onClick={save} disabled={phys == null || dep > (phys ?? 0) || saving || !online || lockedForCashier} className="h-12">{saving ? "Menyimpan…" : "Simpan tutup kasir"}</Button>
         {lockedForCashier && <p className="text-xs text-muted">Tanggal ini sudah ditutup. Koreksi hitungan dilakukan manajer.</p>}
-        {printer.status === "on" && <Button onClick={printSlip} disabled={!s || s.blind} variant="outline" className="h-11 rounded-[10px]">Cetak ke printer struk</Button>}
+        {printer.status === "on" && <Button onClick={printSlip} disabled={!s || s.blind} variant="outline" className="h-11 rounded-[14px]">Cetak ke printer struk</Button>}
         <Button onClick={() => { const t = document.title; document.title = `Rekap kasir ${date}`; window.print(); document.title = t; }} // nama file PDF
-          disabled={!s || s.blind} variant="outline" className="h-11 rounded-[10px]">Cetak / simpan PDF</Button>
+          disabled={!s || s.blind} variant="outline" className="h-11 rounded-[14px]">Cetak / simpan PDF</Button>
         {!!closings?.length && <p className="text-xs text-muted">{closings.length}× ditutup pada tanggal ini.</p>}
       </section>
     </div>

@@ -68,7 +68,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Pengeluaran</h1>
+        <h1 className="flex-1 font-display text-[28px] font-medium tracking-tight">Pengeluaran</h1>
         {manager && <>
           <label htmlFor="ex-month" className="sr-only">Bulan</label>
           <Input id="ex-month" type="month" value={month} max={today.slice(0, 7)} onChange={(e) => e.target.value && setMonth(e.target.value)} className="w-auto" />
@@ -82,10 +82,10 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
           : `Pengeluaran hari ini. Pilih Dibayar dari sesuai sumber uangnya. Dari laci maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)} dan mengurangi kas diharapkan saat tutup kasir; sumber lain wajib foto nota.`}
         {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
       </p>
-      {!manager && data?.todayClosed && <p className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
+      {!manager && data?.todayClosed && <p className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
 
       <div className="grid grid-cols-2 gap-2.5 tabular min-[700px]:grid-cols-4">
-        <div className="flex flex-col gap-0.5 rounded-[14px] bg-ink p-3.5 text-paper"><span className="text-xs text-[#9A9C95]">Total {manager ? "bulan ini" : "hari ini"}</span><b className="text-xl">{formatRupiah(total)}</b></div>
+        <div className="flex flex-col gap-0.5 rounded-[14px] bg-accent p-3.5 text-paper"><span className="text-xs text-[#9C98A3]">Total {manager ? "bulan ini" : "hari ini"}</span><b className="text-xl">{formatRupiah(total)}</b></div>
         {byCat.slice(0, 3).map(([c, v]) => (
           <div key={c} className="flex flex-col gap-0.5 rounded-[14px] bg-card p-3.5"><span className="text-xs text-muted">{EXPENSE_CAT[c as ExpenseCat]}</span><b className="text-xl">{formatRupiah(v)}</b></div>
         ))}
@@ -102,15 +102,15 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
             const done = live.find((r) => r.template_id === t.id);
             const late = !done && Number(today.slice(8)) > t.day_of_month;
             return (
-              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EEEEEA] py-2.5 text-sm">
+              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EFEAEF] py-2.5 text-sm">
                 <span className="flex min-w-0 flex-1 flex-col">
                   <b>{t.description}</b>
                   <span className="text-xs text-muted">{EXPENSE_CAT[t.category]} · {EXPENSE_SOURCE[t.source]} · tiap tgl {t.day_of_month}</span>
                 </span>
                 <b className="tabular">{formatRupiah(t.amount)}</b>
-                {done ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-1 text-xs font-bold text-[#144D2A]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
+                {done ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-1 text-xs font-semibold text-[#144D2A]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
                   : <button onClick={() => setPrefill({ ...t, templateId: t.id })} disabled={!online}
-                      className={`rounded-full px-3 py-1.5 text-xs font-bold ${late ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FBF3DE] text-[#5A4300]"}`}>
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${late ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FBF3DE] text-[#5A4300]"}`}>
                       {late ? "Terlambat · Catat" : Number(today.slice(8)) === t.day_of_month ? "Jatuh tempo hari ini · Catat" : `Tgl ${t.day_of_month} · Catat`}</button>}
                 <Button onClick={async () => { const { error } = await createClient().from("expense_templates").update({ active: false }).eq("id", t.id); if (error) toast(error.message, "error"); else refresh(); }}
                   disabled={!online} aria-label={`Hapus rutin ${t.description}`} variant="outline" className="h-9 px-2.5 text-xs">Hapus</Button>
@@ -122,7 +122,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
 
       <div className="rounded-[14px] border border-line bg-card px-3">
         {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>Belum ada pengeluaran {manager ? "di bulan ini" : "hari ini"}.</Empty> : data.rows.map((r) => (
-          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EEEEEA] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
+          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EFEAEF] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
             <span className="flex min-w-0 flex-1 flex-col">
               <b className={r.voided_at ? "line-through" : ""}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
               <span className="text-xs text-muted">
@@ -131,7 +131,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
               </span>
               {r.voided_at && <span className="text-xs text-[#A12A2A]">Dibatalkan: {r.void_reason}</span>}
             </span>
-            {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="text-xs font-semibold underline">Nota</button>}
+            {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="text-xs font-medium underline">Nota</button>}
             <b className="tabular">{formatRupiah(r.amount)}</b>
             {manager && !r.voided_at && <Button onClick={() => setVoiding(r)} disabled={!online} variant="outline" className="h-9 px-3 text-xs">Batalkan</Button>}
           </div>
@@ -193,7 +193,7 @@ function AddForm({ manager, lim, staff, prefill, onDone }: {
 
   return (
     <form className="flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); save(); }}>
-      <div className="flex items-start justify-between gap-3"><h2 className="text-lg font-bold">Catat pengeluaran{prefill && " rutin"}</h2><CloseButton onClick={onDone} /></div>
+      <div className="flex items-start justify-between gap-3"><h2 className="text-lg font-semibold">Catat pengeluaran{prefill && " rutin"}</h2><CloseButton onClick={onDone} /></div>
       {prefill && <p className="text-xs text-muted">Terisi dari pengeluaran rutin — ubah jumlah bila tagihan bulan ini berbeda.</p>}
       <div className="grid grid-cols-2 gap-3">
         <Field label="Kategori" htmlFor="ex-cat">
@@ -255,7 +255,7 @@ function TemplateForm({ onDone }: { onDone: () => void }) {
   }
   return (
     <form className="flex flex-col gap-3 p-5" onSubmit={(e) => { e.preventDefault(); save(); }}>
-      <div className="flex items-start justify-between gap-3"><h2 className="text-lg font-bold">Tambah pengeluaran rutin</h2><CloseButton onClick={onDone} /></div>
+      <div className="flex items-start justify-between gap-3"><h2 className="text-lg font-semibold">Tambah pengeluaran rutin</h2><CloseButton onClick={onDone} /></div>
       <Field label="Kategori" htmlFor="tp-cat">
         <NativeSelect id="tp-cat" value={f.category} onChange={(e) => setF({ ...f, category: e.target.value as ExpenseCat })}>
           {Object.entries(EXPENSE_CAT).filter(([k]) => k !== "kasbon").map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -290,7 +290,7 @@ function VoidForm({ row, onDone }: { row: Row; onDone: () => void }) {
       if (error) return toast(error.message, "error");
       toast("Pengeluaran dibatalkan"); onDone();
     }}>
-      <h2 className="text-lg font-bold">Batalkan “{row.description}”?</h2>
+      <h2 className="text-lg font-semibold">Batalkan “{row.description}”?</h2>
       <p className="text-sm text-muted">{formatRupiah(row.amount)} · tetap tersimpan sebagai riwayat & tercatat di audit.</p>
       <Field label="Alasan (wajib)" htmlFor="ex-void"><Input id="ex-void" required value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
       <div className="flex gap-2"><Button type="button" onClick={onDone} variant="outline" className="flex-1">Kembali</Button>

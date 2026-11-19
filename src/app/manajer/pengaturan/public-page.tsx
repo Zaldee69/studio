@@ -29,8 +29,8 @@ export function HoursForm({ hours }: { hours: Hours[] }) {
   const [s, action, pending] = useActionState(saveHours, undefined);
   const by = new Map(hours.map((h) => [h.weekday, h]));
   return (
-    <form action={action} className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
-      <h2 className="font-display text-lg font-semibold">Jam buka per hari</h2>
+    <form action={action} className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+      <h2 className="font-display text-lg font-medium">Jam buka per hari</h2>
       {[1, 2, 3, 4, 5, 6, 0].map((d) => {
         const h = by.get(d);
         return (
@@ -55,16 +55,16 @@ export function ClosuresForm({ closures }: { closures: { date: string; reason: s
   const toast = useToast();
   const [s, action, pending] = useActionState(addClosure, undefined);
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-card p-5">
-      <h2 className="font-display text-lg font-semibold">Hari libur khusus</h2>
+    <div className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+      <h2 className="font-display text-lg font-medium">Hari libur khusus</h2>
       <form action={action} className="flex flex-wrap items-end gap-2">
-        <label className="flex flex-col gap-1 text-xs font-bold text-muted">Tanggal<DateInput name="date" required /></label>
-        <label className="flex min-w-40 flex-1 flex-col gap-1 text-xs font-bold text-muted">Keterangan<Input name="reason" placeholder="Mis. Idulfitri" /></label>
+        <label className="flex flex-col gap-1 text-xs font-semibold text-muted">Tanggal<DateInput name="date" required /></label>
+        <label className="flex min-w-40 flex-1 flex-col gap-1 text-xs font-semibold text-muted">Keterangan<Input name="reason" placeholder="Mis. Idulfitri" /></label>
         <Button disabled={pending} variant="brand" >Tambah</Button>
       </form>
       {s?.error && <p role="alert" className="text-xs text-danger">{s.error}</p>}
       {closures.map((c) => (
-        <div key={c.date} className="flex items-center gap-2 border-t border-[#EEEEEA] pt-2 text-sm">
+        <div key={c.date} className="flex items-center gap-2 border-t border-[#EFEAEF] pt-2 text-sm">
           <span className="flex-1 tabular">{formatTanggal(`${c.date}T12:00:00+07:00`)}{c.reason && ` · ${c.reason}`}</span>
           <Button onClick={async () => { const r = await removeClosure(c.date); toast(r?.error ?? "Dihapus", r?.error ? "error" : "ok"); }} variant="destructive" className="h-10 px-3">Hapus</Button>
         </div>
@@ -77,13 +77,13 @@ export function ClosuresForm({ closures }: { closures: { date: string; reason: s
 function Thumb({ path, alt }: { path: string | null; alt: string }) {
   return path
     // eslint-disable-next-line @next/next/no-img-element -- pratinjau kecil di admin
-    ? <img src={photoUrl(path)!} alt={alt} className="size-20 rounded-lg border border-line object-cover" />
-    : <span className="flex size-20 items-center justify-center rounded-lg border border-dashed border-line text-xs text-muted">Belum ada</span>;
+    ? <img src={photoUrl(path)!} alt={alt} className="size-20 rounded-[14px] border border-line object-cover" />
+    : <span className="flex size-20 items-center justify-center rounded-[14px] border border-dashed border-line text-xs text-muted">Belum ada</span>;
 }
 
 function Pick({ id, busy, onFile, multiple, label }: { id: string; busy: string | null; onFile: (f: FileList | null) => void; multiple?: boolean; label: string }) {
   return (
-    <label className={buttonClass("outline", `h-11 cursor-pointer rounded-[10px] ${busy === id ? "opacity-50" : ""}`)}>
+    <label className={buttonClass("outline", `h-11 cursor-pointer rounded-[14px] ${busy === id ? "opacity-50" : ""}`)}>
       {busy === id ? "Mengunggah…" : label}
       <input type="file" accept={IMAGE_ACCEPT} multiple={multiple} className="sr-only" disabled={!!busy} onChange={(e) => { onFile(e.target.files); e.target.value = ""; }} />
     </label>
@@ -173,8 +173,8 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
   const gallery = list.filter((p) => p.kind === "gallery").sort((a, b) => a.sort - b.sort);
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-line bg-card p-5">
-      <h2 className="font-display text-lg font-semibold">Foto</h2>
+    <div className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-5">
+      <h2 className="font-display text-lg font-medium">Foto</h2>
       <p className="-mt-2 text-xs text-muted">Dikompres otomatis ke WebP (sisi terpanjang 2400 px). Unggah foto asli (bukan tangkapan layar/hasil kirim WhatsApp) agar tetap tajam; hero & kartu layanan berbentuk lengkung tegak — foto potret paling pas. Tanpa foto, landing memakai ilustrasi garis.</p>
       <div className="grid gap-4 min-[700px]:grid-cols-2 min-[1200px]:grid-cols-4">
         {[["hero", "Hero (bingkai lengkung)"], ["groom", "Kartu Barbershop"], ["bloom", "Kartu Nail Art"], ["lashes", "Kartu Lashes"]].map(([k, l]) => (
@@ -184,20 +184,20 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-4">
         <div className="flex items-center gap-3"><b className="flex-1 text-sm">Galeri hasil kerja</b><Pick id="gallery" busy={busy} multiple label="Tambah foto" onFile={addGallery} /></div>
         {gallery.map((p, i) => (
           <div key={p.id} className="flex flex-wrap items-center gap-2">
             <Thumb path={p.path} alt={p.caption || `Galeri ${i + 1}`} />
             <Input aria-label={`Keterangan foto ${i + 1}`} defaultValue={p.caption} onBlur={(e) => caption(p, e.target.value.trim())} className="min-w-40 flex-1" placeholder="Keterangan (opsional)" />
-            <Button onClick={() => move(p, -1)} disabled={i === 0} aria-label="Geser ke atas" variant="outline" className="h-11 rounded-[10px] px-3">↑</Button>
-            <Button onClick={() => move(p, 1)} disabled={i === gallery.length - 1} aria-label="Geser ke bawah" variant="outline" className="h-11 rounded-[10px] px-3">↓</Button>
+            <Button onClick={() => move(p, -1)} disabled={i === 0} aria-label="Geser ke atas" variant="outline" className="h-11 rounded-[14px] px-3">↑</Button>
+            <Button onClick={() => move(p, 1)} disabled={i === gallery.length - 1} aria-label="Geser ke bawah" variant="outline" className="h-11 rounded-[14px] px-3">↓</Button>
             <Button onClick={() => remove(p)} variant="destructive" className="h-11 px-3">Hapus</Button>
           </div>
         ))}
         {!gallery.length && <p className="text-sm text-muted">Belum ada foto galeri.</p>}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-4">
         <b className="text-sm">Foto staf</b>
         <div className="grid gap-3 min-[1000px]:grid-cols-3">
           {people.map((s) => (
@@ -211,19 +211,19 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
 }
 
 export function OutboundLog({ rows }: { rows: Msg[] }) {
-  const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEFEB] text-[#4A4C46]" };
+  const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEAEF] text-[#4D4A55]" };
   const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1", alert: "Notifikasi owner", test: "Tes WA", staff_report: "Pesan ke staf" };
   return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-5">
-      <h2 className="font-display text-lg font-semibold">Pesan keluar ke pelanggan</h2>
+    <div className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-5">
+      <h2 className="font-display text-lg font-medium">Pesan keluar ke pelanggan</h2>
       <p className="-mt-1 text-xs text-muted">Email terkirim bila RESEND_API_KEY diisi; WhatsApp otomatis bila kredensial penyedia diisi (lihat README). &quot;Dilewati&quot; = kanal belum aktif.</p>
       {rows.map((m) => (
-        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#EEEEEA] pt-2 text-[13px] tabular">
+        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#EFEAEF] pt-2 text-[13px] tabular">
           <span className="w-32 text-muted">{formatTanggal(m.created_at).split(",")[1]} {formatJam(m.created_at)}</span>
           <span className="w-28">{T[m.template] ?? m.template}</span>
           <span className="w-20 uppercase text-muted">{m.channel === "email" ? "Email" : m.channel === "telegram" ? "Telegram" : "WA"}</span>
           <span className="min-w-32 flex-1 truncate">{m.to_address}</span>
-          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${tone[m.status]}`}>{{ sent: "Terkirim", queued: "Antre", sending: "Mengirim", failed: "Gagal", skipped: "Dilewati" }[m.status]}</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${tone[m.status]}`}>{{ sent: "Terkirim", queued: "Antre", sending: "Mengirim", failed: "Gagal", skipped: "Dilewati" }[m.status]}</span>
           {m.last_error && <span className="w-full text-xs text-muted">{m.last_error}</span>}
         </div>
       ))}

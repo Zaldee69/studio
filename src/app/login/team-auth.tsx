@@ -132,12 +132,12 @@ export function TeamAuth({ register, mfa }: { register: boolean; mfa: boolean })
         </>
       )}
       {err && <p role="alert" className="text-sm text-danger">{err}</p>}
-      {info && <p role="status" className="rounded-lg bg-st-booked p-3 text-sm">{info}</p>}
+      {info && <p role="status" className="rounded-[14px] bg-st-booked p-3 text-sm">{info}</p>}
       {step === "form" && <Turnstile key={attempt} onToken={setCaptcha} />}
       <Button type="submit" disabled={busy || !hydrated} variant="brand" className="w-full">
         {busy ? "Memproses…" : step === "mfa" ? "Verifikasi" : register ? "Daftar" : "Masuk"}
       </Button>
-      {step === "mfa" && <button type="button" onClick={cancelMfa} className="min-h-11 text-sm font-semibold text-accent">Batal &amp; keluar</button>}
+      {step === "mfa" && <button type="button" onClick={cancelMfa} className="min-h-11 text-sm font-medium text-accent">Batal &amp; keluar</button>}
     </form>
   );
 }

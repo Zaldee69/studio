@@ -57,10 +57,10 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             const warn = mg && mg.margin_pct < settings.marginWarn;
             return (
               <button key={s.id} onClick={() => setSel(s.id)} aria-current={s.id === sel ? "true" : undefined}
-                className={`flex min-h-12 items-center gap-2 rounded-[10px] px-3 text-left text-sm ${s.id === sel ? "bg-ink text-white" : "hover:bg-paper"} ${s.active ? "" : "opacity-55"}`}>
-                <span className="flex-1 font-semibold">{s.name}</span>
+                className={`flex min-h-12 items-center gap-2 rounded-[14px] px-3 text-left text-sm ${s.id === sel ? "bg-accent text-white" : "hover:bg-paper"} ${s.active ? "" : "opacity-55"}`}>
+                <span className="flex-1 font-medium">{s.name}</span>
                 {mg && <span className="tabular text-xs">{mg.margin_pct}%</span>}
-                {warn && <span className="rounded-full bg-[#F9E6E6] px-2 text-[11px] font-bold text-[#6E1616]">Margin rendah</span>}
+                {warn && <span className="rounded-full bg-[#F9E6E6] px-2 text-[11px] font-semibold text-[#6E1616]">Margin rendah</span>}
               </button>
             );
           })}
@@ -68,19 +68,19 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
 
         {svc && (
           <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4 min-[1500px]:grid-cols-[1fr_300px]">
-            <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
+            <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="flex-1 font-display text-xl font-bold">{svc.name}</h2>
+                <h2 className="flex-1 font-display text-xl font-semibold">{svc.name}</h2>
                 <Button onClick={openHistory} variant="outline" className="h-11">Riwayat perubahan</Button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[520px] text-sm tabular">
-                  <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Bahan</th><th className="font-semibold">Jumlah pakai</th><th className="font-semibold">Satuan</th><th className="text-right font-semibold">Biaya</th><th /></tr></thead>
+                  <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Bahan</th><th className="font-medium">Jumlah pakai</th><th className="font-medium">Satuan</th><th className="text-right font-medium">Biaya</th><th /></tr></thead>
                   <tbody>
                     {rows.map((r, i) => {
                       const it = items.find((x) => x.item_id === r.item_id);
                       return (
-                        <tr key={i} className="border-t border-[#EEEEEA]">
+                        <tr key={i} className="border-t border-[#EFEAEF]">
                           <td className="py-1.5 pr-2">
                             <NativeSelect aria-label={`Bahan baris ${i + 1}`} value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
                               <option value="">Pilih bahan…</option>
@@ -107,34 +107,34 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             </section>
 
             {m && (
-              <aside aria-label="Ringkasan margin" className="flex flex-col gap-2 self-start rounded-[14px] bg-ink p-5 text-paper tabular">
+              <aside aria-label="Ringkasan margin" className="flex flex-col gap-2 self-start rounded-[14px] bg-accent p-5 text-paper tabular">
                 {[["Harga layanan", formatRupiah(svc.price)], ["HPP bahan", formatRupiah(hpp)],
                   ["Margin kotor", `${formatRupiah(m.margin)} (${m.marginPct.toLocaleString("id-ID")}%)`], [`Komisi staf ${settings.ratio}%`, formatRupiah(m.commission)]].map(([k, v]) => (
-                  <div key={k} className="flex justify-between gap-3 text-sm"><span className="text-[#9A9C95]">{k}</span><b>{v}</b></div>
+                  <div key={k} className="flex justify-between gap-3 text-sm"><span className="text-[#9C98A3]">{k}</span><b>{v}</b></div>
                 ))}
                 <div className="mt-1 flex flex-col border-t border-[#3A3934] pt-2">
-                  <span className="text-[13px] text-[#9A9C95]">Laba kontribusi toko</span>
+                  <span className="text-[13px] text-[#9C98A3]">Laba kontribusi toko</span>
                   <b className="font-display text-[32px]">{formatRupiah(m.contribution)}</b>
                 </div>
-                {m.marginPct < settings.marginWarn && <span className="rounded-lg bg-[#F9E6E6] px-2.5 py-1.5 text-xs font-bold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
+                {m.marginPct < settings.marginWarn && <span className="rounded-[14px] bg-[#F9E6E6] px-2.5 py-1.5 text-xs font-semibold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
               </aside>
             )}
           </div>
         )}
       </div>
 
-      <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
-        <h2 className="text-base font-bold">Margin semua layanan</h2>
+      <section className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-4">
+        <h2 className="text-base font-semibold">Margin semua layanan</h2>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm tabular">
-            <thead><tr className="text-left text-xs text-muted">{["Layanan", "Harga", "HPP", "Margin", "Komisi", "Laba kontribusi"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr className="text-left text-xs text-muted">{["Layanan", "Harga", "HPP", "Margin", "Komisi", "Laba kontribusi"].map((h, i) => <th key={h} className={`py-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {[...margins].sort((a, b) => a.margin_pct - b.margin_pct).map((r) => (
-                <tr key={r.id} className="border-t border-[#EEEEEA]">
-                  <td className="py-2 font-semibold">{r.name}</td>
+                <tr key={r.id} className="border-t border-[#EFEAEF]">
+                  <td className="py-2 font-medium">{r.name}</td>
                   <td className="text-right">{formatRupiah(r.price)}</td>
                   <td className="text-right">{formatRupiah(r.hpp)}</td>
-                  <td className={`text-right font-bold ${r.margin_pct < settings.marginWarn ? "text-[#A12A2A]" : ""}`}>{r.margin_pct.toLocaleString("id-ID")}%</td>
+                  <td className={`text-right font-semibold ${r.margin_pct < settings.marginWarn ? "text-[#A12A2A]" : ""}`}>{r.margin_pct.toLocaleString("id-ID")}%</td>
                   <td className="text-right">{formatRupiah(r.commission)}</td>
                   <td className="text-right">{formatRupiah(r.contribution)}</td>
                 </tr>
@@ -146,17 +146,17 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
 
       <Sheet open={history !== null} onClose={() => setHistory(null)} label="Riwayat resep" variant="drawer">
         <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-          <h2 className="flex-1 font-display text-xl font-bold">Riwayat resep · {svc?.name}</h2>
+          <h2 className="flex-1 font-display text-xl font-semibold">Riwayat resep · {svc?.name}</h2>
           <CloseButton onClick={() => setHistory(null)} />
         </div>
         <div className="flex flex-col gap-3 p-5">
           {!history?.length && <p className="text-sm text-muted">Belum ada perubahan tercatat.</p>}
           {history?.map((h) => (
-            <div key={h.id} className="flex flex-col gap-1.5 rounded-[12px] border border-line p-3 text-sm">
+            <div key={h.id} className="flex flex-col gap-1.5 rounded-[14px] border border-line p-3 text-sm">
               <b className="tabular">{formatTanggal(h.created_at)} {formatJam(h.created_at)}</b>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div><span className="font-semibold text-muted">Sebelum</span>{h.before.map((x) => <div key={x.name}>{x.name} {qtyFmt(x.qty)} {x.unit}</div>)}{!h.before.length && <div>—</div>}</div>
-                <div><span className="font-semibold text-muted">Sesudah</span>{h.after.map((x) => <div key={x.name}>{x.name} {qtyFmt(x.qty)} {x.unit}</div>)}{!h.after.length && <div>—</div>}</div>
+                <div><span className="font-medium text-muted">Sebelum</span>{h.before.map((x) => <div key={x.name}>{x.name} {qtyFmt(x.qty)} {x.unit}</div>)}{!h.before.length && <div>—</div>}</div>
+                <div><span className="font-medium text-muted">Sesudah</span>{h.after.map((x) => <div key={x.name}>{x.name} {qtyFmt(x.qty)} {x.unit}</div>)}{!h.after.length && <div>—</div>}</div>
               </div>
             </div>
           ))}

@@ -44,7 +44,7 @@ export function MyTargets() {
   // tugas selesai lebih dari 7 hari lalu tidak ditampilkan lagi
   const tasks = data.tasks.filter((k) => k.status !== "selesai" || k.due >= addDays(today, -7));
   const metric = (label: string, value: string, sub: string, ok: boolean | null) => (
-    <div className="flex flex-col rounded-[12px] bg-[#F5F5F1] px-3 py-2">
+    <div className="flex flex-col rounded-[14px] bg-[#F6F4F7] px-3 py-2">
       <span className="text-xs text-muted">{label}</span>
       <b className={`tabular text-lg ${ok === true ? "text-[#1F7A45]" : ok === false ? "text-[#A12A2A]" : ""}`}>{value}</b>
       <span className="text-xs text-muted">{sub}</span>
@@ -52,8 +52,8 @@ export function MyTargets() {
   );
 
   return (
-    <section aria-label="Target dan tugas" className="flex flex-col gap-3 rounded-[16px] border border-line bg-card p-4">
-      <h2 className="text-base font-bold">Target & tugas</h2>
+    <section aria-label="Target dan tugas" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
+      <h2 className="text-base font-semibold">Target & tugas</h2>
       {t?.role === "cashier" && (
         <div className="grid grid-cols-2 gap-2">
           {metric("No. WA tercatat hari ini", `${pct(t.tx_with_wa, t.tx)}%`, `${t.tx_with_wa} dari ${t.tx} transaksi · target ${t.target_wa_pct}%`, t.tx ? pct(t.tx_with_wa, t.tx) >= t.target_wa_pct : null)}
@@ -70,9 +70,9 @@ export function MyTargets() {
         const late = k.due < today && k.status !== "selesai";
         const draft = drafts[k.id] ?? k.note;
         return (
-          <div key={k.id} className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-3">
+          <div key={k.id} className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-3">
             <div className="flex flex-col gap-0.5">
-              <span className={`text-xs font-bold tabular ${late ? "text-[#A12A2A]" : "text-muted"}`}>{shortDate(k.due)}{late ? " · lewat tenggat" : ""}</span>
+              <span className={`text-xs font-semibold tabular ${late ? "text-[#A12A2A]" : "text-muted"}`}>{shortDate(k.due)}{late ? " · lewat tenggat" : ""}</span>
               <b className="text-sm">{k.title}</b>
               {k.measure && <span className="text-xs text-muted">Berhasil bila: {k.measure}</span>}
             </div>

@@ -62,53 +62,53 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       // lebih lebar dari kolom halaman capster (960px) agar 5 kolom foto tidak sempit; tetap di tengah layar
       className="flex w-[min(calc(100vw-1.5rem),1480px)] flex-col gap-3 self-center rounded-[14px] border border-line bg-[#F3F2EF] p-3 min-[700px]:p-5">
       <div className="text-center">
-        <h2 className="font-display text-2xl font-extrabold uppercase tracking-tight min-[700px]:text-3xl">{n} model rambut</h2>
-        <p className="text-sm uppercase tracking-[0.08em] text-[#4A4C46]">Cocok untuk wajah & gaya {first}</p>
+        <h2 className="font-display text-2xl font-semibold uppercase tracking-tight min-[700px]:text-3xl">{n} model rambut</h2>
+        <p className="text-sm uppercase tracking-[0.08em] text-[#4D4A55]">Cocok untuk wajah & gaya {first}</p>
       </div>
-      {insight && <p className="text-center text-sm text-[#4A4C46]">{insight}</p>}
+      {insight && <p className="text-center text-sm text-[#4D4A55]">{insight}</p>}
       {!image && !error && (
-        <p aria-busy="true" className="flex items-center justify-center gap-2 text-sm font-semibold">
+        <p aria-busy="true" className="flex items-center justify-center gap-2 text-sm font-medium">
           <span className="size-4 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden="true" />
           Membuat pratinjau {n} model di wajah pelanggan… ± 1,5 menit
         </p>
       )}
       {error && (
         <p role="alert" className="flex flex-wrap items-center justify-center gap-3 text-sm text-danger">
-          {error} <Button type="button" onClick={onRetry} variant="outline" className="h-9 rounded-[10px] px-3 text-ink">Coba lagi</Button>
+          {error} <Button type="button" onClick={onRetry} variant="outline" className="h-9 rounded-[14px] px-3 text-ink">Coba lagi</Button>
         </p>
       )}
       <div className="overflow-x-auto pb-1">
         {/* subgrid: judul, foto depan, poin, foto samping, tombol sejajar antar kolom walau panjang poin berbeda */}
         <div className="grid gap-x-2.5" style={{ gridTemplateColumns: `repeat(${n}, minmax(150px, 1fr))`, gridTemplateRows: "repeat(5, auto)" }}>
           {cols.map((c, i) => (
-            <article key={c.rec.hair_style_id} aria-label={`Katalog ${c.rec.hair_style_name}`} className="row-span-5 grid grid-rows-subgrid overflow-hidden rounded-[10px] bg-white">
-              <h3 className="flex min-h-14 items-center justify-center bg-[#1E2230] px-2 text-center text-[13px] font-bold uppercase leading-tight text-white">{i + 1}. {c.rec.hair_style_name}</h3>
+            <article key={c.rec.hair_style_id} aria-label={`Katalog ${c.rec.hair_style_name}`} className="row-span-5 grid grid-rows-subgrid overflow-hidden rounded-[14px] bg-white">
+              <h3 className="flex min-h-14 items-center justify-center bg-[#1E2230] px-2 text-center text-[13px] font-semibold uppercase leading-tight text-white">{i + 1}. {c.rec.hair_style_name}</h3>
               <Cell image={image} i={i} n={n} row={0} label={`${c.rec.hair_style_name} tampak depan`} />
               <ul className="list-disc space-y-0.5 bg-[#E9E7E2] py-2.5 pl-6 pr-2 text-xs">
                 {bullets(c).map((b) => <li key={b}>{b}</li>)}
               </ul>
               <Cell image={image} i={i} n={n} row={1} label={`${c.rec.hair_style_name} tampak samping`} />
               {onPick ? (
-                <Button type="button" onClick={async () => onPick(c.rec, image ? await cropColumn(image, i, n) : null)} className="m-2 h-10 rounded-[10px] text-sm">Pilih gaya ini</Button>
+                <Button variant="outline" type="button" onClick={async () => onPick(c.rec, image ? await cropColumn(image, i, n) : null)} className="m-2 h-10 rounded-[14px] text-sm">Pilih gaya ini</Button>
               ) : <span />}
             </article>
           ))}
         </div>
       </div>
-      <div className="grid gap-3 rounded-[12px] bg-[#1E2230] p-4 text-white min-[700px]:grid-cols-2">
+      <div className="grid gap-3 rounded-[14px] bg-[#1E2230] p-4 text-white min-[700px]:grid-cols-2">
         {!!tips.length && (
           <div>
-            <h3 className="mb-1.5 text-sm font-bold uppercase tracking-[0.06em] text-[#B08A2E]">Tips tambahan</h3>
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-[#B08A2E]">Tips tambahan</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm">{tips.map((t) => <li key={t}>{t}</li>)}</ul>
           </div>
         )}
-        <div className="rounded-[10px] border border-white/25 p-3">
-          <h3 className="text-sm font-bold uppercase tracking-[0.06em] text-[#B08A2E]">Rekomendasi pribadi</h3>
-          <p className="mt-1 font-display text-lg font-bold text-[#E8CF8E]">★ {top.rec.hair_style_name}</p>
+        <div className="rounded-[14px] border border-white/25 p-3">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.06em] text-[#B08A2E]">Rekomendasi pribadi</h3>
+          <p className="mt-1 font-display text-lg font-semibold text-[#E8CF8E]">★ {top.rec.hair_style_name}</p>
           <p className="text-sm">{summary || top.rec.insight}</p>
         </div>
       </div>
-      <Button type="button" onClick={share} disabled={busy || !image} className="h-12 rounded-xl">{busy ? "Menyiapkan gambar…" : "Bagikan / simpan gambar katalog"}</Button>
+      <Button type="button" onClick={share} disabled={busy || !image} className="h-12 rounded-[14px]">{busy ? "Menyiapkan gambar…" : "Bagikan / simpan gambar katalog"}</Button>
     </section>
   );
 }

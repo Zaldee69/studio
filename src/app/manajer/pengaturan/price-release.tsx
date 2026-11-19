@@ -36,18 +36,18 @@ export function PriceRelease({ services }: { services: Svc[] }) {
         <b className="flex-1">Harga baru menunggu rilis · {pending.length} perubahan</b>
         <Button onClick={release} disabled={!online || busy} className="h-11">{busy ? "Merilis…" : "Rilis harga baru"}</Button>
       </div>
-      <div className="overflow-x-auto rounded-[10px] bg-card px-3 text-ink">
+      <div className="overflow-x-auto rounded-[14px] bg-card px-3 text-ink">
         <table className="w-full min-w-[520px] text-sm tabular">
-          <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Layanan</th><th className="font-semibold">Perubahan</th>
-            <th className="text-right font-semibold">Sekarang</th><th className="text-right font-semibold">Setelah rilis</th></tr></thead>
+          <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Layanan</th><th className="font-medium">Perubahan</th>
+            <th className="text-right font-medium">Sekarang</th><th className="text-right font-medium">Setelah rilis</th></tr></thead>
           <tbody>{pending.sort((a, b) => a.sort - b.sort).map((s) => (
-            <tr key={s.id} className="border-t border-[#EEEEEA]">
-              <td className="py-2 font-semibold">{s.name}</td>
-              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#E6F1E4] px-2 py-0.5 text-xs font-bold text-[#144D2A]">Baru</span>
-                : s.release_action === "retire" ? <span className="rounded-full bg-[#F9E6E6] px-2 py-0.5 text-xs font-bold text-[#6E1616]">Dihentikan</span>
+            <tr key={s.id} className="border-t border-[#EFEAEF]">
+              <td className="py-2 font-medium">{s.name}</td>
+              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#E6F1E4] px-2 py-0.5 text-xs font-semibold text-[#144D2A]">Baru</span>
+                : s.release_action === "retire" ? <span className="rounded-full bg-[#F9E6E6] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Dihentikan</span>
                 : <span className="text-xs text-muted">Ganti harga</span>}</td>
               <td className="text-right">{s.release_action === "launch" ? "—" : formatRupiah(s.price)}</td>
-              <td className="text-right font-bold">{s.release_action === "retire" ? "—" : formatRupiah(s.next_price ?? s.price)}</td>
+              <td className="text-right font-semibold">{s.release_action === "retire" ? "—" : formatRupiah(s.next_price ?? s.price)}</td>
             </tr>
           ))}</tbody>
         </table>

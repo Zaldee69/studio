@@ -8,7 +8,7 @@ import { CAT_LABEL, COLOR, rb } from "./palette";
 
 export function Legend({ items }: { items: { label: string; color: string; dashed?: boolean }[] }) {
   return (
-    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold" aria-label="Legenda">
+    <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium" aria-label="Legenda">
       {items.map((i) => (
         <li key={i.label} className="flex items-center gap-1.5">
           <svg width="18" height="10" aria-hidden="true"><line x1="0" y1="5" x2="18" y2="5" stroke={i.color} strokeWidth="2" strokeDasharray={i.dashed ? "4 3" : undefined} /></svg>{i.label}
@@ -21,12 +21,12 @@ export function Legend({ items }: { items: { label: string; color: string; dashe
 export function DataTable({ head, rows, caption }: { head: string[]; rows: (string | number)[][]; caption: string }) {
   return (
     <details className="text-sm">
-      <summary className="flex min-h-11 cursor-pointer items-center font-semibold text-accent">Lihat tabel</summary>
+      <summary className="flex min-h-11 cursor-pointer items-center font-medium text-accent">Lihat tabel</summary>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[480px] tabular">
           <caption className="sr-only">{caption}</caption>
-          <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-1.5 pr-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#EEEEEA]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
+          <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-1.5 pr-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#EFEAEF]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
         </table>
       </div>
     </details>
@@ -71,7 +71,7 @@ export function LineChart({ labels, series, targets, tooltip, ariaLabel }: {
         ))}
       </svg>
       {hover !== null && tooltip && (
-        <div role="status" className="pointer-events-none absolute top-2 z-10 min-w-44 rounded-[10px] border border-line bg-card px-3 py-2 text-xs shadow-[0_8px_24px_rgba(28,27,25,0.18)] tabular"
+        <div role="status" className="pointer-events-none absolute top-2 z-10 min-w-44 rounded-[14px] border border-line bg-card px-3 py-2 text-xs shadow-[0_8px_24px_rgba(28,27,25,0.18)] tabular"
           style={{ left: `min(calc(${(x(hover) / W) * 100}% + 8px), calc(100% - 190px))` }}>{tooltip(hover)}</div>
       )}
     </div>
@@ -87,15 +87,15 @@ export function HBars({ rows, target, max = 100, ariaLabel }: {
     <div role="img" aria-label={ariaLabel} className="relative flex flex-col gap-2">
       {rows.map((r) => (
         <div key={r.label} className="grid grid-cols-[120px_1fr] items-center gap-2 text-sm min-[820px]:grid-cols-[150px_1fr_190px] print:grid-cols-[130px_1fr_170px]" title={`${r.label}: ${r.caption}`}>
-          <span className="truncate font-semibold">{r.label}</span>
+          <span className="truncate font-medium">{r.label}</span>
           <span className="relative h-6 rounded-md bg-paper">
             <span className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${Math.min(100, (r.value / m) * 100)}%`, background: r.color }} />
-            {target && <span aria-hidden="true" className="absolute inset-y-[-3px] w-0.5 bg-ink" style={{ left: `${(target.value / m) * 100}%` }} />}
+            {target && <span aria-hidden="true" className="absolute inset-y-[-3px] w-0.5 bg-accent" style={{ left: `${(target.value / m) * 100}%` }} />}
           </span>
           <span className="col-span-2 text-xs text-muted tabular min-[820px]:col-span-1 min-[820px]:text-right print:col-span-1 print:text-right">{r.caption}</span>
         </div>
       ))}
-      {target && <span className="text-xs text-muted"><span aria-hidden="true" className="mr-1 inline-block h-3 w-0.5 bg-ink align-middle" />{target.label}</span>}
+      {target && <span className="text-xs text-muted"><span aria-hidden="true" className="mr-1 inline-block h-3 w-0.5 bg-accent align-middle" />{target.label}</span>}
     </div>
   );
 }
@@ -112,11 +112,11 @@ export function Heatmap({ cells }: { cells: { weekday: number; hour: number; min
     <div className="flex flex-col gap-2">
       <div className="overflow-x-auto">
         <table className="border-separate border-spacing-[3px] text-[11px] tabular" aria-label="Peta panas kesibukan: rata-rata menit terjual per jam">
-          <thead><tr><th className="sr-only">Hari</th>{hours.map((h) => <th key={h} scope="col" className="w-10 font-semibold text-muted">{String(h).padStart(2, "0")}</th>)}</tr></thead>
+          <thead><tr><th className="sr-only">Hari</th>{hours.map((h) => <th key={h} scope="col" className="w-10 font-medium text-muted">{String(h).padStart(2, "0")}</th>)}</tr></thead>
           <tbody>
             {[1, 2, 3, 4, 5, 6, 7].map((d) => (
               <tr key={d}>
-                <th scope="row" className="pr-1 text-left font-semibold text-muted">{DAY[d]}</th>
+                <th scope="row" className="pr-1 text-left font-medium text-muted">{DAY[d]}</th>
                 {hours.map((h) => {
                   const c = at(d, h);
                   const closed = !c || c.closed;
@@ -151,7 +151,7 @@ export function Bullet({ value, min, max, scale = 30 }: { value: number | null; 
       <div className="relative h-8 rounded-md bg-paper">
         <div className="absolute inset-y-0 rounded" style={{ left: pos(min), width: `calc(${pos(max)} - ${pos(min)})`, background: "repeating-linear-gradient(45deg,#E6F1E4,#E6F1E4 5px,#C4E8D0 5px,#C4E8D0 10px)" }} />
         {value !== null && <div className="absolute inset-y-1.5 left-0 rounded-sm" style={{ width: pos(value), background: COLOR.retail }} />}
-        {value !== null && <div aria-hidden="true" className="absolute -inset-y-1 w-1 rounded bg-ink" style={{ left: `calc(${pos(value)} - 2px)` }} />}
+        {value !== null && <div aria-hidden="true" className="absolute -inset-y-1 w-1 rounded bg-accent" style={{ left: `calc(${pos(value)} - 2px)` }} />}
       </div>
       <div className="relative h-4 text-[11px] text-muted tabular">
         {[0, 10, 20, 30].map((t) => <span key={t} className="absolute -translate-x-1/2" style={{ left: pos(t) }}>{t}%{t === 30 ? "+" : ""}</span>)}
@@ -173,7 +173,7 @@ export function StackedWeekly({ weeks }: { weeks: { week: string; barbershop: nu
           const tot = sum(w);
           return (
             <div key={w.week} className="flex min-w-10 flex-1 flex-col items-center gap-1" title={`Minggu ${w.week}: ${keys.map((k) => `${CAT_LABEL[k]} ${rb(w[k] ?? 0)}`).join(", ")}`}>
-              <span className="text-[10px] font-semibold tabular">{rb(tot)}</span>
+              <span className="text-[10px] font-medium tabular">{rb(tot)}</span>
               <div className="flex w-full flex-col-reverse gap-[2px]" style={{ height: `${(tot / max) * 130}px` }}>
                 {keys.map((k) => (w[k] ?? 0) > 0 && <div key={k} style={{ height: `${((w[k] ?? 0) / tot) * 100}%`, background: COLOR[k] }} className="w-full rounded-[2px]" />)}
               </div>
@@ -193,8 +193,8 @@ export function Funnel({ steps }: { steps: { label: string; n: number; pct: numb
     <ol className="flex flex-col gap-2" aria-label="Funnel booking online">
       {steps.map((s) => (
         <li key={s.label} className="grid grid-cols-[130px_1fr_110px] items-center gap-2 text-sm">
-          <span className="font-semibold">{s.label}</span>
-          <span className="h-6 rounded-md bg-paper"><span className="block h-full rounded-md bg-ink" style={{ width: `${(s.n / max) * 100}%` }} /></span>
+          <span className="font-medium">{s.label}</span>
+          <span className="h-6 rounded-md bg-paper"><span className="block h-full rounded-md bg-accent" style={{ width: `${(s.n / max) * 100}%` }} /></span>
           <span className="text-right text-xs tabular"><b className="text-sm">{s.n}</b>{s.pct !== null && ` · ${s.pct.toLocaleString("id-ID", { maximumFractionDigits: 1 })}%`}</span>
         </li>
       ))}

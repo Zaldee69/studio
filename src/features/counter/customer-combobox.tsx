@@ -33,12 +33,12 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus, o
 
   if (value) {
     return (
-      <div className="flex min-h-11 items-center gap-2 rounded-[10px] border border-[#DCDCD6] bg-card px-3">
+      <div className="flex min-h-11 items-center gap-2 rounded-[14px] border border-[#DDD7E0] bg-card px-3">
         <span className="flex min-w-0 flex-1 flex-col py-1.5">
           <b className="truncate text-sm">{value.name}</b>
           {value.whatsapp && <span className="text-xs text-muted tabular">{value.whatsapp}</span>}
         </span>
-        <button type="button" onClick={() => onChange(null)} className="min-h-10 rounded-lg px-2 text-xs font-bold text-muted hover:bg-paper">Ganti</button>
+        <button type="button" onClick={() => onChange(null)} className="min-h-10 rounded-[14px] px-2 text-xs font-semibold text-muted hover:bg-paper">Ganti</button>
       </div>
     );
   }
@@ -58,7 +58,7 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus, o
           if (e.key === "Enter") { e.preventDefault(); pick(list[hi]); }
         }} />
       {open && term.length >= 2 && (
-        <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-xl border border-line bg-card py-1 shadow-[0_12px_32px_rgba(28,27,25,0.14)]">
+        <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 max-h-72 overflow-y-auto rounded-[14px] border border-line bg-card py-1 shadow-[0_12px_32px_rgba(28,27,25,0.14)]">
           {res.q !== term ? <li className="px-3 py-2.5 text-sm text-muted">Mencari…</li>
             : !list.length ? (onCreate
               ? <li role="option" aria-selected="true" onMouseDown={(e) => { e.preventDefault(); onCreate(term); setQ(""); setOpen(false); }}

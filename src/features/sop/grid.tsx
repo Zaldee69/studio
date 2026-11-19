@@ -83,16 +83,16 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
   const st = SOP_STATUS[data.status];
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3 rounded-[14px] border border-line bg-card p-4">
+      <div className="flex flex-wrap items-center gap-3 rounded-3xl border border-line bg-card p-4">
         <div className="flex min-w-56 flex-1 flex-col gap-1.5">
           <b className="text-sm tabular" aria-live="polite">{data.done} dari {data.total} tahap selesai</b>
           <div className="h-2.5 rounded-full bg-paper" role="progressbar" aria-label="Progres checklist" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done}>
             <div className="h-full rounded-full bg-[#1F7A45] transition-all" style={{ width: `${data.total ? (data.done * 100) / data.total : 0}%` }} />
           </div>
         </div>
-        <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: st.bg, color: st.fg }}><span aria-hidden="true">{st.icon} </span>{st.label}</span>
+        <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: st.bg, color: st.fg }}><span aria-hidden="true">{st.icon} </span>{st.label}</span>
         {data.approval ? (
-          <span className="rounded-full bg-[#E6F1E4] px-3 py-1 text-xs font-bold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
+          <span className="rounded-full bg-[#E6F1E4] px-3 py-1 text-xs font-semibold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
         ) : manager && (
           <Button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="h-11">Otorisasi shift</Button>
         )}
@@ -111,9 +111,9 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
                   <button key={stage} type="button" disabled={!log && !can}
                     onClick={() => (log ? setView({ group: g, stage, log }) : setPick({ group: g, stage }))}
                     aria-label={`${i + 1}. ${STAGE_LABEL[stage]} ${g.name}: ${log ? `selesai oleh ${log.by ?? "—"} ${formatJam(log.at)}` : reason}`}
-                    className={`flex ${big ? "min-h-[72px]" : "min-h-16"} items-center gap-2.5 rounded-xl border-2 px-3 text-left transition disabled:cursor-not-allowed disabled:opacity-50
-                      ${log ? "border-[#9ED7B2] bg-[#EFF9F2]" : can ? "border-ink bg-card hover:bg-paper" : "border-dashed border-line bg-paper"}`}>
-                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-bold ${log ? "border-[#1F7A45] bg-[#1F7A45] text-white" : "border-[#9A9C95]"}`}>{log ? "✓" : ""}</span>
+                    className={`flex ${big ? "min-h-[72px]" : "min-h-16"} items-center gap-2.5 rounded-[14px] border-2 px-3 text-left transition disabled:cursor-not-allowed disabled:opacity-50
+                      ${log ? "border-[#9ED7B2] bg-[#EFF9F2]" : can ? "border-accent bg-card hover:bg-paper" : "border-dashed border-line bg-paper"}`}>
+                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-semibold ${log ? "border-[#1F7A45] bg-[#1F7A45] text-white" : "border-[#9C98A3]"}`}>{log ? "✓" : ""}</span>
                     <span className="flex min-w-0 flex-col">
                       <b className="text-sm">{i + 1}. {STAGE_LABEL[stage]}</b>
                       <span className="truncate text-xs text-muted tabular">
@@ -132,7 +132,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         {pick && (
           <form onSubmit={(e) => { e.preventDefault(); record(); }}>
             <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-              <h2 className="flex-1 font-display text-xl font-bold">{STAGE_LABEL[pick.stage]} · {pick.group.name}</h2><CloseButton onClick={() => setPick(null)} />
+              <h2 className="flex-1 font-display text-xl font-semibold">{STAGE_LABEL[pick.stage]} · {pick.group.name}</h2><CloseButton onClick={() => setPick(null)} />
             </div>
             <div className="flex flex-col gap-3 p-5">
               {manager && staff.length > 0 && (
@@ -147,7 +147,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
               <Field label={pick.stage === "autoclave" && requirePhoto ? "Foto indikator (wajib)" : "Foto (opsional)"} htmlFor="sop-photo">
                 <Input id="sop-photo" type="file" accept="image/*" capture="environment" className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               </Field>
-              <Button disabled={!online || busy} variant="plain" className="h-14 rounded-[12px] bg-[#1F7A45] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</Button>
+              <Button disabled={!online || busy} variant="plain" className="h-14 rounded-[14px] bg-[#1F7A45] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</Button>
             </div>
           </form>
         )}
@@ -157,7 +157,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         {view && (
           <div>
             <div className="flex items-center gap-3 border-b border-line px-5 py-3.5">
-              <h2 className="flex-1 font-display text-xl font-bold">{STAGE_LABEL[view.stage]} · {view.group.name}</h2><CloseButton onClick={() => setView(null)} />
+              <h2 className="flex-1 font-display text-xl font-semibold">{STAGE_LABEL[view.stage]} · {view.group.name}</h2><CloseButton onClick={() => setView(null)} />
             </div>
             <div className="flex flex-col gap-2 p-5 text-sm">
               <p><b>{view.log.by ?? "—"}</b>{view.log.on_behalf && <> atas nama <b>{view.log.on_behalf}</b></>} · {formatTanggal(view.log.at)} {formatJam(view.log.at)}</p>

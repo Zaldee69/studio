@@ -57,34 +57,34 @@ export function IzinStaf({ master }: { master: Master }) {
   return (
     <div className="grid gap-4 min-[1000px]:grid-cols-[1fr_360px]">
       <div className="flex flex-col gap-4">
-        <h1 className="font-display text-[28px] font-bold tracking-tight">Izin staf</h1>
+        <h1 className="font-display text-[28px] font-medium tracking-tight">Izin staf</h1>
         {!data ? <Empty>Memuat…</Empty> : groups.map(([title, rows]) => (
-          <section key={title} className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
-            <h2 className="text-base font-bold">{title} <span className="text-muted tabular">· {rows.length}</span></h2>
+          <section key={title} className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-4">
+            <h2 className="text-base font-semibold">{title} <span className="text-muted tabular">· {rows.length}</span></h2>
             {!rows.length && <span className="text-sm text-muted">Tidak ada.</span>}
             {rows.map((o) => {
               const [l, bg, fg] = OFF_STATUS[o.status];
               const cf = data.conflicts[o.id] ?? [];
               return (
-                <div key={o.id} className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-2.5">
+                <div key={o.id} className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm">{name(o.staff_id)} · <span className="tabular">{offLabel(o)}</span></b>
                       <span className="text-xs text-muted">{o.reason || "—"}</span></span>
-                    <span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: bg, color: fg }}>{l}</span>
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: bg, color: fg }}>{l}</span>
                     {o.status === "pending" && (
                       <>
-                        <Button disabled={!online} onClick={() => decide(o.id, false)} variant="outline" className="h-11 rounded-[10px] text-[#A12A2A]">Tolak</Button>
-                        <Button disabled={!online} onClick={() => decide(o.id, true)} variant="plain" className="h-11 rounded-[10px] bg-[#1F7A45] text-white">Setujui</Button>
+                        <Button disabled={!online} onClick={() => decide(o.id, false)} variant="outline" className="h-11 rounded-[14px] text-[#A12A2A]">Tolak</Button>
+                        <Button disabled={!online} onClick={() => decide(o.id, true)} variant="plain" className="h-11 rounded-[14px] bg-[#1F7A45] text-white">Setujui</Button>
                       </>
                     )}
                   </div>
                   {!!cf.length && (
-                    <div role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+                    <div role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
                       <b>{cf.length} booking terdampak</b> — pindahkan ke capster lain:
                       <ul className="mt-1 list-inside list-disc">
                         {cf.map((c) => <li key={c.id} className="tabular">{c.customer_name} · {formatTanggal(c.start_at)} {formatJam(c.start_at)}</li>)}
                       </ul>
-                      <Link href={`${master.base}/jadwal`} className="mt-1 inline-block font-bold underline">Buka jadwal →</Link>
+                      <Link href={`${master.base}/jadwal`} className="mt-1 inline-block font-semibold underline">Buka jadwal →</Link>
                     </div>
                   )}
                 </div>
@@ -94,8 +94,8 @@ export function IzinStaf({ master }: { master: Master }) {
         ))}
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); record(); }} className="flex flex-col gap-3 self-start rounded-[14px] border border-line bg-card p-5">
-        <h2 className="font-display text-xl font-bold">Catat izin staf</h2>
+      <form onSubmit={(e) => { e.preventDefault(); record(); }} className="flex flex-col gap-3 self-start rounded-3xl border border-line bg-card p-5">
+        <h2 className="font-display text-xl font-semibold">Catat izin staf</h2>
         <Field label="Staf" htmlFor="io-staff">
           <NativeSelect id="io-staff" value={f.staff} onChange={(e) => setF({ ...f, staff: e.target.value })}>
             {master.staff.filter((s) => s.active).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -104,7 +104,7 @@ export function IzinStaf({ master }: { master: Master }) {
         <div role="radiogroup" aria-label="Jenis izin" className="grid grid-cols-2 gap-2">
           {[[true, "Sehari penuh"], [false, "Rentang jam"]].map(([v, l]) => (
             <button type="button" role="radio" key={String(v)} aria-checked={f.allDay === v} onClick={() => setF({ ...f, allDay: v as boolean })}
-              className={`h-11 rounded-[10px] border-2 text-sm font-bold ${f.allDay === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l as string}</button>
+              className={`h-11 rounded-[14px] border-2 text-sm font-semibold ${f.allDay === v ? "border-accent bg-accent text-white" : "border-line bg-card"}`}>{l as string}</button>
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2">

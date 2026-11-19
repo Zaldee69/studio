@@ -1,5 +1,5 @@
+import { RencanaHeader } from "@/components/rencana-header";
 import { buttonClass } from "@/components/ui/button";
-import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
 import { StackedWeekly } from "@/features/analitik/charts";
@@ -20,7 +20,7 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : u
 const m = (v: number | null | undefined) => (v == null ? "—" : formatRupiah(Math.round(v)));
 const pc = (v: number | null | undefined) => (v == null ? "—" : `${pct1(v)}%`);
 const n = (v: number | null | undefined) => (v == null ? "—" : Math.round(v).toLocaleString("id-ID"));
-const th = "border-b border-ink px-1.5 py-1 text-left text-[11px] font-bold";
+const th = "border-b border-accent px-1.5 py-1 text-left text-[11px] font-semibold";
 const td = "border-b border-line px-1.5 py-1 align-top tabular";
 const num = `${td} text-right`;
 const NA = "Belum tersedia";
@@ -41,7 +41,7 @@ const status = (a: number | null) => a == null ? <span className="text-muted">Ba
   : a >= 100 ? <span className="text-[#1F7A45]">● Tercapai</span> : a >= 90 ? <span className="text-[#8A6100]">● Hampir</span> : <span className="text-[#A12A2A]">● Di bawah target</span>;
 
 function H({ id, children }: { id: string; children: React.ReactNode }) {
-  return <h2 id={id} className="mb-1.5 font-display text-lg font-bold">{children}</h2>;
+  return <h2 id={id} className="mb-1.5 font-display text-lg font-semibold">{children}</h2>;
 }
 const Empty = ({ children = "Belum diisi manajer." }: { children?: React.ReactNode }) => <p className="text-[12px] italic text-muted">{children}</p>;
 
@@ -82,26 +82,26 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
   return (
     <div className="flex flex-col gap-4">
       <style>{"@page { size: A4; margin: 11mm } @media print { body { background: #fff } article h2 { break-after: avoid } tr, .keep { break-inside: avoid } }"}</style>
-      <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
-      <div className="flex flex-wrap items-end gap-2 print:hidden">
+      <RencanaHeader />
+      <div className="mx-auto flex w-full max-w-[210mm] flex-wrap items-end gap-2 print:hidden">
         <OwnerPeriodForm kind={p.kind} value={p.value} from={p.from} to={p.to} today={jktDate()} />
         <PrintButton />
         <a href={`/manajer/analitik/laporan/excel?${qs}`} className={buttonClass("outline", "h-11")} download>Unduh Excel (data lengkap)</a>
       </div>
       {weekly && !p.partial && p.to < jktDate() && (
-        <p className="text-sm text-muted print:hidden">
+        <p className="mx-auto w-full max-w-[210mm] text-sm text-muted print:hidden">
           Menampilkan minggu lengkap terakhir. Transaksi & pengeluaran minggu berjalan ada di{" "}
-          <Link href={`/manajer/analitik/laporan?periode=minggu&nilai=${jktDate()}`} className="font-semibold text-ink underline">laporan minggu ini</Link>.
+          <Link href={`/manajer/analitik/laporan?periode=minggu&nilai=${jktDate()}`} className="font-medium text-ink underline">laporan minggu ini</Link>.
         </p>
       )}
       {notesKind ? <NotesEditor key={`${notesKind}-${p.from}`} kind={notesKind} periodStart={p.from} initial={notes} suggestions={r.insights.map((i) => i.message)} />
         : <p className="text-sm text-muted print:hidden">Catatan manajer (ringkasan, masalah, keputusan, prioritas) tersedia untuk laporan mingguan & bulanan.</p>}
 
-      <article aria-label="Laporan owner" className="mx-auto flex w-full max-w-[210mm] flex-col gap-5 rounded-[14px] border border-line bg-card p-6 text-[13px] max-sm:p-3 max-sm:[&_table]:block max-sm:[&_table]:overflow-x-auto print:max-w-none print:border-0 print:p-0">
-        <header className="flex flex-col border-b-2 border-ink pb-2">
+      <article aria-label="Laporan owner" className="mx-auto flex w-full max-w-[210mm] flex-col gap-5 rounded-3xl border border-line bg-card p-6 text-[13px] max-sm:p-3 max-sm:[&_table]:block max-sm:[&_table]:overflow-x-auto print:max-w-none print:border-0 print:p-0">
+        <header className="flex flex-col border-b-2 border-accent pb-2">
           <b className="font-display text-xl">{shop.name}</b><span className="text-xs text-muted">{shop.address}</span>
-          <h1 className="mt-2 font-display text-2xl font-bold">{title}</h1>
-          <span className="text-sm font-semibold tabular">{p.label}</span>
+          <h1 className="mt-2 font-display text-2xl font-medium">{title}</h1>
+          <span className="text-sm font-medium tabular">{p.label}</span>
           <span className="text-xs text-muted tabular">
             Pembanding: {p.previous.label} · disusun Manajer Operasional · dicetak {formatTanggal(new Date())} {formatJam(new Date())}
           </span>
@@ -120,7 +120,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               {perf.map(([label, cur, target, prev, money, lowerBetter]) => (
                 <tr key={label}>
                   <td className={td}>{label}</td>
-                  <td className={`${num} font-bold`}>{money ? m(cur) : n(cur)}</td>
+                  <td className={`${num} font-semibold`}>{money ? m(cur) : n(cur)}</td>
                   <td className={num}>{target ? m(target) : "—"}</td>
                   <td className={num}>{target ? <>{pc(attainment(cur, target))} {status(attainment(cur, target))}</> : "—"}</td>
                   <td className={num}>{money ? m(prev) : n(prev)}</td>
@@ -145,7 +145,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             <tbody>
               {cats.length ? cats.map((c) => (
                 <tr key={c.category}>
-                  <td className={td}>{CAT_NAME[c.category]}</td><td className={`${num} font-bold`}>{m(c.net)}</td><td className={num}>{n(c.items)}</td>
+                  <td className={td}>{CAT_NAME[c.category]}</td><td className={`${num} font-semibold`}>{m(c.net)}</td><td className={num}>{n(c.items)}</td>
                   <td className={num}>{f.net ? pc((c.net * 100) / f.net) : "—"}</td>
                   <td className={num}>{aovCat[c.category] ? m(aovCat[c.category][0]) : "—"}</td>
                   <td className={num}>{aovCat[c.category]?.[1] ? <>{m(aovCat[c.category][1])} {status(attainment(aovCat[c.category][0], aovCat[c.category][1]))}</> : "—"}</td>
@@ -161,7 +161,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
             Produktivitas antarlayanan tidak dibandingkan dari jumlah pelanggan — durasi & karakter layanan berbeda.
           </p>
           {!!r.insights.length && (
-            <div className="keep mt-2 rounded-[10px] bg-[#F5F6F2] p-2.5 text-[12px]">
+            <div className="keep mt-2 rounded-[14px] bg-[#F6F4F7] p-2.5 text-[12px]">
               <b>Temuan otomatis sistem</b> <span className="text-muted">(observasi dari data, bukan kesimpulan penyebab)</span>
               <ul className="mt-1 list-inside list-disc">{r.insights.map((i) => <li key={i.code}>{i.message}</li>)}</ul>
             </div>
@@ -171,7 +171,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
         <section aria-labelledby="h-d">
           <H id="h-d">D. Ringkasan keuangan</H>
           {!!x.hpp_items && (x.hpp_items_filled ?? 0) < x.hpp_items * 0.8 && (
-            <p className="keep mb-2 rounded-[8px] bg-[#FBF3DE] px-3 py-2 text-[12px] text-[#5A4300]">
+            <p className="keep mb-2 rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[12px] text-[#5A4300]">
               HPP baru terisi di {x.hpp_items_filled ?? 0} dari {x.hpp_items} item jasa — margin dan laba di bawah masih terlalu tinggi sampai resep bahan & stok lengkap (target ≥80%).
             </p>
           )}
@@ -185,7 +185,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                    ...opexRows.map((e) => [`− ${EXPENSE_CAT[e.category]}`, -e.amount, false]),
                    ...(f.maintenance_cost ? [["− Perawatan fasilitas", -f.maintenance_cost, false]] : []),
                    ["= Laba/rugi operasional", operating, true]] as [string, number, boolean][]).map(([k, v, b]) => (
-                  <tr key={k} className={b ? "font-bold" : ""}><td className={td}>{k}</td><td className={num}>{m(v)}</td></tr>
+                  <tr key={k} className={b ? "font-semibold" : ""}><td className={td}>{k}</td><td className={num}>{m(v)}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -201,7 +201,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                 <tr><td className={td}>Keluar: kasbon staf</td><td className={num}>−{m(kasbon)}</td></tr>
                 <tr><td className={td}>Keluar: komisi mingguan dibayar</td><td className={num}>−{m(x.commission_weekly_paid)}</td></tr>
                 <tr><td className={td}>Keluar: gaji akhir bulan dibayar</td><td className={num}>−{m(x.payroll_paid ?? 0)}</td></tr>
-                <tr className="font-bold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashNet)}</td></tr>
+                <tr className="font-semibold"><td className={td}>Arus kas bersih tercatat</td><td className={num}>{m(cashNet)}</td></tr>
               </tbody>
             </table>
           </div>
@@ -210,7 +210,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               ["Hari belum tutup kasir", n(x.cash_days_unclosed), x.cash_days_unclosed ? "perlu ditelusuri" : "lengkap"],
               ["Transaksi di-void", `${n(f.void_count)} · ${m(f.void_amount)}`, "dibatalkan manajer, beralasan"],
               ["Diskon diberikan", m(f.discount), f.discount_promo ? `termasuk promo online ${m(f.discount_promo)}` : "paket & promo"],
-            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[14px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <p className="mt-1 text-[11px] text-muted">
             {fullPayroll ? "Biaya staf = bayaran mingguan yang ditutup untuk bulan ini (staf mingguan) + gaji bulanan (staf bergaji pokok) + kasbon yang sudah dipotong dari bayaran."
@@ -230,7 +230,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               ["Stok menipis (saat ini)", n(r.operations.inventory.low_stock_now), "item perlu pengadaan"],
               ["Kehadiran staf", NA, "absensi belum dicatat"],
               ["Komplain & pengerjaan ulang", NA, "belum dicatat"],
-            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[14px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <table className="mt-2 w-full border-collapse text-[11.5px]">
             <thead><tr>{["Staf", "Bidang", "Layanan dikerjakan", "Omzet jasa", "Utilisasi", "No-show"].map((h, i) => <th key={h} className={`${th} ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
@@ -251,7 +251,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               ["Biaya pemasaran", m(marketing), "pengeluaran kategori Pemasaran"],
               ["Promo booking online", m(f.discount_promo ?? 0), "diskon yang diberikan"],
               ["Porsi booking online", pc(s.online_share), cov.enough ? `pelanggan baru ${n(s.new_customers)}` : "pelanggan baru: data belum cukup"],
-            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
+            ].map(([k, v, sub]) => <div key={k} className="keep rounded-[14px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b><span className="text-[10px] text-muted">{sub}</span></div>)}
           </div>
           <p className="mt-1 text-[11px] text-muted">Atribusi kampanye → booking/omzet: {NA.toLowerCase()} (booking belum ditandai sumber kampanye). Hasil kampanye tidak disimpulkan dari kenaikan omzet saja.</p>
         </section>
@@ -271,7 +271,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
           {N.decisions?.length ? (
             <div className="flex flex-col gap-2">
               {N.decisions.map((d, k) => (
-                <div key={k} className="keep rounded-[10px] border border-ink p-2.5 text-[12px]">
+                <div key={k} className="keep rounded-[14px] border border-accent p-2.5 text-[12px]">
                   <b className="block text-[13px]">{k + 1}. {d.keputusan || "—"}</b>
                   {([["Alasan & bukti", d.alasan], ["Opsi", d.opsi], ["Rekomendasi manajer", d.rekomendasi], ["Estimasi biaya / dampak", d.biaya], ["Risiko bila ditunda", d.risiko], ["Tenggat keputusan", d.tenggat]] as const)
                     .map(([l, v]) => <span key={l} className="block"><span className="text-muted">{l}:</span> {v || "—"}</span>)}
@@ -298,7 +298,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               {[["Pelanggan baru", n(r.customers.new_customers)], ["Pelanggan kembali", n(r.customers.returning)],
                 [`Pelanggan baru yang kembali ≤ ${r.customers.window_days} hari`, `${pc(r.customers.return_rate)} (${r.customers.return_back}/${r.customers.return_eligible})`],
                 ["Belum kembali (saat ini)", n(r.customers.churn_count)]].map(([k, v]) => [k, cov.enough ? v : "Data belum cukup"]).map(([k, v]) => (
-                <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
+                <div key={k} className="keep rounded-[14px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
               ))}
             </div>
             {!cov.enough && <p className="mt-1 text-[11px] text-muted">Angka pelanggan belum ditampilkan: {coverageNote(cov.pct)}.</p>}
@@ -317,11 +317,11 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
                 ["Stok menipis (saat ini)", n(r.operations.inventory.low_stock_now)],
                 ["Stok minus (saat ini)", n(r.operations.inventory.negative_now ?? 0)],
                 ["Selisih pemakaian bahan", r.operations.inventory.opnames >= 2 ? `${r.operations.inventory.usage_flagged} bahan · ${m(r.operations.inventory.usage_variance_value)}` : "butuh ≥ 2 opname"]].map(([k, v]) => (
-                <div key={k} className="keep rounded-[10px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
+                <div key={k} className="keep rounded-[14px] border border-line p-2"><span className="text-[11px] text-muted">{k}</span><b className="block text-[13px] tabular">{v}</b></div>
               ))}
             </div>
             {!!r.operations.inventory.negative_now && (
-              <p className="keep mt-1 rounded-[8px] bg-[#FBF3DE] px-3 py-2 text-[11px] text-[#5A4300]">
+              <p className="keep mt-1 rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[11px] text-[#5A4300]">
                 Stok minus: {r.operations.inventory.negative_items}. Bahan dipakai layanan tetapi stok masuknya belum dicatat — HPP & nilai stok belum akurat sampai dicatat lewat Terima stok atau Opname.
               </p>
             )}

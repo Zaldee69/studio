@@ -129,23 +129,23 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     refresh();
   }
 
-  const step = "flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4";
+  const step = "flex flex-col gap-3 rounded-3xl border border-line bg-card p-4";
   const num = (v: string) => (v ? Math.max(0, Math.floor(+v)) || undefined : undefined);
-  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-semibold ${on ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`;
+  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-medium ${on ? "border-accent bg-accent text-white" : "border-[#DDD7E0] bg-card"}`;
 
   return (
     <div className="flex flex-col gap-4">
       <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />
       {!waReady && (
-        <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-sm text-[#5A4300]">
+        <p role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-sm text-[#5A4300]">
           WhatsApp (Wablas) belum dikonfigurasi di server — pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.
         </p>
       )}
       <div className="grid items-start gap-4 xl:grid-cols-[minmax(280px,0.8fr)_1.6fr]">
         {/* DAFTAR CAMPAIGN */}
-        <section aria-label="Daftar campaign" className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
+        <section aria-label="Daftar campaign" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
           <div className="flex items-center gap-2">
-            <h2 className="flex-1 text-base font-bold">Campaign</h2>
+            <h2 className="flex-1 text-base font-semibold">Campaign</h2>
             <Button onClick={() => open(null)} variant="brand" className="h-10">+ Campaign baru</Button>
           </div>
           <div role="tablist" aria-label="Status campaign" className="flex gap-1.5">
@@ -161,11 +161,11 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
           ) : campaigns.map((c) => {
             const last = sendsOf(c.id)[0], on = draft.id === c.id;
             return (
-              <article key={c.id} aria-label={`Campaign ${c.name}`} className={`flex flex-col gap-1.5 rounded-[12px] border-2 p-3 ${on ? "border-ink bg-paper" : "border-line"}`}>
+              <article key={c.id} aria-label={`Campaign ${c.name}`} className={`flex flex-col gap-1.5 rounded-[14px] border-2 p-3 ${on ? "border-accent bg-paper" : "border-line"}`}>
                 <button onClick={() => open(c)} className="text-left">
                   <b className="block text-sm">{c.name}</b>
                   <span className="block text-xs text-muted">{describeSegment(c.segment)}</span>
-                  <span className="mt-1 block text-xs text-[#4A4C46]">
+                  <span className="mt-1 block text-xs text-[#4D4A55]">
                     {last ? `Terakhir dikirim ${ago(last.created_at)} · ${last.recipient_count} penerima · ${sendsOf(c.id).length}× dikirim` : "Belum pernah dikirim"}
                   </span>
                 </button>
@@ -182,21 +182,21 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
         {/* EDITOR: 1 penerima → 2 pesan → 3 kirim */}
         <div className="flex flex-col gap-4" aria-label="Editor campaign">
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-bold text-muted">{draft.id ? "Campaign" : "Campaign baru"} — nama (untuk Anda, tidak terlihat pelanggan)</span>
-            <Input aria-label="Nama campaign" className="text-base font-semibold" maxLength={80} value={draft.name}
+            <span className="text-xs font-semibold text-muted">{draft.id ? "Campaign" : "Campaign baru"} — nama (untuk Anda, tidak terlihat pelanggan)</span>
+            <Input aria-label="Nama campaign" className="text-base font-medium" maxLength={80} value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="mis. Promo booking online Oktober" />
           </label>
 
           <section aria-label="1. Penerima" className={step}>
-            <h3 className="text-sm font-bold"><span className="mr-2 rounded-full bg-ink px-2 py-0.5 text-white">1</span>Siapa penerimanya?</h3>
+            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">1</span>Siapa penerimanya?</h3>
             <div className="flex flex-wrap gap-1.5">
               {PRESETS.map((p) => {
                 const on = JSON.stringify(cleanSegment(p.segment)) === segKey;
                 return <button key={p.label} aria-pressed={on} onClick={() => setDraft({ ...draft, segment: p.segment })} className={chip(on)}>{p.label}</button>;
               })}
             </div>
-            <details className="group rounded-[10px] bg-paper p-3 text-sm">
-              <summary className="cursor-pointer font-semibold">Atur filter sendiri</summary>
+            <details className="group rounded-[14px] bg-paper p-3 text-sm">
+              <summary className="cursor-pointer font-medium">Atur filter sendiri</summary>
               <div className="mt-3 flex flex-col gap-3">
                 <label className="flex flex-wrap items-center gap-2">Terakhir datang ≥
                   <Input aria-label="Minggu tidak datang" type="number" min={1} max={104} className="h-9 w-20" value={seg.inactive_weeks ?? ""}
@@ -232,7 +232,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
           </section>
 
           <section aria-label="2. Pesan" className={step}>
-            <h3 className="text-sm font-bold"><span className="mr-2 rounded-full bg-ink px-2 py-0.5 text-white">2</span>Tulis pesan</h3>
+            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">2</span>Tulis pesan</h3>
             <div className="grid gap-3 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Textarea ref={msgRef} aria-label="Pesan" rows={9} className="py-2 leading-normal" value={draft.message}
@@ -244,9 +244,9 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                 </div>
                 <span className="text-xs text-muted">*tebal*, _miring_ mengikuti format WhatsApp. Salam penutup & cara berhenti ditambahkan otomatis.</span>
               </div>
-              <div className="flex flex-col gap-1.5 rounded-[12px] bg-[#E5DDD5] p-3">
-                <span className="text-[11px] font-semibold text-[#54656F]">Pratinjau di WhatsApp {first}</span>
-                <div aria-label="Pratinjau pesan" className="max-w-[320px] self-start whitespace-pre-wrap rounded-[10px] rounded-tl-none bg-white px-3 py-2 text-[13px] leading-snug shadow-sm">
+              <div className="flex flex-col gap-1.5 rounded-[14px] bg-[#E5DDD5] p-3">
+                <span className="text-[11px] font-medium text-[#54656F]">Pratinjau di WhatsApp {first}</span>
+                <div aria-label="Pratinjau pesan" className="max-w-[320px] self-start whitespace-pre-wrap rounded-[14px] rounded-tl-none bg-white px-3 py-2 text-[13px] leading-snug shadow-sm">
                   {fillNama(draft.message, sample) + footer(shop)}
                 </div>
               </div>
@@ -254,7 +254,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
           </section>
 
           <section aria-label="3. Kirim" className={step}>
-            <h3 className="text-sm font-bold"><span className="mr-2 rounded-full bg-ink px-2 py-0.5 text-white">3</span>Simpan &amp; kirim</h3>
+            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">3</span>Simpan &amp; kirim</h3>
             <div className="flex flex-wrap gap-2">
               <Button onClick={async () => { if (await save()) toast("Campaign disimpan"); }} disabled={busy || !dirty} variant="outline" >
                 {draft.id ? (dirty ? "Simpan perubahan" : "Tersimpan ✓") : "Simpan sebagai draf"}
@@ -264,8 +264,8 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               </Button>
             </div>
             {draft.id && (
-              <div className="flex flex-col gap-2 border-t border-[#EEEEEA] pt-3">
-                <span className="text-xs font-bold text-muted">Riwayat pengiriman campaign ini</span>
+              <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-3">
+                <span className="text-xs font-semibold text-muted">Riwayat pengiriman campaign ini</span>
                 {!sendsOf(draft.id).length ? <span className="text-sm text-muted">Belum pernah dikirim.</span> : sendsOf(draft.id).map((s) => (
                   <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular">
                     <span className="min-w-40">{formatTanggal(s.created_at)} {formatJam(s.created_at)}</span>

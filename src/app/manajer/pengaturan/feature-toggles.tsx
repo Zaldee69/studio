@@ -12,10 +12,11 @@ export function FeatureToggles({ hidden }: { hidden: string[] }) {
   const [state, action, pending] = useActionState(saveHiddenFeatures, undefined);
   return (
     <form action={action} className="space-y-3">
-      <fieldset className="rounded-2xl border border-line bg-card p-5">
-        <legend className="px-1 font-display text-lg font-semibold">Fitur yang ditampilkan</legend>
-        <p className="mb-3 text-sm text-muted">Fitur yang tidak dicentang disembunyikan dari menu dan tab. Datanya tidak dihapus.</p>
-        <div className="grid gap-2 sm:grid-cols-2">
+      <fieldset className="overflow-hidden rounded-3xl border border-line bg-card">
+        <legend className="sr-only">Fitur yang ditampilkan</legend>
+        <div aria-hidden="true" className="border-b border-line px-6 py-4 font-display text-lg font-semibold">Fitur yang ditampilkan</div>
+        <p className="border-b border-line px-6 py-4 text-sm text-muted">Fitur yang tidak dicentang disembunyikan dari menu dan tab. Datanya tidak dihapus.</p>
+        <div className="grid gap-1 px-6 py-3 sm:grid-cols-2">
           {FEATURES.map(([k, label]) => (
             <label key={k} className="flex min-h-11 items-center gap-3 text-sm">
               <Checkbox name="show" value={k} defaultChecked={!hidden.includes(k)} className="size-5" />

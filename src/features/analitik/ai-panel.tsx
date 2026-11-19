@@ -30,15 +30,15 @@ export function AiPanel({ meetings, period, label }: { meetings: Meeting[]; peri
   }
 
   return (
-    <section aria-label="Asisten AI" className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-4 print:hidden">
+    <section aria-label="Asisten AI" className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-4 print:hidden">
       <div className="flex flex-wrap items-baseline gap-2">
-        <h2 className="flex-1 font-display text-lg font-semibold">Asisten AI</h2>
+        <h2 className="flex-1 font-display text-lg font-medium">Asisten AI</h2>
         <span className="text-xs text-muted">Jawaban AI dibuat dari angka di halaman ini. Cek ulang sebelum memutuskan.</span>
       </div>
 
       {meetings.length > 0 && (
-        <details open className="rounded-[12px] bg-paper p-3">
-          <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-2 text-sm font-semibold">
+        <details open className="rounded-[14px] bg-paper p-3">
+          <summary className="flex min-h-11 cursor-pointer flex-wrap items-center gap-2 text-sm font-medium">
             Notulen rapat AI mingguan
             <NativeSelect aria-label="Minggu" value={week} onClick={(e) => e.stopPropagation()} onChange={(e) => setWeek(e.target.value)} className="h-9 w-auto py-0 text-sm font-normal">
               {meetings.map((x) => <option key={x.week} value={x.week}>Minggu mulai {weekLabel(x.week)}</option>)}
@@ -49,7 +49,7 @@ export function AiPanel({ meetings, period, label }: { meetings: Meeting[]; peri
       )}
 
       <div className="flex flex-wrap items-end gap-2">
-        <Button type="button" disabled={pending} onClick={() => run(null)} className="h-11">Jelaskan periode ini</Button>
+        <Button variant="outline" type="button" disabled={pending} onClick={() => run(null)} className="h-11">Jelaskan periode ini</Button>
         <form className="flex min-w-64 flex-1 gap-2" onSubmit={(e) => { e.preventDefault(); if (question.trim()) run(question); }}>
           <label htmlFor="ai-q" className="sr-only">Tanya data</label>
           <Input id="ai-q" value={question} onChange={(e) => setQuestion(e.target.value)} maxLength={500}

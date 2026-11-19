@@ -97,7 +97,7 @@ export default async function Inventaris({ searchParams }: PageProps<"/manajer/i
           {suppliers.map((s) => {
             const list = items.filter((i) => i.supplier_id === s.id);
             return (
-              <div key={s.id} className="rounded-[14px] border border-line bg-card p-4 text-sm">
+              <div key={s.id} className="rounded-3xl border border-line bg-card p-4 text-sm">
                 <b className="text-base">{s.name}</b>{s.whatsapp && <span className="ml-2 text-muted tabular">+{s.whatsapp}</span>}
                 <p className="mt-1 text-muted">{list.length ? list.map((i) => i.name).join(", ") : "Belum ada item — atur pemasok di tab Bahan/Ritel."}</p>
               </div>

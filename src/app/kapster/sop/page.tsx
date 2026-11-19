@@ -25,7 +25,7 @@ export default async function KapsterSop({ searchParams }: PageProps<"/kapster/s
   const strip = ((hist ?? []) as { date: string; shift: number; status: SopStatus }[]).filter((h) => h.shift === shift).sort((a, b) => a.date.localeCompare(b.date));
   return (
     <>
-      <h1 className="font-display text-[26px] font-bold">SOP sterilisasi · hari ini</h1>
+      <h1 className="font-display text-[26px] font-medium">SOP sterilisasi · hari ini</h1>
       {c.shifts > 1 && <ShiftPicker shift={shift} names={c.names} />}
       <p className="text-sm text-muted">Cuci → Rendam → Autoclave untuk tiap kelompok alat. Centang mencatat nama Anda &amp; jam.</p>
       <SopGrid key={shift} date={today} shift={shift} me={me?.id ?? ""} manager={false} requirePhoto={c.require_photo} big />

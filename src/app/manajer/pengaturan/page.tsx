@@ -3,7 +3,7 @@ import { CAT_NAME } from "@/lib/domain/category";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah } from "@/lib/domain/format";
 import { saveSopSettings } from "./actions";
-import { CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
+import { CrudList, CrudTable, ResetPasswordForm, SettingsForm } from "./crud-table";
 import { getProfile } from "@/lib/auth";
 import { PendingAccounts } from "./pending-accounts";
 import { RemoveAccountForm } from "./remove-account";
@@ -16,6 +16,7 @@ import { HairstyleCatalog } from "./hairstyle-catalog";
 import { TelegramTest, WhatsAppTest } from "./telegram-test";
 import { Applicants } from "./applicants";
 import { FeatureToggles } from "./feature-toggles";
+import { SettingsNav } from "./settings-nav";
 
 export const metadata = { title: "Pengaturan" };
 
@@ -30,7 +31,7 @@ const MENU = [
   ["Keamanan", [["keamanan", "Keamanan"]]],
 ] as const;
 
-const navLink = "inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent";
+const navLink = "inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-medium aria-[current=page]:text-accent";
 
 export default async function Pengaturan({ searchParams }: PageProps<"/manajer/pengaturan">) {
   const sp = await searchParams;
@@ -60,7 +61,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = (
       <div className="flex flex-col gap-4">
         <PriceRelease services={services ?? []} />
-        <CrudTable table="services" rows={services ?? []} options={{ services: opt(services), retailItems: opt(items) }} />
+        <CrudList table="services" rows={services ?? []} options={{ services: opt(services), retailItems: opt(items) }} />
       </div>
     );
   } else if (tab === "kursi" || tab === "staf") {
@@ -81,7 +82,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     body = (
       <div className="space-y-4">
         {hidden.length > 0 && (
-          <p role="status" className="rounded-lg bg-st-booked p-4 text-sm">
+          <p role="status" className="rounded-[14px] bg-st-booked p-4 text-sm">
             Reservasi online <b>{hidden.map((c) => (c === "nail" ? "nail" : "barbershop")).join(" & ")}</b> sedang disembunyikan dari
             halaman publik — butuh minimal satu kursi/meja <b>dan</b> satu staf aktif di kategori itu.
           </p>
@@ -108,8 +109,8 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
   } else if (tab === "publik") {
     body = (
       <div className="flex flex-col gap-6">
-        <p className="rounded-lg bg-paper px-4 py-3 text-sm text-muted">Teks landing page. Perubahan langsung tampil di situs publik.
-          {" "}<a href="/" target="_blank" className="font-semibold text-accent underline">Buka landing →</a></p>
+        <p className="rounded-[14px] bg-paper px-4 py-3 text-sm text-muted">Teks landing page. Perubahan langsung tampil di situs publik.
+          {" "}<a href="/" target="_blank" className="font-medium text-accent underline">Buka landing →</a></p>
         {await settingsForm("publik")}
       </div>
     );
@@ -129,7 +130,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
     );
   } else if (tab === "notifikasi") {
     const { data: msgs } = await supabase.from("outbound_messages").select("*").order("created_at", { ascending: false }).limit(20);
-    body = <div className="flex flex-col gap-6"><TelegramTest /><WhatsAppTest /><OutboundLog rows={msgs ?? []} /></div>;
+    body = <div className="grid gap-4 lg:grid-cols-2"><TelegramTest /><WhatsAppTest /><div className="lg:col-span-2"><OutboundLog rows={msgs ?? []} /></div></div>;
   } else if (tab === "booking" || tab === "pesan" || tab === "privasi" || tab === "keuangan") {
     body = await settingsForm(tab);
   } else if (tab === "sop") {
@@ -143,7 +144,7 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       <div className="flex flex-col gap-6">
         <SettingsForm values={values} groups={SOP_GROUPS} save={saveSopSettings} submit="Simpan pengaturan SOP" />
         <div className="flex flex-col gap-2">
-          <h2 className="font-display text-lg font-semibold">Kelompok alat</h2>
+          <h2 className="font-display text-lg font-medium">Kelompok alat</h2>
           <p className="text-xs text-muted">Setiap kelompok aktif × 3 tahap (Cuci → Rendam → Autoclave) = checklist harian. Nonaktifkan, jangan hapus — riwayat audit tetap utuh.</p>
           <CrudTable table="sop_tool_groups" rows={groups ?? []} />
         </div>
@@ -181,12 +182,12 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
         </p>
         {bundle}
         {!!data?.length && (
-          <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">
+          <div className="overflow-x-auto rounded-3xl border border-line bg-card px-4">
             <table className="w-full min-w-[520px] text-sm tabular">
-              <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-semibold">Kode</th><th className="text-right font-semibold">Kuota terpakai</th>
-                <th className="text-right font-semibold">Dipakai saat bayar</th><th className="text-right font-semibold">Total potongan</th></tr></thead>
+              <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Kode</th><th className="text-right font-medium">Kuota terpakai</th>
+                <th className="text-right font-medium">Dipakai saat bayar</th><th className="text-right font-medium">Total potongan</th></tr></thead>
               <tbody>{data.map((v) => (
-                <tr key={v.id} className="border-t border-line"><td className="py-2 font-semibold">{v.code}{!v.active && <span className="ml-2 text-xs text-muted">nonaktif</span>}</td>
+                <tr key={v.id} className="border-t border-line"><td className="py-2 font-medium">{v.code}{!v.active && <span className="ml-2 text-xs text-muted">nonaktif</span>}</td>
                   <td className="text-right">{u.get(v.id)?.reserved ?? 0}{v.quota ? ` / ${v.quota}` : ""}</td>
                   <td className="text-right">{u.get(v.id)?.redeemed ?? 0}</td>
                   <td className="text-right">{formatRupiah(u.get(v.id)?.discount_total ?? 0)}</td></tr>
@@ -218,27 +219,33 @@ export default async function Pengaturan({ searchParams }: PageProps<"/manajer/p
       <div className="flex flex-col gap-6">
         {await settingsForm("umum")}
         <FeatureToggles hidden={hidden} />
-        <p className="text-sm text-muted">Jam buka diatur di <Link href="?tab=jam" className="font-semibold text-accent underline">Jam buka & libur</Link> — dipakai booking online dan jadwal kasir.</p>
+        <p className="text-sm text-muted">Jam buka diatur di <Link href="?tab=jam" className="font-medium text-accent underline">Jam buka & libur</Link> — dipakai booking online dan jadwal kasir.</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="font-display text-3xl font-bold">Pengaturan</h1>
-      <nav aria-label="Kelompok pengaturan" className="mt-4 flex gap-1 overflow-x-auto border-b border-line">
-        {menu.map(([label, subs]) => (
-          <Link key={label} href={`?tab=${subs[0][0]}`} aria-current={group[0] === label ? "page" : undefined} className={navLink}>{label}</Link>
-        ))}
-      </nav>
-      {group[1].length > 1 && (
-        <nav aria-label={`Bagian ${group[0]}`} className="flex gap-1 overflow-x-auto border-b border-line bg-paper">
-          {group[1].map(([k, label]) => (
-            <Link key={k} href={`?tab=${k}`} aria-current={tab === k ? "page" : undefined} className={navLink}>{label}</Link>
-          ))}
-        </nav>
-      )}
-      <div className="mt-6">{body}</div>
+    <div className="lg:-m-4 lg:flex xl:-mx-6 xl:-my-5">
+      {/* layar lebar: menu kedua berkelompok menempel ke rel (pola hPanel); layar sempit: tab dua tingkat */}
+      <SettingsNav groups={menu.filter(([, subs]) => subs.length > 0)} current={tab} />
+      <div className="min-w-0 flex-1 lg:p-4 xl:px-6 xl:py-5">
+        <h1 className="font-display text-3xl font-medium">Pengaturan</h1>
+        <div className="lg:hidden">
+          <nav aria-label="Kelompok pengaturan" className="mt-4 flex gap-1 overflow-x-auto border-b border-line">
+            {menu.map(([label, subs]) => (
+              <Link key={label} href={`?tab=${subs[0][0]}`} aria-current={group[0] === label ? "page" : undefined} className={navLink}>{label}</Link>
+            ))}
+          </nav>
+          {group[1].length > 1 && (
+            <nav aria-label={`Bagian ${group[0]}`} className="flex gap-1 overflow-x-auto border-b border-line bg-paper">
+              {group[1].map(([k, label]) => (
+                <Link key={k} href={`?tab=${k}`} aria-current={tab === k ? "page" : undefined} className={navLink}>{label}</Link>
+              ))}
+            </nav>
+          )}
+        </div>
+        <div className="mt-6">{body}</div>
+      </div>
     </div>
   );
 }

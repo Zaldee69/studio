@@ -38,7 +38,7 @@ export function DateInput({ id, name, value, defaultValue, min, max, required, d
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button type="button" id={id} disabled={disabled} title={title} aria-label={rest["aria-label"]}
-          className={cn("relative flex min-h-11 w-full min-w-0 items-center gap-2 rounded-[10px] border border-input bg-card px-3 text-left text-base text-ink outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:bg-paper disabled:text-muted-foreground", className)}>
+          className={cn("relative flex min-h-11 w-full min-w-0 items-center gap-2 rounded-[14px] border border-input bg-card px-3 text-left field-text text-ink outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 disabled:cursor-not-allowed disabled:bg-paper disabled:text-muted-foreground", className)}>
           <CalendarIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           <span className={cn("min-w-0 flex-1 truncate tabular-nums", !cur && "text-muted-foreground")}>{cur ? (display ? display(cur) : label(cur)) : placeholder}</span>
           {/* ikut terkirim di <form> & ikut validasi required (input tersembunyi tidak divalidasi browser) */}
@@ -50,7 +50,7 @@ export function DateInput({ id, name, value, defaultValue, min, max, required, d
         <Calendar mode="single" locale={localeId} weekStartsOn={1} autoFocus
           selected={cur ? toDate(cur) : undefined} defaultMonth={cur ? toDate(cur) : undefined} onSelect={pick}
           disabled={[...(min ? [{ before: toDate(min) }] : []), ...(max ? [{ after: toDate(max) }] : [])]}
-          className="[--cell-size:--spacing(11)] text-base" />
+          className="[--cell-size:--spacing(11)] field-text" />
       </PopoverContent>
     </Popover>
   );

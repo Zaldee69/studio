@@ -4,6 +4,7 @@ const supabase = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0
 const local = ["127.0.0.1", "localhost"].includes(supabase.hostname);
 
 const nextConfig: NextConfig = {
+  output: "standalone", // image Docker (Dockerfile); `next start` biasa tetap jalan
   // dev/build terhadap Supabase produksi (npm run dev:prod) memakai folder sendiri — cache lokal & produksi tidak tercampur
   distDir: process.env.NEXT_DIST_DIR || ".next",
   // Audit SEC-8: tidak boleh di-iframe situs lain (clickjacking kasir/manajer), tanpa tebak tipe konten, referrer dibatasi.

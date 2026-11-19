@@ -72,42 +72,42 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
   }
 
   const card = (k: string, v: string, accent = false) => (
-    <div className={`flex flex-col gap-0.5 rounded-[10px] p-3 ${accent ? "bg-[#ECEEE8]" : "bg-paper"}`}>
-      <span className={`text-xs ${accent ? "text-[#262B24]" : "text-muted"}`}>{k}</span>
-      <b className={`text-[17px] tabular ${accent ? "text-[#262B24]" : ""}`}>{v}</b>
+    <div className={`flex flex-col gap-0.5 rounded-[14px] p-3 ${accent ? "bg-[#EFEAEF]" : "bg-paper"}`}>
+      <span className={`text-xs ${accent ? "text-[#1D1E20]" : "text-muted"}`}>{k}</span>
+      <b className={`text-[17px] tabular ${accent ? "text-[#1D1E20]" : ""}`}>{v}</b>
     </div>
   );
-  const head = "text-xs font-bold uppercase tracking-[0.06em] text-muted";
+  const head = "text-xs font-semibold uppercase tracking-[0.06em] text-muted";
 
   return (
     <div className="flex flex-col gap-4 p-5">
       <div className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between"><label htmlFor="pf-name" className="text-xs font-bold text-muted">Nama</label>{onClose && <CloseButton onClick={onClose} label="Tutup profil" />}</div>
-        <Input id="pf-name" className="font-bold" value={name} onChange={(e) => setName(e.target.value)}
+        <div className="flex items-center justify-between"><label htmlFor="pf-name" className="text-xs font-semibold text-muted">Nama</label>{onClose && <CloseButton onClick={onClose} label="Tutup profil" />}</div>
+        <Input id="pf-name" className="font-semibold" value={name} onChange={(e) => setName(e.target.value)}
           onBlur={() => name.trim() && name.trim() !== c.name && saveField({ name: name.trim() })} />
-        <label htmlFor="pf-wa" className="text-xs font-bold text-muted">No. WhatsApp</label>
+        <label htmlFor="pf-wa" className="text-xs font-semibold text-muted">No. WhatsApp</label>
         <Input id="pf-wa" className="tabular" inputMode="tel" value={wa} onChange={(e) => setWa(e.target.value)}
           onBlur={() => {
             const n = wa.trim() ? normalizeWhatsApp(wa) : null;
             if (wa.trim() && !n) return setFieldErr("No. WhatsApp belum valid.");
             if (n !== c.whatsapp) { setWa(n ?? ""); saveField({ whatsapp: n }); }
           }} />
-        {fieldErr && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{fieldErr}</p>}
+        {fieldErr && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{fieldErr}</p>}
       </div>
 
       {s?.is_churn ? (
-        <div className="flex flex-col gap-2.5 rounded-[10px] bg-[#F9E6E6] p-3 text-[#6E1616]">
-          <span className="text-[13px] font-semibold">Belum bertransaksi {weeks} minggu — saatnya follow-up.</span>
+        <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#F9E6E6] p-3 text-[#6E1616]">
+          <span className="text-[13px] font-medium">Belum bertransaksi {weeks} minggu — saatnya follow-up.</span>
           {c.whatsapp && (
             <a href={followupLink(c.whatsapp, master.shop.waTemplate, c.name)} target="_blank" rel="noopener"
               onClick={() => { // efektivitas follow-up (Analitik): catat setiap pengiriman
                 createClient().auth.getUser().then(({ data }) => createClient().from("followup_events").insert({ customer_id: c.id, sent_by: data.user!.id }));
               }}
-              className={buttonClass("plain", "h-11 rounded-[10px] bg-[#1F7A45] text-white")}>Kirim WhatsApp follow-up</a>
+              className={buttonClass("plain", "h-11 rounded-[14px] bg-[#1F7A45] text-white")}>Kirim WhatsApp follow-up</a>
           )}
         </div>
       ) : c.whatsapp && (
-        <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener" className={buttonClass("outline", "h-11 rounded-[10px]")}>Chat WhatsApp</a>
+        <a href={`https://wa.me/${c.whatsapp}`} target="_blank" rel="noopener" className={buttonClass("outline", "h-11 rounded-[14px]")}>Chat WhatsApp</a>
       )}
 
       <div className="grid grid-cols-2 gap-2">
@@ -117,7 +117,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         {card("Saldo deposit", formatRupiah(s?.deposit_balance ?? 0), true)}
       </div>
       <div className="grid grid-cols-2 gap-2">
-        <Button onClick={() => setTopup(true)} variant="outline" className="h-11 rounded-[10px]">Top-up saldo</Button>
+        <Button onClick={() => setTopup(true)} variant="outline" className="h-11 rounded-[14px]">Top-up saldo</Button>
         <Link href={`${master.base}/jadwal?new=1&customer=${c.id}`} className={buttonClass("default", "h-11")}>Buat booking</Link>
       </div>
 
@@ -145,9 +145,9 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         <span className={head}>Riwayat transaksi</span>
         {!extra ? <span className="text-[13px] text-muted">Memuat…</span> : !extra.txs.length ? <span className="text-[13px] text-muted">Belum ada transaksi.</span>
           : extra.txs.map((t) => (
-            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#EEEEEA] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
+            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#EFEAEF] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
               <div className="flex justify-between text-[13px] tabular"><b>{formatTanggal(t.created_at)}</b><b className={t.voided_at ? "line-through" : ""}>{formatRupiah(t.total)}</b></div>
-              <span className="text-xs text-[#4A4C46]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
+              <span className="text-xs text-[#4D4A55]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
               <span className="text-xs text-muted">
                 {t.voided_at ? `Void · ${t.void_reason}` : [METHOD_LABEL[t.payment_method], t.discount_amount ? `diskon ${formatRupiah(t.discount_amount)}` : "", t.deposit_used ? `deposit ${formatRupiah(t.deposit_used)}` : ""].filter(Boolean).join(" · ")}
               </span>
@@ -166,23 +166,23 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
       </div>
 
       {master.role === "manager" && (forgetting ? (
-        <form className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3" onSubmit={async (e) => {
+        <form className="flex flex-col gap-2 rounded-[14px] border border-[#E8C3C4] p-3" onSubmit={async (e) => {
           e.preventDefault();
           const { data, error } = await createClient().rpc("forget_customer", { p_id: c.id, p_reason: forgetReason });
           if (error) return toast(error.message, "error");
           toast(data === "anonymized" ? "Data pribadi pelanggan dianonimkan" : "Pelanggan dihapus");
           onDeleted?.();
         }}>
-          <label htmlFor="pf-forget" className="text-xs font-bold text-[#6E1616]">Alasan menghapus (wajib)</label>
+          <label htmlFor="pf-forget" className="text-xs font-semibold text-[#6E1616]">Alasan menghapus (wajib)</label>
           <Input id="pf-forget" required autoFocus placeholder="mis. Data asal-isi / permintaan pelanggan" value={forgetReason} onChange={(e) => setForgetReason(e.target.value)} />
           <p className="text-xs text-muted">Nama, WA & catatan dihapus. Riwayat transaksi tetap ada untuk pembukuan (tampil sebagai &quot;Pelanggan umum&quot;); booking mendatang dibatalkan. Tidak bisa dibatalkan.</p>
           <div className="flex gap-2">
-            <Button type="button" onClick={() => setForgetting(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
-            <Button disabled={!forgetReason.trim()} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Hapus pelanggan</Button>
+            <Button type="button" onClick={() => setForgetting(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
+            <Button disabled={!forgetReason.trim()} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Hapus pelanggan</Button>
           </div>
         </form>
       ) : (
-        <Button onClick={() => setForgetting(true)} variant="outline" className="h-11 self-start rounded-[10px] text-[#A12A2A]">Hapus pelanggan…</Button>
+        <Button onClick={() => setForgetting(true)} variant="outline" className="h-11 self-start rounded-[14px] text-[#A12A2A]">Hapus pelanggan…</Button>
       ))}
 
       <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />

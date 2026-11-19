@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, sql, uniq, allowNoCustomer } from "./helpers";
+import { login, sql, uniq, allowNoCustomer, pilih } from "./helpers";
 
 // Pijat: kategori ketiga — terapis sendiri, 2 bed. Boleh dibooking online (keputusan owner 1 Nov), tetapi tidak dipromosikan.
 test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; bisa dibooking online", async ({ page }) => {
@@ -11,7 +11,7 @@ test("pijat: kasir mencatat pijat atas nama terapis; bed tampil di jadwal; bisa 
     await page.getByRole("button", { name: /Tambah Pijat Fullbody \+ Kop/ }).click();
     const pick = page.getByLabel("Terapis pijat untuk Pijat Fullbody + Kop");
     await expect(pick.getByRole("option", { name: "Andi" })).toHaveCount(0); // capster barbershop tidak bisa dipilih
-    await pick.selectOption({ label: terapis });
+    await pilih(pick, { label: terapis });
     await expect(page.getByText(/untuk diskon paket/)).toHaveCount(0);      // pijat tidak ikut diskon paket gabungan
     await allowNoCustomer(page);
     await page.getByRole("button", { name: /Catat pembayaran/ }).click();

@@ -1,6 +1,7 @@
 "use client";
 
 import { DateInput } from "@/components/date-input";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -50,8 +51,7 @@ export function OwnerPeriodForm({ kind, value, from, to, today }: { kind: OwnerK
       )}
       {k === "kustom" && (
         <>
-          <DateInput aria-label="Dari" className="h-11 w-40" value={v.dari} onChange={(e) => setV({ ...v, dari: e.target.value })} />
-          <DateInput aria-label="Sampai" className="h-11 w-40" value={v.sampai} onChange={(e) => setV({ ...v, sampai: e.target.value })} />
+          <DateRangeInput aria-label="Rentang tanggal" className="h-11 w-72" value={{ from: v.dari, to: v.sampai }} onChange={(r) => setV({ ...v, dari: r.from, sampai: r.to })} />
         </>
       )}
       <Button variant="outline" className="h-11">Tampilkan</Button>

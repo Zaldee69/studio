@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PostgrestClient } from "@supabase/postgrest-js";
-import { expect, type Browser, type Page, type TestInfo } from "@playwright/test";
+import { expect, type Browser, type Locator, type Page, type TestInfo } from "@playwright/test";
 
 export const PW = "kOVAJu-ppxv7d-xpOT5w-qVBV1S";
 export const USERS = {
@@ -116,4 +116,20 @@ export function totp(secret: string, t = Date.now()) {
 export async function allowNoCustomer(page: Page) {
   const box = page.getByLabel("Pelanggan tidak mau memberi nama/nomor");
   if (await box.isVisible()) await box.check();
+}
+
+/**
+ * Pengganti selectOption untuk dropdown shadcn (Radix): buka pemicu, lalu pilih opsi menurut nilai, label, atau urutan.
+ * String dicocokkan ke nilai opsi (data-v) dulu, lalu ke label, sama seperti selectOption.
+ */
+export async function pilih(trigger: Locator, opt: string | { label: string } | { index: number }) {
+  const page = trigger.page();
+  await trigger.click();
+  const options = page.locator("[role=listbox] [role=option]");
+  await expect(options.first()).toBeVisible();
+  if (typeof opt === "string") {
+    const byValue = page.locator(`[role=listbox] [role=option][data-v="${opt}"]`);
+    await (await byValue.count() ? byValue.first() : page.getByRole("option", { name: opt, exact: true })).click();
+  } else if ("label" in opt) await page.getByRole("option", { name: opt.label, exact: true }).click();
+  else await options.nth(opt.index).click();
 }

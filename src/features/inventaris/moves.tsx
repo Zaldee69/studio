@@ -1,6 +1,6 @@
 "use client";
 
-import { DateInput } from "@/components/date-input";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button, buttonClass } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
@@ -39,34 +39,33 @@ export function MovesTab({ rows, items, people, filter }: { rows: MoveRow[]; ite
     <div className="flex flex-col gap-3">
       <form className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
         <input type="hidden" name="tab" value="mutasi" />
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Item</span>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Item</span>
           <NativeSelect name="item" defaultValue={filter.item ?? ""} className="w-48"><option value="">Semua</option>{items.map((i) => <option key={i.item_id} value={i.item_id}>{i.name}</option>)}</NativeSelect>
         </label>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Jenis</span>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Jenis</span>
           <NativeSelect name="type" defaultValue={filter.type ?? ""} className="w-40"><option value="">Semua</option>{Object.entries(MOVE_TYPE).map(([v, t]) => <option key={v} value={v}>{t.label}</option>)}</NativeSelect>
         </label>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Dari</span><DateInput name="from" defaultValue={filter.from ?? ""} className="w-40" /></label>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Sampai</span><DateInput name="to" defaultValue={filter.to ?? ""} className="w-40" /></label>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Oleh</span>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Periode</span><DateRangeInput nameFrom="from" nameTo="to" defaultValue={{ from: filter.from ?? "", to: filter.to ?? "" }} className="w-72" /></label>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Oleh</span>
           <NativeSelect name="by" defaultValue={filter.by ?? ""} className="w-40"><option value="">Semua</option>{people.map(([id, n]) => <option key={id} value={id}>{n}</option>)}</NativeSelect>
         </label>
-        <Button className="h-11">Terapkan</Button>
+        <Button variant="outline" className="h-11">Terapkan</Button>
         <Link href="/manajer/inventaris?tab=mutasi" className={buttonClass("outline", "h-11")}>Reset</Link>
         <Button type="button" onClick={exportCsv} disabled={!rows.length} variant="outline" className="ml-auto h-11">Ekspor CSV</Button>
       </form>
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         <table className="w-full min-w-[900px] text-sm tabular">
-          <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Item", "Jenis", "Jumlah", "Harga", "Referensi", "Keterangan", "Oleh"].map((h) => <th key={h} className={`py-2.5 pr-2 font-semibold ${h === "Jumlah" || h === "Harga" ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Item", "Jenis", "Jumlah", "Harga", "Referensi", "Keterangan", "Oleh"].map((h) => <th key={h} className={`py-2.5 pr-2 font-medium ${h === "Jumlah" || h === "Harga" ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>
             {!rows.length && <tr><td colSpan={8} className="py-6 text-center text-muted">Tidak ada mutasi untuk filter ini.</td></tr>}
             {rows.map((m) => {
               const t = MOVE_TYPE[m.type];
               return (
-                <tr key={m.id} className="border-t border-[#EEEEEA]">
+                <tr key={m.id} className="border-t border-[#EFEAEF]">
                   <td className="whitespace-nowrap py-2 pr-2">{formatTanggal(m.created_at)} <span className="text-muted">{formatJam(m.created_at)}</span></td>
-                  <td className="pr-2 font-semibold">{it(m.item_id)?.name ?? "—"}</td>
-                  <td className="pr-2"><span className="rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: t?.bg, color: t?.fg }}>{t?.label ?? m.type}</span></td>
-                  <td className={`whitespace-nowrap pr-2 text-right font-bold ${m.qty < 0 ? "text-[#A12A2A]" : "text-[#1F7A45]"}`}>{m.qty > 0 ? "+" : "−"}{qtyFmt(Math.abs(m.qty))} {it(m.item_id)?.unit}</td>
+                  <td className="pr-2 font-medium">{it(m.item_id)?.name ?? "—"}</td>
+                  <td className="pr-2"><span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: t?.bg, color: t?.fg }}>{t?.label ?? m.type}</span></td>
+                  <td className={`whitespace-nowrap pr-2 text-right font-semibold ${m.qty < 0 ? "text-[#A12A2A]" : "text-[#1F7A45]"}`}>{m.qty > 0 ? "+" : "−"}{qtyFmt(Math.abs(m.qty))} {it(m.item_id)?.unit}</td>
                   <td className="whitespace-nowrap pr-2 text-right">{m.type === "in" && m.unit_cost != null ? formatUnitCost(m.unit_cost) : ""}</td>
                   <td className="pr-2">
                     {m.transaction_id ? <Link className="underline" href={`/manajer/kasir?tab=riwayat&tx=${m.transaction_id}`}>Transaksi</Link>
@@ -95,30 +94,30 @@ export function UsageTab({ opnames, from, to, rows, threshold }: {
   return (
     <div className="flex flex-col gap-3">
       {opnames.length < 2 ? (
-        <p className="rounded-[14px] border border-dashed border-line bg-card p-6 text-center text-muted">Butuh minimal dua opname Bahan HPP yang disetujui. Lakukan opname bulanan, lalu kembali ke sini.</p>
+        <p className="rounded-3xl border border-dashed border-line bg-card p-6 text-center text-muted">Butuh minimal dua opname Bahan HPP yang disetujui. Lakukan opname bulanan, lalu kembali ke sini.</p>
       ) : (
         <form className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
           <input type="hidden" name="tab" value="laporan" />
-          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Opname awal</span>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Opname awal</span>
             <NativeSelect name="dari" defaultValue={from} className="w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</NativeSelect>
           </label>
-          <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Opname akhir</span>
+          <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Opname akhir</span>
             <NativeSelect name="sampai" defaultValue={to} className="w-60">{opnames.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}</NativeSelect>
           </label>
-          <Button className="h-11">Tampilkan</Button>
+          <Button variant="outline" className="h-11">Tampilkan</Button>
         </form>
       )}
       {rows && (
         <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
           <table className="w-full min-w-[760px] text-sm tabular">
-            <thead><tr className="text-left text-xs text-muted">{["Bahan", "Teoretis", "Aktual", "Selisih", "Selisih %", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2.5 pr-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr className="text-left text-xs text-muted">{["Bahan", "Teoretis", "Aktual", "Selisih", "Selisih %", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2.5 pr-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.item_id} className={`border-t border-[#EEEEEA] ${r.flagged ? "bg-[#FFF4F4]" : ""}`}>
-                  <td className="py-2 pr-2 font-semibold">{r.name}{r.flagged && <span className="ml-2 rounded-full bg-[#F9E6E6] px-2 text-[11px] font-bold text-[#6E1616]">Di atas {threshold}%</span>}</td>
+                <tr key={r.item_id} className={`border-t border-[#EFEAEF] ${r.flagged ? "bg-[#FFF4F4]" : ""}`}>
+                  <td className="py-2 pr-2 font-medium">{r.name}{r.flagged && <span className="ml-2 rounded-full bg-[#F9E6E6] px-2 text-[11px] font-semibold text-[#6E1616]">Di atas {threshold}%</span>}</td>
                   <td className="pr-2 text-right">{qtyFmt(r.theoretical)} {r.unit}</td>
                   <td className="pr-2 text-right">{qtyFmt(r.actual)} {r.unit}</td>
-                  <td className="pr-2 text-right font-bold">{r.variance > 0 ? "+" : ""}{qtyFmt(r.variance)}</td>
+                  <td className="pr-2 text-right font-semibold">{r.variance > 0 ? "+" : ""}{qtyFmt(r.variance)}</td>
                   <td className="pr-2 text-right">{r.variance_pct == null ? "—" : `${r.variance_pct > 0 ? "+" : ""}${Number(r.variance_pct).toLocaleString("id-ID")}%`}</td>
                   <td className="pr-2 text-right">{r.variance_value < 0 ? "−" : ""}{formatRupiah(Math.abs(r.variance_value))}</td>
                 </tr>

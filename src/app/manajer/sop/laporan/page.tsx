@@ -1,4 +1,4 @@
-import { DateInput } from "@/components/date-input";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button, buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { PrintButton } from "@/components/print-button";
@@ -34,29 +34,28 @@ export default async function Laporan({ searchParams }: PageProps<"/manajer/sop/
       <div className="flex flex-wrap items-center gap-2 print:hidden">
         <Link href="/manajer/sop" className={buttonClass("outline", "h-11")}>← SOP</Link>
         <form className="flex flex-wrap items-end gap-2">
-          <DateInput name="dari" aria-label="Dari" defaultValue={from} className="w-44" />
-          <DateInput name="sampai" aria-label="Sampai" defaultValue={to} className="w-44" />
+          <DateRangeInput nameFrom="dari" nameTo="sampai" aria-label="Rentang tanggal" defaultValue={{ from, to }} className="w-72" />
           <Button variant="outline" className="h-11">Terapkan</Button>
         </form>
         <PrintButton />
       </div>
-      <article className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-6 text-sm print:border-0 print:p-0">
-        <header className="flex flex-col border-b-2 border-ink pb-2">
+      <article className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-6 text-sm print:border-0 print:p-0">
+        <header className="flex flex-col border-b-2 border-accent pb-2">
           <b className="font-display text-xl">{shop?.shop_name}</b>
           <span className="text-xs text-muted">{shop?.shop_address}</span>
-          <h1 className="mt-2 font-display text-2xl font-bold">Laporan Kepatuhan Sterilisasi &amp; Perawatan</h1>
+          <h1 className="mt-2 font-display text-2xl font-medium">Laporan Kepatuhan Sterilisasi &amp; Perawatan</h1>
           <span className="tabular">Periode {d(r.from)} – {d(r.to)} · dibuat {formatTanggal(new Date())} {formatJam(new Date())}</span>
         </header>
         <div className="grid grid-cols-3 gap-3 tabular">
-          <div className="rounded-[10px] border border-line p-3"><span className="text-xs text-muted">% hari patuh</span><b className="block text-3xl">{r.compliance_pct == null ? "—" : `${pct1(r.compliance_pct)}%`}</b></div>
-          <div className="rounded-[10px] border border-line p-3"><span className="text-xs text-muted">Diotorisasi</span><b className="block text-3xl">{r.ok}</b></div>
-          <div className="rounded-[10px] border border-line p-3"><span className="text-xs text-muted">Hari operasional</span><b className="block text-3xl">{r.operational}</b></div>
+          <div className="rounded-[14px] border border-line p-3"><span className="text-xs text-muted">% hari patuh</span><b className="block text-3xl">{r.compliance_pct == null ? "—" : `${pct1(r.compliance_pct)}%`}</b></div>
+          <div className="rounded-[14px] border border-line p-3"><span className="text-xs text-muted">Diotorisasi</span><b className="block text-3xl">{r.ok}</b></div>
+          <div className="rounded-[14px] border border-line p-3"><span className="text-xs text-muted">Hari operasional</span><b className="block text-3xl">{r.operational}</b></div>
         </div>
         <table className="w-full text-xs tabular">
-          <thead><tr className="border-b border-ink text-left">{["Tanggal", "Status", "Pengisi tiap tahap", "Penyetuju"].map((h) => <th key={h} className="py-1.5 pr-2 font-semibold">{h}</th>)}</tr></thead>
+          <thead><tr className="border-b border-accent text-left">{["Tanggal", "Status", "Pengisi tiap tahap", "Penyetuju"].map((h) => <th key={h} className="py-1.5 pr-2 font-medium">{h}</th>)}</tr></thead>
           <tbody>
             {r.days.map((x) => (
-              <tr key={`${x.date}-${x.shift}`} className="break-inside-avoid border-b border-[#E5E5E0] align-top">
+              <tr key={`${x.date}-${x.shift}`} className="break-inside-avoid border-b border-[#E8E3EA] align-top">
                 <td className="whitespace-nowrap py-1.5 pr-2">{d(x.date)}{(shop?.sop_shifts ?? 1) > 1 && <span className="block text-muted">{shop?.sop_shift_names?.[x.shift - 1]}</span>}</td>
                 <td className="whitespace-nowrap pr-2"><span aria-hidden="true">{SOP_STATUS[x.status].icon} </span>{SOP_STATUS[x.status].label}{x.status !== "closed" && ` (${x.done}/${x.total})`}</td>
                 <td className="pr-2">{x.logs.length ? x.logs.map((l, i) => (
@@ -68,18 +67,18 @@ export default async function Laporan({ searchParams }: PageProps<"/manajer/sop/
           </tbody>
         </table>
         <section className="break-inside-avoid">
-          <h2 className="mb-1 font-bold">Log perawatan fasilitas</h2>
+          <h2 className="mb-1 font-semibold">Log perawatan fasilitas</h2>
           {!r.maintenance.length ? <p className="text-muted">Tidak ada perawatan pada periode ini.</p> : (
             <table className="w-full text-xs tabular">
               <tbody>{r.maintenance.map((m, i) => (
-                <tr key={i} className="border-b border-[#E5E5E0]"><td className="py-1 pr-2">{formatTanggal(m.at)}</td><td className="pr-2">{m.task}</td>
+                <tr key={i} className="border-b border-[#E8E3EA]"><td className="py-1 pr-2">{formatTanggal(m.at)}</td><td className="pr-2">{m.task}</td>
                   <td className="pr-2">{m.vendor || m.by}{m.note ? ` — ${m.note}` : ""}</td><td className="text-right">{m.cost ? formatRupiah(m.cost) : ""}</td></tr>
               ))}</tbody>
             </table>
           )}
         </section>
         <footer className="mt-8 flex justify-end break-inside-avoid">
-          <div className="flex w-60 flex-col items-center gap-14 text-center"><span>Mengetahui, Manajer</span><span className="w-full border-t border-ink pt-1">( nama &amp; tanda tangan )</span></div>
+          <div className="flex w-60 flex-col items-center gap-14 text-center"><span>Mengetahui, Manajer</span><span className="w-full border-t border-accent pt-1">( nama &amp; tanda tangan )</span></div>
         </footer>
       </article>
     </div>

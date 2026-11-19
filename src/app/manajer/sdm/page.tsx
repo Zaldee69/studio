@@ -54,8 +54,8 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
     const rows = (all ?? []).filter((r) => (priv ?? []).some((p) => p.id === r.staff_id && (p.pay_monthly || p.base_salary)));
     body = <>
       {bonus && (
-        <section className="mb-4 rounded-2xl border border-[#E4E4DE] bg-card p-4 text-sm">
-          <h2 className="font-bold">Bonus kasir</h2>
+        <section className="mb-4 rounded-[14px] border border-[#E4E4DE] bg-card p-4 text-sm">
+          <h2 className="font-semibold">Bonus kasir</h2>
           <p className="text-muted">
             Omzet bersih {formatRupiah(bonus.revenue)} · syarat ≥ {formatRupiah(bonus.min)} ·{" "}
             {bonus.bonus ? <>bonus {bonus.pct}% = <b className="text-ink">{formatRupiah(bonus.bonus)}</b></> : "belum tercapai, bonus Rp0"}.
@@ -82,7 +82,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
         <div role="group" aria-label="Periode" className="flex gap-1.5">
           {[["", "Bulan ini"], ["tahun", `Tahun ${year}`]].map(([v, l]) => (
             <Link key={v} href={`?tab=peringkat${v ? "&periode=tahun" : ""}`} aria-current={(byYear ? "tahun" : "") === v ? "true" : undefined}
-              className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
+              className="inline-flex h-11 items-center rounded-full border border-[#DDD7E0] bg-card px-4 text-[13px] font-semibold aria-[current=true]:border-accent aria-[current=true]:bg-accent aria-[current=true]:text-white">{l}</Link>
           ))}
         </div>
         <Leaderboard rows={(data ?? []) as LeaderRow[]} />
@@ -103,7 +103,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
   }
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="font-display text-[28px] font-bold tracking-tight">SDM &amp; Komisi</h1>
+      <h1 className="font-display text-[28px] font-medium tracking-tight">SDM &amp; Komisi</h1>
       <TabNav tabs={tabs} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : tab === "mingguan" ? `&minggu=${week}` : ""} />
       {body}
     </div>

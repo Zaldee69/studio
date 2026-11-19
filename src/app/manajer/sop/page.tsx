@@ -1,4 +1,4 @@
-import { DateInput } from "@/components/date-input";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button, buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { HistoryStrip } from "@/features/sop/history-strip";
@@ -41,7 +41,7 @@ export default async function Sop({ searchParams }: PageProps<"/manajer/sop">) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">SOP &amp; Kepatuhan</h1>
+        <h1 className="flex-1 font-display text-[28px] font-medium tracking-tight">SOP &amp; Kepatuhan</h1>
         <span className="text-sm text-muted">Diisi oleh <b className="text-ink">{me?.full_name}</b></span>
       </div>
       <div className="flex flex-wrap items-center gap-2">
@@ -53,24 +53,23 @@ export default async function Sop({ searchParams }: PageProps<"/manajer/sop">) {
           <div role="group" aria-label="Shift" className="ml-2 flex gap-1.5">
             {[1, 2].map((s) => (
               <Link key={s} href={q(date, s)} aria-current={shift === s ? "true" : undefined}
-                className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{names[s - 1] ?? `Shift ${s}`}</Link>
+                className="inline-flex h-11 items-center rounded-full border border-[#DDD7E0] bg-card px-4 text-[13px] font-semibold aria-[current=true]:border-accent aria-[current=true]:bg-accent aria-[current=true]:text-white">{names[s - 1] ?? `Shift ${s}`}</Link>
             ))}
           </div>
         )}
       </div>
-      <p className="rounded-[12px] bg-card px-4 py-3 text-sm text-muted">
+      <p className="rounded-[14px] bg-card px-4 py-3 text-sm text-muted">
         Tiga tahap berurutan untuk setiap kelompok alat: <b className="text-ink">1. Cuci</b> (sabun &amp; sikat) → <b className="text-ink">2. Rendam disinfektan</b> →
         {" "}<b className="text-ink">3. Autoclave</b>. Setiap centang mencatat nama &amp; jam.{date < today && " Tanggal lampau hanya bisa dibaca."}
       </p>
       <HistoryStrip rows={strip} current={date} href={(d) => q(d)} />
       <SopGrid key={`${date}:${shift}`} date={date} shift={shift} me={me?.id ?? ""} manager staff={staff ?? []} requirePhoto={!!st?.sop_require_photo_autoclave} />
       <Maintenance manager staff={staff ?? []} />
-      <form action="/manajer/sop/laporan" className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-4">
-        <h2 className="w-full font-display text-xl font-bold">Laporan kepatuhan</h2>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Dari</span><DateInput name="dari" defaultValue={addDays(today, -29)} className="w-44" /></label>
-        <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Sampai</span><DateInput name="sampai" defaultValue={today} className="w-44" /></label>
-        <Button className="h-11">Tampilkan laporan</Button>
-        <Link href="/manajer/pengaturan?tab=sop" className="ml-auto text-sm font-semibold text-accent underline">Pengaturan SOP →</Link>
+      <form action="/manajer/sop/laporan" className="flex flex-wrap items-end gap-2 rounded-3xl border border-line bg-card p-4">
+        <h2 className="w-full font-display text-xl font-semibold">Laporan kepatuhan</h2>
+        <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Periode</span><DateRangeInput nameFrom="dari" nameTo="sampai" defaultValue={{ from: addDays(today, -29), to: today }} className="w-72" /></label>
+        <Button variant="outline" className="h-11">Tampilkan laporan</Button>
+        <Link href="/manajer/pengaturan?tab=sop" className="ml-auto text-sm font-medium text-accent underline">Pengaturan SOP →</Link>
       </form>
     </div>
   );

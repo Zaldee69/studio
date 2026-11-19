@@ -249,3 +249,27 @@ export function parseFields(fields: Field[], fd: FormData) {
   const input = Object.fromEntries(editable.map((f) => [f.name, f.type === "bool" ? fd.get(f.name) === "on" : (fd.get(f.name) ?? "")]));
   return z.object(Object.fromEntries(editable.map((f) => [f.name, fieldSchema(f)]))).safeParse(input);
 }
+
+
+/** Tabel master data tampil sebagai daftar ringkas (judul + beberapa kolom + penanda); semua isian ada di dialog Ubah, dibagi seksi.
+ *  group = kolom pengelompokan (opsional); cols = kolom ringkas di kanan; chips = isian bool yang tampil sebagai penanda bila aktif. */
+export type ListView = { title: string; noun: string; group?: string; cols: string[]; chips?: string[]; sections: { title: string; fields: string[] }[] };
+export const LIST_VIEWS: Partial<Record<TableName, ListView>> = {
+  services: { title: "name", noun: "layanan", group: "category", cols: ["duration_min", "price"], chips: ["online_bookable"], sections: [
+    { title: "Dasar", fields: ["name", "category", "duration_min", "public_description", "sort", "active"] },
+    { title: "Harga", fields: ["price", "next_price", "release_action"] },
+    { title: "Tampil & aturan", fields: ["online_bookable", "is_cut", "is_addon", "is_upgrade", "needs_pedicure"] },
+    { title: "Terkait", fields: ["upsell_service_id", "stock_item_id"] },
+  ] },
+  resources: { title: "name", noun: "kursi/meja", group: "type", cols: [], chips: ["is_pedicure"], sections: [{ title: "Kursi & meja", fields: ["name", "type", "is_pedicure", "sort", "active"] }] },
+  staff: { title: "name", noun: "staf", group: "category", cols: ["home_resource_id", "whatsapp"], sections: [{ title: "Staf", fields: ["name", "category", "home_resource_id", "whatsapp", "sort", "active"] }] },
+  profiles: { title: "full_name", noun: "akun", group: "role", cols: ["email"], sections: [{ title: "Akun", fields: ["full_name", "email", "role", "staff_id", "phone", "active"] }] },
+  vouchers: { title: "code", noun: "voucher", group: "kind", cols: ["value", "quota"], chips: ["once_per_customer"], sections: [
+    { title: "Dasar", fields: ["code", "kind", "value", "category", "note", "active"] },
+    { title: "Syarat", fields: ["min_spend", "max_discount", "quota", "once_per_customer"] },
+    { title: "Masa berlaku", fields: ["weekdays", "starts_on", "ends_on"] },
+  ] },
+  deposit_packages: { title: "name", noun: "paket", cols: ["amount_paid", "amount_credited"], sections: [{ title: "Paket deposit", fields: ["name", "amount_paid", "amount_credited", "active"] }] },
+  reviews: { title: "author", noun: "ulasan", cols: ["source"], sections: [{ title: "Ulasan", fields: ["author", "source", "body", "sort", "active"] }] },
+  sop_tool_groups: { title: "name", noun: "kelompok", cols: ["description"], sections: [{ title: "Kelompok alat", fields: ["name", "description", "sort", "active"] }] },
+};

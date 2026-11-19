@@ -102,21 +102,21 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         </NativeSelect>
         {filtered && <>
           <span className="text-[13px] text-muted tabular">{txs.length} dari {all.length}</span>
-          <button onClick={() => setF({ q: "", method: "", status: "", staff: "", item: "" })} className="text-[13px] font-semibold underline">Reset</button>
+          <button onClick={() => setF({ q: "", method: "", status: "", staff: "", item: "" })} className="text-[13px] font-medium underline">Reset</button>
         </>}
       </div>
       <div className="min-h-0 flex-1 overflow-hidden rounded-[14px] border border-line bg-card">
-        <div className={`${COLS} border-b border-line py-3 text-xs font-bold text-muted`}>
+        <div className={`${COLS} border-b border-line py-3 text-xs font-semibold text-muted`}>
           <span>Jam · No.</span><span>Pelanggan</span><span className="hidden min-[760px]:block">Layanan · staf</span><span className="text-right">Total</span>
           <span>Metode</span><span className="hidden min-[1100px]:block">Kasir</span>
         </div>
         <div className="max-h-full overflow-y-auto">
           {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>{filtered ? "Tidak ada transaksi yang cocok dengan filter." : date === today ? "Belum ada transaksi hari ini." : "Tidak ada transaksi di tanggal ini."}</Empty> : txs.map((t) => (
             <button key={t.id} onClick={() => setOpenId(t.id)} aria-label={`Transaksi ${formatJam(t.created_at)} ${nameOf(t)} ${formatRupiah(t.total)}`}
-              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#EEEEEA] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
+              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#EFEAEF] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
               <span className="flex flex-col"><b>{formatJam(t.created_at)}</b><span className="text-[11px] text-muted">#{t.id.slice(0, 8).toUpperCase()}</span></span>
               <span className="flex min-w-0 flex-col">
-                <span className="truncate font-semibold">{nameOf(t)}</span>
+                <span className="truncate font-medium">{nameOf(t)}</span>
                 {/* layar sempit: layanan di bawah nama */}
                 <span className="truncate text-xs text-muted min-[760px]:hidden">{t.transaction_items.map((i) => i.name).join(", ")}</span>
               </span>
@@ -146,23 +146,18 @@ export function History({ master, txParam }: { master: Master; txParam: string |
             <div className="no-print flex justify-end"><CloseButton onClick={() => setOpenId(null)} /></div>
             <ReceiptView r={toReceipt(open, master.shop, (id) => master.staff.find((s) => s.id === id)?.name, null)} title={`Transaksi ${formatTanggal(open.created_at)}`}>
               {master.role === "manager" && !open.voided_at && (voiding ? (
-                <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[10px] border border-[#E8C3C4] p-3">
-                  <label htmlFor="void-reason" className="text-xs font-bold text-[#6E1616]">Alasan pembatalan (wajib)</label>
-                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => { setReason(e.target.value); if (noRefundReason(e.target.value)) setRefund(false); }} />
-                  <fieldset className="flex flex-col gap-1 text-xs">
-                    <legend className="font-bold">Uang tunai dikembalikan ke pelanggan? (wajib dipilih)</legend>
-                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === true} onChange={() => setRefund(true)} />Ya, kurangi kas laci</label>
-                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === false} onChange={() => setRefund(false)} />Tidak, kas laci tidak berubah</label>
-                  </fieldset>
-                  {noRefundReason(reason) && refund !== false && <p role="alert" className="text-xs font-bold text-[#A12A2A]">Alasan menyebut salah sumber/test: biasanya tidak ada uang keluar. Pilih &quot;Tidak&quot; bila memang begitu.</p>}
+                <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[14px] border border-[#E8C3C4] p-3">
+                  <label htmlFor="void-reason" className="text-xs font-semibold text-[#6E1616]">Alasan pembatalan (wajib)</label>
+                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
+                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={refund} onChange={(e) => setRefund(e.target.checked)} />Uang tunai dikembalikan ke pelanggan (kurangi kas laci)</label>
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
-                    <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[10px]">Kembali</Button>
-                    <Button disabled={!reason.trim() || refund === null || !online} variant="plain" className="flex-1 rounded-[10px] bg-[#A12A2A] text-white">Void transaksi</Button>
+                    <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
+                    <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Void transaksi</Button>
                   </div>
                 </form>
               ) : (
-                <Button onClick={() => setVoiding(true)} variant="outline" className="h-11 rounded-[10px] text-[#A12A2A]">Batalkan transaksi (void)</Button>
+                <Button onClick={() => setVoiding(true)} variant="outline" className="h-11 rounded-[14px] text-[#A12A2A]">Batalkan transaksi (void)</Button>
               ))}
             </ReceiptView>
           </div>

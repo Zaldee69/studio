@@ -219,7 +219,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       <div className="flex min-w-0 flex-col gap-3 min-[1000px]:flex-1">
         <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Tagihan dari booking hari ini">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-sm font-bold">Tagihan dari booking hari ini</h2>
+            <h2 className="text-sm font-semibold">Tagihan dari booking hari ini</h2>
             <span className="hidden text-xs text-muted xl:inline">Pilih satu atau lebih (mis. pasangan datang bareng)</span>
           </div>
           {!unpaid.length ? <span className="text-[13px] text-muted">{dayAppts ? "Semua booking hari ini sudah lunas." : "Memuat…"}</span> : (
@@ -228,15 +228,15 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 const on = inCart.has(a.id), S = STATUS[a.status];
                 return (
                   <button key={a.id} aria-pressed={on} onClick={() => toggleAppt(a)}
-                    className={`flex min-h-16 flex-col gap-1 rounded-[10px] border-2 px-3 py-2.5 text-left ${on ? "border-ink bg-paper" : "border-line bg-card"}`}>
-                    <span className="flex w-full items-center gap-1.5 text-[13px] font-bold">
+                    className={`flex min-h-16 flex-col gap-1 rounded-[14px] border-2 px-3 py-2.5 text-left ${on ? "border-accent bg-paper" : "border-line bg-card"}`}>
+                    <span className="flex w-full items-center gap-1.5 text-[13px] font-semibold">
                       <span className="size-2 shrink-0 rounded-full" style={{ background: S.dot }} title={S.label} />
                       <span className="flex-1 truncate">{apptName(a)}</span>
-                      {groups.get(a.id) && <span className="shrink-0 rounded px-1.5 text-[11px] font-bold text-white" style={{ background: groups.get(a.id)!.color }}
+                      {groups.get(a.id) && <span className="shrink-0 rounded px-1.5 text-[11px] font-semibold text-white" style={{ background: groups.get(a.id)!.color }}
                         title={`Datang bersama (${groups.get(a.id)!.ids.length} orang)`} aria-label={`Rombongan ${groups.get(a.id)!.tag}, ${groups.get(a.id)!.ids.length} orang`}>👥 {groups.get(a.id)!.tag}</span>}
-                      <span className="text-xs font-semibold text-muted tabular">{formatJam(a.start_at)}</span>
+                      <span className="text-xs font-medium text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
-                    <span className="w-full truncate text-xs text-[#4A4C46]">
+                    <span className="w-full truncate text-xs text-[#4D4A55]">
                       {a.status === "in_service" && a.service_started_at && nowMs > 0 && nowMs - Date.parse(a.service_started_at) > 120 * 6e4 && <b className="text-[#A12A2A]">Lama ({Math.round((nowMs - Date.parse(a.service_started_at)) / 6e4)} mnt) · </b>}{S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
                     </span>
                   </button>
@@ -245,37 +245,37 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             </div>
           )}
           {!!missingPartners.length && (
-            <div role="note" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+            <div role="note" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
               <span className="flex-1">Datang bersama: <b>{missingPartners.map(apptName).join(", ")}</b> belum masuk tagihan.</span>
-              <button onClick={() => missingPartners.forEach((a) => toggleAppt(a))} className="h-9 rounded-lg bg-ink px-3 text-xs font-bold text-white">Tambahkan juga</button>
+              <button onClick={() => missingPartners.forEach((a) => toggleAppt(a))} className="h-9 rounded-[14px] bg-accent px-3 text-xs font-semibold text-white">Tambahkan juga</button>
             </div>
           )}
         </section>
 
-        <section className="flex flex-col gap-3.5 rounded-[14px] border border-line bg-card p-4 min-[1000px]:flex-1" aria-label="Katalog">
-          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1.5 overflow-x-auto">
+        <section className="flex flex-col gap-3.5 rounded-3xl border border-line bg-card p-4 min-[1000px]:min-h-[260px] min-[1000px]:flex-1" aria-label="Katalog">
+          <div role="tablist" aria-label="Kategori layanan" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-[14px] bg-[#EDE8EE] p-1">
             {(["barbershop", "nail", "massage", "retail"] as const).filter((c) => master.services.some((s) => s.active && s.category === c)).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
-                className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === c ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>
+                className={`h-10 shrink-0 rounded-[10px] px-4 text-sm font-medium ${tab === c ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
                 {CAT_STYLE[c].label}
               </button>
             ))}
           </div>
           <div className="flex flex-col gap-3">
             {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
-              <div key={title} className="flex shrink-0 flex-col gap-2">
-                {tab !== "retail" && <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted">{title}</h3>}
+              <div key={title} className="flex flex-col gap-2">
+                {tab !== "retail" && <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted">{title}</h3>}
                 <div className="grid grid-cols-2 content-start gap-2.5 xl:grid-cols-3">
                   {list.map((s) => {
                     const qty = stock?.get(s.id);
                     const out = s.category === "retail" && qty != null && qty <= 0;
                     return (
                       <button key={s.id} onClick={() => addService(s.id)} aria-label={`Tambah ${s.name}${out ? " (stok habis)" : ""}`}
-                        className={`flex flex-col gap-1.5 rounded-xl border px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-24 ${s.is_addon ? "min-h-[64px] border-dashed border-[#DCDCD6] bg-paper" : "min-h-[88px] border-line bg-card"}`}>
-                        <span className="text-sm font-bold">{s.is_addon && "+ "}{s.name}</span>
+                        className={`flex flex-col gap-1.5 rounded-[14px] border px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-24 ${s.is_addon ? "min-h-[64px] border-dashed border-[#DDD7E0] bg-paper" : "min-h-[88px] border-line bg-card"}`}>
+                        <span className="text-sm font-semibold">{s.is_addon && "+ "}{s.name}</span>
                         <span className="flex w-full justify-between text-[13px] tabular">
                           <b>{formatRupiah(s.price)}</b>
-                          <span className={out ? "font-bold text-[#A12A2A]" : "text-muted"}>
+                          <span className={out ? "font-semibold text-[#A12A2A]" : "text-muted"}>
                             {s.category === "retail" ? (out ? "Stok habis" : qty != null ? `Produk · stok ${qty}` : "Produk") : `${s.duration_min} mnt`}
                           </span>
                         </span>
@@ -294,21 +294,21 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
         {done ? (
           <div className="flex-1 overflow-y-auto px-6 py-7">
             <ReceiptView r={done}>
-              <Button onClick={() => setDone(null)} className="h-[52px] rounded-xl text-[15px]">Transaksi baru</Button>
+              <Button onClick={() => setDone(null)} className="h-[52px] rounded-[14px] text-[15px]">Transaksi baru</Button>
             </ReceiptView>
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-2 border-b border-[#EDEDE9] px-5 py-4">
-              <label htmlFor="cart-cust" className="text-xs font-bold text-muted">Pelanggan</label>
+            <div className="flex flex-col gap-2 border-b border-[#EDE8EE] px-5 py-4">
+              <label htmlFor="cart-cust" className="text-xs font-semibold text-muted">Pelanggan</label>
               <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
                   <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Cari nama / no. WA pelanggan"
                     onCreate={(q) => { setNewInit(q); setNewCust(true); }} />
                 </div>
                 {customer
-                  ? <Button onClick={() => setTopup(true)} disabled={!online} variant="outline" className="h-11 rounded-[10px] px-3 disabled:opacity-40">Top-up</Button>
-                  : <Button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} variant="outline" className="h-11 rounded-[10px] px-3 disabled:opacity-40">+ Baru</Button>}
+                  ? <Button onClick={() => setTopup(true)} disabled={!online} variant="outline" className="h-11 rounded-[14px] px-3 disabled:opacity-40">Top-up</Button>
+                  : <Button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} variant="outline" className="h-11 rounded-[14px] px-3 disabled:opacity-40">+ Baru</Button>}
               </div>
               {customer && !customer.whatsapp && (
                 <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
@@ -329,15 +329,12 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
               {/* nomor WA pelanggan = dasar promo, pengingat & laporan campaign; dilewati hanya bila pelanggan menolak */}
               {!customer && items.length > 0 && (
-                <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
+                <div role="status" className="flex flex-col gap-2 rounded-[14px] bg-st-booked px-3 py-2 text-[13px]">
                   <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
-                  <span className="font-semibold">Kalau tidak bisa, pilih alasannya:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {([["menolak", "Menolak memberi"], ["tidak_bawa_hp", "Tidak bawa HP"], ["lainnya", "Lainnya"]] as const).map(([v, l]) => (
-                      <Button key={v} type="button" variant={noWaReason === v ? "default" : "outline"} className="h-11 rounded-[10px]"
-                        onClick={() => setNoWaReason(noWaReason === v ? "" : v)}>{l}</Button>
-                    ))}
-                  </div>
+                  <label className="flex min-h-11 items-center gap-2 font-medium">
+                    <Checkbox checked={noCustOk} onCheckedChange={(v) => setNoCustOk(v === true)} className="size-5" />
+                    Pelanggan tidak mau memberi nama/nomor
+                  </label>
                 </div>
               )}
               {recorded && recorded.total > 0 && (
@@ -355,50 +352,49 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   <div key={i.key} className="flex min-h-11 items-center gap-2.5">
                     <span className="max-sm:hidden"><CatChip cat={s.category} /></span>
                     <span className="flex min-w-0 flex-1 flex-col gap-1 py-1">
-                      <span className="text-sm font-semibold">{s.name}</span>
+                      <span className="text-sm font-medium">{s.name}</span>
                       {s.category === "retail" ? (
-                        <select aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
-                          className="h-11 max-w-full self-start rounded-lg border border-[#DCDCD6] bg-card px-2 text-base text-[#4A4C46] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px]">
+                        <NativeSelect aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
+                          className="h-11 w-full max-w-xs self-start text-sm [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:min-h-9">
                           <option value="">Dijual oleh — (opsional)</option>
                           {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
+                        </NativeSelect>
                       ) : (
-                        <select aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
-                          title={i.staffLocked ? "Sesuai booking. Bila capster diganti, ubah booking di Jadwal." : undefined}
-                          className={`h-11 max-w-full self-start rounded-lg border bg-card px-2 text-base text-[#4A4C46] [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:text-[13px] ${i.staffId ? "border-[#DCDCD6]" : "border-[#D23B3B]"}`}>
+                        <NativeSelect aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
+                          className={`h-11 w-full max-w-xs self-start text-sm [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:min-h-9 ${i.staffId ? "" : "border-danger"}`}>
                           <option value="">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()}</option>
                           {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
+                        </NativeSelect>
                       )}
                     </span>
                     <span className="shrink-0 text-sm tabular">{formatRupiah(s.price)}</span>
                     <button onClick={() => setItems(items.filter((x) => x.key !== i.key))} aria-label={`Hapus ${s.name}`}
-                      className="flex size-11 items-center justify-center rounded-lg text-muted hover:bg-paper">
+                      className="flex size-11 items-center justify-center rounded-[14px] text-muted hover:bg-paper">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                     </button>
                   </div>
                 );
               })}
               {ups.map((u) => (
-                <div key={u.id} className="flex items-center gap-2.5 rounded-[10px] border border-dashed border-[#CFC8B8] bg-paper px-3 py-2.5">
+                <div key={u.id} className="flex items-center gap-2.5 rounded-[14px] border border-dashed border-[#D6D0DA] bg-paper px-3 py-2.5">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4137" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0"><path d="M12 3l2.4 5 5.6.8-4 3.9 1 5.5L12 15.6 7 18.2l1-5.5-4-3.9 5.6-.8z" /></svg>
                   <span className="flex-1 text-[13px] leading-snug">Setelah {u.from?.name}, tawarkan {u.s.name}? <b className="tabular">{formatRupiah(u.s.price)}</b></span>
-                  <button onClick={() => addService(u.id, true)} className="h-11 rounded-lg bg-accent px-3 text-xs font-bold text-white">Tambah</button>
-                  <button onClick={() => setDismissed([...dismissed, u.id])} className="h-11 px-2 text-xs font-semibold text-muted">Abaikan</button>
+                  <button onClick={() => addService(u.id, true)} className="h-11 rounded-[14px] bg-accent px-3 text-xs font-semibold text-white">Tambah</button>
+                  <button onClick={() => setDismissed([...dismissed, u.id])} className="h-11 px-2 text-xs font-medium text-muted">Abaikan</button>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-2 border-t border-[#EDEDE9] px-5 py-4 text-sm tabular">
+            <div className="flex flex-col gap-2 border-t border-[#EDE8EE] px-5 py-4 text-sm tabular">
               <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(k.subtotal)}</span></div>
               {k.discount > 0 && (
-                <div className="flex justify-between font-semibold text-accent-ink"><span>{k.discountLabel}</span><span>−{formatRupiah(k.discount)}</span></div>
+                <div className="flex justify-between font-medium text-accent-ink"><span>{k.discountLabel}</span><span>−{formatRupiah(k.discount)}</span></div>
               )}
               {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon paket {master.shop.bundlePct}%</div>}
               {customer && (
                 <button onClick={() => setUseDeposit(!useDeposit)} aria-pressed={useDeposit && bal > 0} disabled={bal <= 0}
-                  className={`flex min-h-11 items-center gap-2.5 rounded-[10px] border px-3 text-left text-[13px] font-semibold disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#ECEEE8]" : "border-line bg-card"}`}>
-                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#DCDCD6]"}`}>
+                  className={`flex min-h-11 items-center gap-2.5 rounded-[14px] border px-3 text-left text-[13px] font-medium disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#EFEAEF]" : "border-line bg-card"}`}>
+                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#DDD7E0]"}`}>
                     <span className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${useDeposit && bal > 0 ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                   <span className="flex-1">Pakai saldo deposit{bal <= 0 && " (saldo 0)"}</span>
@@ -410,19 +406,19 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               <div role="radiogroup" aria-label="Metode pembayaran" className="grid grid-cols-3 gap-2">
                 {([["cash", "Tunai"], ["qris", "QRIS"], ["transfer", "Transfer"]] as const).map(([v, l]) => (
                   <button key={v} role="radio" aria-checked={method === v} disabled={k.paid === 0 && items.length > 0} onClick={() => setMethod(v)}
-                    className={`h-11 rounded-[10px] border-2 text-sm font-bold disabled:opacity-40 ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
+                    className={`h-11 rounded-[14px] border text-sm font-medium disabled:opacity-40 ${method === v ? "border-accent bg-accent-soft text-accent" : "border-input bg-card text-ink hover:bg-paper"}`}>{l}</button>
                 ))}
               </div>
               {nonCash && (
-                <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
-                  <label htmlFor="qris-ref" className="text-[13px] font-bold">No. referensi {refLabel}</label>
+                <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
+                  <label htmlFor="qris-ref" className="text-[13px] font-semibold">No. referensi {refLabel}</label>
                   <Input id="qris-ref" autoComplete="off" className="h-11 uppercase tabular placeholder:normal-case"
                     placeholder={method === "transfer" ? "mis. No. Ref / 4 digit terakhir rekening pengirim" : "mis. 4 digit terakhir No. Ref"}
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">{method === "transfer" ? "Cek dana sudah masuk di mutasi rekening toko sebelum dicatat. " : "Dari bukti bayar di HP pelanggan / notifikasi bank. "}Satu nomor hanya untuk satu transaksi.</span>
-                  <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
+                  <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E4DFE6] pt-2.5">
                     <div className="flex items-center gap-2">
-                      <label htmlFor="cash-part" className="flex-1 text-[13px] font-bold">Sebagian dibayar tunai (opsional)</label>
+                      <label htmlFor="cash-part" className="flex-1 text-[13px] font-semibold">Sebagian dibayar tunai (opsional)</label>
                       <Input id="cash-part" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
                         value={cashPart ? Number(cashPart).toLocaleString("id-ID") : ""} onChange={(e) => setCashPart(e.target.value.replace(/\D/g, ""))} />
                     </div>
@@ -431,20 +427,20 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       : <span className="text-xs text-[#A12A2A]">Bagian tunai harus kurang dari tagihan — kalau lunas tunai, pilih Tunai.</span>)}
                   </div>
                   {tipStaffIds.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E3E3DE] pt-2.5">
+                    <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E4DFE6] pt-2.5">
                       <div className="flex items-center gap-2">
-                        <label htmlFor="tip-in" className="flex-1 text-[13px] font-bold">Tips (opsional)</label>
+                        <label htmlFor="tip-in" className="flex-1 text-[13px] font-semibold">Tips (opsional)</label>
                         <Input id="tip-in" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
                           value={tip ? Number(tip).toLocaleString("id-ID") : ""} onChange={(e) => setTip(e.target.value.replace(/\D/g, ""))} />
                       </div>
                       {tipAmt > 0 && <>
                         <div className="flex items-center gap-2">
-                          <label htmlFor="tip-staff" className="flex-1 text-[13px] font-bold">Tips untuk</label>
+                          <label htmlFor="tip-staff" className="flex-1 text-[13px] font-semibold">Tips untuk</label>
                           <NativeSelect id="tip-staff" className="h-11 w-40" value={tipStaff} onChange={(e) => setTipPick(e.target.value)}>
                             {tipStaffIds.map((id) => <option key={id} value={id}>{master.staff.find((s) => s.id === id)?.name ?? "Staf"}</option>)}
                           </NativeSelect>
                         </div>
-                        <div className="flex justify-between text-[15px] font-bold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(nonCashAmt + tipAmt)}</span></div>
+                        <div className="flex justify-between text-[15px] font-semibold"><span>{method === "transfer" ? "Total transfer" : "Total scan QRIS"}</span><span>{formatRupiah(nonCashAmt + tipAmt)}</span></div>
                         <span className="text-xs text-muted">Tips bukan omzet. Serahkan {formatRupiah(tipAmt)} tunai dari laci ke staf sekarang — kas diharapkan ikut berkurang.</span>
                       </>}
                     </div>
@@ -452,30 +448,30 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 </div>
               )}
               {cashDue > 0 && (
-                <div className="flex flex-col gap-2 rounded-[10px] bg-paper p-3">
+                <div className="flex flex-col gap-2 rounded-[14px] bg-paper p-3">
                   <div className="flex items-center gap-2">
-                    <label htmlFor="cash-in" className="flex-1 text-[13px] font-bold">Uang diterima</label>
+                    <label htmlFor="cash-in" className="flex-1 text-[13px] font-semibold">Uang diterima</label>
                     <Input id="cash-in" inputMode="numeric" placeholder={cashDue.toLocaleString("id-ID")} className="h-11 w-40 text-right tabular"
                       value={received ? Number(received.replace(/\D/g, "")).toLocaleString("id-ID") : ""} onChange={(e) => setReceived(e.target.value.replace(/\D/g, ""))} />
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {quickCash(cashDue).map((q) => (
                       <button key={q.label} onClick={() => setReceived(String(q.value))} aria-pressed={recv === q.value}
-                        className={`h-11 flex-1 rounded-lg border px-2 text-[13px] font-bold ${recv === q.value ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{q.label}</button>
+                        className={`h-11 flex-1 rounded-[14px] border px-2 text-[13px] font-semibold ${recv === q.value ? "border-accent bg-accent-soft text-accent" : "border-[#DDD7E0] bg-card"}`}>{q.label}</button>
                     ))}
                   </div>
-                  <div className={`flex justify-between text-[15px] font-bold ${shortCash ? "text-[#A12A2A]" : ""}`}>
+                  <div className={`flex justify-between text-[15px] font-semibold ${shortCash ? "text-[#A12A2A]" : ""}`}>
                     <span>{shortCash ? "Kurang" : "Kembalian"}</span>
                     <span>{formatRupiah(shortCash ? cashDue - (recv ?? 0) : change ?? 0)}</span>
                   </div>
                 </div>
               )}
             </div>
-            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDEDE9] bg-card px-5 pb-4 pt-3 tabular">
-              {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
-              <div className="flex items-baseline justify-between"><span className="font-bold">Total</span><span className="font-display text-[28px] font-bold">{formatRupiah(k.total)}</span></div>
+            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDE8EE] bg-card px-5 pb-4 pt-3 tabular">
+              {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
+              <div className="flex items-baseline justify-between"><span className="font-semibold">Total</span><span className="font-display text-[28px] font-semibold">{formatRupiah(k.total)}</span></div>
               <Button onClick={pay} disabled={!items.length || paying || !online || shortCash || (!customer && !noCustOk)}
-                className="h-14 rounded-xl text-base">
+                className="h-14 rounded-[14px] text-base">
                 {paying ? "Memproses…" : !customer && !noCustOk && items.length ? "Isi pelanggan dulu" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
               </Button>
             </div>
@@ -485,9 +481,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
       {!done && items.length > 0 && !cartSeen && (
         <button onClick={() => cartRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-          className="fixed inset-x-3 bottom-[calc(72px+env(safe-area-inset-bottom))] z-20 flex h-14 items-center gap-3 rounded-xl bg-ink px-4 text-left text-white shadow-[0_8px_24px_rgba(28,27,25,0.3)] md:bottom-4 min-[1000px]:hidden">
+          className="fixed inset-x-3 bottom-[calc(72px+env(safe-area-inset-bottom))] z-20 flex h-14 items-center gap-3 rounded-[14px] bg-accent px-4 text-left text-white shadow-[0_8px_24px_rgba(28,27,25,0.3)] md:bottom-4 min-[1000px]:hidden">
           <span className="flex-1 text-sm"><b>{items.length} item</b> · {formatRupiah(k.total)}</span>
-          <span className="text-sm font-bold">Bayar ↓</span>
+          <span className="text-sm font-semibold">Bayar ↓</span>
         </button>
       )}
 
@@ -522,7 +518,7 @@ function TierNote({ tier, visits, offer }: { tier: Tier; visits: number; offer: 
   const [label, tone] = TIER[tier];
   return (
     <p className="flex flex-wrap items-center gap-2 text-[13px]">
-      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${tone}`}>{label}{tier === "langganan" ? ` · ${visits}× datang` : ""}</span>
+      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${tone}`}>{label}{tier === "langganan" ? ` · ${visits}× datang` : ""}</span>
       {tier === "langganan" ? <span className="text-muted">Layani seperti biasa, tidak perlu ditawari paket.</span>
         : offer && <span>{offer}</span>}
     </p>

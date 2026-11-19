@@ -141,11 +141,11 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
 
   const chips = (k: keyof typeof OPTS, label: string) => (
     <fieldset className="flex flex-col gap-1.5">
-      <legend className="mb-1 text-xs font-bold text-muted">{label}</legend>
+      <legend className="mb-1 text-xs font-semibold text-muted">{label}</legend>
       <div className="flex flex-wrap gap-1.5">
         {OPTS[k].map((v) => (
           <button key={v} type="button" aria-pressed={f[k].includes(v)} onClick={() => toggle(k, v)}
-            className={`h-9 rounded-full border px-3 text-xs font-bold ${f[k].includes(v) ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{HAIR_LABEL[v]}</button>
+            className={`h-9 rounded-full border px-3 text-xs font-semibold ${f[k].includes(v) ? "border-accent bg-accent text-white" : "border-line bg-card"}`}>{HAIR_LABEL[v]}</button>
         ))}
       </div>
     </fieldset>
@@ -155,7 +155,7 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
     <Sheet open onClose={onClose} label={style ? `Ubah ${style.name}` : "Model baru"} variant="drawer">
       <form onSubmit={save} className="flex flex-col gap-4 p-5">
         <div className="flex items-center gap-3">
-          <h2 className="flex-1 font-display text-xl font-bold">{style ? style.name : "Model baru"}</h2>
+          <h2 className="flex-1 font-display text-xl font-semibold">{style ? style.name : "Model baru"}</h2>
           <CloseButton onClick={onClose} />
         </div>
         <div className="grid grid-cols-[1fr_7rem] gap-3">
@@ -194,15 +194,15 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
 
         {style && (
           <section className="flex flex-col gap-3 border-t border-line pt-4">
-            <h3 className="font-bold">Foto referensi</h3>
+            <h3 className="font-semibold">Foto referensi</h3>
             {!style.hairstyle_images.length && <p className="text-sm text-muted">Belum ada foto — model ini belum bisa direkomendasikan.</p>}
             <div className="grid grid-cols-3 gap-2">
               {[...style.hairstyle_images].sort((a, b) => a.sort - b.sort).map((i) => (
-                <div key={i.id} className="relative overflow-hidden rounded-lg border border-line">
+                <div key={i.id} className="relative overflow-hidden rounded-[14px] border border-line">
                   {/* eslint-disable-next-line @next/next/no-img-element -- foto katalog dari Storage */}
                   <img src={url(i.path)} alt={`${style.name} — ${VIEW[i.view]}`} className="aspect-[3/4] w-full object-cover" />
-                  <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 text-[11px] font-semibold text-white">{VIEW[i.view]}</span>
-                  <button type="button" onClick={() => removeImg(i)} aria-label={`Hapus foto ${VIEW[i.view]}`} className="absolute right-1 top-1 rounded bg-white/90 px-1.5 text-xs font-bold text-danger">✕</button>
+                  <span className="absolute left-1 top-1 rounded bg-black/60 px-1.5 text-[11px] font-medium text-white">{VIEW[i.view]}</span>
+                  <button type="button" onClick={() => removeImg(i)} aria-label={`Hapus foto ${VIEW[i.view]}`} className="absolute right-1 top-1 rounded bg-white/90 px-1.5 text-xs font-semibold text-danger">✕</button>
                 </div>
               ))}
             </div>
@@ -211,7 +211,7 @@ function Editor({ style, init, onClose, onSaved, onChanged }: {
               <NativeSelect id="hs-view" className="w-32" value={view} onChange={(e) => setView(e.target.value as Img["view"])}>
                 {Object.entries(VIEW).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
               </NativeSelect>
-              <label className={buttonClass("outline", `h-11 flex-1 cursor-pointer rounded-[10px] ${busy ? "pointer-events-none opacity-50" : ""}`)}>
+              <label className={buttonClass("outline", `h-11 flex-1 cursor-pointer rounded-[14px] ${busy ? "pointer-events-none opacity-50" : ""}`)}>
                 Unggah foto
                 <input type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Unggah foto referensi" onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = ""; }} />
               </label>

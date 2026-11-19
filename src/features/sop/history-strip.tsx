@@ -17,7 +17,7 @@ export function HistoryStrip({ rows, current, href }: { rows: { date: string; st
             <span aria-hidden="true" className="size-2 rounded-full" style={{ background: r.status === "empty" || r.status === "closed" ? "#9A9C95" : s.fg }} />
           </>
         );
-        const cls = `flex h-[52px] w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[10px] border ${r.date === current ? "border-ink bg-card" : "border-line bg-paper"}`;
+        const cls = `flex h-[52px] w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-[14px] border ${r.date === current ? "border-accent bg-card" : "border-line bg-paper"}`;
         const label = `${long(r.date)}: ${s.label}`;
         return <li key={r.date}>{href ? <Link href={href(r.date)} aria-label={label} className={cls}>{inner}</Link> : <span aria-label={label} className={cls}>{inner}</span>}</li>;
       })}

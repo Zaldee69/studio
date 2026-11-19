@@ -2,7 +2,6 @@
 
 import { Fragment } from "react";
 import dynamic from "next/dynamic";
-import { byMassageGroup, massageGroup } from "@/lib/domain/massage-group";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,7 +25,7 @@ const CustomerAuth = dynamic(() => import("@/components/customer-auth").then((m)
 
 export type { Cust };
 type Cat = OnlineCat;
-type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string; upsell: string | null };
+type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string; upsell: string | null; addon: boolean };
 type Staff = { id: string; name: string; category: Cat; photo: string | null };
 type Shop = { name: string; address: string; mapsUrl: string | null; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
 type View = "layanan" | "staf" | "waktu" | "konfirmasi" | "selesai" | "masuk";
@@ -93,9 +92,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const rescheduleBlocked = !!reschedule && validIds.length < initIds.length;
   const [view, setView] = useState<View>(() => reschedule ? "waktu" : isView(init.step) && validIds.length ? init.step : "layanan");
   const [cat, setCat] = useState<Cat>(init.cat);
-  // ponytail: tambahan = layanan yang jadi target upsell (view publik belum membawa is_addon); satu utama per kategori
-  const addonIds = new Set(services.map((x) => x.upsell).filter(Boolean));
-  const isAddon = (id: string) => addonIds.has(id) || /^tambah waktu/i.test(services.find((x) => x.id === id)?.name ?? "");
+  const isAddon = (id: string) => !!services.find((x) => x.id === id)?.addon;
   const bundleOpen = openCats.includes("barbershop") && openCats.includes("nail"); // diskon paket hanya barbershop + nail
   const [sel, setSel] = useState<string[]>(validIds);
   const [upSkipped, setUpSkipped] = useState<string[]>([]); // tawaran tambahan yang ditolak
@@ -392,18 +389,20 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                   ))}
                 </div>
                 <div className="flex flex-col border-t border-rule">
-                  {(cat === "massage" ? byMassageGroup : (l: typeof services) => l)(services.filter((s) => s.category === cat)).map((s, i, arr) => {
+                  {[...services.filter((x) => x.category === cat && !x.addon), ...services.filter((x) => x.category === cat && x.addon)].map((s, i, arr) => {
                     const on = sel.includes(s.id);
-                    const head = cat === "massage" && massageGroup(s.name) !== (i ? massageGroup(arr[i - 1].name) : "");
+                    // judul hanya bila kategori punya keduanya: utama di atas, tambahan di bawah
+                    const hasBoth = arr.some((x) => x.addon) && arr.some((x) => !x.addon);
+                    const head = hasBoth && (i === 0 || s.addon !== arr[i - 1].addon) ? (s.addon ? "Tambahan" : "Layanan utama") : "";
                     return (
                       <Fragment key={s.id}>
-                      {head && <h3 className="pt-5 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{massageGroup(s.name)}</h3>}
+                      {head && <h3 className="pt-5 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{head}</h3>}
                       <button aria-pressed={on}
                         onClick={() => { if (!on) track("service_pick"); setSel(on ? sel.filter((i) => i !== s.id) : [...sel.filter((i) => { const o = services.find((x) => x.id === i)!; return o.category !== s.category || isAddon(i) || isAddon(s.id); }), s.id]); setTime(""); resetReq(); }}
                         className={`flex min-h-[84px] items-center gap-4 border-b border-rule px-2 py-4 text-left transition ${on ? "bg-lux-3" : "hover:bg-lux-2"}`}>
                         <span className="flex min-w-0 flex-1 flex-col gap-1">
                           <span className="flex items-baseline gap-2.5 tabular-nums">
-                            <span className="font-serif text-[20px] font-medium min-[900px]:text-[22px]">{s.name}</span>
+                            <span className="font-serif text-[20px] font-medium min-[900px]:text-[22px]">{s.addon && "+ "}{s.name}</span>
                             <span className="flex-1 -translate-y-[5px] border-b border-dotted border-rule-2" />
                             <span className="text-base">{formatRupiah(s.price)}</span>
                           </span>

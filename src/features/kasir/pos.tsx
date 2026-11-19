@@ -9,7 +9,7 @@ import { useConfirm } from "@/components/alert-dialog";
 import { CAT_STYLE, CatChip, Empty, Sheet, useOnline, useToast } from "@/components/ui";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine } from "@/lib/domain/cart";
-import { formatJam, formatRupiah, jktDate } from "@/lib/domain/format";
+import { formatJam, formatRupiah, jktDate, normalizeWhatsApp } from "@/lib/domain/format";
 import { cashChange } from "@/lib/domain/receipt";
 import { STATUS } from "@/lib/domain/status";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -47,7 +47,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [newCust, setNewCust] = useState(false);
   const [newInit, setNewInit] = useState(""); // nama/nomor yang diketik di pencarian → isian awal pelanggan baru
   const [useDeposit, setUseDeposit] = useState(false);
-  const [noCustOk, setNoCustOk] = useState(false); // kasir menyatakan pelanggan tidak mau memberi nama/nomor
+  const [waInput, setWaInput] = useState("");
+  const [noWaReason, setNoWaReason] = useState(""); // alasan tamu tanpa pelanggan/WA; tersimpan di transactions.no_wa_reason
+  const noCustOk = noWaReason !== "";
   const [method, setMethod] = useState<BaseMethod>("cash");
   // anti bayar dobel: id yang sama selama isi keranjang tidak berubah → kirim ulang setelah koneksi putus tidak membuat transaksi kedua
   const requestId = useRef("");
@@ -173,7 +175,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoCustOk(false);
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoWaReason(""); setWaInput("");
   }
 
   async function pay() {
@@ -186,6 +188,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     setPaying(true);
     const supabase = createClient();
     const { data: txId, error } = await supabase.rpc("checkout", { p: {
+      no_wa_reason: customer ? null : noWaReason || null,
       customer_id: customer?.id ?? null, use_deposit: useDeposit && bal > 0, method: k.paid > 0 ? method : "cash",
       cash_received: cashDue > 0 ? recv ?? cashDue : null, qris_ref: method !== "cash" ? qrisRef : null,
       tip: tipAmt, tip_staff_id: tipAmt > 0 ? tipStaff : null, cash_part: cashAmt, client_request_id: requestId.current,
@@ -213,7 +216,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   return (
     <div className="flex flex-col gap-4 min-[1000px]:min-h-0 min-[1000px]:flex-1 min-[1000px]:flex-row xl:gap-6">
       {/* KIRI */}
-      <div className="flex min-w-0 flex-col gap-3 min-[1000px]:min-h-0 min-[1000px]:flex-1">
+      <div className="flex min-w-0 flex-col gap-3 min-[1000px]:flex-1">
         <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Tagihan dari booking hari ini">
           <div className="flex items-baseline justify-between gap-3">
             <h2 className="text-sm font-semibold">Tagihan dari booking hari ini</h2>
@@ -258,7 +261,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               </button>
             ))}
           </div>
-          <div className="flex min-h-0 flex-col gap-3 overflow-y-auto">
+          <div className="flex flex-col gap-3">
             {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
               <div key={title} className="flex flex-col gap-2">
                 {tab !== "retail" && <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted">{title}</h3>}
@@ -307,6 +310,21 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   ? <Button onClick={() => setTopup(true)} disabled={!online} variant="outline" className="h-11 rounded-[14px] px-3 disabled:opacity-40">Top-up</Button>
                   : <Button onClick={() => { setNewInit(""); setNewCust(true); }} disabled={!online} variant="outline" className="h-11 rounded-[14px] px-3 disabled:opacity-40">+ Baru</Button>}
               </div>
+              {customer && !customer.whatsapp && (
+                <div role="status" className="flex flex-col gap-2 rounded-[10px] bg-st-booked px-3 py-2 text-[13px]">
+                  <span>No. WhatsApp pelanggan ini belum ada. Tanyakan sekarang.</span>
+                  <div className="flex gap-2">
+                    <Input aria-label="No. WhatsApp" inputMode="tel" placeholder="08…" className="tabular" value={waInput} onChange={(e) => setWaInput(e.target.value)} />
+                    <Button variant="outline" className="h-11 rounded-[10px]" disabled={!online} onClick={async () => {
+                      const wa = normalizeWhatsApp(waInput);
+                      if (!wa) return setError("No. WhatsApp belum valid.");
+                      const { error } = await createClient().from("customers").update({ whatsapp: wa }).eq("id", customer.id);
+                      if (error) return setError(error.code === "23505" ? "No. WhatsApp sudah terdaftar di pelanggan lain." : error.message);
+                      setCustomer({ ...customer, whatsapp: wa }); setWaInput(""); setError(""); toast("No. WhatsApp tersimpan");
+                    }}>Simpan</Button>
+                  </div>
+                </div>
+              )}
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
               {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
               {/* nomor WA pelanggan = dasar promo, pengingat & laporan campaign; dilewati hanya bila pelanggan menolak */}
@@ -320,7 +338,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 </div>
               )}
               {recorded && recorded.total > 0 && (
-                <p className="text-xs text-muted tabular">Tercatat dengan pelanggan hari ini: <b className={recorded.withCust / recorded.total >= 0.6 ? "text-[#1F7A45]" : "text-ink"}>{recorded.withCust} dari {recorded.total}</b> ({Math.round((recorded.withCust / recorded.total) * 100)}%) · target 60%</p>
+                <p className="text-xs text-muted tabular">Tercatat dengan pelanggan hari ini: <b className={recorded.withCust / recorded.total >= 0.8 ? "text-[#1F7A45]" : "text-ink"}>{recorded.withCust} dari {recorded.total}</b> ({Math.round((recorded.withCust / recorded.total) * 100)}%) · target 80%</p>
               )}
               {/* voucher hanya lewat booking online: diskonnya ikut otomatis dari booking yang dipilih */}
               {items.length > 0 && <p className="text-xs text-muted">Kode voucher hanya berlaku lewat booking online (dprasstudio.com).</p>}

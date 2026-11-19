@@ -16,7 +16,7 @@ type Tab = (typeof TABS)[number][0];
 export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master; initialAppt: DayAppt | null; bonusLine?: string }) {
   const params = useSearchParams();
   const [tab, setTab] = useState<Tab>((TABS.find(([k]) => k === params.get("tab"))?.[0]) ?? "kasir");
-  // ≥1000px: satu layar tanpa scroll halaman; di bawahnya kolom bertumpuk & halaman bisa di-scroll
+  // ≥1000px: tinggi minimal satu layar, halaman tumbuh mengikuti isi (tanpa scroll internal)
   return (
     <div className="flex flex-col gap-4 min-[1000px]:h-[calc(100dvh-112px)]">
       <div className="no-print flex flex-col gap-3">

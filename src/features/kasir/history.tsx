@@ -13,6 +13,7 @@ import { TX_SELECT, useDayTransactions } from "../counter/hooks";
 import type { Master, TxRow } from "../counter/types";
 import { ReceiptView, toReceipt } from "./receipt-view";
 import { receiptName } from "@/lib/domain/guest";
+import { noRefundReason } from "./void-reason";
 
 const COLS = "grid gap-3 px-4 grid-cols-[64px_1.5fr_1fr_0.9fr] min-[760px]:grid-cols-[64px_1.2fr_1.8fr_1fr_0.9fr] min-[1100px]:grid-cols-[64px_1.2fr_1.8fr_1fr_0.9fr_0.9fr]";
 
@@ -28,7 +29,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const [extra, setExtra] = useState<TxRow | null>(null); // transaksi dari tanggal lain (tautan dari Jadwal)
   const [voiding, setVoiding] = useState(false);
   const [reason, setReason] = useState("");
-  const [refund, setRefund] = useState(true); // uang tunai dikembalikan ke pelanggan?
+  const [refund, setRefund] = useState<boolean | null>(null); // uang tunai dikembalikan ke pelanggan? null = belum dipilih (wajib)
   const [f, setF] = useState({ q: "", method: "", status: "", staff: "", item: "" });
 
   useEffect(() => {
@@ -61,10 +62,10 @@ export function History({ master, txParam }: { master: Master; txParam: string |
   const sum = dailySummary(all, []);
 
   async function doVoid() {
-    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason, p_refund: refund });
+    const { error } = await createClient().rpc("void_transaction", { p_id: openId!, p_reason: reason, p_refund: refund! });
     if (error) return toast(error.message, "error");
     toast("Transaksi dibatalkan · stok & booking dikembalikan");
-    setVoiding(false); setReason(""); setRefund(true); refresh();
+    setVoiding(false); setReason(""); setRefund(null); refresh();
     if (extra) setExtra({ ...extra, voided_at: new Date().toISOString(), void_reason: reason });
   }
 

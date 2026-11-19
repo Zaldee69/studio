@@ -1,7 +1,7 @@
 "use client";
 
 import { buttonClass } from "@/components/ui/button";
-import { CAT_NAME, CAT_TONE, type Cat } from "@/lib/domain/category";
+import { CAT_NAME, CAT_TONE, toneOf, catNameOf, type Cat } from "@/lib/domain/category";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";

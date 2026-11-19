@@ -1,6 +1,6 @@
 "use client";
 
-import { CAT_TONE, STAFF_TITLE, type Cat } from "@/lib/domain/category";
+import { CAT_TONE, toneOf, STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
 import { useActionState, useState } from "react";
 import { stationLogin } from "./actions";

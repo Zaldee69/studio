@@ -1,13 +1,13 @@
 "use client";
 
-import { DateInput } from "@/components/date-input";
+import { RencanaHeader } from "@/components/rencana-header";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Field, useOnline, useToast } from "@/components/ui";
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatRupiah } from "@/lib/domain/format";
@@ -53,17 +53,17 @@ const csv = (name: string, rows: (string | number | null)[][]) => downloadText(`
 
 function Chip({ tone, icon, label }: { tone: "ok" | "warn" | "bad" | "info"; icon: string; label: string }) {
   const c = { ok: ["#E6F1E4", "#144D2A"], warn: ["#FBF3DE", "#5A4300"], bad: ["#F9E6E6", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
-  return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
+  return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
 }
 function Delta({ d, unit = "%" }: { d: number | null | undefined; unit?: "%" | "poin" }) {
   const v = d ?? null;
-  return <span className={`text-xs font-bold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{deltaLabel(v, unit)}</span>;
+  return <span className={`text-xs font-semibold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{deltaLabel(v, unit)}</span>;
 }
 function Section({ id, title, children, onCsv, extra }: { id: string; title: string; children: React.ReactNode; onCsv?: () => void; extra?: React.ReactNode }) {
   return (
-    <section id={id} aria-labelledby={`${id}-h`} className="flex scroll-mt-16 flex-col gap-3 rounded-[14px] border border-line bg-card p-4 xl:p-5">
+    <section id={id} aria-labelledby={`${id}-h`} className="flex scroll-mt-16 flex-col gap-3 rounded-3xl border border-line bg-card p-4 xl:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 id={`${id}-h`} className="flex-1 font-display text-lg font-bold">{title}</h2>
+        <h2 id={`${id}-h`} className="flex-1 font-display text-lg font-semibold">{title}</h2>
         {extra}
         {onCsv && <Button onClick={onCsv} variant="outline" className="h-11 px-3 text-xs">Unduh CSV</Button>}
       </div>
@@ -107,48 +107,46 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <h1 className="flex-1 font-display text-[28px] font-bold tracking-tight">Analitik KPI</h1>
-      </div>
-      <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
-      <div className="flex flex-wrap items-center gap-2 print:hidden">
-        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1.5">
+      <RencanaHeader />
+      <div className="flex flex-wrap items-center gap-3 print:hidden">
+        <h2 className="mr-auto font-display text-lg font-semibold">Analitik KPI</h2>
+        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1 rounded-[14px] bg-[#EDE8EE] p-1">
           {PERIODS.map(([k, l]) => (
             <Link key={k} href={q({ periode: k, dari: "", sampai: "" })} aria-current={d.periode === k ? "true" : undefined}
-              className="inline-flex h-11 items-center rounded-full border border-[#DCDCD6] bg-card px-4 text-[13px] font-bold aria-[current=true]:border-ink aria-[current=true]:bg-ink aria-[current=true]:text-white">{l}</Link>
+              className="inline-flex h-9 items-center rounded-[10px] px-3 text-sm font-medium text-muted hover:text-ink aria-[current=true]:bg-card aria-[current=true]:text-ink aria-[current=true]:shadow-sm">{l}</Link>
           ))}
         </div>
         <form className="flex flex-wrap items-end gap-1.5" onChange={(e) => { const f = e.currentTarget; if ((e.target as HTMLElement).tagName === "SELECT") f.requestSubmit(); }}>
           <input type="hidden" name="periode" value="kustom" />
-          <DateInput name="dari" aria-label="Dari" defaultValue={d.from} className="h-11 w-40" />
-          <DateInput name="sampai" aria-label="Sampai" defaultValue={d.to} className="h-11 w-40" />
+          <DateRangeInput nameFrom="dari" nameTo="sampai" aria-label="Rentang tanggal" defaultValue={{ from: d.from, to: d.to }} className="h-11 w-72" />
           <NativeSelect name="kategori" aria-label="Kategori" defaultValue={d.category} className="h-11 w-36"><option value="">Semua</option><option value="barbershop">Barbershop</option><option value="nail">Nail</option><option value="massage">Pijat</option></NativeSelect>
           <NativeSelect name="staf" aria-label="Staf" defaultValue={d.staff} className="h-11 w-36"><option value="">Semua staf</option>{d.staffList.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
-          <Button className="h-11">Terapkan</Button>
+          <Button variant="outline" className="h-11">Terapkan</Button>
         </form>
       </div>
       <p className="text-sm text-muted tabular">{d.label} · <b className="text-ink">{tx} transaksi</b> · dibanding {d.prevLabel}</p>
-      {tx < t.min_tx && <p role="status" className="rounded-[12px] bg-[#FBF3DE] px-4 py-2.5 text-sm text-[#5A4300]">Data masih sedikit ({tx} transaksi) — angka belum stabil.</p>}
+      {tx < t.min_tx && <p role="status" className="flex items-center gap-2 rounded-2xl border border-line bg-card px-4 py-3 text-sm text-muted"><span aria-hidden="true" className="size-2 rounded-full bg-[#C98A00]" />Data masih sedikit ({tx} transaksi), jadi angka belum stabil.</p>}
 
       {!!d.insights.length && (
-        <section aria-label="Insight" className="flex flex-col gap-1.5 rounded-[14px] border border-[#D6D9CF] bg-[#F5F6F2] p-4">
+        <section aria-label="Insight" className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-4">
           {d.insights.map((i) => (
             <p key={i.code} className="flex flex-wrap items-center gap-2 text-sm">
-              <span aria-hidden="true" className="flex size-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">!</span>
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#C98A00]" />
               <span className="flex-1">{i.message}</span>
-              <a href={i.href} className="flex min-h-11 items-center font-semibold text-accent underline">Lihat</a>
+              <a href={i.href} className="flex min-h-11 items-center font-medium text-accent hover:underline">Lihat</a>
             </p>
           ))}
         </section>
       )}
 
-      {ai}
+      {/* elemen dari server component: dibungkus ber-key agar React dev tidak mengeluh soal key daftar */}
+      <Fragment key="ai">{ai}</Fragment>
 
       <div className="grid gap-3 min-[820px]:grid-cols-3 xl:grid-cols-5">
         {cards.map((c) => (
-          <a key={c.title} href={c.href} className="flex flex-col gap-1 rounded-[14px] border border-line bg-card p-4 hover:border-[#CFC8B8]">
-            <span className="text-xs font-semibold text-muted">{c.title}</span>
-            <b className="font-display text-2xl tabular">{c.value}</b>
+          <a key={c.title} href={c.href} className="flex flex-col gap-1.5 rounded-3xl border border-line bg-card p-5 hover:border-input">
+            <span className="text-sm text-muted">{c.title}</span>
+            <b className="font-display text-[28px] font-semibold leading-none tabular">{c.value}</b>
             <span className="flex flex-wrap items-center gap-1.5"><Delta d={c.delta} unit={"unit" in c ? c.unit : "%"} />
               {c.chip && ("band" in c
                 ? <Chip tone={c.chip === "within" ? "ok" : "warn"} icon={c.chip === "within" ? "✓" : c.chip === "below" ? "▼" : "▲"} label={BAND_LABEL[c.chip as "within"]} />
@@ -169,8 +167,8 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
             <><b className="block">{r.day}</b>{cats.map((k) => <span key={k} className="block">{CAT_LABEL[k]}: <b>{money(r[`aov_${k}`])}</b> · {r[`tx_${k}`]} tx</span>)}<span className="block">Omzet {formatRupiah(r.omzet)}</span></>); }} />
         <div className="grid gap-2 min-[820px]:grid-cols-2">
           {cats.filter((k) => drv(k)).map((k) => { const x = drv(k); return (
-            <div key={k} className="grid grid-cols-3 gap-2 rounded-[12px] bg-paper p-3 text-center text-xs tabular">
-              <span className="col-span-3 text-left text-xs font-bold" style={{ color: COLOR[k] }}>Penggerak {CAT_LABEL[k]}</span>
+            <div key={k} className="grid grid-cols-3 gap-2 rounded-[14px] bg-paper p-3 text-center text-xs tabular">
+              <span className="col-span-3 text-left text-xs font-medium text-muted">Penggerak {CAT_LABEL[k]}</span>
               <span>Layanan/transaksi<b className="block text-lg">{x?.avg_services == null ? "—" : x.avg_services.toLocaleString("id-ID", { maximumFractionDigits: 2 })}</b></span>
               <span>Tingkat upsell<b className="block text-lg">{pctOr(x?.upsell_rate)}</b></span>
               <span>% bundle<b className="block text-lg">{pctOr(x?.bundle_pct)}</b></span>
@@ -185,7 +183,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         ...d.util.map((u) => [u.name, u.type, Math.round(u.sold_minutes), u.planned_minutes, u.available_minutes, u.pct == null ? "" : pct1(u.pct), u.pct_planned == null ? "" : pct1(u.pct_planned), u.planned_vs_actual_avg == null ? "" : Math.round(u.planned_vs_actual_avg)])])}
         extra={<div role="group" aria-label="Sumber durasi" className="flex gap-1">{[[false, "Nyata"], [true, "Rencana"]].map(([v, l]) => (
           <button key={String(v)} aria-pressed={planned === v} onClick={() => setPlanned(v as boolean)}
-            className={`h-11 rounded-full border px-3.5 text-xs font-bold ${planned === v ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l as string}</button>))}</div>}>
+            className={`h-10 rounded-full border px-3.5 text-xs font-medium ${planned === v ? "border-accent bg-accent-soft text-accent" : "border-input bg-card text-ink"}`}>{l as string}</button>))}</div>}>
         <Legend items={[{ label: "Barbershop", color: COLOR.barbershop }, { label: "Nail Art", color: COLOR.nail }]} />
         <HBars ariaLabel="Utilisasi per resource" target={{ value: t.utilization, label: `Target ${t.utilization}%` }}
           rows={d.util.map((u) => { const p = (planned ? u.pct_planned : u.pct) ?? 0; const m = planned ? u.planned_minutes : u.sold_minutes;
@@ -203,13 +201,13 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
       </Section>
 
       <Section id="durasi" title="Selisih durasi layanan" onCsv={() => csv(`selisih-durasi-${d.from}_${d.to}`, [["Layanan", "Rencana (mnt)", "Rata-rata nyata (mnt)", "Selisih (mnt)", "n"], ...d.duration.map((r) => [r.name, r.planned_min, Math.round(r.actual_avg), Math.round(r.diff_avg), r.n])])}
-        extra={<Link href="/manajer/pengaturan?tab=layanan" className="flex min-h-11 items-center text-xs font-semibold text-accent underline">Pengaturan layanan →</Link>}>
+        extra={<Link href="/manajer/pengaturan?tab=layanan" className="flex min-h-11 items-center text-xs font-medium text-accent underline">Pengaturan layanan →</Link>}>
         {!d.duration.length ? <p className="text-sm text-muted">Belum ada layanan dengan ≥ 5 catatan waktu nyata di periode ini.</p> : (
           <table className="w-full text-sm tabular">
-            <thead><tr className="text-left text-xs text-muted">{["Layanan", "Rencana", "Rata-rata nyata", "Selisih"].map((h, i) => <th key={h} className={`py-1.5 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr className="text-left text-xs text-muted">{["Layanan", "Rencana", "Rata-rata nyata", "Selisih"].map((h, i) => <th key={h} className={`py-1.5 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>{d.duration.map((r) => (
-              <tr key={r.service_id} className="border-t border-[#EEEEEA]">
-                <td className="py-2 font-semibold">{r.name}</td><td className="text-right">{r.planned_min} mnt</td><td className="text-right">{Math.round(r.actual_avg)} mnt</td>
+              <tr key={r.service_id} className="border-t border-[#EFEAEF]">
+                <td className="py-2 font-medium">{r.name}</td><td className="text-right">{r.planned_min} mnt</td><td className="text-right">{Math.round(r.actual_avg)} mnt</td>
                 <td className="text-right"><span className="mr-2">{r.diff_avg > 0 ? "+" : ""}{Math.round(r.diff_avg)} mnt (n={r.n})</span>
                   {Math.abs(r.diff_avg) >= 1 && <Chip tone={r.diff_avg > 0 ? "warn" : "info"} icon={r.diff_avg > 0 ? "▲" : "▼"} label={r.diff_avg > 0 ? "molor" : "lebih cepat"} />}</td>
               </tr>
@@ -232,7 +230,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
               <b className="text-sm">Top 5 produk</b>
               {!d.retail.top.length ? <p className="text-sm text-muted">Belum ada penjualan ritel.</p> : (
                 <table className="mt-1 w-full text-sm tabular"><tbody>{d.retail.top.map((p) => (
-                  <tr key={p.name} className="border-t border-[#EEEEEA]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
+                  <tr key={p.name} className="border-t border-[#EFEAEF]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
                 ))}</tbody></table>
               )}
             </div>
@@ -253,7 +251,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
           rows={d.mix.weekly.map((w) => [w.week, formatRupiah(w.barbershop), formatRupiah(w.massage ?? 0), formatRupiah(w.nail), formatRupiah(w.retail), formatRupiah(weekTotal(w))])} />
       </Section>
 
-      <Section id="pelanggan" title="Pelanggan" extra={<Link href="/manajer/pelanggan?filter=follow" className="flex min-h-11 items-center text-xs font-semibold text-accent underline">Lihat daftar follow-up →</Link>}>
+      <Section id="pelanggan" title="Pelanggan" extra={<Link href="/manajer/pelanggan?filter=follow" className="flex min-h-11 items-center text-xs font-medium text-accent underline">Lihat daftar follow-up →</Link>}>
         <div className="grid gap-3 min-[820px]:grid-cols-3 xl:grid-cols-6">
           {[...([["Pelanggan baru", String(d.customers.new_customers), "transaksi pertama di periode"],
             ["Pelanggan kembali", String(d.customers.returning), "pernah datang sebelumnya"],
@@ -263,7 +261,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
             // data pelanggan < 40% transaksi → angka di atas tidak representatif
             .map(([k, v, s]) => (cov.enough ? [k, v, s] : [k, "Data belum cukup", coverageNote(cov.pct)]))),
             ["Transaksi dengan pelanggan", pctOr(rec(d.customers.recorded)), `${d.customers.recorded.with_customer} dari ${d.customers.recorded.tx} · target 40% (8 Nov) → 60% (30 Nov)`]].map(([k, v, s]) => (
-            <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className={`font-display tabular ${v === "Data belum cukup" ? "text-base text-muted" : "text-2xl"}`}>{v}</b><span className="text-xs text-muted">{s}</span></div>
+            <div key={k} className="flex flex-col gap-0.5 rounded-[14px] bg-paper p-3"><span className="text-xs font-medium text-muted">{k}</span><b className={`font-display tabular ${v === "Data belum cukup" ? "text-base text-muted" : "text-2xl"}`}>{v}</b><span className="text-xs text-muted">{s}</span></div>
           ))}
         </div>
               {!!d.customers.recorded_daily.length && (
@@ -282,7 +280,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
               ["Tunggu Jumat–Minggu", `${mnt(d.queue.wait_median_weekend)} · ${mnt(d.queue.wait_p90_weekend)}`, "target median ≤15 mnt · p90 ≤25 mnt"],
               ["Pulang sebelum dilayani", String(d.queue.walk_aways), "dicatat dari laci booking"],
               ["Diminta pelanggan", pctOr(rec({ tx: d.queue.by_staff.reduce((a, s) => a + s.requested + s.turn, 0), with_customer: d.queue.by_staff.reduce((a, s) => a + s.requested, 0) })), "walk-in yang memilih staf di luar giliran"]].map(([k, v, s]) => (
-              <div key={k} className="flex flex-col gap-0.5 rounded-[12px] bg-paper p-3"><span className="text-xs font-semibold text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
+              <div key={k} className="flex flex-col gap-0.5 rounded-[14px] bg-paper p-3"><span className="text-xs font-medium text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span></div>
             ))}
           </div>
           {!!d.queue.by_staff.length && (
@@ -296,9 +294,9 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         [], ["Porsi online %", d.online.share_online == null ? "" : pct1(d.online.share_online)], ["Pembatalan %", d.online.cancel_rate == null ? "" : pct1(d.online.cancel_rate)], ["No-show %", d.online.no_show_rate == null ? "" : pct1(d.online.no_show_rate)]])}>
         <Funnel steps={funnel([d.online.landing, d.online.booking_open, d.online.booked]).map((s, i) => ({ label: ["Lihat landing", "Mulai booking", "Terkonfirmasi"][i], ...s }))} />
         <div className="grid grid-cols-3 gap-3 text-center tabular">
-          <div className="rounded-[12px] bg-paper p-3"><span className="text-xs text-muted">Porsi online</span><b className="block text-xl">{pctOr(d.online.share_online)}</b><span className="text-xs text-muted">{d.online.online_appts} dari {d.online.all_appts} booking</span></div>
-          <div className="rounded-[12px] bg-paper p-3"><span className="text-xs text-muted">Pembatalan</span><b className="block text-xl">{pctOr(d.online.cancel_rate)}</b></div>
-          <div className="rounded-[12px] bg-paper p-3"><span className="text-xs text-muted">No-show</span><b className="block text-xl">{pctOr(d.online.no_show_rate)}</b><span className="text-xs text-muted">{d.online.no_show} tidak datang</span></div>
+          <div className="rounded-[14px] bg-paper p-3"><span className="text-xs text-muted">Porsi online</span><b className="block text-xl">{pctOr(d.online.share_online)}</b><span className="text-xs text-muted">{d.online.online_appts} dari {d.online.all_appts} booking</span></div>
+          <div className="rounded-[14px] bg-paper p-3"><span className="text-xs text-muted">Pembatalan</span><b className="block text-xl">{pctOr(d.online.cancel_rate)}</b></div>
+          <div className="rounded-[14px] bg-paper p-3"><span className="text-xs text-muted">No-show</span><b className="block text-xl">{pctOr(d.online.no_show_rate)}</b><span className="text-xs text-muted">{d.online.no_show} tidak datang</span></div>
         </div>
       </Section>
 
@@ -307,38 +305,95 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
   );
 }
 
+type TargetRow = { k: keyof AnalyticsData["settings"]; title: string; hint: string; unit: "Rp" | "%" | string };
+// Dikelompokkan per topik; tiap baris menjelaskan apa arti angkanya supaya tidak perlu menebak.
+const TARGET_GROUPS: { title: string; note?: string; rows: TargetRow[] }[] = [
+  { title: "Pendapatan", rows: [
+    { k: "revenue_target_monthly", title: "Omzet bersih per bulan", hint: "Pendapatan setelah diskon dalam satu bulan kalender.", unit: "Rp" },
+  ] },
+  { title: "Nilai rata-rata transaksi (AOV)", note: "AOV = omzet dibagi jumlah transaksi. Dipakai untuk menilai apakah pelanggan membelanjakan cukup per kunjungan.", rows: [
+    { k: "aov_target_barbershop", title: "AOV barbershop", hint: "Rata-rata nilai satu transaksi barbershop.", unit: "Rp" },
+    { k: "aov_target_nail", title: "AOV nail art", hint: "Rata-rata nilai satu transaksi nail art.", unit: "Rp" },
+    { k: "aov_target_massage", title: "AOV pijat", hint: "Isi 0 bila belum punya target.", unit: "Rp" },
+  ] },
+  { title: "Penjualan ritel", rows: [
+    { k: "retail_ratio_min", title: "Rasio ritel minimum", hint: "Ritel sebagai persen dari omzet. Di bawah angka ini dianggap kurang.", unit: "%" },
+    { k: "retail_ratio_max", title: "Rasio ritel maksimum", hint: "Di atas angka ini ritel dianggap terlalu dominan.", unit: "%" },
+  ] },
+  { title: "Kursi dan meja", rows: [
+    { k: "utilization_target", title: "Utilisasi", hint: "Persen waktu kursi atau meja terisi layanan.", unit: "%" },
+  ] },
+  { title: "Potong per hari", rows: [
+    { k: "target_cuts_senkam", title: "Senin sampai Kamis", hint: "Target minimal potong per hari kerja.", unit: "potong/hari" },
+    { k: "target_cuts_weekend_max", title: "Jumat sampai Minggu", hint: "Batas nyaman. Di atas ini antrean dianggap terlalu padat.", unit: "potong/hari" },
+  ] },
+  { title: "Target mingguan", note: "Tampil di tab Progres & tugas dan di HP capster.", rows: [
+    { k: "target_cuts_weekly", title: "Potong per minggu", hint: "Target total studio. Dibagi rata ke capster bila target pribadinya kosong.", unit: "potong" },
+    { k: "target_returning_weekly", title: "Pelanggan kembali", hint: "Pelanggan lama yang datang lagi dalam seminggu.", unit: "pelanggan" },
+    { k: "target_new_weekly", title: "Pelanggan baru", hint: "Isi 0 bila tanpa target.", unit: "pelanggan" },
+    { k: "target_upgrade_pct", title: "Potong yang naik paket", hint: "Persen potong yang naik ke paket lebih besar.", unit: "%" },
+    { k: "target_customer_pct", title: "Transaksi dengan pelanggan tercatat", hint: "Persen transaksi yang nomor WhatsApp pelanggannya dicatat.", unit: "%" },
+    { k: "target_rebook_pct", title: "Dibookingkan jadwal berikutnya", hint: "Persen pelanggan yang dibookingkan kunjungan berikutnya oleh kasir.", unit: "%" },
+  ] },
+  { title: "Peringatan otomatis", note: "Kapan sistem memunculkan insight di halaman Analitik.", rows: [
+    { k: "insight_aov_gap_pct", title: "AOV di bawah target", hint: "Peringatan muncul bila AOV lebih rendah dari target sebesar ini.", unit: "%" },
+    { k: "insight_low_util_pct", title: "Kursi atau meja sepi", hint: "Peringatan muncul bila utilisasinya di bawah angka ini.", unit: "%" },
+    { k: "kpi_min_tx_for_stable", title: "Batas data cukup", hint: "Di bawah jumlah transaksi ini, angka diberi catatan \"data masih sedikit\".", unit: "transaksi" },
+  ] },
+];
+const PCT_KEYS = ["retail_ratio_min", "retail_ratio_max", "utilization_target", "target_upgrade_pct", "target_customer_pct", "target_rebook_pct"] as const;
+
 function TargetsForm({ s, onSaved }: { s: AnalyticsData["settings"]; onSaved: () => void }) {
   const toast = useToast(); const online = useOnline();
   const [f, setF] = useState(Object.fromEntries(Object.entries(s).map(([k, v]) => [k, String(v)])) as Record<keyof typeof s, string>);
-  const fields: [keyof typeof s, string][] = [
-    ["revenue_target_monthly", "Target omzet bersih per bulan (Rp)"],
-    ["aov_target_barbershop", "Target AOV barbershop (Rp)"], ["aov_target_massage", "Target AOV pijat (Rp; 0 = belum ada)"], ["aov_target_nail", "Target AOV nail (Rp)"],
-    ["retail_ratio_min", "Rasio ritel minimum (%)"], ["retail_ratio_max", "Rasio ritel maksimum (%)"], ["utilization_target", "Target utilisasi (%)"],
-    ["target_cuts_senkam", "Potong per hari Senin–Kamis"], ["target_cuts_weekend_max", "Batas nyaman potong per hari Jumat–Minggu"],
-    ["target_upgrade_pct", "Potong yang naik paket (%)"], ["target_customer_pct", "Transaksi dengan pelanggan (%)"],
-    ["target_cuts_weekly", "Potong per minggu (Rencana & Target)"], ["target_returning_weekly", "Pelanggan kembali per minggu"],
-    ["target_new_weekly", "Pelanggan baru per minggu (0 = tanpa target)"],
-    ["target_rebook_pct", "Pelanggan dibookingkan jadwal berikutnya oleh kasir (%)"],
-    ["insight_aov_gap_pct", "Insight AOV bila di bawah target > (%)"], ["insight_low_util_pct", "Insight resource sepi bila utilisasi < (%)"],
-    ["kpi_min_tx_for_stable", "Catatan \"data masih sedikit\" di bawah (transaksi)"],
-  ];
+  const keys = TARGET_GROUPS.flatMap((g) => g.rows.map((r) => r.k));
   async function save() {
-    const row = Object.fromEntries(fields.map(([k]) => [k, Number(f[k].replace(/[^\d.,]/g, "").replace(",", "."))])) as AnalyticsData["settings"];
+    const row = Object.fromEntries(keys.map((k) => [k, Number(f[k].replace(/[^\d.,]/g, "").replace(",", "."))])) as AnalyticsData["settings"];
     if (Object.values(row).some((v) => !Number.isFinite(v) || v < 0)) return toast("Isi semua angka target", "error");
     if (row.retail_ratio_min > row.retail_ratio_max) return toast("Rasio ritel minimum harus ≤ maksimum", "error");
-    const pct = ["retail_ratio_min", "retail_ratio_max", "utilization_target", "target_upgrade_pct", "target_customer_pct", "target_rebook_pct"] as const;
-    if (pct.some((k) => row[k] > 100)) return toast("Target persen maksimal 100%", "error");
+    if (PCT_KEYS.some((k) => row[k] > 100)) return toast("Target persen maksimal 100%", "error");
     const { error } = await createClient().from("settings").update(row).eq("id", true);
     if (error) return toast(error.message, "error");
     toast("Target KPI disimpan"); onSaved();
   }
   return (
-    <form id="target" onSubmit={(e) => { e.preventDefault(); save(); }} className="flex scroll-mt-16 flex-col gap-3 rounded-[14px] border border-line bg-card p-4 print:hidden xl:p-5">
-      <h2 className="font-display text-lg font-bold">Target KPI</h2>
-      <div className="grid gap-3 min-[820px]:grid-cols-4">
-        {fields.map(([k, l]) => <Field key={k} label={l} htmlFor={`tg-${k}`}><Input id={`tg-${k}`} inputMode="decimal" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })} /></Field>)}
+    <form id="target" onSubmit={(e) => { e.preventDefault(); save(); }} className="flex scroll-mt-16 flex-col gap-4 print:hidden">
+      <div>
+        <h2 className="font-display text-lg font-semibold">Target KPI</h2>
+        <p className="text-sm text-muted">Angka acuan untuk menilai kinerja di halaman Rencana &amp; Target dan Analitik. Ubah bila strategi studio berubah.</p>
       </div>
-      <Button disabled={!online} className="h-11 self-start">Simpan target</Button>
+      {TARGET_GROUPS.map((g) => (
+        <fieldset key={g.title} className="overflow-hidden rounded-3xl border border-line bg-card">
+          <legend className="sr-only">{g.title}</legend>
+          <div aria-hidden="true" className="border-b border-line px-6 py-4">
+            <div className="font-display text-base font-semibold">{g.title}</div>
+            {g.note && <p className="mt-0.5 text-sm text-muted">{g.note}</p>}
+          </div>
+          {g.rows.map((r) => {
+            const rp = r.unit === "Rp";
+            const raw = f[r.k] ?? "";
+            return (
+              <div key={r.k} className="grid gap-2 border-b border-line px-6 py-4 last:border-0 md:grid-cols-[minmax(0,1fr)_240px] md:items-center md:gap-6">
+                <div>
+                  <label htmlFor={`tg-${r.k}`} className="text-sm font-medium">{r.title}</label>
+                  <p className="mt-0.5 text-xs text-muted">{r.hint}</p>
+                </div>
+                <div className="relative">
+                  {rp && <span aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-muted">Rp</span>}
+                  <Input id={`tg-${r.k}`} inputMode={rp ? "numeric" : "decimal"} autoComplete="off" className={rp ? "pl-10 tabular" : "pr-24 tabular"}
+                    value={rp && raw ? Number(raw.replace(/\D/g, "") || 0).toLocaleString("id-ID") : raw}
+                    onChange={(e) => setF({ ...f, [r.k]: rp ? e.target.value.replace(/\D/g, "") : e.target.value })} />
+                  {!rp && <span aria-hidden="true" className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-muted">{r.unit}</span>}
+                </div>
+              </div>
+            );
+          })}
+        </fieldset>
+      ))}
+      <div className="sticky bottom-3 z-10 flex items-center gap-3 rounded-2xl border border-line bg-card px-4 py-3 shadow-[0_8px_24px_rgba(29,30,32,0.10)]">
+        <Button disabled={!online} className="h-11">Simpan target</Button>
+        <span className="text-xs text-muted">Perubahan langsung dipakai di semua halaman setelah disimpan.</span>
+      </div>
     </form>
   );
 }

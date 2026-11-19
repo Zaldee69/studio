@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { formatRupiah, jktDate } from "../src/lib/domain/format";
 import { formatUnitCost, newUnitCost } from "../src/lib/domain/inventory";
-import { admin, apiAs, login, newSession, allowNoCustomer } from "./helpers";
+import { admin, apiAs, login, newSession, allowNoCustomer, pilih } from "./helpers";
 
 // Tahap 4 — Inventaris & HPP · SDM & Komisi (E1–E6). Data disiapkan lewat API (kasir asli / service role),
 // dicek lewat layar manajer. Tiap tes membersihkan jejaknya supaya proyek viewport berikutnya mulai bersih.
@@ -49,12 +49,12 @@ test("E1 · stok masuk 1.000 ml krim @135 → harga pokok rata-rata → HPP Hair
   await login(page, "manager");
   await page.goto("/manajer/inventaris");
   await page.getByRole("button", { name: "+ Stok masuk" }).first().click();
-  await page.selectOption("#si-item", krim.id);
+  await pilih(page.locator("#si-item"), krim.id);
   await page.fill("#si-qty", "1000");
   await page.fill("#si-price", "135");
   await expect(page.getByRole("dialog", { name: "Stok masuk" }).getByRole("status")).toContainText(`harga pokok ${formatUnitCost(krim.cost)} → ${formatUnitCost(expected)}`);
   await expect(page.getByRole("button", { name: "Simpan stok masuk" })).toBeDisabled(); // sumber dana wajib
-  await page.selectOption("#si-paid", "transfer"); // rekening bank (dana QRIS)
+  await pilih(page.locator("#si-paid"), "transfer"); // rekening bank (dana QRIS)
   await page.getByRole("button", { name: "Simpan stok masuk" }).click();
   await expect(toast(page, "Stok Krim hair spa +1.000 ml")).toBeVisible();
   await expect.poll(async () => (await item("Krim hair spa")).cost).toBe(expected);
@@ -112,7 +112,7 @@ test("E3 · opname HPP: kasir mengisi separuh di tablet → manajer melanjutkan 
   await cancelDrafts();
   await login(page, "cashier");
   await page.goto("/kasir/opname");
-  await page.selectOption("#op-scope", "consumable");
+  await pilih(page.locator("#op-scope"), "consumable");
   await page.getByRole("button", { name: "Mulai opname" }).click();
   await page.waitForURL(/\/kasir\/opname\/[0-9a-f-]{36}$/);
   const id = page.url().split("/").pop()!;
@@ -186,7 +186,7 @@ test("E5 · komisi bundle → bonus Andi → tutup periode → slip dibayar → 
     await page.getByRole("button", { name: /^Andi/ }).click();
     const drawer = page.getByRole("dialog", { name: "Detail staf" });
     await expect(drawer).toContainText(`Potong Rambut${formatRupiah(andi)}`);
-    await page.selectOption("#pa-kind", "bonus");
+    await pilih(page.locator("#pa-kind"), "bonus");
     await page.fill("#pa-amount", "100000");
     await page.fill("#pa-reason", "Target tercapai");
     await page.getByRole("button", { name: "Tambah bonus/potongan" }).click();
@@ -257,7 +257,7 @@ test("E6 · kasir menambah Hair Spa dari saran upsell → tingkat upsell Rizky d
   await login(page, "cashier");
   await page.goto("/kasir/kasir");
   await page.getByRole("button", { name: /^Tambah Potong Rambut/ }).click();
-  await page.getByLabel("Capster untuk Potong Rambut").selectOption({ label: "Rizky" });
+  await pilih(page.getByLabel("Capster untuk Potong Rambut"), { label: "Rizky" });
   await page.getByRole("button", { name: "Tambah", exact: true }).click(); // saran upsell: Hair Spa
   await expect(page.getByLabel("Capster untuk Hair Spa")).toHaveValue(STAFF.rizky);
   await allowNoCustomer(page);

@@ -57,7 +57,7 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
       <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4 p-6">
         <div className="flex items-start gap-3">
           <div className="flex flex-1 flex-col gap-1">
-            <h2 className="font-display text-2xl font-bold">Top-up deposit</h2>
+            <h2 className="font-display text-2xl font-semibold">Top-up deposit</h2>
             <span className="text-[13px] text-muted tabular">{customer.name} · saldo sekarang {formatRupiah(balance)}</span>
           </div>
           <CloseButton onClick={onClose} />
@@ -65,10 +65,10 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
         <div className="flex flex-col gap-2">
           {packs.map((x) => (
             <button type="button" key={x.id} aria-pressed={pack === x.id} onClick={() => setPack(pack === x.id ? null : x.id)}
-              className={`flex min-h-[52px] items-center justify-between rounded-[10px] border-2 px-3.5 text-sm tabular ${pack === x.id ? "border-ink bg-paper" : "border-line bg-card"}`}>
+              className={`flex min-h-[52px] items-center justify-between rounded-[14px] border-2 px-3.5 text-sm tabular ${pack === x.id ? "border-accent bg-paper" : "border-line bg-card"}`}>
               <span><b>{x.name}</b> · Bayar <b>{formatRupiah(x.amount_paid)}</b></span>
               <span>Saldo <b>{formatRupiah(x.amount_credited)}</b>{" "}
-                <span className="text-xs font-bold text-[#1F7A45]">+{formatRupiah(x.amount_credited - x.amount_paid)}</span></span>
+                <span className="text-xs font-semibold text-[#1F7A45]">+{formatRupiah(x.amount_credited - x.amount_paid)}</span></span>
             </button>
           ))}
         </div>
@@ -85,20 +85,20 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
         <div role="radiogroup" aria-label="Metode" className="grid grid-cols-3 gap-2">
           {([["cash", "Tunai"], ["qris", "QRIS"], ["transfer", "Transfer"]] as const).map(([v, l]) => (
             <button type="button" role="radio" aria-checked={method === v} key={v} onClick={() => setMethod(v)}
-              className={`h-11 rounded-[10px] border-2 text-sm font-bold ${method === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
+              className={`h-11 rounded-[14px] border text-sm font-medium ${method === v ? "border-accent bg-accent-soft text-accent" : "border-line bg-card"}`}>{l}</button>
           ))}
         </div>
         {method !== "cash" && (
-          <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3">
-                  <label htmlFor="tp-qris-ref" className="text-[13px] font-bold">No. referensi {method === "transfer" ? "transfer" : "QRIS"}</label>
+          <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3">
+                  <label htmlFor="tp-qris-ref" className="text-[13px] font-semibold">No. referensi {method === "transfer" ? "transfer" : "QRIS"}</label>
                   <Input id="tp-qris-ref" autoComplete="off" className="h-11 uppercase tabular placeholder:normal-case" placeholder="mis. 4 digit terakhir No. Ref"
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
                 </div>
         )}
-        {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
+        {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
         <div className="flex justify-end gap-2.5">
-          <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
+          <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[14px]">Batal</Button>
           <Button disabled={saving || !online} className="h-12 px-6">
             {saving ? "Menyimpan…" : `Simpan top-up · ${formatRupiah(amountPaid)}`}
           </Button>

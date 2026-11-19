@@ -10,7 +10,7 @@ export function RouteTabs({ tabs, label }: { tabs: readonly (readonly [string, s
     <nav aria-label={label} className="flex gap-1 overflow-x-auto border-b border-line print:hidden">
       {tabs.map(([href, l]) => (
         <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-          className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-semibold aria-[current=page]:text-accent">
+          className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm text-muted aria-[current=page]:border-accent aria-[current=page]:font-medium aria-[current=page]:text-accent">
           {l}
         </Link>
       ))}

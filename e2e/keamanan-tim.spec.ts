@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, PW, SB, sql, svcKey, uniq } from "./helpers";
+import { login, PW, SB, sql, svcKey, uniq, pilih } from "./helpers";
 
 const code = () => sql<{ c: string }>("select invite_code as c from settings")[0].c;
 /** Pendaftar tim lewat API admin Auth (alur form & email diuji di keamanan.spec). */
@@ -38,7 +38,7 @@ test("hapus akun tim yang punya riwayat → dikunci, riwayat tetap", async ({ pa
   sql(`insert into transactions (subtotal, total, paid_amount, payment_method, cashier_id, created_at) values (1000, 1000, 1000, 'cash', '${id}', now() - interval '400 days')`);
   await login(page, "manager");
   await page.goto("/manajer/pengaturan?tab=akun");
-  await page.getByLabel("Hapus akun tim").selectOption({ label: `${name} · ${email}` });
+  await pilih(page.getByLabel("Hapus akun tim"), { label: `${name} · ${email}` });
   await page.getByRole("button", { name: "Hapus akun" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Hapus akun" }).click();
   await expect(page.getByText(/dikunci permanen/)).toBeVisible();

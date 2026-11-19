@@ -1,6 +1,6 @@
-import { DateInput } from "@/components/date-input";
+import { RencanaHeader } from "@/components/rencana-header";
+import { DateRangeInput } from "@/components/date-range-input";
 import { Button } from "@/components/ui/button";
-import { RouteTabs, RENCANA_TABS } from "@/components/route-tabs";
 import Link from "next/link";
 import { CUSTOMER_SOURCES } from "@/lib/domain/customer";
 import { formatRupiah, formatTanggal, jktDate } from "@/lib/domain/format";
@@ -28,9 +28,9 @@ const pct = (n: number, d: number) => (d ? `${Math.round((n * 100) / d)}%` : "â€
 
 function Card({ label, value, note, ok }: { label: string; value: string; note: string; ok?: boolean | null }) {
   return (
-    <div className="flex flex-col gap-1 rounded-2xl border border-line bg-card p-4">
-      <span className="text-xs text-muted">{label}</span>
-      <b className={`font-display text-3xl tabular ${ok == null ? "" : ok ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{value}</b>
+    <div className="flex flex-col gap-1.5 rounded-3xl border border-line bg-card p-5">
+      <span className="text-sm text-muted">{label}</span>
+      <b className={`font-display text-[28px] font-semibold leading-none tabular ${ok == null ? "" : ok ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{value}</b>
       <span className="text-xs text-muted">{note}</span>
     </div>
   );
@@ -38,12 +38,16 @@ function Card({ label, value, note, ok }: { label: string; value: string; note: 
 
 function Table({ title, head, rows, empty }: { title: string; head: string[]; rows: React.ReactNode[][]; empty: string }) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="font-display text-lg font-semibold">{title}</h2>
+    <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-6">
+      {(() => { const m = title.match(/^(.*?) \((.*)\)$/); return (
+        <div className="flex flex-col gap-0.5">
+          <h2 className="font-display text-lg font-semibold">{m ? m[1] : title}</h2>
+          {m && <p className="text-sm text-muted">{m[2]}</p>}
+        </div>); })()}
       {rows.length ? (
-        <div className="overflow-x-auto rounded-2xl border border-line bg-card px-4">
+        <div className="overflow-x-auto">
           <table className="w-full min-w-[420px] text-sm tabular">
-            <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2 font-semibold ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+            <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-line">{r.map((c, j) => <td key={j} className={`py-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
           </table>
         </div>
@@ -70,16 +74,13 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
   const tx = (r?.weekly ?? []).reduce((a, w) => ({ n: a.n + w.tx, wc: a.wc + w.with_customer }), { n: 0, wc: 0 });
 
   return (
-    <div className="flex flex-col gap-6">
-      <RouteTabs tabs={RENCANA_TABS} label="Bagian rencana & target" />
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-1 flex-col gap-1">
-          <h1 className="font-display text-3xl font-bold">Laporan campaign</h1>
-        </div>
-        <form className="flex flex-wrap items-end gap-2">
-          <label className="flex flex-col text-xs text-muted">Dari<DateInput name="dari" defaultValue={from} max={today} className="h-11 w-40" /></label>
-          <label className="flex flex-col text-xs text-muted">Sampai<DateInput name="sampai" defaultValue={to} max={today} className="h-11 w-40" /></label>
-          <Button className="h-11 px-5">Tampilkan</Button>
+    <div className="flex flex-col gap-5">
+      <RencanaHeader />
+      <div className="flex flex-wrap items-center gap-3">
+        <h2 className="mr-auto font-display text-lg font-semibold">Laporan campaign</h2>
+        <form className="flex flex-wrap items-center gap-2">
+          <DateRangeInput nameFrom="dari" nameTo="sampai" aria-label="Periode" defaultValue={{ from, to }} max={today} className="h-11 w-72" />
+          <Button variant="outline" className="h-11 px-5">Tampilkan</Button>
         </form>
       </div>
       {error || !r || !c ? <p role="alert" className="text-sm text-[#A12A2A]">{error?.message ?? "Laporan tidak tersedia."}</p> : (
@@ -101,7 +102,7 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
             rows={r.new_customers.map((x) => [SRC[x.source] ?? x.source, x.n])} empty="Belum ada pelanggan baru." />
           <Table title="Pengunjung website per sumber" head={["Sumber", "Kunjungan", "Booking", "Konversi"]}
             rows={r.web.map((x) => [SRC[x.source] ?? x.source, x.visits, x.booked, pct(x.booked, x.visits)])} empty="Belum ada kunjungan tercatat." />
-          <p className="text-xs text-muted">
+          <p className="rounded-2xl border border-line bg-card px-4 py-3 text-xs leading-relaxed text-muted">
             Supaya sumber website terbaca jelas, pakai tautan bertanda: bio Instagram <b>dprasstudio.com/?src=ig</b>, Google Business <b>dprasstudio.com/?src=maps</b>,
             blast WhatsApp <b>dprasstudio.com/?src=wa</b> (tautan langsung ke /booking?src=â€¦ juga tercatat). Kunjungan sebelum fitur ini aktif tercatat &quot;Tidak diketahui&quot;.
           </p>

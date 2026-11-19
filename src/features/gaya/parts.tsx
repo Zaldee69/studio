@@ -35,7 +35,7 @@ export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
   const showPreview = view === "preview" && preview?.state === "done";
   const img = showPreview ? preview!.image! : rec.reference_images[typeof view === "number" ? view : 0]?.image_url;
   return (
-    <article aria-label={rec.hair_style_name} className={`flex flex-col overflow-hidden rounded-[14px] border bg-card ${big && rec.rank === 1 ? "border-ink" : "border-line"}`}>
+    <article aria-label={rec.hair_style_name} className={`flex flex-col overflow-hidden rounded-[14px] border bg-card ${big && rec.rank === 1 ? "border-accent" : "border-line"}`}>
       <div className="relative aspect-[2/3] max-h-[62vh] w-full bg-paper">
         {view === "preview" && preview?.state === "loading" ? (
           <div className="flex size-full flex-col items-center justify-center gap-3 p-4 text-center text-xs text-muted" aria-busy="true">
@@ -46,21 +46,21 @@ export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
           /* eslint-disable-next-line @next/next/no-img-element -- data URL pratinjau / foto katalog */
           <img src={img} alt={showPreview ? `Pratinjau pelanggan dengan ${rec.hair_style_name}` : `Contoh ${rec.hair_style_name}`} className="size-full object-cover" />
         ) : null}
-        {big && rec.rank === 1 && <span className="absolute left-2 top-2 rounded-full bg-ink px-2.5 py-1 text-[11px] font-bold text-white">★ Paling cocok</span>}
-        <span className="absolute bottom-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold text-white">{showPreview ? "Pratinjau" : "Contoh model"}</span>
+        {big && rec.rank === 1 && <span className="absolute left-2 top-2 rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-white">★ Paling cocok</span>}
+        <span className="absolute bottom-2 left-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white">{showPreview ? "Pratinjau" : "Contoh model"}</span>
       </div>
       <div className="flex flex-wrap gap-1.5 px-3 pt-2.5">
         {(preview?.state === "done" || preview?.state === "loading") && (
-          <button type="button" aria-pressed={view === "preview"} onClick={() => setView("preview")} className={`h-8 rounded-full border px-2.5 text-xs font-bold ${view === "preview" ? "border-ink bg-ink text-white" : "border-line"}`}>Pratinjau</button>
+          <button type="button" aria-pressed={view === "preview"} onClick={() => setView("preview")} className={`h-8 rounded-full border px-2.5 text-xs font-semibold ${view === "preview" ? "border-accent bg-accent text-white" : "border-line"}`}>Pratinjau</button>
         )}
         {rec.reference_images.map((r, i) => (
           <button key={r.image_id} type="button" aria-pressed={view === i} onClick={() => setView(i)}
-            className={`h-8 rounded-full border px-2.5 text-xs font-bold ${view === i ? "border-ink bg-ink text-white" : "border-line"}`}>
+            className={`h-8 rounded-full border px-2.5 text-xs font-semibold ${view === i ? "border-accent bg-accent text-white" : "border-line"}`}>
             {r.view === "front" ? "Depan" : r.view === "side" ? "Samping" : r.view === "back" ? "Belakang" : "Contoh"}
           </button>
         ))}
         {onPreview && (!preview || preview.state === "error") && (
-          <button type="button" onClick={() => { setView("preview"); onPreview(); }} className="h-8 rounded-full border border-dashed border-ink px-2.5 text-xs font-bold">
+          <button type="button" onClick={() => { setView("preview"); onPreview(); }} className="h-8 rounded-full border border-dashed border-accent px-2.5 text-xs font-semibold">
             {preview?.state === "error" ? "Coba pratinjau lagi" : "Buat pratinjau"}
           </button>
         )}
@@ -69,8 +69,8 @@ export function StyleCard({ rec, big = false, preview, onPreview, onUse }: {
       <div className="flex flex-1 flex-col gap-1.5 p-3">
         <b className={big ? "font-display text-lg" : "text-sm"}>{rec.hair_style_name}</b>
         {rec.insight && <p className={`${big ? "text-sm" : "text-xs"} leading-relaxed`}>{rec.insight}</p>}
-        {rec.barber_note && <p className="rounded-lg bg-paper px-2.5 py-2 text-xs"><b>Catatan capster:</b> {rec.barber_note}</p>}
-        {onUse && <Button type="button" onClick={onUse} className="mt-auto h-10 rounded-[10px] text-sm">Pakai gaya ini</Button>}
+        {rec.barber_note && <p className="rounded-[14px] bg-paper px-2.5 py-2 text-xs"><b>Catatan capster:</b> {rec.barber_note}</p>}
+        {onUse && <Button variant="outline" type="button" onClick={onUse} className="mt-auto h-10 rounded-[14px] text-sm">Pakai gaya ini</Button>}
       </div>
     </article>
   );
@@ -99,23 +99,23 @@ export function RecordSheet({ pick, appointmentId, onClose, onSaved }: { pick: P
     <Sheet open onClose={onClose} label="Catat potongan" width={480}>
       <div className="flex flex-col gap-4 p-5">
         <div className="flex items-center gap-3">
-          <h2 className="flex-1 font-display text-xl font-bold">Catat potongan · {pick.name}</h2>
+          <h2 className="flex-1 font-display text-xl font-semibold">Catat potongan · {pick.name}</h2>
           <CloseButton onClick={onClose} />
         </div>
         <Field label="Detail potongan" htmlFor="cut-notes" hint="Mis. sisi guard 1, fade rendah, atas ±5 cm. Muncul paling atas di kunjungan berikutnya.">
           <Textarea id="cut-notes" rows={3} className="py-2.5" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </Field>
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="mb-1 text-xs font-bold text-muted">Reaksi pelanggan</legend>
+          <legend className="mb-1 text-xs font-semibold text-muted">Reaksi pelanggan</legend>
           <div className="grid grid-cols-3 gap-2">
             {(Object.entries(REACTION) as [keyof typeof REACTION, string][]).map(([k, l]) => (
               <button key={k} type="button" role="radio" aria-checked={reaction === k} onClick={() => setReaction(k)}
-                className={`h-11 rounded-[10px] border-2 text-sm font-bold ${reaction === k ? "border-ink bg-ink text-white" : "border-line"}`}>{l}</button>
+                className={`h-11 rounded-[14px] border-2 text-sm font-semibold ${reaction === k ? "border-accent bg-accent text-white" : "border-line"}`}>{l}</button>
             ))}
           </div>
         </fieldset>
         {pick.preview && (
-          <label className="flex items-start gap-3 rounded-[10px] bg-paper p-3 text-sm">
+          <label className="flex items-start gap-3 rounded-[14px] bg-paper p-3 text-sm">
             <Checkbox className="mt-0.5 size-5 shrink-0" checked={savePreview} onCheckedChange={(v) => setSavePreview(v === true)} />
             <span>Simpan pratinjau di profil pelanggan. <span className="text-muted">Hanya bila pelanggan setuju; terhapus otomatis setelah 6 bulan.</span></span>
           </label>
@@ -154,22 +154,22 @@ export function CutList({ cuts, onRepeat }: { cuts: (CutRow & { previewUrl: stri
   const [last, ...older] = cuts;
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex gap-3 rounded-[12px] border border-ink p-3">
+      <div className="flex gap-3 rounded-[14px] border border-accent p-3">
         {last.previewUrl && (
           // eslint-disable-next-line @next/next/no-img-element -- signed URL privat
-          <img src={last.previewUrl} alt={`Pratinjau ${last.style_name}`} className="h-28 w-20 shrink-0 rounded-lg object-cover" />
+          <img src={last.previewUrl} alt={`Pratinjau ${last.style_name}`} className="h-28 w-20 shrink-0 rounded-[14px] object-cover" />
         )}
         <div className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
-          <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Terakhir · {daysAgo(last.created_at)}{last.staff ? ` · ${last.staff.name}` : ""}</span>
+          <span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted">Terakhir · {daysAgo(last.created_at)}{last.staff ? ` · ${last.staff.name}` : ""}</span>
           <b className="font-display text-lg">{last.style_name}</b>
           {last.notes && <p>{last.notes}</p>}
-          <span className={`self-start rounded-full px-2 py-0.5 text-xs font-bold ${last.reaction === "kurang" ? "bg-[#F9E6E6] text-[#6E1616]" : last.reaction === "biasa" ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#E6F1E4] text-[#144D2A]"}`}>Pelanggan: {REACTION[last.reaction]}</span>
-          {onRepeat && <Button type="button" onClick={() => onRepeat({ code: last.hairstyle?.code ?? null, name: last.style_name, notes: last.notes })}
-            className="mt-1 h-10 self-start rounded-[10px] px-4 text-sm">Ulangi potongan ini</Button>}
+          <span className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold ${last.reaction === "kurang" ? "bg-[#F9E6E6] text-[#6E1616]" : last.reaction === "biasa" ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-[#E6F1E4] text-[#144D2A]"}`}>Pelanggan: {REACTION[last.reaction]}</span>
+          {onRepeat && <Button variant="outline" type="button" onClick={() => onRepeat({ code: last.hairstyle?.code ?? null, name: last.style_name, notes: last.notes })}
+            className="mt-1 h-10 self-start rounded-[14px] px-4 text-sm">Ulangi potongan ini</Button>}
         </div>
       </div>
       {older.map((c) => (
-        <div key={c.id} className="flex justify-between gap-3 border-t border-[#EEEEEA] pt-2 text-sm">
+        <div key={c.id} className="flex justify-between gap-3 border-t border-[#EFEAEF] pt-2 text-sm">
           <span className="min-w-0"><b>{c.style_name}</b>{c.notes && <span className="block truncate text-xs text-muted">{c.notes}</span>}</span>
           <span className="shrink-0 text-xs text-muted">{daysAgo(c.created_at)} · {REACTION[c.reaction]}</span>
         </div>

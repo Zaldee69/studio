@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { card, login, newSession, randomWa, slotHour, uniq, allowNoCustomer } from "./helpers";
+import { card, login, newSession, randomWa, slotHour, uniq, allowNoCustomer, pilih } from "./helpers";
 
 const row = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(name) }).filter({ hasText: name });
 
@@ -12,9 +12,9 @@ test("1 · kasir booking untuk Sari → muncul di HP Sari → Datang/Mulai/Seles
 
   await kasir.goto("/kasir/jadwal");
   await kasir.getByRole("button", { name: `Booking baru Meja Manicure 3 ${h}:00` }).click();
-  await kasir.fill("#f-wa", randomWa()); await kasir.fill("#f-name", name); await kasir.selectOption("#f-src", "lewat"); // tanpa WA = walk-in tanpa nama
+  await kasir.fill("#f-wa", randomWa()); await kasir.fill("#f-name", name); await pilih(kasir.locator("#f-src"), "lewat"); // tanpa WA = walk-in tanpa nama
   await kasir.getByRole("button", { name: /^Manicure Basic ·/ }).click();
-  await kasir.selectOption("#f-staff", { label: "Sari" });
+  await pilih(kasir.locator("#f-staff"), { label: "Sari" });
   await kasir.getByRole("button", { name: "Simpan booking" }).click();
   await expect(card(kasir, name)).toBeVisible();
 
@@ -84,7 +84,7 @@ test("3 · Andi ajukan izin besok → manajer setujui → peringatan di form boo
   await mgr.getByRole("button", { name: "Booking baru Kursi Barber 3 10:00" }).click();
   await mgr.getByRole("button", { name: /^Potong Rambut ·/ }).click();
   await expect(mgr.locator("#f-staff")).not.toHaveValue(/0001-000000000001$/); // default melewati Andi
-  await mgr.selectOption("#f-staff", { label: "Andi (izin)" });
+  await pilih(mgr.locator("#f-staff"), { label: "Andi (izin)" });
   await expect(mgr.getByRole("dialog").getByRole("alert").filter({ hasText: "Andi sedang izin/cuti" })).toBeVisible();
   await mgr.context().close();
 

@@ -52,10 +52,10 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
   }
 
   return (
-    <section aria-labelledby="mfa-h" className="max-w-xl space-y-4 rounded-2xl border border-line bg-card p-6">
-      <h2 id="mfa-h" className="font-display text-xl font-bold">Verifikasi 2 langkah</h2>
+    <section aria-labelledby="mfa-h" className="max-w-xl space-y-4 rounded-3xl border border-line bg-card p-6">
+      <h2 id="mfa-h" className="font-display text-xl font-semibold">Verifikasi 2 langkah</h2>
       {required && active === null && (
-        <p role="alert" className="rounded-lg bg-[#FBF3DE] p-3 text-sm text-[#5A4300]">
+        <p role="alert" className="rounded-[14px] bg-[#FBF3DE] p-3 text-sm text-[#5A4300]">
           <b>Wajib untuk manajer.</b> Aktifkan verifikasi 2 langkah dulu — halaman manajer lain terkunci sampai ini selesai.
         </p>
       )}
@@ -65,14 +65,14 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
       </p>
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-bold text-[#144D2A]">Aktif</span>
+          <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-semibold text-[#144D2A]">Aktif</span>
           {!required && <Button onClick={disable} variant="outline" className="h-11">Matikan</Button>}
         </div>
       ) : enroll ? (
         <form onSubmit={verify} className="space-y-3">
           <p className="text-sm">1. Pindai kode QR ini dengan aplikasi autentikator (Google Authenticator, Microsoft Authenticator, 1Password…).</p>
           {/* eslint-disable-next-line @next/next/no-img-element -- data URI SVG dari Supabase */}
-          <img src={enroll.qr} alt="Kode QR verifikasi 2 langkah" width={180} height={180} className="rounded-lg border border-line bg-white p-2" />
+          <img src={enroll.qr} alt="Kode QR verifikasi 2 langkah" width={180} height={180} className="rounded-[14px] border border-line bg-white p-2" />
           <p className="text-xs text-muted">Tidak bisa memindai? Masukkan kunci manual: <code className="select-all break-all font-mono">{enroll.secret}</code></p>
           <Label htmlFor="mfa-verify" className="mb-1">2. Masukkan 6 digit kode dari aplikasi</Label>
           <div className="flex gap-2">

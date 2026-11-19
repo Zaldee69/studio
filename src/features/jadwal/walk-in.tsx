@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { CloseButton, Field, useOnline, useToast } from "@/components/ui";
-import { CAT_NAME, CAT_TONE } from "@/lib/domain/category";
+import { CAT_NAME } from "@/lib/domain/category";
 import { formatJam, formatRupiah } from "@/lib/domain/format";
 import { findConflicts } from "@/lib/domain/schedule";
 import { createClient } from "@/lib/supabase/client";
@@ -84,14 +84,14 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
   }
 
   return (
-    <div className="flex flex-col gap-4 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div><h2 className="font-display text-2xl font-bold">Walk-in sekarang</h2><p className="text-sm text-muted">Mulai dilayani saat ini · {formatJam(new Date())}</p></div>
+    <div className="flex flex-col gap-5 px-6">
+      <div className="sticky top-0 z-10 -mx-6 flex items-start justify-between gap-3 border-b border-line bg-card px-6 py-4">
+        <div><h2 className="font-display text-xl font-medium">Walk-in sekarang</h2><p className="text-sm text-muted">Mulai dilayani saat ini · {formatJam(new Date())}</p></div>
         <CloseButton onClick={onClose} />
       </div>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-xs font-bold text-muted">Dilayani oleh</legend>
+        <legend className="mb-1 text-sm font-medium">Dilayani oleh</legend>
         <div className="grid grid-cols-2 gap-2 min-[560px]:grid-cols-3">
           {staff.map((s) => {
             const on = s.id === staffId;
@@ -99,10 +99,10 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
             return (
               <button key={s.id} type="button" role="radio" aria-checked={on} disabled={s.now.off}
                 onClick={() => { setStaffPick(s.id); if (s.category !== cat) setSel([]); setConflicts(null); }}
-                className={`flex min-h-14 flex-col items-start justify-center rounded-xl border-2 px-3 text-left disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>
+                className={`flex min-h-14 flex-col items-start justify-center rounded-[14px] border px-3 text-left disabled:opacity-40 ${on ? "border-accent bg-accent-soft" : "border-line bg-card hover:bg-paper"}`}>
                 <span className="flex items-center gap-1.5"><b className="text-sm">{s.name}</b>
-                  {turn[s.category] === s.id && <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${on ? "bg-white/20" : "bg-[#E6F1E4] text-[#144D2A]"}`}>Giliran</span>}</span>
-                <span className={`text-xs ${on ? "text-white/80" : s.now.free ? "text-[#1F7A45]" : "text-muted"}`}>{CAT_NAME[s.category]} · {note}</span>
+                  {turn[s.category] === s.id && <span className="rounded-full bg-card px-2 py-0.5 text-[11px] font-medium text-accent ring-1 ring-accent/30">Giliran</span>}</span>
+                <span className="text-xs text-muted">{CAT_NAME[s.category]} · {note}</span>
               </button>
             );
           })}
@@ -114,14 +114,14 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
 
       {cat && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-xs font-bold" style={{ color: CAT_TONE[cat].fg }}>Layanan {CAT_NAME[cat]}</legend>
+          <legend className="mb-1 text-sm font-medium">Layanan {CAT_NAME[cat]}</legend>
           <div className="flex flex-wrap gap-2">
             {services.map((s) => {
               const on = sel.includes(s.id);
               return (
                 <button key={s.id} type="button" aria-pressed={on} onClick={() => { setStaffPick(staffId); setSel(on ? sel.filter((x) => x !== s.id) : [...sel, s.id]); setConflicts(null); }}
-                  className={`min-h-11 rounded-full border px-3.5 text-sm font-semibold ${on ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>
-                  {s.name} <span className={on ? "text-white/75" : "text-muted"}>· {formatRupiah(s.price)}</span>
+                  className={`min-h-11 rounded-full border px-3.5 text-sm font-medium ${on ? "border-accent bg-accent-soft text-accent" : "border-line bg-card text-ink hover:bg-paper"}`}>
+                  {s.name} <span className="text-muted">· {formatRupiah(s.price)}</span>
                 </button>
               );
             })}
@@ -140,31 +140,33 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
         )}
       </div>
       {!customer && (adding ? (
-        <div className="rounded-xl border border-line">
-          <NewCustomer online={online} onClose={() => setAdding(false)} onSaved={(c) => { setCustomer(c); setAdding(false); toast(`${c.name} ditambahkan`); }} />
+        <div className="rounded-[14px] border border-line">
+          <NewCustomer embedded online={online} onClose={() => setAdding(false)} onSaved={(c) => { setCustomer(c); setAdding(false); toast(`${c.name} ditambahkan`); }} />
         </div>
       ) : (
-        <Button type="button" onClick={() => setAdding(true)} variant="outline" className="h-11 self-start rounded-[10px]">+ Pelanggan baru (dengan no. WA)</Button>
+        <Button type="button" onClick={() => setAdding(true)} variant="outline" className="h-11 self-start rounded-[14px]">+ Pelanggan baru (dengan no. WA)</Button>
       ))}
 
       {conflicts && (
-        <div role="alert" className="flex flex-col gap-2 rounded-[10px] bg-[#F9E6E6] p-3 text-sm text-[#6E1616]">
+        <div role="alert" className="flex flex-col gap-2 rounded-[14px] border border-line bg-paper p-4 text-sm text-ink">
           <b>Masih ada jadwal di jam ini:</b>
           {conflicts.map((c, i) => <span key={i}>{c.customer_name} {formatJam(c.start_at)}–{formatJam(c.end_at)} · {c.resource_name}</span>)}
           {!queueConflict && <span className="text-xs">Kalau pelanggan sebelumnya sudah selesai, tandai Selesai dulu — atau tetap mulai.</span>}
           {queueConflict ? <span className="text-xs">Antrean tidak boleh menimpa booking — pilih capster lain atau tunggu sampai booking itu selesai.</span>
-            : <Button onClick={() => start(true)} disabled={busy || !online} variant="plain" className="self-start rounded-[10px] bg-[#6E1616] px-4 text-white">Tetap mulai</Button>}
+            : <Button onClick={() => start(true)} disabled={busy || !online} variant="outline" className="self-start">Tetap mulai</Button>}
         </div>
       )}
 
+      <div className="sticky bottom-0 z-10 -mx-6 flex flex-col gap-2 border-t border-line bg-paper px-6 py-4">
       {who?.now.current && !conflicts && (
-        <Button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="h-14 rounded-xl text-base">
+        <Button onClick={() => start(false, true)} disabled={!sel.length || busy || !online} className="h-14 rounded-[14px] text-base">
           {busy ? "Menyimpan…" : `Antre · mulai ±${formatJam(new Date(queueStart(appts, who.id, Date.parse(who.now.current.end_at), dur)))} bersama ${who.name}`}
         </Button>
       )}
-      <Button onClick={() => start()} disabled={!sel.length || !who || busy || !online} variant={who?.now.current ? "outline" : "default"} className="h-14 rounded-xl text-base">
+      <Button onClick={() => start()} disabled={!sel.length || !who || busy || !online} variant={who?.now.current ? "outline" : "default"} className="h-14 rounded-[14px] text-base">
         {busy ? "Menyimpan…" : sel.length ? `Mulai dilayani · ${dur} mnt · ${formatRupiah(price)}` : "Pilih layanan"}
       </Button>
+      </div>
     </div>
   );
 }

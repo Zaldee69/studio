@@ -84,24 +84,24 @@ export function HariIni() {
         ))}
       </div>
 
-      {appts === null ? <div className="rounded-[18px] bg-card p-7 text-center text-[15px] text-muted">Memuat…</div>
+      {appts === null ? <div className="rounded-[14px] bg-card p-7 text-center text-[15px] text-muted">Memuat…</div>
         : cur ? <CurrentCard key={cur.id} a={cur} busy={busy || !online} now={now} onAct={() => act(cur)} onRevert={() => revert(cur)} services={services} category={me.category} />
-        : <div className="rounded-[18px] bg-card p-7 text-center text-[15px] text-[#4A4C46]">Tidak ada antrean lagi hari ini.</div>}
+        : <div className="rounded-[14px] bg-card p-7 text-center text-[15px] text-[#4D4A55]">Tidak ada antrean lagi hari ini.</div>}
 
-      <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">
-        <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Semua jadwal saya hari ini</span>
+      <section className="flex flex-col rounded-[14px] bg-card px-4 py-2">
+        <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Semua jadwal saya hari ini</span>
         {!mine.length && <span className="pb-3 text-sm text-muted">Belum ada booking untuk Anda hari ini.</span>}
         {mine.map((a) => {
           const S = STATUS[a.status], on = cur?.id === a.id;
           return (
             <button key={a.id} onClick={() => setSelId(a.id)} aria-pressed={on}
-              className={`flex min-h-[60px] items-center gap-3 border-t border-[#EEEEEA] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
+              className={`flex min-h-[60px] items-center gap-3 border-t border-[#EFEAEF] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
               <b className="w-[52px] shrink-0 text-[15px]">{formatJam(a.start_at)}</b>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="truncate text-[15px]">{a.customer_name ?? "Walk-in"}</b>
                 <span className="truncate text-[13px] text-muted">{a.service_ids.map((id) => services.get(id)?.name).join(", ")}</span>
               </span>
-              <span className="flex items-center gap-1.5 whitespace-nowrap rounded-[10px] px-2.5 py-[3px] text-xs font-bold" style={{ background: S.bg, color: S.fg }}>
+              <span className="flex items-center gap-1.5 whitespace-nowrap rounded-[14px] px-2.5 py-[3px] text-xs font-semibold" style={{ background: S.bg, color: S.fg }}>
                 <span className="size-[7px] rounded-full" style={{ background: S.dot }} />{S.label}
               </span>
             </button>
@@ -123,50 +123,50 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
   const done = a.status === "completed" || a.status === "paid";
 
   return (
-    <section aria-label="Pelanggan saat ini" className="flex flex-col gap-3.5 rounded-[18px] border-2 bg-card p-[18px]"
+    <section aria-label="Pelanggan saat ini" className="flex flex-col gap-3.5 rounded-[14px] border-2 bg-card p-[18px]"
       style={{ borderColor: a.status === "in_service" ? "#E06C1A" : "#FFFFFF" }}>
       <div className="flex flex-wrap items-center gap-2.5">
-        <span className="flex-1 text-xs font-bold uppercase tracking-[0.06em] text-muted">
+        <span className="flex-1 text-xs font-semibold uppercase tracking-[0.06em] text-muted">
           {a.status === "in_service" ? "Sedang dilayani" : done ? "Detail layanan" : "Pelanggan berikutnya"}
         </span>
-        {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[11px] font-bold text-white">Online</span>}
-        <span className="flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs font-bold" style={{ background: S.bg, color: S.fg }}>
+        {a.source === "online" && <span className="rounded bg-accent px-1.5 text-[11px] font-semibold text-white">Online</span>}
+        <span className="flex h-7 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold" style={{ background: S.bg, color: S.fg }}>
           <span className="size-2 rounded-full" style={{ background: S.dot }} />{S.label}
         </span>
       </div>
       <div className="flex flex-col gap-1">
-        <h2 className="font-display text-[28px] font-bold leading-tight tracking-tight">{a.customer_name ?? "Walk-in"}</h2>
-        <span className="text-[15px] text-[#4A4C46] tabular">{formatJam(a.start_at)}–{formatJam(a.end_at)} · {a.resource_name}</span>
+        <h2 className="font-display text-[28px] font-semibold leading-tight tracking-tight">{a.customer_name ?? "Walk-in"}</h2>
+        <span className="text-[15px] text-[#4D4A55] tabular">{formatJam(a.start_at)}–{formatJam(a.end_at)} · {a.resource_name}</span>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {a.service_ids.map((id) => (
-          <span key={id} className="flex h-8 items-center rounded-full bg-paper px-3 text-sm font-semibold">{services.get(id)?.name} · {services.get(id)?.duration_min} mnt</span>
+          <span key={id} className="flex h-8 items-center rounded-full bg-paper px-3 text-sm font-medium">{services.get(id)?.name} · {services.get(id)?.duration_min} mnt</span>
         ))}
       </div>
       {timer && (
-        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-[15px] font-bold tabular ${timer.over ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
+        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-[14px] px-3.5 py-2.5 text-[15px] font-semibold tabular ${timer.over ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
           <span>⏱ {timer.elapsedMin} / {a.duration_min} menit</span>
           {timer.over && <span>Lewat {timer.overBy} mnt</span>}
         </div>
       )}
       {a.customer_notes && (
-        <div className="rounded-xl bg-[#ECEEE8] px-3.5 py-3 text-sm leading-normal text-[#262B24]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
+        <div className="rounded-[14px] bg-[#EFEAEF] px-3.5 py-3 text-sm leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
       )}
-      {a.notes && <div className="rounded-xl bg-paper px-3.5 py-3 text-sm leading-normal"><b>Catatan booking:</b> {a.notes}</div>}
+      {a.notes && <div className="rounded-[14px] bg-paper px-3.5 py-3 text-sm leading-normal"><b>Catatan booking:</b> {a.notes}</div>}
       {a.customer_id && <History customerId={a.customer_id} />}
       {a.customer_id && <PrefEditor customerId={a.customer_id} initial={a.customer_notes ?? ""} category={category} />}
       {category === "barbershop" && (
-        <Link href={`/kapster/gaya?booking=${a.id}`} className={buttonClass("outline", "h-11 rounded-xl")}>Konsultasi gaya & riwayat potongan</Link>
+        <Link href={`/kapster/gaya?booking=${a.id}`} className={buttonClass("outline", "h-11 rounded-[14px]")}>Konsultasi gaya & riwayat potongan</Link>
       )}
 
       {action && (
-        <button onClick={onAct} disabled={busy} className="h-[60px] rounded-[14px] text-[17px] font-bold text-white disabled:opacity-60" style={{ background: action.bg }}>
+        <button onClick={onAct} disabled={busy} className="h-[60px] rounded-[14px] text-[17px] font-semibold text-white disabled:opacity-60" style={{ background: action.bg }}>
           {action.label}
         </button>
       )}
-      {done && <span className="text-[15px] font-semibold text-[#4A4C46]">{a.status === "paid" ? "Lunas ✓" : "Pembayaran diproses kasir."}</span>}
+      {done && <span className="text-[15px] font-medium text-[#4D4A55]">{a.status === "paid" ? "Lunas ✓" : "Pembayaran diproses kasir."}</span>}
       {canRevert && (
-        <button onClick={onRevert} disabled={busy} className="self-start rounded-lg px-2 py-2 text-[13px] font-semibold text-muted underline">Batalkan status terakhir</button>
+        <button onClick={onRevert} disabled={busy} className="self-start rounded-[14px] px-2 py-2 text-[13px] font-medium text-muted underline">Batalkan status terakhir</button>
       )}
     </section>
   );
@@ -182,9 +182,9 @@ function History({ customerId }: { customerId: string }) {
   if (!rows?.length) return null;
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-xs font-bold uppercase tracking-[0.06em] text-muted">Kunjungan sebelumnya dengan Anda</span>
+      <span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted">Kunjungan sebelumnya dengan Anda</span>
       {rows.map((r) => (
-        <span key={r.start_at} className="text-sm text-[#4A4C46]">
+        <span key={r.start_at} className="text-sm text-[#4D4A55]">
           <b className="tabular">{formatTanggal(r.start_at).replace(/^\w+, /, "").replace(/ \d{4}$/, "")}</b> — {r.services}{r.notes && ` · ${r.notes}`}
         </span>
       ))}
@@ -206,9 +206,9 @@ function PrefEditor({ customerId, initial, category }: { customerId: string; ini
   };
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor="st-pref" className="text-[13px] font-bold">Perbarui preferensi ({category === "nail" ? "mis. warna gel, bentuk kuku" : category === "massage" ? "mis. tekanan pijat, area keluhan" : "mis. ukuran clipper, model"})</label>
+      <label htmlFor="st-pref" className="text-[13px] font-semibold">Perbarui preferensi ({category === "nail" ? "mis. warna gel, bentuk kuku" : category === "massage" ? "mis. tekanan pijat, area keluhan" : "mis. ukuran clipper, model"})</label>
       <textarea id="st-pref" rows={2} value={v} onChange={(e) => onChange(e.target.value)}
-        className="resize-y rounded-xl border border-[#DCDCD6] px-3 py-2.5 text-base leading-normal outline-none focus:border-accent" />
+        className="resize-y rounded-[14px] border border-[#DDD7E0] px-3 py-2.5 text-base leading-normal outline-none focus:border-accent" />
       <span className="text-xs text-muted" aria-live="polite">
         {state === "saving" ? "Menyimpan…" : state === "saved" ? "Tersimpan ✓" : state === "error" ? "Gagal menyimpan" : "Tersimpan otomatis"}
       </span>

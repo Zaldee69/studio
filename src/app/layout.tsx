@@ -1,13 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { ConfirmProvider } from "@/components/alert-dialog";
-import { Bricolage_Grotesque, Cormorant_Garamond, Manrope, Plus_Jakarta_Sans } from "next/font/google";
+import { Cormorant_Garamond, DM_Sans, Manrope } from "next/font/google";
 import { SITE_URL } from "@/lib/supabase/public";
 import "./globals.css";
 import { BRAND } from "@/lib/brand";
 
 // ponytail: font aplikasi tim tidak di-preload — halaman publik (Cormorant + Manrope) tidak ikut mengunduhnya lebih dulu
-const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], preload: false });
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], preload: false });
+const dmSans = DM_Sans({ variable: "--font-dm", subsets: ["latin"], preload: false });
 const cormorant = Cormorant_Garamond({ variable: "--font-cormorant", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 // teks publik: Manrope (dokumen brand). Kelas `font-jost` dipertahankan agar halaman publik tidak perlu diubah.
 const manrope = Manrope({ variable: "--font-jost-v", subsets: ["latin"] });
@@ -23,13 +22,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#0D0D0D" };
 
 // dev server yang tersambung ke Supabase cloud (npm run dev:prod) → penanda agar tidak salah mengubah data asli
+// Whitelabel: warna aksen klien, dibekukan saat build (lihat Dockerfile). Hanya hex 3/6 digit yang diterima.
+const ACCENT = /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(process.env.NEXT_PUBLIC_ACCENT ?? "") ? process.env.NEXT_PUBLIC_ACCENT : null;
+
 const PROD_DB_IN_DEV = process.env.NODE_ENV === "development" && !/127\.0\.0\.1|localhost/.test(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id" data-scroll-behavior="smooth" className={`${bricolage.variable} ${jakarta.variable} ${cormorant.variable} ${manrope.variable} h-full antialiased`}>
+    <html lang="id" data-scroll-behavior="smooth" className={`${dmSans.variable} ${cormorant.variable} ${manrope.variable} h-full antialiased`}>
       {/* ekstensi browser (mis. ColorZilla: cz-shortcut-listen) menambah atribut di <body> → bukan mismatch dari kode kita */}
-      <body className="min-h-full" suppressHydrationWarning><ConfirmProvider>{children}</ConfirmProvider>
+      <body className="min-h-full" suppressHydrationWarning>{ACCENT && <style>{`:root{--color-accent:${ACCENT}}`}</style>}<ConfirmProvider>{children}</ConfirmProvider>
         {PROD_DB_IN_DEV && (
           <div role="status" className="pointer-events-none fixed bottom-3 left-3 z-[100] rounded-full bg-[#B42318] px-3.5 py-1.5 text-xs font-bold tracking-wide text-white shadow-lg print:hidden">
             DATABASE PRODUKSI — data asli

@@ -36,19 +36,19 @@ export function HairConsult() {
 
   if (!bookingId) {
     return (
-      <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-5">
-        <h1 className="font-display text-2xl font-bold">Konsultasi gaya</h1>
+      <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+        <h1 className="font-display text-2xl font-medium">Konsultasi gaya</h1>
         <p className="text-sm text-muted">Untuk pelanggan siapa? Riwayat & hasil tersimpan di profil pelanggan.</p>
         {!appts ? <p className="text-sm text-muted">Memuat…</p> : !today.length && <p className="text-sm text-muted">Belum ada booking hari ini.</p>}
         {today.map((a) => (
-          <button key={a.id} onClick={() => setBookingId(a.id)} className="flex min-h-14 items-center gap-3 rounded-[12px] border border-line px-4 text-left hover:bg-paper">
-            <span className="w-12 font-semibold tabular">{formatJam(a.start_at)}</span>
+          <button key={a.id} onClick={() => setBookingId(a.id)} className="flex min-h-14 items-center gap-3 rounded-[14px] border border-line px-4 text-left hover:bg-paper">
+            <span className="w-12 font-medium tabular">{formatJam(a.start_at)}</span>
             <span className="min-w-0 flex-1"><b className="block truncate">{a.customer_name ?? "Walk-in"}</b>
               {!a.customer_id && <span className="text-xs text-muted">tanpa data pelanggan — tidak tersimpan</span>}</span>
-            <span className="rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: STATUS[a.status].bg, color: STATUS[a.status].fg }}>{STATUS[a.status].short}</span>
+            <span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: STATUS[a.status].bg, color: STATUS[a.status].fg }}>{STATUS[a.status].short}</span>
           </button>
         ))}
-        <Button onClick={() => setBookingId("walkin")} variant="outline" className="h-12 rounded-xl">Walk-in tanpa booking (tidak disimpan)</Button>
+        <Button onClick={() => setBookingId("walkin")} variant="outline" className="h-12 rounded-[14px]">Walk-in tanpa booking (tidak disimpan)</Button>
       </section>
     );
   }
@@ -116,25 +116,25 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex items-center gap-3 rounded-[14px] border border-line bg-card p-4">
+      <section className="flex items-center gap-3 rounded-3xl border border-line bg-card p-4">
         {photo && (
           // eslint-disable-next-line @next/next/no-img-element -- blob lokal
           <img src={photo.url} alt="Foto pelanggan" className="size-14 shrink-0 rounded-full object-cover" />
         )}
         <span className="min-w-0 flex-1"><span className="text-xs text-muted">Konsultasi gaya untuk</span><b className="block truncate text-lg">{customerName}</b></span>
-        <Button onClick={onChange} variant="outline" className="h-10 rounded-[10px] px-3 text-sm">Ganti</Button>
+        <Button onClick={onChange} variant="outline" className="h-10 rounded-[14px] px-3 text-sm">Ganti</Button>
       </section>
-      {!canSave && <p className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
+      {!canSave && <p className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
 
       {/* RIWAYAT: pelanggan yang kembali tidak perlu ditanya / dianalisis ulang */}
       {customerId && (
-        <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
-          <h2 className="text-base font-bold">Riwayat gaya</h2>
+        <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
+          <h2 className="text-base font-semibold">Riwayat gaya</h2>
           {!history ? <p className="text-sm text-muted">Memuat…</p> : <CutList cuts={history.cuts} onRepeat={canSave ? setPick : undefined} />}
           {stored?.status === "success" && !live && (
             <div className="flex flex-col gap-3 border-t border-line pt-3">
               <p className="text-sm"><b>Rekomendasi tersimpan</b> <span className="text-muted">· dianalisis {daysAgo(history!.consult!.created_at)}</span></p>
-              {stored.overall_insight && <p className="text-sm text-[#4A4C46]">{stored.overall_insight}</p>}
+              {stored.overall_insight && <p className="text-sm text-[#4D4A55]">{stored.overall_insight}</p>}
               <div className="grid grid-cols-2 gap-3 min-[700px]:grid-cols-3">
                 {[...stored.primary_recommendations, ...stored.alternatives].map((x) => (
                   <StyleCard key={x.hair_style_id} rec={x} onUse={canSave ? () => use(x, null) : undefined} />
@@ -149,34 +149,34 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
       {busy ? (
         <section aria-busy="true" className="flex flex-col items-center gap-4 rounded-[14px] border border-line bg-card p-8 text-center">
           <span className="size-8 animate-spin rounded-full border-[3px] border-line border-t-ink" aria-hidden="true" />
-          <p className="font-semibold">Membaca bentuk wajah & karakter rambut…</p>
+          <p className="font-medium">Membaca bentuk wajah & karakter rambut…</p>
         </section>
       ) : !live && (
-        <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-4">
-          <h2 className="text-base font-bold">{stored?.status === "success" ? "Analisis ulang dari foto" : "Konsultasi dari foto"}</h2>
+        <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
+          <h2 className="text-base font-semibold">{stored?.status === "success" ? "Analisis ulang dari foto" : "Konsultasi dari foto"}</h2>
           {result && result.status !== "success" && (
-            <p role="alert" className="rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">{result.reason} {result.suggestion}</p>
+            <p role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">{result.reason} {result.suggestion}</p>
           )}
           {/* kualitas foto paling menentukan apakah wajah di pratinjau tetap mirip */}
-          <details className="rounded-[10px] border border-line p-3 text-sm" open={!stored}>
-            <summary className="cursor-pointer font-semibold">Tips foto agar wajah di pratinjau tetap mirip</summary>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4A4C46]">
+          <details className="rounded-[14px] border border-line p-3 text-sm" open={!stored}>
+            <summary className="cursor-pointer font-medium">Tips foto agar wajah di pratinjau tetap mirip</summary>
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4D4A55]">
               <li>Capster yang memotret dengan <b>kamera belakang</b>, jarak ±1 meter — bukan selfie dekat.</li>
               <li>Kepala & bahu terlihat, <b>ada ruang di atas kepala</b>; rambut tidak terpotong bingkai.</li>
               <li>Cahaya terang & merata dari depan; hindari ruangan gelap dan kilau minyak di wajah.</li>
               <li>Pelanggan <b>menatap kamera</b>, wajah lurus, ekspresi netral, mulut tertutup.</li>
             </ul>
           </details>
-          <label className="flex items-start gap-3 rounded-[10px] bg-paper p-3.5 text-sm">
+          <label className="flex items-start gap-3 rounded-[14px] bg-paper p-3.5 text-sm">
             <Checkbox className="mt-0.5 size-5 shrink-0" checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
             <span>Pelanggan setuju fotonya dipakai untuk rekomendasi gaya. <span className="text-muted">Foto tidak disimpan.</span></span>
           </label>
-          {error && <p role="alert" className="rounded-[10px] bg-[#F9E6E6] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
+          {error && <p role="alert" className="rounded-[14px] bg-[#F9E6E6] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
           <input ref={camera} type="file" accept="image/*" capture="environment" className="sr-only" aria-label="Ambil foto pelanggan" onChange={(e) => analyze(e.target.files?.[0])} />
           <input ref={gallery} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Pilih foto dari galeri" onChange={(e) => analyze(e.target.files?.[0])} />
           <div className="grid grid-cols-2 gap-2">
-            <Button type="button" disabled={!consent} onClick={() => camera.current?.click()} className="h-14 rounded-xl text-base">Ambil foto</Button>
-            <Button type="button" disabled={!consent} onClick={() => gallery.current?.click()} variant="outline" className="h-14 rounded-xl">Dari galeri</Button>
+            <Button type="button" disabled={!consent} onClick={() => camera.current?.click()} className="h-14 rounded-[14px] text-base">Ambil foto</Button>
+            <Button type="button" disabled={!consent} onClick={() => gallery.current?.click()} variant="outline" className="h-14 rounded-[14px]">Dari galeri</Button>
           </div>
         </section>
       )}
@@ -191,18 +191,18 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
               onPick={canSave ? (rec, col) => setPick({ code: rec.hair_style_id, name: rec.hair_style_name, consultId: live.consult_id, preview: col ?? undefined,
                 notes: catalog.find((s) => s.hair_style_id === rec.hair_style_id)?.cut_notes ?? "" }) : undefined} />
           )}
-          <details className="rounded-[14px] border border-line bg-card p-4 text-sm">
-            <summary className="cursor-pointer font-semibold">Detail analisis</summary>
+          <details className="rounded-3xl border border-line bg-card p-4 text-sm">
+            <summary className="cursor-pointer font-medium">Detail analisis</summary>
             <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
               {([["Bentuk wajah", live.analysis.face_shape], ["Jenis rambut", live.analysis.hair_type], ["Ketebalan", live.analysis.hair_density],
                  ["Panjang sekarang", live.analysis.current_length], ["Dahi", live.analysis.forehead], ["Garis rambut", live.analysis.hairline],
                  ["Arah tumbuh", live.analysis.hair_direction], ["Perawatan cocok", live.analysis.maintenance_level],
                  ["Tekstur", live.analysis.hair_texture], ["Gaya sekarang", live.analysis.current_style]] as const).map(([k, v]) => (
-                <div key={k}><dt className="text-xs text-muted">{k}</dt><dd className="font-semibold">{HAIR_LABEL[v] ?? v}</dd></div>
+                <div key={k}><dt className="text-xs text-muted">{k}</dt><dd className="font-medium">{HAIR_LABEL[v] ?? v}</dd></div>
               ))}
             </dl>
           </details>
-          <Button type="button" onClick={() => { setResult(null); }} variant="outline" className="h-12 rounded-xl">Foto ulang</Button>
+          <Button type="button" onClick={() => { setResult(null); }} variant="outline" className="h-12 rounded-[14px]">Foto ulang</Button>
         </>
       )}
 

@@ -5,15 +5,17 @@ import { Slot } from "radix-ui"
 
 // Disesuaikan dengan tombol aplikasi (btn-ink / btn-ghost / btn-primary / btn-danger): tinggi ≥44px untuk jari di tablet kasir.
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-[10px] border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center gap-2 rounded-[14px] border border-transparent bg-clip-padding text-sm font-semibold whitespace-nowrap transition outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-ink text-white hover:bg-[#353A33] disabled:bg-[#A3A59E]",
+        default: "bg-accent text-white hover:bg-accent-ink disabled:bg-[#bdb8d4]",
         brand: "bg-accent text-white hover:bg-accent-ink",
-        outline: "border-line bg-card text-ink hover:bg-paper aria-expanded:bg-paper",
-        ghost: "text-ink hover:bg-paper aria-expanded:bg-paper",
-        destructive: "text-danger hover:bg-st-completed",
+        // hierarki hPanel: default/brand = aksi utama (satu per konteks), outline = aksi pendukung, soft = penekanan ringan, ghost = teks (batal, tautan aksi)
+        outline: "border-input bg-card text-ink hover:bg-paper aria-expanded:bg-paper",
+        soft: "bg-accent-soft text-accent hover:bg-accent-soft/70",
+        ghost: "text-accent hover:bg-accent-soft aria-expanded:bg-accent-soft",
+        destructive: "border-danger/25 bg-card text-danger hover:bg-st-completed",
         link: "text-ink underline-offset-4 hover:underline",
         // bekas kelas `btn` polos: warna sepenuhnya dari className (mis. tombol hijau "Setujui")
         plain: "",

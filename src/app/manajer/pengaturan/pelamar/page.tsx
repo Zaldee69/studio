@@ -34,8 +34,8 @@ export default async function Pelamar({ searchParams }: PageProps<"/manajer/peng
         const ans = (a.answers ?? {}) as Record<string, string | string[]>;
         const qs = questionsFor(pos);
         return (
-          <article key={a.id} className="mx-auto flex w-full max-w-[182mm] break-after-page flex-col last:break-after-auto gap-4 rounded-[14px] border border-line bg-card p-6 text-sm print:border-0 print:p-0">
-            <header className="flex items-end justify-between gap-4 border-b border-ink pb-2">
+          <article key={a.id} className="mx-auto flex w-full max-w-[182mm] break-after-page flex-col last:break-after-auto gap-4 rounded-3xl border border-line bg-card p-6 text-sm print:border-0 print:p-0">
+            <header className="flex items-end justify-between gap-4 border-b border-accent pb-2">
               <div><b className="font-display text-2xl">{a.name}</b>
                 <span className="block text-muted">Pelamar {POSITION_NAME[pos]} · WA +{a.whatsapp}</span></div>
               <div className="text-right text-xs text-muted">{shop?.shop_name}<br />Dikirim {formatTanggal(a.created_at)}<br />Status: {STATUS[a.status] ?? a.status}</div>
@@ -44,9 +44,9 @@ export default async function Pelamar({ searchParams }: PageProps<"/manajer/peng
               const items = qs.filter((x) => x.section === sec && ans[x.key] !== undefined);
               return items.length > 0 && (
                 <section key={sec} className="break-inside-avoid">
-                  <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">{sec}</h2>
+                  <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{sec}</h2>
                   <table className="w-full"><tbody>{items.map((x) => (
-                    <tr key={x.key} className="border-t border-[#EEEEEA] align-top">
+                    <tr key={x.key} className="border-t border-[#EFEAEF] align-top">
                       <td className="w-[45%] py-1 pr-3 text-muted">{x.label}</td>
                       <td className="whitespace-pre-line py-1">{[ans[x.key]].flat().join(", ")}</td>
                     </tr>
@@ -55,7 +55,7 @@ export default async function Pelamar({ searchParams }: PageProps<"/manajer/peng
               );
             })}
             <section className="break-inside-avoid">
-              <h2 className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Catatan pewawancara</h2>
+              <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">Catatan pewawancara</h2>
               <p className="min-h-24 whitespace-pre-line border border-[#DDDDD8] p-2">{a.note}</p>
             </section>
           </article>

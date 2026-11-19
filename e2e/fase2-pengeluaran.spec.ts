@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, newSession, resetTodayClosings, sql, uniq } from "./helpers";
+import { login, newSession, resetTodayClosings, sql, uniq, pilih } from "./helpers";
 
 // Pengeluaran: kasir mencatat belanja kecil dari laci (≤ Rp100.000 tanpa nota) → manajer melihat & membatalkan dengan alasan.
 test("kasir catat pengeluaran laci → manajer lihat & batalkan", async ({ page, browser }, info) => {
@@ -10,7 +10,7 @@ test("kasir catat pengeluaran laci → manajer lihat & batalkan", async ({ page,
     await k.goto("/kasir/pengeluaran");
     await k.getByRole("button", { name: "+ Catat pengeluaran" }).click();
     const form = k.getByRole("dialog", { name: "Catat pengeluaran" });
-    await form.getByLabel("Kategori").selectOption("konsumsi");
+    await pilih(form.getByLabel("Kategori"), "konsumsi");
     await form.getByLabel("Jumlah (Rp)").fill("150000");
     await expect(form.getByText("Foto nota (wajib)")).toBeVisible(); // di atas Rp100.000
     await form.getByLabel("Jumlah (Rp)").fill("25000");
@@ -42,7 +42,7 @@ test("pengeluaran rutin: tambah IPL → catat dari templat → dicatat bulan ini
     await page.goto("/manajer/pengeluaran");
     const rutin = page.getByRole("region", { name: "Pengeluaran rutin bulanan" });
     await rutin.getByRole("button", { name: "+ Tambah rutin" }).click();
-    await page.getByLabel("Kategori").selectOption("ipl");
+    await pilih(page.getByLabel("Kategori"), "ipl");
     await page.getByLabel("Keterangan").fill(name);
     await page.getByLabel("Perkiraan jumlah (Rp)").fill("75000");
     await page.getByLabel("Jatuh tempo tiap tanggal").fill("1");
@@ -67,7 +67,7 @@ test("kasir pilih sumber transfer → nota wajib", async ({ browser }, info) => 
     await k.goto("/kasir/pengeluaran");
     await k.getByRole("button", { name: "+ Catat pengeluaran" }).click();
     const form = k.getByRole("dialog", { name: "Catat pengeluaran" });
-    await form.getByLabel("Dibayar dari").selectOption("transfer");
+    await pilih(form.getByLabel("Dibayar dari"), "transfer");
     await form.getByLabel("Jumlah (Rp)").fill("25000");
     await expect(form.getByText("Foto nota (wajib)")).toBeVisible();
   } finally {

@@ -19,7 +19,7 @@ export type RetailExtra = { price: number | null; sold30: number; topSeller: str
 
 export function StatusChip({ status }: { status: StockRow["status"] }) {
   const s = STOCK_STATUS[status];
-  return <span className="whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-bold" style={{ background: s.bg, color: s.fg }}>{s.label}</span>;
+  return <span className="whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: s.bg, color: s.fg }}>{s.label}</span>;
 }
 
 /** Banner item Reorder — realtime (checkout di konter langsung memunculkan chip di sini). */
@@ -35,7 +35,7 @@ export function ReorderBanner() {
       <b className="mr-1 text-sm text-[#6E1616]">{data.length} item perlu dibeli:</b>
       {data.map((r) => (
         <button key={r.item_id} onClick={() => open({ kind: "in", itemId: r.item_id! })}
-          className="min-h-11 rounded-full border border-[#E8C3C4] bg-card px-3.5 text-[13px] font-semibold text-[#6E1616] tabular hover:bg-[#F9E6E6]">
+          className="min-h-11 rounded-full border border-[#E8C3C4] bg-card px-3.5 text-[13px] font-medium text-[#6E1616] tabular hover:bg-[#F9E6E6]">
           {r.name} · {qtyFmt(Number(r.qty))} / {qtyFmt(Number(r.reorder_at))} {r.unit}
         </button>
       ))}
@@ -53,8 +53,8 @@ function RowMenu({ r }: { r: StockRow }) {
   }
   return (
     <details className="relative">
-      <summary aria-label={`Aksi lain ${r.name}`} className="flex size-11 cursor-pointer list-none items-center justify-center rounded-[10px] border border-line bg-card font-bold [&::-webkit-details-marker]:hidden">⋯</summary>
-      <div className="absolute right-0 z-10 mt-1 flex w-52 flex-col rounded-xl border border-line bg-card py-1 shadow-[0_12px_32px_rgba(28,27,25,0.18)]">
+      <summary aria-label={`Aksi lain ${r.name}`} className="flex size-11 cursor-pointer list-none items-center justify-center rounded-[14px] border border-line bg-card font-semibold [&::-webkit-details-marker]:hidden">⋯</summary>
+      <div className="absolute right-0 z-10 mt-1 flex w-52 flex-col rounded-[14px] border border-line bg-card py-1 shadow-[0_12px_32px_rgba(28,27,25,0.18)]">
         <button onClick={() => open({ kind: "adjust", itemId: r.item_id })} className="min-h-11 px-3.5 text-left text-sm hover:bg-paper">Penyesuaian stok</button>
         <button onClick={() => open({ kind: "cost", itemId: r.item_id })} className="min-h-11 px-3.5 text-left text-sm hover:bg-paper">Penyesuaian harga pokok</button>
         <Link href={`/manajer/inventaris?tab=mutasi&item=${r.item_id}`} className="flex min-h-11 items-center px-3.5 text-sm hover:bg-paper">Riwayat mutasi</Link>
@@ -83,9 +83,9 @@ function EditCells({ r, form }: { r: StockRow; form: string }) {
   const { suppliers } = useInv();
   return (
     <>
-      <td className="py-1.5 pr-2"><Input form={form} name="name" aria-label="Nama" defaultValue={r.name} className="min-w-40 font-semibold" /></td>
+      <td className="py-1.5 pr-2"><Input form={form} name="name" aria-label="Nama" defaultValue={r.name} className="min-w-40 font-medium" /></td>
       <td className="pr-2"><Input form={form} name="unit" aria-label="Satuan" defaultValue={r.unit} className="w-20" /></td>
-      <td className="whitespace-nowrap pr-3 text-base font-bold tabular">{qtyFmt(r.qty)}</td>
+      <td className="whitespace-nowrap pr-3 text-base font-semibold tabular">{qtyFmt(r.qty)}</td>
       <td className="pr-2"><Input form={form} name="reorder_at" aria-label="Reorder di" inputMode="decimal" defaultValue={r.reorder_at} className="w-24" /></td>
       <td className="pr-2">
         <NativeSelect form={form} name="supplier_id" aria-label="Pemasok" defaultValue={r.supplier_id ?? ""} className="w-36">
@@ -102,7 +102,7 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
   const save = useRowSave(r);
   const form = `it-${r.item_id}`;
   return (
-    <tr className={`border-t border-[#EEEEEA] ${r.active ? "" : "opacity-55"}`}>
+    <tr className={`border-t border-[#EFEAEF] ${r.active ? "" : "opacity-55"}`}>
       <EditCells r={r} form={form} />
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatUnitCost(r.unit_cost)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatRupiah(r.stock_value)}</td>
@@ -166,10 +166,10 @@ function NewItem({ kind }: { kind: Kind }) {
   if (!open) return <Button onClick={() => setOpen(true)} variant="outline" className="h-11 self-start">+ Tambah {kind === "retail" ? "barang ritel" : "bahan"}</Button>;
   return (
     <form action={add} className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Nama</span><Input name="name" className="w-52" autoFocus /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Satuan</span><Input name="unit" className="w-24" placeholder={kind === "retail" ? "pcs" : "ml"} /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Reorder di</span><Input name="reorder_at" inputMode="decimal" className="w-24" /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-semibold text-muted">Pemasok</span>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Nama</span><Input name="name" className="w-52" autoFocus /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Satuan</span><Input name="unit" className="w-24" placeholder={kind === "retail" ? "pcs" : "ml"} /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Reorder di</span><Input name="reorder_at" inputMode="decimal" className="w-24" /></label>
+      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Pemasok</span>
         <NativeSelect name="supplier_id" className="w-40"><option value="">—</option>{suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
       </label>
       <Button className="h-11">Tambah</Button>
@@ -197,7 +197,7 @@ export function ItemsTable({ kind, extras }: { kind: Kind; extras?: Record<strin
         <>
           <div className="hidden overflow-x-auto rounded-[14px] border border-line bg-card px-3 min-[1000px]:block">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={i} className={`py-2.5 pr-2 font-semibold ${/Harga|Nilai|Margin|Terjual/.test(h) ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+              <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={i} className={`py-2.5 pr-2 font-medium ${/Harga|Nilai|Margin|Terjual/.test(h) ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
               <tbody>{rows.map((r) => <TableRow key={r.item_id} r={r} extra={extras?.[r.item_id] ?? (extras ? { price: null, sold30: 0, topSeller: null } : undefined)} />)}</tbody>
             </table>
           </div>

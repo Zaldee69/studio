@@ -65,7 +65,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-start gap-3">
         <div className="flex flex-1 flex-col gap-1">
-          <h2 className="font-display text-2xl font-bold">Impor pelanggan lama</h2>
+          <h2 className="font-display text-2xl font-semibold">Impor pelanggan lama</h2>
           <span className="text-[13px] text-muted">CSV atau Excel (.xlsx) dengan kolom <b>nama</b>, <b>whatsapp</b>, <b>catatan</b>. No. WA dinormalisasi ke 62….</span>
         </div>
         <CloseButton onClick={onClose} />
@@ -77,28 +77,28 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
         </label>
         {fileName && <span className="text-[13px] text-muted">{fileName}</span>}
         <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE_CSV)}`} download="template-pelanggan.csv"
-          className="ml-auto text-[13px] font-bold text-accent underline">Unduh contoh file</a>
+          className="ml-auto text-[13px] font-semibold text-accent underline">Unduh contoh file</a>
       </div>
-      {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
+      {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
       {rows && (
         <>
-          <div className="flex flex-wrap gap-2 text-[13px] font-bold">
+          <div className="flex flex-wrap gap-2 text-[13px] font-semibold">
             {(["valid", "duplicate", "error"] as const).map((s) => (
               <span key={s} className="rounded-full px-3 py-1" style={{ background: STATUS_STYLE[s][1], color: STATUS_STYLE[s][2] }}>{STATUS_STYLE[s][0]} {count(s)}</span>
             ))}
           </div>
-          <div className="max-h-[45dvh] overflow-auto rounded-xl border border-line">
+          <div className="max-h-[45dvh] overflow-auto rounded-[14px] border border-line">
             <table className="w-full text-left text-[13px] tabular">
               <thead className="sticky top-0 bg-paper text-xs text-muted">
                 <tr><th className="px-3 py-2">Baris</th><th className="px-3 py-2">Nama</th><th className="px-3 py-2">WhatsApp</th><th className="px-3 py-2">Status</th></tr>
               </thead>
               <tbody>
                 {rows.slice(0, 300).map((r) => (
-                  <tr key={r.row} className="border-t border-[#EEEEEA]">
+                  <tr key={r.row} className="border-t border-[#EFEAEF]">
                     <td className="px-3 py-2 text-muted">{r.row}</td>
-                    <td className="px-3 py-2 font-semibold">{r.name || "—"}</td>
+                    <td className="px-3 py-2 font-medium">{r.name || "—"}</td>
                     <td className="px-3 py-2">{r.wa ?? r.whatsapp}</td>
-                    <td className="px-3 py-2"><span className="rounded-full px-2 py-0.5 text-xs font-bold" style={{ background: STATUS_STYLE[r.status][1], color: STATUS_STYLE[r.status][2] }}>{STATUS_STYLE[r.status][0]}</span>
+                    <td className="px-3 py-2"><span className="rounded-full px-2 py-0.5 text-xs font-semibold" style={{ background: STATUS_STYLE[r.status][1], color: STATUS_STYLE[r.status][2] }}>{STATUS_STYLE[r.status][0]}</span>
                       {r.reason && <span className="ml-2 text-xs text-muted">{r.reason}</span>}</td>
                   </tr>
                 ))}
@@ -107,13 +107,13 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
             {rows.length > 300 && <p className="px-3 py-2 text-xs text-muted">…dan {rows.length - 300} baris lagi.</p>}
           </div>
           <div className="flex flex-wrap items-end justify-end gap-2.5">
-            <label className="mr-auto flex flex-col gap-1 text-xs font-bold text-muted">Kontak ini tahu D&apos;Pras dari mana?
+            <label className="mr-auto flex flex-col gap-1 text-xs font-semibold text-muted">Kontak ini tahu D&apos;Pras dari mana?
               <NativeSelect className="w-56" value={source} onChange={(e) => setSource(e.target.value as CustomerSource)}>
                 <option value="">— pilih —</option>
                 {CUSTOMER_SOURCES.filter(([k]) => k !== "web").map(([k, l]) => <option key={k} value={k}>{l}</option>)}
               </NativeSelect>
             </label>
-            <Button onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
+            <Button onClick={onClose} variant="outline" className="h-12 rounded-[14px]">Batal</Button>
             <Button onClick={confirmImport} disabled={!valid.length || !source || saving} className="h-12 px-6">
               {saving ? "Mengimpor…" : `Impor ${valid.length} pelanggan`}
             </Button>

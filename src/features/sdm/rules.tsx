@@ -71,7 +71,7 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
   };
   return (
     <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4">
-      <section className="flex flex-col gap-4 rounded-[14px] border border-line bg-card p-5">
+      <section className="flex flex-col gap-4 rounded-3xl border border-line bg-card p-5">
         <b>Aturan umum</b>
         <div className="flex flex-col gap-2">
           <Label htmlFor="cr-ratio" className="mb-1">Komisi default: <b className="text-lg text-ink">{f.ratio}%</b> dari {harga}{f.hpp && " − HPP"}</Label>
@@ -79,11 +79,11 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
           <div className="flex justify-between text-xs text-muted tabular"><span>20%</span><span>40%</span><span>60%</span></div>
         </div>
         <fieldset className="flex flex-col gap-1.5">
-          <legend className="mb-1 block text-xs font-semibold text-muted">Komisi dihitung dari</legend>
+          <legend className="mb-1 block text-xs font-medium text-muted">Komisi dihitung dari</legend>
           <div role="radiogroup" aria-label="Dasar komisi" className="grid gap-2 min-[560px]:grid-cols-2">
             {([["net", "Harga setelah diskon", "Promo & diskon paket ikut mengurangi komisi"], ["gross", "Harga normal", "Diskon & promo ditanggung toko — komisi staf utuh"]] as const).map(([v, l, d]) => (
               <button type="button" key={v} role="radio" aria-checked={f.basis === v} onClick={() => setF({ ...f, basis: v })}
-                className={`flex min-h-14 flex-col items-start justify-center rounded-[10px] border-2 px-3 text-left ${f.basis === v ? "border-ink bg-paper" : "border-line bg-card"}`}>
+                className={`flex min-h-14 flex-col items-start justify-center rounded-[14px] border-2 px-3 text-left ${f.basis === v ? "border-accent bg-paper" : "border-line bg-card"}`}>
                 <b className="text-sm">{l}</b><span className="text-xs text-muted">{d}</span>
               </button>
             ))}
@@ -97,30 +97,30 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
         <div className="grid grid-cols-2 gap-3">
           <Field label={`Komisi ritel (% ${harga})`} htmlFor="cr-retail"><Input id="cr-retail" inputMode="decimal" value={f.retail} onChange={(e) => setF({ ...f, retail: e.target.value })} /></Field>
         </div>
-        <div className="rounded-[12px] bg-paper p-3.5 text-sm leading-relaxed">
+        <div className="rounded-[14px] bg-paper p-3.5 text-sm leading-relaxed">
           <b>Cara hitung umum:</b> tiap layanan, staf mendapat <b>{f.ratio}%</b> dari {f.basis === "gross" ? "harga normal (sebelum diskon & promo)" : "harga bersih setelah diskon"} {f.hpp ? "dikurangi HPP bahan (tidak pernah minus)" : "(HPP bahan tidak dipotong)"}.
           {Number(f.retail) > 0 && <> Produk ritel yang ia jual menambah <b>{f.retail}%</b>.</>}
           {" "}Bonus/potongan manual ditambahkan setelah komisi. Contoh: Gel Polish net Rp162.000{f.hpp && ", HPP Rp12.000"} → komisi <b>{formatRupiah(ex)}</b>.
           Staf dengan aturan khusus di bawah mengikuti skemanya sendiri.
         </div>
       </section>
-      <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-5">
+      <section className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-5">
         <b>Aturan per staf</b>
         <span className="text-xs text-muted">Kosong = ikut aturan umum. Jaring harian: di hari staf melayani ≥1 layanan dan komisinya di bawah angka ini, toko menutup
           selisihnya (dibayar bersama komisi mingguan). Bayar bulanan: komisi tidak dibayar mingguan, tetapi bersama gaji akhir bulan.</span>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[920px] text-sm">
             <thead><tr className="text-left text-xs text-muted">
-              <th className="py-2 pr-2 font-semibold">Staf</th><th className="py-2 pr-2 font-semibold">Komisi khusus (%)</th><th className="py-2 pr-2 font-semibold">Potong HPP</th>
-              <th className="py-2 pr-2 font-semibold">Komisi ritel (%)</th><th className="py-2 pr-2 font-semibold">Gaji pokok / bulan (Rp)</th>
-              <th className="py-2 pr-2 font-semibold">Bayar bulanan</th><th className="py-2 font-semibold">Jaring harian (Rp)</th>
+              <th className="py-2 pr-2 font-medium">Staf</th><th className="py-2 pr-2 font-medium">Komisi khusus (%)</th><th className="py-2 pr-2 font-medium">Potong HPP</th>
+              <th className="py-2 pr-2 font-medium">Komisi ritel (%)</th><th className="py-2 pr-2 font-medium">Gaji pokok / bulan (Rp)</th>
+              <th className="py-2 pr-2 font-medium">Bayar bulanan</th><th className="py-2 font-medium">Jaring harian (Rp)</th>
             </tr></thead>
             <tbody>
               {staff.filter((s) => s.active || showInactive).map((s) => { const r = rows[s.id]; return (
-                <tr key={s.id} className="border-t border-[#EEEEEA] align-top">
+                <tr key={s.id} className="border-t border-[#EFEAEF] align-top">
                   <td className="py-2 pr-2">
                     <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
-                      <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#EFEFEB] px-2 py-0.5 text-[11px] font-bold text-[#4A4C46]">nonaktif</span>}</span>
+                      <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#EFEAEF] px-2 py-0.5 text-[11px] font-semibold text-[#4D4A55]">nonaktif</span>}</span>
                     <span className="mt-1 block max-w-[260px] text-xs text-muted">{scheme(r)}</span>
                   </td>
                   <td className="py-2 pr-2"><Input aria-label={`Komisi khusus ${s.name}`} inputMode="numeric" placeholder={`${f.ratio}`} className="w-20" value={r.pct} onChange={(e) => set(s.id, { pct: e.target.value })} /></td>
@@ -154,8 +154,8 @@ export type LeaderRow = { rank: number; staff_id: string; staff_name: string; ca
 export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
   const max = Math.max(1, ...rows.map((r) => r.revenue_net));
   return (
-    <div className="flex flex-col gap-3 rounded-[14px] border border-line bg-card p-5">
-      <div className="flex flex-wrap gap-4 text-xs font-semibold">
+    <div className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+      <div className="flex flex-wrap gap-4 text-xs font-medium">
         {Object.values(CAT).map((c) => <span key={c.label} className="flex items-center gap-1.5"><span aria-hidden="true" className="size-3 rounded-sm" style={{ background: c.color }} />{c.label}</span>)}
       </div>
       <ol className="flex flex-col gap-2" aria-label="Peringkat pendapatan jasa bersih">
@@ -163,7 +163,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
           <li key={r.staff_id} className="grid grid-cols-[28px_110px_1fr] items-center gap-2 text-sm min-[820px]:grid-cols-[28px_140px_1fr_220px]"
             title={`${r.staff_name}: ${formatRupiah(r.revenue_net)} · ${r.service_count} layanan · rata-rata ${formatRupiah(r.avg_per_service)}`}>
             <b className="tabular">#{r.rank}</b>
-            <span className="truncate font-semibold">{r.staff_name}</span>
+            <span className="truncate font-medium">{r.staff_name}</span>
             <span className="flex items-center gap-2">
               <span className="h-7 rounded-md" style={{ width: `${Math.max(1, (r.revenue_net / max) * 100)}%`, background: CAT[r.category].color }} />
               <b className="whitespace-nowrap text-xs tabular min-[820px]:hidden">{formatRupiah(r.revenue_net)}</b>
@@ -173,11 +173,11 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         ))}
       </ol>
       <details>
-        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-accent">Lihat tabel</summary>
+        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium text-accent">Lihat tabel</summary>
         <table className="w-full text-sm tabular">
-          <thead><tr className="text-left text-xs text-muted">{["#", "Staf", "Pendapatan", "Layanan", "Rata-rata"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted">{["#", "Staf", "Pendapatan", "Layanan", "Rata-rata"].map((h, i) => <th key={h} className={`py-2 font-medium ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.staff_id} className="border-t border-[#EEEEEA]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
+            <tr key={r.staff_id} className="border-t border-[#EFEAEF]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
               <td className="text-right">{formatRupiah(r.revenue_net)}</td><td className="text-right">{r.service_count}</td><td className="text-right">{formatRupiah(r.avg_per_service)}</td></tr>
           ))}</tbody>
         </table>
@@ -212,10 +212,10 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
       </div>
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         <table className="w-full min-w-[1200px] text-sm tabular">
-          <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2.5 pr-2 font-semibold ${i && i < 9 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+          <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2.5 pr-2 font-medium ${i && i < 9 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} className="border-t border-[#EEEEEA] align-top">
+              <tr key={r.staff_id} className="border-t border-[#EFEAEF] align-top">
                 <td className="py-2 pr-2"><b>{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></td>
                 <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td><td className="pr-2 text-right">{r.service_count}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.avg_per_service)}</td>

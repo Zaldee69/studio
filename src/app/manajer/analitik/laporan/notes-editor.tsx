@@ -23,20 +23,20 @@ function Rows<T extends Record<string, string>>({ title, fields, rows, max, onCh
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="text-sm font-bold">{title} <span className="font-normal text-muted">(maks. {max})</span></legend>
+      <legend className="text-sm font-semibold">{title} <span className="font-normal text-muted">(maks. {max})</span></legend>
       {hint && <p className="text-xs text-muted">{hint}</p>}
       {rows.map((r, i) => (
-        <div key={i} className="grid gap-2 rounded-[10px] border border-line p-3 min-[700px]:grid-cols-2">
+        <div key={i} className="grid gap-2 rounded-[14px] border border-line p-3 min-[700px]:grid-cols-2">
           {fields.map(([k, label]) => (
-            <label key={String(k)} className="flex flex-col gap-1 text-xs font-semibold text-muted">{label}
+            <label key={String(k)} className="flex flex-col gap-1 text-xs font-medium text-muted">{label}
               <Textarea rows={1} className="min-h-10 py-2 text-sm font-normal text-ink" value={r[k]}
                 onChange={(e) => onChange(rows.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))} />
             </label>
           ))}
-          <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} className="self-end justify-self-start text-xs font-semibold text-[#A12A2A] underline">Hapus baris</button>
+          <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} className="self-end justify-self-start text-xs font-medium text-[#A12A2A] underline">Hapus baris</button>
         </div>
       ))}
-      {rows.length < max && <Button type="button" onClick={() => onChange([...rows, blank(fields)])} variant="outline" className="h-10 self-start rounded-[10px] px-3 text-sm">+ Tambah</Button>}
+      {rows.length < max && <Button type="button" onClick={() => onChange([...rows, blank(fields)])} variant="outline" className="h-10 self-start rounded-[14px] px-3 text-sm">+ Tambah</Button>}
     </fieldset>
   );
 }
@@ -61,23 +61,23 @@ export function NotesEditor({ kind, periodStart, initial, suggestions }: {
   }
 
   return (
-    <section aria-label="Catatan manajer" className="mx-auto flex w-full max-w-[210mm] flex-col gap-4 rounded-[14px] border border-line bg-card p-5 print:hidden">
+    <section aria-label="Catatan manajer" className="mx-auto flex w-full max-w-[210mm] flex-col gap-4 rounded-3xl border border-line bg-card p-5 print:hidden">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="flex-1 font-display text-lg font-bold">Catatan manajer <span className="text-sm font-normal text-muted">— bagian A, G, H, I laporan (tidak tercetak di sini, tampil di laporan)</span></h2>
-        <Button type="button" onClick={() => setOpen(!open)} variant="outline" className="h-10 rounded-[10px] px-3 text-sm">{open ? "Tutup" : "Isi / ubah catatan"}</Button>
+        <h2 className="flex-1 font-display text-lg font-semibold">Catatan manajer <span className="text-sm font-normal text-muted">— bagian A, G, H, I laporan (tidak tercetak di sini, tampil di laporan)</span></h2>
+        <Button type="button" onClick={() => setOpen(!open)} variant="outline" className="h-10 rounded-[14px] px-3 text-sm">{open ? "Tutup" : "Isi / ubah catatan"}</Button>
       </div>
       {open && <>
-        <label className="flex flex-col gap-1 text-sm font-bold">A. Ringkasan eksekutif
+        <label className="flex flex-col gap-1 text-sm font-semibold">A. Ringkasan eksekutif
           <span className="text-xs font-normal text-muted">Satu paragraf: kondisi bisnis, pencapaian terpenting, masalah/risiko terbesar, prioritas berikutnya. Jangan ulang angka di tabel.</span>
           <Textarea rows={4} className="py-2 text-sm font-normal" value={n.summary ?? ""} onChange={(e) => set({ summary: e.target.value })} />
         </label>
         {suggestions.length > 0 && (
-          <div className="flex flex-col gap-1 rounded-[10px] bg-paper p-3 text-xs">
+          <div className="flex flex-col gap-1 rounded-[14px] bg-paper p-3 text-xs">
             <b>Temuan otomatis (cek dulu sebelum dipakai):</b>
             {suggestions.map((s) => (
               <span key={s} className="flex items-start gap-2">
                 <span className="flex-1">{s}</span>
-                <button type="button" disabled={(n.issues ?? []).length >= 5} className="shrink-0 font-semibold underline"
+                <button type="button" disabled={(n.issues ?? []).length >= 5} className="shrink-0 font-medium underline"
                   onClick={() => set({ issues: [...(n.issues ?? []), { ...blank<Issue>(ISSUE), masalah: s, bukti: "Analitik sistem" }] })}>Jadikan masalah</button>
               </span>
             ))}
@@ -93,14 +93,14 @@ export function NotesEditor({ kind, periodStart, initial, suggestions }: {
         )}
         <Rows<Priority> title={`I. Prioritas ${kind === "minggu" ? "minggu" : "bulan"} berikutnya`} fields={PRIORITY} rows={n.priorities ?? []} max={3} onChange={(priorities) => set({ priorities })} />
         {kind === "bulan" && <>
-          <label className="flex flex-col gap-1 text-sm font-bold">Evaluasi tindakan bulan sebelumnya
+          <label className="flex flex-col gap-1 text-sm font-semibold">Evaluasi tindakan bulan sebelumnya
             <Textarea rows={3} className="py-2 text-sm font-normal" value={n.evaluation ?? ""} onChange={(e) => set({ evaluation: e.target.value })} />
           </label>
-          <label className="flex flex-col gap-1 text-sm font-bold">Rencana & target bulan berikutnya
+          <label className="flex flex-col gap-1 text-sm font-semibold">Rencana & target bulan berikutnya
             <Textarea rows={3} className="py-2 text-sm font-normal" value={n.next_plan ?? ""} onChange={(e) => set({ next_plan: e.target.value })} />
           </label>
         </>}
-        <Button type="button" onClick={save} disabled={saving} className="h-12 self-end rounded-[10px] px-6">{saving ? "Menyimpan…" : "Simpan catatan"}</Button>
+        <Button type="button" onClick={save} disabled={saving} className="h-12 self-end rounded-[14px] px-6">{saving ? "Menyimpan…" : "Simpan catatan"}</Button>
       </>}
     </section>
   );

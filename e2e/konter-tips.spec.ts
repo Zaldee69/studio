@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { login, sql, uniq, allowNoCustomer } from "./helpers";
+import { login, sql, uniq, allowNoCustomer, pilih } from "./helpers";
 
 // Tips QRIS: satu kali scan (tagihan + tips), tips untuk staf pilihan kasir, bukan omzet; tercetak di struk.
 test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak termasuk tips; filter riwayat", async ({ page }) => {
@@ -8,7 +8,7 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
   const staff = cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ });
-  await staff.selectOption({ index: 1 });
+  await pilih(staff, { index: 1 });
   const staffName = (await staff.locator("option:checked").innerText()).trim();
   await cart.getByRole("radio", { name: "QRIS" }).click();
   await cart.getByLabel("No. referensi QRIS").fill(ref);
@@ -30,11 +30,11 @@ test("bayar QRIS + tips → struk menampilkan tips & total QRIS, omzet tidak ter
   const [{ no }] = sql<{ no: string }>(`select upper(left(id::text, 8)) as no from transactions where qris_ref = '${ref}'`);
   await page.goto("/kasir/kasir?tab=riwayat");
   await page.getByLabel("Cari pelanggan atau No. struk").fill(`#${no}`);
-  await page.getByLabel("Metode bayar").selectOption("qris");
-  await page.getByLabel("Staf").selectOption({ label: staffName });
-  await page.getByLabel("Layanan").selectOption("Cukur Jenggot");
+  await pilih(page.getByLabel("Metode bayar"), "qris");
+  await pilih(page.getByLabel("Staf"), { label: staffName });
+  await pilih(page.getByLabel("Layanan"), "Cukur Jenggot");
   await expect(page.getByText(/^1 (dari \d+|transaksi)$/)).toBeVisible();
-  await page.getByLabel("Metode bayar").selectOption("cash");
+  await pilih(page.getByLabel("Metode bayar"), "cash");
   await expect(page.getByText("Tidak ada transaksi yang cocok dengan filter.")).toBeVisible();
 });
 
@@ -43,7 +43,7 @@ test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak 
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
-  await cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await pilih(cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }), { index: 1 });
   await cart.getByRole("radio", { name: "Transfer" }).click();
   await allowNoCustomer(page);
   await page.getByRole("button", { name: /^Catat pembayaran/ }).click();
@@ -56,7 +56,7 @@ test("bayar transfer: wajib No. referensi → struk & riwayat 'Transfer', tidak 
   const [t] = sql<{ m: string }>(`select payment_method::text as m from transactions where qris_ref = '${ref}'`);
   expect(t.m).toBe("transfer");
   await page.goto("/kasir/kasir?tab=riwayat");
-  await page.getByLabel("Metode bayar").selectOption("transfer");
+  await pilih(page.getByLabel("Metode bayar"), "transfer");
   await expect(page.getByRole("button", { name: /Transaksi .* Rp45\.000/ }).first()).toBeVisible();
 });
 
@@ -65,7 +65,7 @@ test("bayar campuran: sebagian tunai + sisanya QRIS → struk & riwayat", async 
   await login(page, "cashier");
   const cart = page.getByRole("region", { name: "Keranjang" });
   await page.getByRole("button", { name: /^Tambah Cukur Jenggot/ }).first().click();
-  await cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }).selectOption({ index: 1 });
+  await pilih(cart.getByRole("combobox", { name: /Capster untuk Cukur Jenggot/ }), { index: 1 });
   await cart.getByRole("radio", { name: "QRIS" }).click();
   await cart.getByLabel("No. referensi QRIS").fill(ref);
   await cart.getByLabel("Sebagian dibayar tunai (opsional)").fill("5000");
@@ -77,6 +77,6 @@ test("bayar campuran: sebagian tunai + sisanya QRIS → struk & riwayat", async 
   const [t] = sql<{ cash_part: number; paid_amount: number }>(`select cash_part, paid_amount from transactions where qris_ref = '${ref}'`);
   expect(Number(t.cash_part)).toBe(5000);
   await page.goto("/kasir/kasir?tab=riwayat");
-  await page.getByLabel("Metode bayar").selectOption("qris");
+  await pilih(page.getByLabel("Metode bayar"), "qris");
   await expect(page.getByText("QRIS + tunai").first()).toBeVisible();
 });

@@ -25,7 +25,7 @@ export function RemoveAccountForm({ users }: { users: [string, string][] }) {
     toast(r?.ok ?? "Akun dihapus"); setId(""); router.refresh();
   }
   return (
-    <div className="flex flex-wrap items-end gap-3 rounded-2xl border border-line bg-card p-5">
+    <div className="flex flex-wrap items-end gap-3 rounded-3xl border border-line bg-card p-5">
       <div className="min-w-56 flex-1">
         <Label htmlFor="ra-user" className="mb-1">Hapus akun tim</Label>
         <NativeSelect id="ra-user" value={id} onChange={(e) => setId(e.target.value)}>

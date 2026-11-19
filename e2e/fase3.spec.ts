@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import ExcelJS from "exceljs";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { jktDate } from "../src/lib/domain/format";
-import { admin, apiAs, login, newSession, sql } from "./helpers";
+import { admin, apiAs, login, newSession, sql, pilih } from "./helpers";
 
 // Tahap 5 — Analitik KPI · SOP & Kepatuhan (E1–E8). Data contoh bagian 4 di tanggal 10 bulan lalu (beda bulan per
 // viewport agar laporan bulanan hanya berisi data contoh). SOP hari ini dibersihkan tiap tes lewat SQL (trigger audit).
@@ -102,7 +102,7 @@ test.describe.serial("Analitik", () => {
     await page.goto("/manajer/analitik");
     await page.getByRole("link", { name: "30 hari", exact: true }).click();
     await page.waitForURL(/periode=30/);
-    await page.getByLabel("Kategori", { exact: true }).selectOption("nail");
+    await pilih(page.getByLabel("Kategori", { exact: true }), "nail");
     await page.waitForURL(/kategori=nail/);
     const check = async () => {
       await expect(page.getByRole("link", { name: /^AOV Nail/ })).toBeVisible();

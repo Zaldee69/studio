@@ -28,7 +28,7 @@ export function Sheet({ open, onClose, label, variant = "modal", width = 600, ch
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false} aria-describedby={undefined} style={{ maxWidth: width }}
-        className="block max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-none overflow-y-auto rounded-2xl bg-card p-0 text-base text-ink shadow-[0_24px_64px_rgba(28,27,25,0.25)] ring-0 sm:max-w-none">
+        className="block max-h-[calc(100dvh-32px)] w-[calc(100vw-32px)] max-w-none overflow-y-auto rounded-3xl bg-card p-0 text-base text-ink shadow-[0_24px_64px_rgba(28,27,25,0.25)] [scrollbar-width:thin] ring-0 sm:max-w-none">
         <DialogTitle className="sr-only">{label}</DialogTitle>
         {children}
       </DialogContent>
@@ -63,13 +63,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div aria-live="polite" className="pointer-events-none fixed bottom-6 left-1/2 z-[60] flex -translate-x-1/2 flex-col items-center gap-2">
         {items.map((t) => (
           <div key={t.id} role={t.kind === "error" ? "alert" : "status"}
-            className={`pointer-events-auto flex items-center gap-3 rounded-xl px-[18px] py-3 text-sm font-semibold shadow-[0_12px_32px_rgba(28,27,25,0.3)] ${t.kind === "error" ? "bg-[#6E1616] text-white" : t.kind === "info" ? "bg-[#1F7A45] text-white" : "bg-ink text-white"}`}>
+            className={`pointer-events-auto flex items-center gap-3 rounded-[14px] px-[18px] py-3 text-sm font-medium shadow-[0_12px_32px_rgba(28,27,25,0.3)] ${t.kind === "error" ? "bg-[#6E1616] text-white" : t.kind === "info" ? "bg-[#1F7A45] text-white" : "bg-accent text-white"}`}>
             <span>{t.text}</span>
             {t.action && (
-              <a href={t.action.href} className="flex min-h-10 items-center rounded-lg bg-white/15 px-3 text-[13px] font-bold hover:bg-white/25">{t.action.label}</a>
+              <a href={t.action.href} className="flex min-h-10 items-center rounded-[14px] bg-white/15 px-3 text-[13px] font-semibold hover:bg-white/25">{t.action.label}</a>
             )}
             {t.action && (
-              <button onClick={() => setItems((x) => x.filter((y) => y.id !== t.id))} aria-label="Tutup notifikasi" className="-mr-1 flex size-8 items-center justify-center rounded-lg hover:bg-white/15">✕</button>
+              <button onClick={() => setItems((x) => x.filter((y) => y.id !== t.id))} aria-label="Tutup notifikasi" className="-mr-1 flex size-8 items-center justify-center rounded-[14px] hover:bg-white/15">✕</button>
             )}
           </div>
         ))}
@@ -90,7 +90,7 @@ export function OfflineBanner() {
   const online = useOnline();
   if (online) return null;
   return (
-    <div role="alert" className="sticky top-0 z-40 bg-[#6E1616] px-4 py-2.5 text-center text-sm font-semibold text-white">
+    <div role="alert" className="sticky top-0 z-40 bg-[#6E1616] px-4 py-2.5 text-center text-sm font-medium text-white">
       Koneksi terputus — perubahan akan dikirim saat tersambung. Tombol simpan &amp; bayar dinonaktifkan.
     </div>
   );
@@ -100,7 +100,7 @@ export function OfflineBanner() {
 export function StatusBadge({ status, short = false }: { status: ApptStatus; short?: boolean }) {
   const s = STATUS[status];
   return (
-    <Badge className="h-[26px] gap-1.5 rounded-full px-2.5 text-xs font-bold" style={{ background: s.bg, color: s.fg }}>
+    <Badge className="h-[26px] gap-1.5 rounded-full px-2.5 text-xs font-semibold" style={{ background: s.bg, color: s.fg }}>
       <span className="size-2 rounded-full" style={{ background: s.dot }} />{short ? s.short : s.label}
     </Badge>
   );
@@ -117,7 +117,7 @@ export const CAT_STYLE = {
 export function CatChip({ cat }: { cat: keyof typeof CAT_STYLE }) {
   const c = CAT_STYLE[cat];
   return (
-    <Badge className="h-auto gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-bold" style={{ background: c.bg, color: c.fg }}>
+    <Badge className="h-auto gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold" style={{ background: c.bg, color: c.fg }}>
       <span aria-hidden="true" className="size-1.5 rounded-full" style={{ background: c.dot }} />{c.short}
     </Badge>
   );
@@ -126,15 +126,15 @@ export function CatChip({ cat }: { cat: keyof typeof CAT_STYLE }) {
 export function Field({ label, htmlFor, children, hint }: { label: string; htmlFor: string; children: React.ReactNode; hint?: string }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
-      <Label htmlFor={htmlFor} className="font-bold">{label}</Label>
+      <Label htmlFor={htmlFor} className="font-semibold">{label}</Label>
       {children}
-      {hint && <span className="text-xs text-[#63665F]">{hint}</span>}
+      {hint && <span className="text-xs text-[#6E6B78]">{hint}</span>}
     </div>
   );
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="px-2 py-8 text-center text-[13px] text-[#63665F]">{children}</div>;
+  return <div className="px-2 py-8 text-center text-[13px] text-[#6E6B78]">{children}</div>;
 }
 
 export { Icon };

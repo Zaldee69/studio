@@ -27,7 +27,7 @@ export function StartOpname({ base, drafts }: { base: string; drafts: { scope: s
     router.push(`${base}/${data}`);
   }
   return (
-    <div className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-4">
+    <div className="flex flex-wrap items-end gap-2 rounded-3xl border border-line bg-card p-4">
       <Field label="Cakupan" htmlFor="op-scope">
         <NativeSelect id="op-scope" className="w-48" value={scope} onChange={(e) => setScope(e.target.value)}>
           {Object.entries(SCOPE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -46,7 +46,7 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
     <div className="flex flex-col gap-4">
       <StartOpname base={base} drafts={drafts} />
       <section className="flex flex-col gap-2">
-        <h2 className="text-base font-bold">Sedang berjalan</h2>
+        <h2 className="text-base font-semibold">Sedang berjalan</h2>
         {!drafts.length ? <Empty>Tidak ada opname draft.</Empty> : drafts.map((d) => (
           <Link key={d.id} href={`${base}/${d.id}`} className="flex min-h-14 items-center gap-3 rounded-[14px] border-2 border-[#E8D6A6] bg-[#FFFBEB] px-4 py-3">
             <span className="flex flex-1 flex-col"><b>{SCOPE_LABEL[d.scope]} · dimulai {formatTanggal(d.started_at)} {formatJam(d.started_at)}</b>
@@ -56,19 +56,19 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
         ))}
       </section>
       {showValue && (
-        <section className="flex flex-col gap-2 rounded-[14px] border border-line bg-card p-4">
-          <h2 className="text-base font-bold">Riwayat opname</h2>
+        <section className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-4">
+          <h2 className="text-base font-semibold">Riwayat opname</h2>
           {!done.length ? <p className="text-sm text-muted">Belum ada.</p> : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm tabular">
-                <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Cakupan", "Penghitung", "Penyetuju", "Status", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2 font-semibold ${i === 5 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+                <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Cakupan", "Penghitung", "Penyetuju", "Status", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2 font-medium ${i === 5 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
                 <tbody>
                   {done.map((r) => (
-                    <tr key={r.id} className="border-t border-[#EEEEEA]">
-                      <td className="py-2"><Link className="font-semibold underline" href={`${base}/${r.id}`}>{formatTanggal(r.started_at)}</Link></td>
+                    <tr key={r.id} className="border-t border-[#EFEAEF]">
+                      <td className="py-2"><Link className="font-medium underline" href={`${base}/${r.id}`}>{formatTanggal(r.started_at)}</Link></td>
                       <td>{SCOPE_LABEL[r.scope]}</td><td>{r.starter}</td><td>{r.approver || "—"}</td>
                       <td>{r.status === "approved" ? "Disetujui" : "Dibatalkan"}</td>
-                      <td className={`text-right font-bold ${(r.value ?? 0) < 0 ? "text-[#A12A2A]" : ""}`}>{r.status === "approved" ? signed(r.value ?? 0) : "—"}</td>
+                      <td className={`text-right font-semibold ${(r.value ?? 0) < 0 ? "text-[#A12A2A]" : ""}`}>{r.status === "approved" ? signed(r.value ?? 0) : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -139,14 +139,14 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
     <div className="flex flex-col gap-4 pb-28">
       <div className="flex flex-wrap items-center gap-3">
         <Link href={back} className={buttonClass("outline", "h-11")}>← Kembali</Link>
-        <h1 className="flex-1 font-display text-[26px] font-bold">Opname {SCOPE_LABEL[opname.scope]} · {formatTanggal(opname.started_at)}</h1>
-        {locked && <span className="rounded-full bg-paper px-3 py-1 text-sm font-bold">{opname.status === "approved" ? "Disetujui" : "Dibatalkan"}</span>}
+        <h1 className="flex-1 font-display text-[26px] font-medium">Opname {SCOPE_LABEL[opname.scope]} · {formatTanggal(opname.started_at)}</h1>
+        {locked && <span className="rounded-full bg-paper px-3 py-1 text-sm font-semibold">{opname.status === "approved" ? "Disetujui" : "Dibatalkan"}</span>}
       </div>
       <div className="grid gap-3 min-[820px]:grid-cols-3">
-        <div className="rounded-[14px] border border-line bg-card p-4"><span className="text-xs text-muted">Dihitung</span><b className="block text-2xl tabular">{counted} / {lines.length}</b></div>
-        {manager && <div className="rounded-[14px] border border-line bg-card p-4"><span className="text-xs text-muted">Total nilai selisih</span>
+        <div className="rounded-3xl border border-line bg-card p-4"><span className="text-xs text-muted">Dihitung</span><b className="block text-2xl tabular">{counted} / {lines.length}</b></div>
+        {manager && <div className="rounded-3xl border border-line bg-card p-4"><span className="text-xs text-muted">Total nilai selisih</span>
           <b className={`block text-2xl tabular ${summary.value < 0 ? "text-[#A12A2A]" : ""}`}>{signed(summary.value)}</b></div>}
-        {manager && <div className="rounded-[14px] border border-line bg-card p-4 text-sm"><span className="text-xs text-muted">Selisih terbesar</span>
+        {manager && <div className="rounded-3xl border border-line bg-card p-4 text-sm"><span className="text-xs text-muted">Selisih terbesar</span>
           {!biggest.length ? <p className="text-muted">—</p> : biggest.map((b) => <div key={b.itemId} className="flex justify-between tabular"><span>{lines.find((l) => l.item_id === b.itemId)?.name}</span><b>{signed(b.value)}</b></div>)}</div>}
       </div>
       <Input type="search" aria-label="Cari item" placeholder="Cari item…" className="max-w-sm" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -155,7 +155,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
         if (!group.length) return null;
         return (
           <section key={k} className="flex flex-col gap-2">
-            <h2 className="text-base font-bold">{k === "consumable" ? "Bahan HPP" : "Barang ritel"}</h2>
+            <h2 className="text-base font-semibold">{k === "consumable" ? "Bahan HPP" : "Barang ritel"}</h2>
             {group.map((l) => {
               const v = val(l);
               const diff = v === null ? null : v - Number(l.system_qty);
@@ -168,11 +168,11 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
                     <Button type="button" disabled={locked} aria-label={`Kurangi ${l.name}`} onClick={() => bump(l, -1)} variant="outline" className="size-12 p-0 text-xl">−</Button>
                     <label className="sr-only" htmlFor={`oc-${l.item_id}`}>Hitungan fisik {l.name}</label>
                     <Input id={`oc-${l.item_id}`} inputMode="decimal" disabled={locked} placeholder="—"
-                      className="h-12 w-24 text-center text-xl font-bold tabular" value={l.item_id in edits ? edits[l.item_id] : l.counted_qty === null ? "" : String(Number(l.counted_qty))}
+                      className="h-12 w-24 text-center text-xl font-semibold tabular" value={l.item_id in edits ? edits[l.item_id] : l.counted_qty === null ? "" : String(Number(l.counted_qty))}
                       onChange={(e) => setEdits({ ...edits, [l.item_id]: e.target.value })} />
                     <Button type="button" disabled={locked} aria-label={`Tambah ${l.name}`} onClick={() => bump(l, 1)} variant="outline" className="size-12 p-0 text-xl">+</Button>
                   </div>
-                  <span className={`col-span-2 text-sm font-bold tabular min-[820px]:col-span-1 min-[820px]:text-right ${tone}`}>
+                  <span className={`col-span-2 text-sm font-semibold tabular min-[820px]:col-span-1 min-[820px]:text-right ${tone}`}>
                     <span className="font-normal text-muted min-[820px]:hidden">Sistem {qtyFmt(Number(l.system_qty))} · </span>
                     {diff === null ? "Belum dihitung" : `Selisih ${diff > 0 ? "+" : ""}${qtyFmt(diff)}`}
                   </span>

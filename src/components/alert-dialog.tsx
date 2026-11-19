@@ -44,14 +44,14 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={confirm}>
       {children}
       <AlertDialog open={!!opts} onOpenChange={(o) => { if (!o) done(false); }}>
-        <AlertDialogContent className="flex w-[calc(100vw-32px)] max-w-[440px] flex-col gap-4 rounded-2xl bg-card p-6 text-ink shadow-[0_24px_64px_rgba(28,27,25,0.25)] ring-0 sm:max-w-[440px]">
-          <AlertDialogTitle className="font-display text-xl font-bold leading-snug">{opts?.title}</AlertDialogTitle>
+        <AlertDialogContent className="flex w-[calc(100vw-32px)] max-w-[440px] flex-col gap-4 rounded-[14px] bg-card p-6 text-ink shadow-[0_24px_64px_rgba(28,27,25,0.25)] ring-0 sm:max-w-[440px]">
+          <AlertDialogTitle className="font-display text-xl font-semibold leading-snug">{opts?.title}</AlertDialogTitle>
           {opts?.description ? <AlertDialogDescription className="text-sm text-muted">{opts.description}</AlertDialogDescription>
             : <AlertDialogDescription className="sr-only">{opts?.title}</AlertDialogDescription>}
           <div className="flex flex-col-reverse gap-2 min-[420px]:flex-row min-[420px]:justify-end">
             <AlertDialogCancel variant="outline">{opts?.cancelLabel ?? "Batal"}</AlertDialogCancel>
             <AlertDialogAction variant="plain" onClick={() => done(true)}
-              className={`px-5 text-white ${opts?.tone === "danger" ? "bg-[#A12A2A] hover:bg-[#861F1F]" : "bg-ink hover:bg-[#353A33]"}`}>
+              className={`px-5 text-white ${opts?.tone === "danger" ? "bg-[#A12A2A] hover:bg-[#861F1F]" : "bg-accent hover:bg-[#353A33]"}`}>
               {opts?.confirmLabel ?? "Lanjutkan"}
             </AlertDialogAction>
           </div>

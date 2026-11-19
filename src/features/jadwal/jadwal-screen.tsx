@@ -148,23 +148,23 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   return (
     <div className="flex h-[calc(100dvh-80px)] flex-col gap-3 xl:h-[calc(100dvh-88px)] [@media(max-height:700px)]:h-auto">
       <div className="flex min-h-12 flex-wrap items-center gap-2.5 xl:gap-4">
-        <h1 className="font-display text-[28px] font-bold tracking-tight short:sr-only">Jadwal</h1>
+        <h1 className="font-display text-[28px] font-medium tracking-tight short:sr-only">Jadwal</h1>
         <div className="flex items-center gap-1">
-          <button onClick={() => setDate(addDays(date, -1))} aria-label="Hari sebelumnya" className="flex size-11 items-center justify-center rounded-[10px] border border-line bg-card">
+          <button onClick={() => setDate(addDays(date, -1))} aria-label="Hari sebelumnya" className="flex size-11 items-center justify-center rounded-[14px] border border-line bg-card">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg>
           </button>
           <DateInput aria-label="Pilih tanggal" value={date} onChange={(e) => e.target.value && setDate(e.target.value)}
             display={(d) => <span aria-live="polite">{formatTanggal(`${d}T12:00:00+07:00`)}</span>}
-            className="h-11 w-auto min-w-[150px] justify-center border-line px-3.5 text-sm font-semibold xl:min-w-[220px]" />
-          <button onClick={() => setDate(addDays(date, 1))} aria-label="Hari berikutnya" className="flex size-11 items-center justify-center rounded-[10px] border border-line bg-card">
+            className="h-11 w-auto min-w-[150px] justify-center border-line px-3.5 text-sm font-medium xl:min-w-[220px]" />
+          <button onClick={() => setDate(addDays(date, 1))} aria-label="Hari berikutnya" className="flex size-11 items-center justify-center rounded-[14px] border border-line bg-card">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg>
           </button>
-          <button onClick={() => setDate(today)} aria-pressed={date === today} className="h-11 rounded-[10px] border border-line bg-card px-4 text-sm font-semibold">Hari ini</button>
+          <button onClick={() => setDate(today)} aria-pressed={date === today} className="h-11 rounded-[14px] border border-line bg-card px-4 text-sm font-medium">Hari ini</button>
         </div>
-        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[10px] bg-[#EAEAE5] p-1">
+        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[14px] bg-[#EDE8EE] p-1">
           {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
             <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
-              className={`h-9 rounded-lg px-3.5 text-[13px] font-bold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
+              className={`h-9 rounded-[14px] px-3.5 text-[13px] font-semibold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
           ))}
         </div>
         <div className="flex-1" />
@@ -186,9 +186,9 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
 
       {/* hari ini: izin sudah tampil di panel Sekarang */}
       {date !== today && !!offs?.length && (
-        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[10px] bg-[#EFEFEB] px-3 py-2 text-[13px] text-[#4A4C46]">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#EFEAEF] px-3 py-2 text-[13px] text-[#4D4A55]">
           <b>Izin / cuti:</b>
-          {[...new Map(offs.map((o) => [o.staff_id, o])).values()].map((o) => <span key={o.id} className="rounded-full bg-card px-2.5 py-1 font-semibold">{master.staff.find((s) => s.id === o.staff_id)?.name} · {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}</span>)}
+          {[...new Map(offs.map((o) => [o.staff_id, o])).values()].map((o) => <span key={o.id} className="rounded-full bg-card px-2.5 py-1 font-medium">{master.staff.find((s) => s.id === o.staff_id)?.name} · {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}</span>)}
         </div>
       )}
 
@@ -199,10 +199,10 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
               <div className="sticky left-0 z-[1] w-14 shrink-0 bg-card" />
               {cols.map((c) => (
-                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDEDE9] px-2.5 py-2">
-                  <span className="truncate text-[13px] font-bold">{c.title}</span>
+                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDE8EE] px-2.5 py-2">
+                  <span className="truncate text-[13px] font-semibold">{c.title}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
-                    <span className="shrink-0 rounded-md px-1.5 py-px text-[11px] font-semibold" style={{ background: c.tone.bg, color: c.tone.fg }}>{c.label}</span>
+                    <span className="shrink-0 rounded-md bg-paper px-1.5 py-px text-[11px] font-medium text-muted">{c.label}</span>
                     <span className="truncate text-xs text-muted">{dayOff(c) !== null ? `Libur · ${dayOff(c)}` : c.sub}</span>
                   </span>
                 </div>
@@ -215,13 +215,13 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                 ))}
               </div>
               {cols.map((c) => (
-                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#EDEDE9]"
+                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#EDE8EE]"
                   style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)` }}>
                   {/* di luar jam buka: arsir abu-abu (tetap bisa melihat kartu walk-in larut) */}
-                  {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F4F2ED]/70" style={{ height: (open - gOpen) * px }} />}
-                  {gClose > close && <div aria-hidden="true" className="absolute inset-x-0 bg-[#F4F2ED]/70" style={{ top: (close - gOpen) * px, height: (gClose - close) * px }} />}
+                  {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F6F4F7]/70" style={{ height: (open - gOpen) * px }} />}
+                  {gClose > close && <div aria-hidden="true" className="absolute inset-x-0 bg-[#F6F4F7]/70" style={{ top: (close - gOpen) * px, height: (gClose - close) * px }} />}
                   {dayOff(c) !== null && (
-                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-start justify-center pt-6 text-[13px] font-semibold text-muted"
+                    <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-start justify-center pt-6 text-[13px] font-medium text-muted"
                       style={{ backgroundImage: "repeating-linear-gradient(135deg, #F4F2ED 0, #F4F2ED 8px, transparent 8px, transparent 16px)" }}>
                       <span className="sticky top-16 rounded-full bg-card px-3 py-1 shadow-sm">Tidak aktif · {dayOff(c)} libur</span>
                     </div>
@@ -288,7 +288,7 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
   const action = NEXT_LABEL[a.status];
   const hasAction = !!action || a.status === "completed";
   // tombol aksi di kolom kanan (tengah vertikal); teks kartu berhenti sebelum tombol
-  const pill = "absolute right-1.5 top-1/2 z-[2] flex h-7 -translate-y-1/2 items-center rounded-md px-2 text-[11px] font-bold shadow-sm";
+  const pill = "absolute right-1.5 top-1/2 z-[2] flex h-7 -translate-y-1/2 items-center rounded-md px-2 text-[11px] font-semibold shadow-sm";
   return (
     <div className="absolute inset-x-1 z-[1]" style={{ top, height: h }}>
     <button
@@ -297,24 +297,24 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
       onContextMenu={(e) => { e.preventDefault(); onQuick(); }}
       onPointerDown={(e) => { if (e.pointerType !== "mouse") press.current = setTimeout(() => { long.current = true; onQuick(); }, 550); }}
       onPointerUp={() => clearTimeout(press.current)} onPointerLeave={() => clearTimeout(press.current)}
-      className={`flex h-full w-full flex-col gap-px overflow-hidden rounded-lg border py-1 pl-2 text-left ${hasAction ? "pr-[76px]" : "pr-2"} ${a.status === "pending_review" ? "border-2 border-dashed" : ""}`}
+      className={`flex h-full w-full flex-col gap-px overflow-hidden rounded-[14px] border py-1 pl-2 text-left ${hasAction ? "pr-[76px]" : "pr-2"} ${a.status === "pending_review" ? "border-2 border-dashed" : ""}`}
       style={{ background: "#FFFFFF", color: "#1F2320", borderColor: "#E5E5E0", borderLeft: `3px solid ${S.dot}`,
         outline: selected ? `2px solid ${S.dot}` : undefined, outlineOffset: 1 }}>
-      <span className="flex w-full items-center gap-1.5 text-xs font-bold">
+      <span className="flex w-full items-center gap-1.5 text-xs font-semibold">
         <span className="size-[7px] shrink-0 rounded-full" style={{ background: S.dot }} />
         <span className="flex-1 truncate">{apptName(a)}</span>
-        {a.source === "online" && <span className="rounded bg-ink px-1.5 text-[10px] font-bold text-white">Online</span>}
-        {a.status === "pending_review" && <span className="rounded border border-ink px-1 text-[10px] font-bold">Menunggu</span>}
-        {conflict && <span className="rounded bg-[#6E1616] px-1.5 text-[10px] font-bold text-white">Bentrok</span>}
-        {a.change_request && <span className="rounded bg-[#B25E00] px-1.5 text-[10px] font-bold text-white">Minta ubah</span>}
-        {off && <span className="rounded bg-[#4A4C46] px-1.5 text-[10px] font-bold text-white">Izin</span>}
+        {a.source === "online" && <span className="rounded bg-accent px-1.5 text-[10px] font-semibold text-white">Online</span>}
+        {a.status === "pending_review" && <span className="rounded border border-accent px-1 text-[10px] font-semibold">Menunggu</span>}
+        {conflict && <span className="rounded bg-[#6E1616] px-1.5 text-[10px] font-semibold text-white">Bentrok</span>}
+        {a.change_request && <span className="rounded bg-[#4D4A55] px-1.5 text-[10px] font-semibold text-white">Minta ubah</span>}
+        {off && <span className="rounded bg-[#4D4A55] px-1.5 text-[10px] font-semibold text-white">Izin</span>}
       </span>
       {/* kartu pendek (≤ ±30 menit): cukup nama; jam & layanan ada di detail (audit 30 Okt) */}
       {h >= 56 && <span className="truncate text-xs tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {who ?? staff}</span>}
       {h >= 72 && <span className="truncate text-xs opacity-85">{svc}</span>}
     </button>
-    {action && <button onClick={onQuick} aria-label={`${action} ${apptName(a)}`} className={`${pill} bg-ink text-white`}>{action} ▸</button>}
-    {a.status === "completed" && <Link href={payHref} aria-label={`Bayar ${apptName(a)}`} className={`${pill} bg-[#A12A2A] text-white`}>Bayar ▸</Link>}
+    {action && <button onClick={onQuick} aria-label={`${action} ${apptName(a)}`} className={`${pill} bg-accent text-white`}>{action} ▸</button>}
+    {a.status === "completed" && <Link href={payHref} aria-label={`Bayar ${apptName(a)}`} className={`${pill} bg-accent text-white`}>Bayar ▸</Link>}
     </div>
   );
 }
@@ -333,30 +333,31 @@ function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
         const cur = n.current;
         const chair = master.resources.find((r) => r.id === (cur?.resource_id ?? s.home_resource_id))?.name;
         return (
-          <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-xl border px-3 py-2 text-[13px] short:min-w-[230px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5 ${n.free ? "border-[#BFE0C8] bg-[#F2F9F4]" : "border-line bg-card"}`}>
+          <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-[14px] border px-3 py-2 text-[13px] short:min-w-[230px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5 border-line bg-card`}>
             <span className="flex items-center gap-1.5 short:min-w-0 short:flex-1"><b className="min-w-0 flex-1 truncate">{s.name}</b>
-              <span className={`shrink-0 whitespace-nowrap rounded-full px-2 text-[11px] font-bold ${n.off ? "bg-[#EFEFEB] text-muted" : n.free ? "bg-[#D9F2E1] text-[#144D2A]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
+              <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-paper px-2 py-0.5 text-[11px] font-medium text-ink">
+                <span aria-hidden="true" className={`size-1.5 rounded-full ${n.off ? "bg-[#9C98A3]" : n.free ? "bg-[#1F7A45]" : "bg-[#C98A00]"}`} />
                 {n.off ? "Izin" : n.free ? "Kosong" : !cur ? "Ada booking" : cur.status === "arrived" ? "Menunggu" : "Melayani"}</span></span>
-            {chair && <span className="-mt-1 truncate text-xs font-semibold text-muted short:hidden">{chair}</span>}
+            {chair && <span className="-mt-1 truncate text-xs font-medium text-muted short:hidden">{chair}</span>}
             {cur ? (
               <button onClick={() => onOpen(cur.id)} className="truncate text-left text-muted short:hidden">{apptName(cur)} · s/d {formatJam(new Date(occupiedEnd(cur)))}</button>
             ) : <span className="text-muted short:hidden">{n.off ? "Tidak bisa dipilih hari ini" : "Siap menerima pelanggan"}</span>}
             <span className="truncate text-xs text-muted short:hidden">{n.next ? `Berikutnya ${formatJam(n.next.start_at)} · ${apptName(n.next)}` : "Tidak ada booking berikutnya"}</span>
             <div className="mt-1 flex gap-1.5 short:mt-0 empty:hidden">
-              {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} aria-label={`Selesai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Selesai</button>}
-              {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} aria-label={`Mulai ${apptName(cur)}`} className="h-8 rounded-lg bg-ink px-3 text-xs font-bold text-white">Mulai</button>}
-              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 whitespace-nowrap rounded-lg border border-ink px-3 text-xs font-bold">+ Walk-in</button>}
+              {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} aria-label={`Selesai ${apptName(cur)}`} className="h-8 rounded-[14px] bg-accent-soft px-3 text-xs font-medium text-accent">Selesai</button>}
+              {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} aria-label={`Mulai ${apptName(cur)}`} className="h-8 rounded-[14px] bg-accent-soft px-3 text-xs font-medium text-accent">Mulai</button>}
+              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 whitespace-nowrap rounded-[14px] border border-input px-3 text-xs font-medium text-ink hover:bg-paper">+ Walk-in</button>}
             </div>
           </div>
         );
       })}
       {unpaid.length > 0 && (
-        <div className="flex min-w-[190px] flex-col gap-1 rounded-xl border border-[#E8C3C4] bg-[#FFF7F7] px-3 py-2 text-[13px] short:min-w-[170px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5">
-          <b className="text-[#6E1616]">Belum bayar · {unpaid.length}</b>
-          <Link href={`${master.base}/kasir`} className="hidden rounded-md bg-[#A12A2A] px-2 text-[11px] font-bold leading-6 text-white short:inline">Bayar ▸</Link>
+        <div className="flex min-w-[190px] flex-col gap-1 rounded-[14px] border border-line bg-card px-3 py-2 text-[13px] short:min-w-[170px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5">
+          <b className="text-ink">Belum bayar · {unpaid.length}</b>
+          <Link href={`${master.base}/kasir`} className="hidden rounded-md bg-[#A12A2A] px-2 text-[11px] font-semibold leading-6 text-white short:inline">Bayar ▸</Link>
           {unpaid.slice(0, 3).map((a) => (
             <Link key={a.id} href={`${master.base}/kasir?booking=${a.id}`} className="flex items-center gap-2 truncate short:hidden">
-              <span className="flex-1 truncate">{apptName(a)}</span><span className="rounded-md bg-[#A12A2A] px-2 text-[11px] font-bold leading-6 text-white">Bayar ▸</span>
+              <span className="flex-1 truncate">{apptName(a)}</span><span className="rounded-md bg-[#A12A2A] px-2 text-[11px] font-semibold leading-6 text-white">Bayar ▸</span>
             </Link>
           ))}
           {unpaid.length > 3 && <span className="text-xs text-muted short:hidden">+{unpaid.length - 3} lainnya</span>}

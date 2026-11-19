@@ -18,18 +18,19 @@ export function KasirScreen({ master, initialAppt, bonusLine }: { master: Master
   const [tab, setTab] = useState<Tab>((TABS.find(([k]) => k === params.get("tab"))?.[0]) ?? "kasir");
   // ≥1000px: satu layar tanpa scroll halaman; di bawahnya kolom bertumpuk & halaman bisa di-scroll
   return (
-    <div className="flex flex-col gap-3 min-[1000px]:h-[calc(100dvh-80px)] xl:h-[calc(100dvh-88px)]">
-      <div className="no-print flex min-h-12 flex-wrap items-center gap-4">
-        <h1 className="font-display text-[28px] font-bold tracking-tight">Kasir</h1>
-        <div role="tablist" aria-label="Bagian kasir" className="flex max-w-full gap-1.5 overflow-x-auto">
+    <div className="flex flex-col gap-4 min-[1000px]:h-[calc(100dvh-112px)]">
+      <div className="no-print flex flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-display text-[28px] font-medium tracking-tight">Kasir</h1>
+          {bonusLine && <span className="rounded-full border border-line bg-card px-3 py-1 text-xs text-muted">{bonusLine}</span>}
+          <span className="ml-auto"><PrinterButton /></span>
+        </div>
+        <div role="tablist" aria-label="Bagian kasir" className="flex max-w-full gap-1 overflow-x-auto border-b border-line">
           {TABS.filter(([k]) => k !== "target" || master.role === "cashier").map(([k, l]) => (
             <button key={k} role="tab" aria-selected={tab === k} onClick={() => setTab(k)}
-              className={`h-11 shrink-0 rounded-full border px-4 text-[13px] font-bold ${tab === k ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`}>{l}</button>
+              className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-4 text-sm font-medium text-muted hover:text-ink aria-selected:border-accent aria-selected:font-semibold aria-selected:text-accent">{l}</button>
           ))}
         </div>
-        <span className="hidden text-[13px] text-muted xl:inline">Gabungkan layanan barbershop &amp; nail dalam satu tagihan</span>
-        {bonusLine && <span className="text-[13px] text-muted">{bonusLine}</span>}
-        <span className="ml-auto"><PrinterButton /></span>
       </div>
       {tab === "kasir" && <Pos master={master} initialAppt={initialAppt} />}
       {tab === "riwayat" && <History master={master} txParam={params.get("tx")} />}

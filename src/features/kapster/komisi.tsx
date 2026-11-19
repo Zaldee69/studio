@@ -54,17 +54,17 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
   useEffect(() => { if (s?.closed) createClient().rpc("mark_notifications_read"); }, [s?.closed]);
   return (
     <>
-      <h1 className="font-display text-[26px] font-bold">Komisi saya</h1>
-      {!payMonthly && <section aria-label="Komisi mingguan" className="flex flex-col rounded-[18px] bg-card px-4 py-2">
-        <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Komisi mingguan · dibayar per minggu (Senin–Minggu)</span>
+      <h1 className="font-display text-[26px] font-medium">Komisi saya</h1>
+      {!payMonthly && <section aria-label="Komisi mingguan" className="flex flex-col rounded-[14px] bg-card px-4 py-2">
+        <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Komisi mingguan · dibayar per minggu (Senin–Minggu)</span>
         {[[thisWeek, wk?.now, "Minggu ini · berjalan"], ...(wk?.prev && !wk.prev.closed ? [[lastWeek, wk.prev, "Menunggu ditutup manajer"]] : [])].map(([w, r, note]) => (
-          <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+          <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EFEAEF] text-sm tabular">
             <span className="flex flex-col"><b>{weekLabel(String(w))}</b><span className="text-xs text-muted">{String(note)}</span></span>
             <b>{r && typeof r === "object" ? formatRupiah(Number(r.amount)) : "Rp0"}</b>
           </div>
         ))}
         {wk?.closed.map(([w, c]) => (
-          <div key={w} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+          <div key={w} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#EFEAEF] text-sm tabular">
             <span className="flex flex-col"><b>{weekLabel(w)}</b>
               <span className={`text-xs ${c.paid_at ? "text-[#144D2A]" : "text-[#5A4300]"}`}>{c.paid_at ? `Dibayar ${formatTanggal(c.paid_at)} · ${c.paid_method}` : "Final · menunggu dibayar"}</span></span>
             <b>{formatRupiah(c.amount)}</b>
@@ -73,27 +73,27 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       </section>}
 
       <div className="flex flex-wrap items-center gap-2.5">
-        <h2 className="flex-1 font-display text-xl font-bold">{payMonthly ? "Gaji bulanan" : "Rekap bulanan"}</h2>
+        <h2 className="flex-1 font-display text-xl font-semibold">{payMonthly ? "Gaji bulanan" : "Rekap bulanan"}</h2>
         <label htmlFor="km-month" className="sr-only">Bulan</label>
         <NativeSelect id="km-month" value={month} onChange={(e) => setMonth(e.target.value)} className="w-auto">
           {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
         </NativeSelect>
       </div>
       {!payMonthly ? (
-        <span className="-mt-2 self-start rounded-xl bg-card px-2.5 py-1 text-xs font-semibold text-muted">Ringkasan saja — bayaran Anda dibayar per minggu (lihat di atas)</span>
+        <span className="-mt-2 self-start rounded-[14px] bg-card px-2.5 py-1 text-xs font-medium text-muted">Ringkasan saja — bayaran Anda dibayar per minggu (lihat di atas)</span>
       ) : s?.closed ? (
-        <span className="-mt-2 self-start rounded-xl bg-[#E6F1E4] px-2.5 py-1 text-xs font-semibold text-[#144D2A]">
+        <span className="-mt-2 self-start rounded-[14px] bg-[#E6F1E4] px-2.5 py-1 text-xs font-medium text-[#144D2A]">
           Final{s.paid_at ? ` · dibayar ${formatTanggal(s.paid_at)} (${s.paid_method})` : " · belum dibayar"}
         </span>
       ) : (
-        <span className="-mt-2 self-start rounded-xl bg-[#FBF3DE] px-2.5 py-1 text-xs font-semibold text-[#5A4300]">Estimasi — angka final ditetapkan manajer</span>
+        <span className="-mt-2 self-start rounded-[14px] bg-[#FBF3DE] px-2.5 py-1 text-xs font-medium text-[#5A4300]">Estimasi — angka final ditetapkan manajer</span>
       )}
 
-      <section className="flex flex-col gap-1.5 rounded-[18px] bg-ink p-5 text-paper">
-        <span className="text-[13px] text-[#9A9C95]">{!payMonthly ? "Total komisi" : s?.closed ? "Total dibayar" : "Perkiraan diterima"} · {monthLabel(month)}</span>
+      <section className="flex flex-col gap-1.5 rounded-[14px] bg-accent p-5 text-paper">
+        <span className="text-[13px] text-[#9C98A3]">{!payMonthly ? "Total komisi" : s?.closed ? "Total dibayar" : "Perkiraan diterima"} · {monthLabel(month)}</span>
         <b className="font-display text-[40px] tracking-tight tabular">{s ? formatRupiah(s.total_pay) : "…"}</b>
         {s && (
-          <span className="text-[13px] text-[#D6D6D0] tabular">
+          <span className="text-[13px] text-[#DDD7E0] tabular">
             {s.base_salary > 0 && `Gaji pokok ${formatRupiah(s.base_salary)} + `}Komisi jasa {formatRupiah(s.commission_service)}
             {s.commission_retail > 0 && ` + ritel ${formatRupiah(s.commission_retail)}`}
             {s.subsidy > 0 && ` + subsidi jaring ${dailyMin ? "harian" : "pengaman"} ${formatRupiah(s.subsidy)}`}
@@ -101,7 +101,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
           </span>
         )}
         {s && payMonthly && paidWeekly > 0 && (
-          <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#D6D6D0] tabular">
+          <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#DDD7E0] tabular">
             Sudah dibayar mingguan −{formatRupiah(paidWeekly)} · <b className="text-paper">sisa akhir bulan {formatRupiah(s.total_pay - paidWeekly)}</b>
           </span>
         )}
@@ -113,7 +113,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
         ))}
       </div>
       {s && s.subsidy > 0 && !!dailyMin && (
-        <div className="rounded-xl bg-card px-3.5 py-3 text-sm leading-normal tabular">
+        <div className="rounded-[14px] bg-card px-3.5 py-3 text-sm leading-normal tabular">
           Jaring harian {formatRupiah(dailyMin)}: di hari Anda melayani dan komisinya di bawah itu, toko menutup selisihnya — bulan ini <b>{formatRupiah(s.subsidy)}</b>, dibayar bersama komisi mingguan.
         </div>
       )}
@@ -121,21 +121,21 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
         Komisi per layanan = (harga {gross ? "normal, sebelum diskon/promo" : "bersih"}{deductHpp && " − HPP bahan"}) × {s?.commission_pct ?? ratio}%.{retailPct > 0 && ` Produk ritel yang Anda jual: ${retailPct}% dari harga ${gross ? "normal" : "bersih"}.`}{payMonthly && " Gaji dan komisi dibayar sekali di akhir bulan."}
       </span>
       {!!data?.adj.length && (
-        <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">
-          <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Bonus & potongan</span>
+        <section className="flex flex-col rounded-[14px] bg-card px-4 py-2">
+          <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Bonus & potongan</span>
           {data.adj.map((a) => (
-            <div key={a.id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+            <div key={a.id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#EFEAEF] text-sm tabular">
               <span>{a.reason}</span><b className={a.amount < 0 ? "text-[#A12A2A]" : ""}>{a.amount < 0 ? "−" : "+"}{formatRupiah(Math.abs(a.amount))}</b>
             </div>
           ))}
         </section>
       )}
 
-      <section className="flex flex-col rounded-[18px] bg-card px-4 py-2">
-        <span className="py-2.5 text-xs font-bold uppercase tracking-[0.06em] text-muted">Rincian</span>
+      <section className="flex flex-col rounded-[14px] bg-card px-4 py-2">
+        <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Rincian</span>
         {data && !data.items.length && <span className="pb-3 text-sm text-muted">Belum ada layanan bulan ini.</span>}
         {data?.items.map((it) => (
-          <div key={it.transaction_item_id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#EEEEEA] text-sm tabular">
+          <div key={it.transaction_item_id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#EFEAEF] text-sm tabular">
             <span className="flex flex-col"><b>{it.name}{it.category === "retail" && " · ritel"}</b><span className="text-xs text-muted">{formatTanggal(it.created_at)} {formatJam(it.created_at)}</span></span>
             <b>{formatRupiah(Number(it.commission))}</b>
           </div>

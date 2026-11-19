@@ -80,38 +80,38 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Menu capster" className="hidden gap-1 min-[900px]:flex">
           {TABS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-              className={`relative flex h-10 items-center rounded-[10px] px-3.5 text-sm font-bold ${path === href ? "bg-[#ECEEE8] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
+              className={`relative flex h-10 items-center rounded-[14px] px-3.5 text-sm font-semibold ${path === href ? "bg-[#EFEAEF] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
               {label}{badge(href) > 0 && <span className="ml-1.5 rounded-full bg-[#D23B3B] px-1.5 text-[11px] text-white tabular">{badge(href)}</span>}
             </Link>
           ))}
         </nav>
         <div className="relative">
           <button onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label="Menu"
-            className="flex size-10 items-center justify-center rounded-[10px] border border-line text-muted">
+            className="flex size-10 items-center justify-center rounded-[14px] border border-line text-muted">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" /></svg>
           </button>
           {menu && (
-            <div className="absolute right-0 top-12 z-30 flex w-72 flex-col gap-2 rounded-2xl bg-card p-3 text-ink shadow-[0_16px_40px_rgba(28,27,25,0.25)]">
-              <Link href="/kapster/izin" onClick={() => setMenu(false)} className="flex min-h-12 items-center justify-between rounded-xl px-3 text-sm font-semibold hover:bg-paper">
+            <div className="absolute right-0 top-12 z-30 flex w-72 flex-col gap-2 rounded-[14px] bg-card p-3 text-ink shadow-[0_16px_40px_rgba(28,27,25,0.25)]">
+              <Link href="/kapster/izin" onClick={() => setMenu(false)} className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-sm font-medium hover:bg-paper">
                 Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D23B3B] px-2 text-[11px] text-white tabular">{pending}</span>}
               </Link>
-              <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-sm font-semibold hover:bg-paper">
-                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${muted ? "bg-[#EDEDE9] text-muted" : "bg-[#E6F1E4] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
+              <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper">
+                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${muted ? "bg-[#EDE8EE] text-muted" : "bg-[#E6F1E4] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
               </button>
               {!me.station && (
                 <button onClick={togglePush} disabled={!pushSupported() && !push} aria-pressed={!!push}
-                  className="flex min-h-12 items-center justify-between rounded-xl px-3 text-left text-sm font-semibold hover:bg-paper disabled:opacity-50">
+                  className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper disabled:opacity-50">
                   Notifikasi push (walau aplikasi ditutup)
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${push ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EDEDE9] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${push ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EDE8EE] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
                 </button>
               )}
             </div>
           )}
         </div>
         {me.station ? (
-          <form action={stationLogout}><button className="h-10 rounded-[10px] bg-paper px-3 text-[13px] font-bold text-ink">Ganti capster</button></form>
+          <form action={stationLogout}><button className="h-10 rounded-[14px] bg-paper px-3 text-[13px] font-semibold text-ink">Ganti capster</button></form>
         ) : (
-          <form action={signOut}><button aria-label={`Keluar dari akun ${me.name}`} className="h-10 rounded-[10px] border border-line px-3 text-[13px] font-bold text-muted hover:text-ink">Keluar</button></form>
+          <form action={signOut}><button aria-label={`Keluar dari akun ${me.name}`} className="h-10 rounded-[14px] border border-line px-3 text-[13px] font-semibold text-muted hover:text-ink">Keluar</button></form>
         )}
       </header>
       <OfflineBanner />
@@ -119,8 +119,8 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
       <nav aria-label="Menu capster" style={{ gridTemplateColumns: `repeat(${TABS.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-20 grid h-[72px] border-t border-line bg-card min-[900px]:hidden">
         {TABS.map(([href, label]) => (
           <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-            className={`relative flex flex-col items-center justify-center gap-1 text-xs font-bold ${path === href ? "text-ink" : "text-muted"}`}>
-            <span className={`h-1 w-7 rounded-sm ${path === href ? "bg-ink" : "bg-transparent"}`} />
+            className={`relative flex flex-col items-center justify-center gap-1 text-xs font-semibold ${path === href ? "text-ink" : "text-muted"}`}>
+            <span className={`h-1 w-7 rounded-sm ${path === href ? "bg-accent" : "bg-transparent"}`} />
             {label}
             {badge(href) > 0 && (
               <span aria-label={`${badge(href)} menunggu`} className="absolute right-[22%] top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{badge(href)}</span>

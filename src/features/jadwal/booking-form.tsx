@@ -241,16 +241,16 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     onSaved(date);
   }
 
-  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${on ? "border-ink bg-ink text-white" : "border-[#DCDCD6] bg-card"}`;
+  const chip = (on: boolean) => `min-h-11 rounded-full border px-3.5 text-[13px] font-medium disabled:cursor-not-allowed disabled:opacity-40 ${on ? "border-accent bg-accent-soft text-accent" : "border-line bg-card text-ink"}`;
   const resOptions = (c: Cat) => master.resources.filter((r) => r.type === c);
   const staffOptions = (c: Cat, s: string, e: string) => activeStaff.filter((x) => x.category === c).map((x) => (
     <option key={x.id} value={x.id}>{x.name}{approvedOffFor(dayOffs ?? [], x.id, s, e) ? " (izin)" : ""}</option>
   ));
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4 p-6">
-      <div className="flex items-center gap-3">
-        <h2 className="flex-1 font-display text-2xl font-bold">{edit ? "Ubah booking" : "Booking baru"}</h2>
+    <form onSubmit={(e) => { e.preventDefault(); save(); }} className="flex flex-col gap-4 px-6">
+      <div className="sticky top-0 z-10 -mx-6 flex items-center gap-3 border-b border-line bg-card px-6 py-4">
+        <h2 className="flex-1 font-display text-xl font-medium">{edit ? "Ubah booking" : "Booking baru"}</h2>
         <CloseButton onClick={onClose} />
       </div>
 
@@ -278,7 +278,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </div>
 
       {edit ? (
-        <p className="rounded-[10px] bg-paper px-3 py-2.5 text-sm"><b>{apptName(edit)}</b>{edit.customer?.whatsapp && <span className="text-muted tabular"> · {edit.customer.whatsapp}</span>}</p>
+        <p className="rounded-[14px] bg-paper px-3 py-2.5 text-sm"><b>{apptName(edit)}</b>{edit.customer?.whatsapp && <span className="text-muted tabular"> · {edit.customer.whatsapp}</span>}</p>
       ) : (
         <>
           <Field label="Pelanggan" htmlFor="f-cust">
@@ -309,7 +309,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 </Field>
               )}
               {existingOwner && (
-                <p role="status" className="rounded-[10px] bg-[#ECEEE8] px-3 py-2 text-[13px] text-[#262B24] min-[520px]:col-span-2">
+                <p role="status" className="rounded-[14px] bg-[#EFEAEF] px-3 py-2 text-[13px] text-[#1D1E20] min-[520px]:col-span-2">
                   No. WA ini sudah terdaftar atas nama <b>{existingOwner}</b> — booking akan memakai pelanggan tersebut.
                 </p>
               )}
@@ -319,17 +319,17 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       )}
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-xs font-bold text-muted">
+        <legend className="mb-1 text-xs font-semibold text-muted">
           Layanan {edit ? `(${CAT_NAME[cat]})` : "— layanan kategori lain = booking kedua (pasangan) di jam yang sama"}
         </legend>
         <div className="flex flex-wrap items-center gap-2">
-          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1 rounded-[10px] bg-paper p-1">
+          <div role="tablist" aria-label="Kategori layanan" className="flex gap-1 rounded-[14px] bg-paper p-1">
             {svcCats.map((c) => {
               const n = [...sel, ...pair.sel].filter((id) => svcById.get(id)?.category === c).length;
               return (
                 <button type="button" role="tab" key={c} aria-selected={tab === c} onClick={() => { setSvcTab(c); setSvcQ(""); }}
-                  className={`h-9 rounded-lg px-3 text-[13px] font-bold ${tab === c && !q ? "bg-card shadow-sm" : "text-muted"}`}>
-                  {CAT_NAME[c]}{n > 0 && <span className="ml-1 rounded-full bg-ink px-1.5 text-[11px] text-white">{n}</span>}
+                  className={`h-9 rounded-[14px] px-3 text-[13px] font-semibold ${tab === c && !q ? "bg-card shadow-sm" : "text-muted"}`}>
+                  {CAT_NAME[c]}{n > 0 && <span className="ml-1 rounded-full bg-paper px-1.5 text-[11px] text-muted">{n}</span>}
                 </button>
               );
             })}
@@ -361,11 +361,11 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         </Field>
         {!edit && (
           <fieldset className="flex min-w-0 flex-col gap-1.5">
-            <legend className="mb-1.5 text-xs font-bold text-muted">Sumber</legend>
+            <legend className="mb-1.5 text-xs font-semibold text-muted">Sumber</legend>
             <div className="grid grid-cols-3 gap-1.5">
               {([["walk_in", "Walk-in"], ["whatsapp", "WhatsApp"], ["admin", "Admin"]] as const).map(([v, l]) => (
                 <button type="button" key={v} aria-pressed={source === v} onClick={() => setSourcePick(v)}
-                  className={`min-h-11 rounded-[10px] border-2 text-[13px] font-bold ${source === v ? "border-ink bg-ink text-white" : "border-line bg-card"}`}>{l}</button>
+                  className={`min-h-11 rounded-[14px] border text-[13px] font-medium ${source === v ? "border-accent bg-accent-soft text-accent" : "border-line bg-card text-ink"}`}>{l}</button>
               ))}
             </div>
           </fieldset>
@@ -373,7 +373,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </div>
 
       {pair.sel.length > 0 && (
-        <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[12px] border border-dashed border-[#C9CAC3] p-3.5">
+        <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[14px] border border-line bg-paper p-4">
           <b className="text-sm">Booking kedua · {CAT_NAME[pairCat]} <span className="font-normal text-muted">— jam sama ({minToTime(start)}, {pairDur} mnt), pelanggan sama</span></b>
           <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
             <Field label="Kursi / meja" htmlFor="f-res2">
@@ -396,35 +396,35 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       </Field>
 
       {lines.length > 0 && (
-        <div className="flex items-baseline justify-between gap-3 rounded-[10px] bg-paper px-3.5 py-2.5 text-sm tabular">
+        <div className="flex items-baseline justify-between gap-3 rounded-[14px] bg-paper px-3.5 py-2.5 text-sm tabular">
           <span className="text-muted">Perkiraan tagihan{discount > 0 ? ` · paket ${master.shop.bundlePct}% −${formatRupiah(discount)}` : ""}</span>
           <b className="text-base">{formatRupiah(subtotal - discount)}</b>
         </div>
       )}
 
       {(staffOff || pairStaffOff) && (
-        <div role="alert" className="rounded-[10px] bg-[#EFEFEB] px-3.5 py-3 text-[13px] font-semibold text-[#4A4C46]">
+        <div role="alert" className="rounded-[14px] bg-[#EFEAEF] px-3.5 py-3 text-[13px] font-medium text-[#4D4A55]">
           {[staffOff && `${activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti (${offLabel(staffOff)})`,
             pairStaffOff && `${activeStaff.find((s) => s.id === pairStaff)?.name} sedang izin/cuti (${offLabel(pairStaffOff)})`].filter(Boolean).join(" · ")}. Pilih staf lain.
         </div>
       )}
       {notices.length > 0 && (
-        <div role="alert" className="rounded-[10px] bg-[#EFEFEB] px-3.5 py-3 text-[13px] leading-normal text-[#4A4C46]">
+        <div role="alert" className="rounded-[14px] border border-line bg-paper px-4 py-3 text-[13px] leading-normal text-muted">
           <b>Perhatikan:</b> {notices.join(" ")} Anda tetap bisa menyimpan.
         </div>
       )}
       {hasConflict && (
-        <div role="alert" className="flex gap-2.5 rounded-[10px] bg-[#FBF3DE] px-3.5 py-3 text-[13px] leading-normal text-[#5A4300]">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px shrink-0"><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18h.01" /></svg>
+        <div role="alert" className="flex gap-2.5 rounded-[14px] border border-line bg-paper px-4 py-3 text-[13px] leading-normal text-ink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="mt-px shrink-0 text-[#B25E00]"><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18h.01" /></svg>
           <span><b>Jadwal bentrok:</b> {conflictText.join("; ")}{bufferMin ? ` (termasuk jeda ${bufferMin} mnt)` : ""}. Anda tetap bisa menyimpan.</span>
         </div>
       )}
-      {error && <p role="alert" className="text-[13px] font-semibold text-[#A12A2A]">{error}</p>}
+      {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
 
-      <div className="flex justify-end gap-2.5">
-        <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[10px]">Batal</Button>
+      <div className="sticky bottom-0 z-10 -mx-6 mt-2 flex justify-end gap-2.5 border-t border-line bg-paper px-6 py-4">
+        <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[14px]">Batal</Button>
         <button type="submit" disabled={saving || !online}
-          className={buttonClass("plain", `h-12 rounded-[10px] px-6 text-white ${hasConflict ? "bg-[#B25E00] hover:bg-[#8F4B00]" : "bg-ink hover:bg-[#353A33]"}`)}>
+          className={buttonClass("plain", "h-12 rounded-[14px] bg-accent px-6 text-white hover:bg-accent-ink")}>
           {saving ? "Menyimpan…" : hasConflict ? "Tetap simpan" : edit ? "Simpan perubahan" : pair.sel.length ? "Simpan 2 booking" : "Simpan booking"}
         </button>
       </div>

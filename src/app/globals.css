@@ -4,17 +4,24 @@
 
 /* Layar pendek (tinggi <700px, mis. tablet kecil mendatar): tampilan dipadatkan, mis. Jadwal (keluhan manajer 10 Nov). */
 @custom-variant short (@media (max-height: 700px));
+/* Aplikasi hanya punya tema terang: varian dark: dimatikan agar tidak mengikuti mode gelap sistem. */
+@custom-variant dark (&:where(.tema-gelap-tidak-ada, .tema-gelap-tidak-ada *));
 
 @theme {
-  /* admin — terang & bersih: abu netral, kartu putih, aksen olive brand D'Pras */
-  --color-paper: #f5f5f3;
+  /* aplikasi tim (redesign Nov 2026) — terang, lavender lembut, kartu putih besar. Satu aksen per klien:
+     ganti hanya --color-accent (NEXT_PUBLIC_ACCENT, lihat layout.tsx); varian gelap & lembut dihitung darinya. */
+  --color-paper: #f6f4f7;  /* latar area konten (diukur dari hPanel) */
+  --color-side: #f2ebf1;   /* rel & menu samping */
   --color-card: #ffffff;
-  --color-ink: #1f2320;
-  --color-muted: #63665f;
-  --color-line: #e5e5e0;
-  --color-accent: #3a4137;
-  --color-accent-ink: #262b24;
-  --color-danger: #b42318;
+  --color-ink: #1d1e20;
+  --color-muted: #6e6b78;
+  --color-line: #e8e3ea;
+  /* gradien latar luar (diukur dari hPanel), kiri → kanan */
+  --grad-1: #9a74d8; --grad-2: #c97cc2; --grad-3: #f0829f; --grad-4: #ff9a7a; --grad-5: #ffb35a;
+  --color-accent: #5e45d8;
+  --color-accent-ink: color-mix(in srgb, var(--color-accent) 80%, black);
+  --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, white);
+  --color-danger: #b3202f;
   /* status kunjungan (latar lembut) */
   --color-st-booked: #fbf6e8;
   --color-st-arrived: #eef3f7;
@@ -39,11 +46,13 @@
   --color-sage: #a4adba;
   --color-rose: #dee3e7;
 
-  --font-display: var(--font-bricolage), system-ui, sans-serif;
-  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-display: var(--font-dm), system-ui, sans-serif;
+  --font-sans: var(--font-dm), system-ui, sans-serif;
   --font-serif: var(--font-cormorant), Georgia, serif;
   --font-jost: var(--font-jost-v), system-ui, sans-serif;
 }
+
+html { color-scheme: only light; }
 
 body {
   background: var(--color-paper);
@@ -56,6 +65,9 @@ body {
 @layer base {
   .overflow-x-auto, .overflow-auto { position: relative; }
 }
+
+/* Tebal bawaan <b>/<strong> (700) terlalu berat untuk nilai & nama di daftar; hierarki hPanel: 400 isi, 500 label, 600 penekanan. */
+@layer base { b, strong { font-weight: 600; } }
 
 /* Dropdown: panah bawaan browser menempel ke tepi — ganti chevron sendiri dengan jarak yang lega.
    Di luar @layer supaya mengalahkan utilitas padding (px-2/px-3) di tiap <select>. */
@@ -135,20 +147,42 @@ select:not([multiple]):not([size]) {
 }
 
 :root {
-  --background: #f5f5f3;          /* paper */
-  --foreground: #1f2320;          /* ink */
-  --card-foreground: #1f2320;
+  --background: #f6f4f7;          /* paper */
+  --foreground: #1d1e20;          /* ink */
+  --card-foreground: #1d1e20;
   --popover: #ffffff;
-  --popover-foreground: #1f2320;
-  --primary: #1f2320;             /* tombol utama (dulu btn-ink) */
+  --popover-foreground: #1d1e20;
+  --primary: var(--color-accent); /* tombol utama */
   --primary-foreground: #ffffff;
   --secondary: #ffffff;           /* tombol outline (dulu btn-ghost) */
-  --secondary-foreground: #1f2320;
-  --muted-foreground: #63665f;    /* = text-muted */
-  --accent-foreground: #1f2320;
-  --destructive: #b42318;         /* = danger */
-  --border: #e5e5e0;              /* = line */
-  --input: #dcdcd6;
-  --ring: #3a4137;                /* = accent */
+  --secondary-foreground: #1d1e20;
+  --muted-foreground: #6e6b78;    /* = text-muted */
+  --accent-foreground: #1d1e20;
+  --destructive: #b3202f;         /* = danger */
+  --border: #e8e3ea;              /* = line */
+  --input: #c9c2cf;
+  --ring: var(--color-accent);
   --radius: 0.625rem;
+}
+
+/* Latar luar aplikasi tim: matahari terbenam yang lembut. Dasar linear ungu → magenta → koral → jingga (token --grad-*),
+   ditimpa tiga cahaya radial (ungu dalam kiri-atas, emas kanan-atas, merah muda tengah-bawah) supaya tidak datar. Tetap (tidak ikut bergulir). */
+@utility bg-hpanel {
+  background:
+    radial-gradient(55% 140% at 0% 0%, rgb(112 84 214 / 0.55), transparent 62%),
+    radial-gradient(45% 130% at 100% 0%, rgb(255 213 110 / 0.60), transparent 62%),
+    radial-gradient(60% 120% at 52% 110%, rgb(255 110 150 / 0.40), transparent 70%),
+    linear-gradient(100deg, var(--grad-1), var(--grad-2) 28%, var(--grad-3) 54%, var(--grad-4) 78%, var(--grad-5));
+  background-attachment: fixed;
+}
+
+/* Scrollbar disembunyikan di seluruh aplikasi (permintaan pemilik); area tetap bisa digulir dengan roda/sentuh/keyboard. */
+* { scrollbar-width: none !important; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none !important; width: 0; height: 0; }
+
+/* Teks isian: 16 px di layar sentuh (iOS memperbesar layar bila <16 px), 14 px di desktop agar sejajar dengan teks lain. */
+@utility field-text {
+  font-size: 16px;
+  line-height: 1.4;
+  @media (pointer: fine) { font-size: 14px; }
 }

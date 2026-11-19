@@ -19,7 +19,6 @@ type Row = {
 };
 type Tpl = { id: string; category: ExpenseCat; description: string; amount: number; source: ExpenseSource; day_of_month: number };
 type Prefill = Omit<Tpl, "day_of_month"> & { templateId: string };
-const PAGE = 20;
 const shiftMonth = (m: string, d: number) => { const t = new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7) - 1 + d, 1)); return t.toISOString().slice(0, 7); };
 const monthName = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
@@ -35,6 +34,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   const [newTpl, setNewTpl] = useState(false);
   const [voiding, setVoiding] = useState<Row | null>(null);
   const [page, setPage] = useState(0);
+  const [size, setSize] = useState(20); // baris per halaman
   const [cat, setCat] = useState<"" | ExpenseCat>("");
   const [q, setQ] = useState("");
   const [qs, setQs] = useState(""); // pencarian yang sudah ditunda 300 ms
@@ -50,7 +50,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
     if (qs) list = list.ilike("description", `%${qs.replace(/[%_]/g, "")}%`);
     // ringkasan bulan penuh (ringan, tanpa halaman) terpisah dari daftar yang dibagi per halaman
     const [rows, sum, lim, closed, staff, tpl] = await Promise.all([
-      list.order("date", { ascending: false }).order("created_at", { ascending: false }).range(page * PAGE, page * PAGE + PAGE - 1),
+      list.order("date", { ascending: false }).order("created_at", { ascending: false }).range(page * size, page * size + size - 1),
       supabase.from("expenses").select("category, amount, template_id, date").gte("date", from).lte("date", to).is("voided_at", null),
       supabase.rpc("expense_limits"), supabase.from("cash_closings").select("id").eq("date", today).limit(1),
       supabase.from("staff").select("id, name").eq("active", true).order("name"),
@@ -59,12 +59,12 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
     if (rows.error) throw rows.error;
     return { rows: rows.data as unknown as Row[], count: rows.count ?? 0, all: (sum.data ?? []) as { category: ExpenseCat; amount: number; template_id: string | null; date: string }[],
       lim: lim.data?.[0] ?? { petty_cash_limit: 0, receipt_required_above: 0 }, todayClosed: !!closed.data?.length, staff: staff.data ?? [], tpl: (tpl.data ?? []) as Tpl[] };
-  }, `${manager ? month : today}:${page}:${cat}:${qs}`);
+  }, `${manager ? month : today}:${page}:${size}:${cat}:${qs}`);
 
   const all = data?.all ?? [];
   const total = all.reduce((a, r) => a + r.amount, 0);
   const byCat = Object.entries(all.reduce<Record<string, number>>((a, r) => ({ ...a, [r.category]: (a[r.category] ?? 0) + r.amount }), {})).sort((a, b) => b[1] - a[1]);
-  const pages = Math.max(1, Math.ceil((data?.count ?? 0) / PAGE));
+  const pages = Math.max(1, Math.ceil((data?.count ?? 0) / size));
 
   async function openReceipt(path: string) {
     const { data, error } = await createClient().storage.from("receipts").createSignedUrl(path, 300);
@@ -183,13 +183,19 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
             </div>
           ))}
         </div>
-        {pages > 1 && (
-          <nav aria-label="Halaman daftar pengeluaran" className="flex items-center justify-between gap-3 border-t border-line pt-3 text-sm">
+        {!!data?.count && (
+          <nav aria-label="Halaman daftar pengeluaran" className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 text-sm">
             <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[14px] px-3">‹ Sebelumnya</Button>
             <span className="tabular text-muted">
-              Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * PAGE + 1}–{Math.min((page + 1) * PAGE, data?.count ?? 0)} dari {data?.count}
+              Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * size + 1}–{Math.min((page + 1) * size, data.count)} dari {data.count}
             </span>
-            <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 rounded-[14px] px-3">Berikutnya ›</Button>
+            <span className="flex items-center gap-2">
+              <label htmlFor="ex-size" className="text-muted">Per halaman</label>
+              <NativeSelect id="ex-size" value={size} onChange={(e) => { setSize(Number(e.target.value)); setPage(0); }} className="h-10 w-20">
+                {[10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+              </NativeSelect>
+              <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 rounded-[14px] px-3">Berikutnya ›</Button>
+            </span>
           </nav>
         )}
       </section>

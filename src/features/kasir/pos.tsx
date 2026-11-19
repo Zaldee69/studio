@@ -1,6 +1,5 @@
 "use client";
 
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -331,10 +330,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {!customer && items.length > 0 && (
                 <div role="status" className="flex flex-col gap-2 rounded-[14px] bg-st-booked px-3 py-2 text-[13px]">
                   <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
-                  <label className="flex min-h-11 items-center gap-2 font-medium">
-                    <Checkbox checked={noCustOk} onCheckedChange={(v) => setNoCustOk(v === true)} className="size-5" />
-                    Pelanggan tidak mau memberi nama/nomor
-                  </label>
+                  <span className="font-medium">Kalau tidak bisa, pilih alasannya:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {([["menolak", "Menolak memberi"], ["tidak_bawa_hp", "Tidak bawa HP"], ["lainnya", "Lainnya"]] as const).map(([v, l]) => (
+                      <Button key={v} type="button" variant={noWaReason === v ? "default" : "outline"} className="h-11 rounded-[14px]"
+                        onClick={() => setNoWaReason(noWaReason === v ? "" : v)}>{l}</Button>
+                    ))}
+                  </div>
                 </div>
               )}
               {recorded && recorded.total > 0 && (

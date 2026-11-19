@@ -148,12 +148,17 @@ export function History({ master, txParam }: { master: Master; txParam: string |
               {master.role === "manager" && !open.voided_at && (voiding ? (
                 <form onSubmit={(e) => { e.preventDefault(); doVoid(); }} className="flex flex-col gap-2 rounded-[14px] border border-[#E8C3C4] p-3">
                   <label htmlFor="void-reason" className="text-xs font-semibold text-[#6E1616]">Alasan pembatalan (wajib)</label>
-                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} />
-                  <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={refund} onChange={(e) => setRefund(e.target.checked)} />Uang tunai dikembalikan ke pelanggan (kurangi kas laci)</label>
+                  <Input id="void-reason" autoFocus required value={reason} onChange={(e) => { setReason(e.target.value); if (noRefundReason(e.target.value)) setRefund(false); }} />
+                  <fieldset className="flex flex-col gap-1 text-xs">
+                    <legend className="font-bold">Uang tunai dikembalikan ke pelanggan? (wajib dipilih)</legend>
+                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === true} onChange={() => setRefund(true)} />Ya, kurangi kas laci</label>
+                    <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === false} onChange={() => setRefund(false)} />Tidak, kas laci tidak berubah</label>
+                  </fieldset>
+                  {noRefundReason(reason) && refund !== false && <p role="alert" className="text-xs font-bold text-[#A12A2A]">Alasan menyebut salah sumber/test: biasanya tidak ada uang keluar. Pilih &quot;Tidak&quot; bila memang begitu.</p>}
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
                     <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
-                    <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Void transaksi</Button>
+                    <Button disabled={!reason.trim() || refund === null || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Void transaksi</Button>
                   </div>
                 </form>
               ) : (

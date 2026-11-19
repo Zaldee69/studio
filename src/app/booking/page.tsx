@@ -20,7 +20,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
   const sp = await searchParams;
   const supabase = await createClient();
   const [{ data: services }, { data: staff }, { data: shop }, { data: hours }, { data: closures }, { data: bookable }, profile] = await Promise.all([
-    supabase.from("public_services").select("id, name, category, price, duration_min, public_description, online_bookable, upsell_service_id").neq("category", "retail").order("sort"),
+    supabase.from("public_services").select("id, name, category, price, duration_min, public_description, online_bookable, upsell_service_id, is_addon").neq("category", "retail").order("sort"),
     supabase.from("public_staff").select("id, name, category, photo_path").order("sort"),
     supabase.from("public_settings").select("*").single(),
     supabase.from("opening_hours").select("weekday, open_time, close_time, closed"),
@@ -70,7 +70,7 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
         : null}
       cats={cats}
       services={(services ?? []).filter((s) => s.online_bookable && (cats as readonly string[]).includes(s.category!)).map((s) => ({
-        id: s.id!, name: s.name!, category: s.category as OnlineCat, price: s.price!, duration: s.duration_min!, upsell: s.upsell_service_id ?? null, description: s.public_description ?? "",
+        id: s.id!, name: s.name!, category: s.category as OnlineCat, price: s.price!, duration: s.duration_min!, upsell: s.upsell_service_id ?? null, addon: !!s.is_addon, description: s.public_description ?? "",
       }))}
       staff={(staff ?? []).flatMap((s) => isOnlineCat(s.category!) ? [{ id: s.id!, name: s.name!, category: s.category, photo: photoUrl(s.photo_path) }] : [])}
       hours={hours ?? []} closures={(closures ?? []).map((c) => c.date)}

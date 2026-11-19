@@ -230,7 +230,7 @@ export default async function Landing() {
             {[["Barbershop", "barbershop"], ["Nail Art", "nail"]].filter(([, c]) => !soon(c)).map(([title, c]) => (
               <div key={c} className="flex flex-col gap-1.5">
                 <h3 className="mb-3 font-serif text-[34px] font-normal italic text-gold">{title}</h3>
-                {list(c).map((x) => (
+                {list(c).filter((x) => !x.is_addon).map((x) => (
                   <div key={x.id} className="flex flex-col gap-0.5 py-3">
                     <div className="flex items-baseline gap-2.5 tabular-nums">
                       <span className="font-serif text-[22px] font-medium">{x.name}</span>
@@ -241,6 +241,20 @@ export default async function Landing() {
                     <span className="text-xs uppercase tracking-[0.14em] text-stone">{x.duration_min} menit</span>
                   </div>
                 ))}
+                {list(c).some((x) => x.is_addon) && (
+                  <div className="mt-4 flex flex-col">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">Tambahan</h4>
+                    {/* satu baris per tambahan: nama · harga · durasi */}
+                    {list(c).filter((x) => x.is_addon).map((x) => (
+                      <div key={x.id} className="flex items-baseline gap-2.5 py-1.5 tabular-nums">
+                        <span className="font-serif text-lg font-medium">{x.name}</span>
+                        <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
+                        {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+                        <span className="w-14 text-right text-xs uppercase tracking-[0.1em] text-stone">{x.duration_min} mnt</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

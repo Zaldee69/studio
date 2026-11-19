@@ -9,7 +9,7 @@ export const loadSite = cache(async () => {
   const db = createPublicClient();
   const [s, services, staff, packs, hours, closures, photos, reviews, bookable] = await Promise.all([
     db.from("public_settings").select("*").single(),
-    db.from("public_services").select("id, name, category, price, duration_min, public_description").neq("category", "retail").order("sort"),
+    db.from("public_services").select("id, name, category, price, duration_min, public_description, is_addon").neq("category", "retail").order("sort"),
     db.from("public_staff").select("id, name, category, photo_path").order("sort"),
     db.from("public_deposit_packages").select("*").order("amount_paid"),
     db.from("opening_hours").select("weekday, open_time, close_time, closed").order("weekday"),

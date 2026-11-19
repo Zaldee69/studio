@@ -2094,13 +2094,13 @@ isOneToOne: false
                   ]
                 },"public_services": {
                   Row: {
-                    "category": Database["public"]['Enums']["service_category"] | null,"duration_min": number | null,"id": string | null,"name": string | null,"needs_pedicure": boolean | null,"online_bookable": boolean | null,"price": number | null,"public_description": string | null,"sort": number | null,"upsell_service_id": string | null
+                    "category": Database["public"]['Enums']["service_category"] | null,"duration_min": number | null,"id": string | null,"is_addon": boolean | null,"name": string | null,"needs_pedicure": boolean | null,"online_bookable": boolean | null,"price": number | null,"public_description": string | null,"sort": number | null,"upsell_service_id": string | null
                   }
                   Insert: {
-                           "category"?: Database["public"]['Enums']["service_category"] | null,"duration_min"?: number | null,"id"?: string | null,"name"?: string | null,"needs_pedicure"?: boolean | null,"online_bookable"?: boolean | null,"price"?: number | null,"public_description"?: string | null,"sort"?: number | null,"upsell_service_id"?: string | null
+                           "category"?: Database["public"]['Enums']["service_category"] | null,"duration_min"?: number | null,"id"?: string | null,"is_addon"?: boolean | null,"name"?: string | null,"needs_pedicure"?: boolean | null,"online_bookable"?: boolean | null,"price"?: number | null,"public_description"?: string | null,"sort"?: number | null,"upsell_service_id"?: string | null
                          }
                         Update: {
-                           "category"?: Database["public"]['Enums']["service_category"] | null,"duration_min"?: number | null,"id"?: string | null,"name"?: string | null,"needs_pedicure"?: boolean | null,"online_bookable"?: boolean | null,"price"?: number | null,"public_description"?: string | null,"sort"?: number | null,"upsell_service_id"?: string | null
+                           "category"?: Database["public"]['Enums']["service_category"] | null,"duration_min"?: number | null,"id"?: string | null,"is_addon"?: boolean | null,"name"?: string | null,"needs_pedicure"?: boolean | null,"online_bookable"?: boolean | null,"price"?: number | null,"public_description"?: string | null,"sort"?: number | null,"upsell_service_id"?: string | null
                          }
                         Relationships: [
                     {

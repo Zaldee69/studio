@@ -88,19 +88,19 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <div className="flex min-w-0 basis-full flex-col gap-0.5 sm:basis-0 sm:flex-1">
           <h1 className="font-display text-[28px] font-medium tracking-tight">Pengeluaran</h1>
           <span className="text-[13px] text-muted">{manager ? "Biaya operasional di luar stok, perawatan, dan gaji" : "Pengeluaran hari ini"}</span>
         </div>
         {manager && (
-          <div className="flex items-center rounded-2xl border border-line bg-card p-0.5">
+          <div className="flex w-full items-center rounded-2xl border border-line bg-card p-0.5 sm:w-auto">
             <button onClick={() => { setMonth(shiftMonth(month, -1)); setPage(0); }} aria-label="Bulan sebelumnya" className={arrow}>‹</button>
-            <b className="min-w-36 px-1 text-center font-display text-base font-semibold">{monthName(month)}</b>
+            <b className="min-w-0 flex-1 px-1 text-center sm:min-w-36 sm:flex-none font-display text-base font-semibold">{monthName(month)}</b>
             <button onClick={() => { setMonth(shiftMonth(month, 1)); setPage(0); }} disabled={month >= today.slice(0, 7)} aria-label="Bulan berikutnya" className={arrow}>›</button>
           </div>
         )}
-        {manager && <Button onClick={exportCsv} disabled={!all.length} variant="outline" className="h-11">Ekspor</Button>}
-        <Button onClick={() => setAdding(true)} disabled={!online || !data || (!manager && data.todayClosed)} className="h-11">+ Catat pengeluaran</Button>
+        {manager && <Button onClick={exportCsv} disabled={!all.length} variant="outline" className="h-11 flex-1 sm:flex-none">Ekspor</Button>}
+        <Button onClick={() => setAdding(true)} disabled={!online || !data || (!manager && data.todayClosed)} className="h-11 flex-[2] sm:flex-none">+ Catat pengeluaran</Button>
       </div>
       <details className="group rounded-2xl border border-line bg-card px-4 py-2 text-sm">
         <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between font-medium">Aturan pencatatan<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
@@ -114,22 +114,22 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
       {!manager && data?.todayClosed && <p className="rounded-2xl bg-[#FBF2E4] px-4 py-3 text-sm text-[#6B4A10]">Kasir hari ini sudah ditutup. Pengeluaran dari laci tidak bisa ditambah lagi.</p>}
 
       <div className="grid grid-cols-2 gap-3 tabular min-[700px]:grid-cols-4">
-        <div className="flex flex-col gap-0.5 rounded-3xl bg-accent p-4 text-paper">
+        <div className="col-span-2 flex flex-col gap-0.5 rounded-3xl bg-accent p-4 text-paper min-[700px]:col-span-1">
           <span className="text-[13px] font-medium opacity-70">Total {manager ? "bulan ini" : "hari ini"}</span>
-          <b className="font-display text-[28px] font-semibold leading-tight tracking-tight">{formatRupiah(total)}</b>
+          <b className="font-display text-xl font-semibold leading-tight tracking-tight min-[700px]:text-[28px]">{formatRupiah(total)}</b>
           <span className="text-xs opacity-70">{all.length} pengeluaran</span>
         </div>
         {byCat.slice(0, 3).map(([c, v]) => (
           <div key={c} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
             <span className="text-[13px] font-medium text-muted">{EXPENSE_CAT[c as ExpenseCat]}</span>
-            <b className="font-display text-[28px] font-semibold leading-tight tracking-tight">{formatRupiah(v)}</b>
+            <b className="font-display text-xl font-semibold leading-tight tracking-tight min-[700px]:text-[28px]">{formatRupiah(v)}</b>
             <span className="text-xs text-muted">{total ? Math.round((v * 100) / total) : 0}% dari total</span>
           </div>
         ))}
       </div>
 
       {manager && data && month === today.slice(0, 7) && (
-        <section aria-label="Pengeluaran rutin bulanan" className="flex flex-col gap-1 rounded-3xl border border-line bg-card p-5">
+        <section aria-label="Pengeluaran rutin bulanan" className="flex flex-col gap-1 rounded-3xl border border-line bg-card p-4 sm:p-5">
           <div className="flex items-center gap-2">
             <h2 className="flex-1 text-base font-semibold">Rutin bulanan</h2>
             <Button onClick={() => setNewTpl(true)} disabled={!online} variant="outline" className="h-10 px-3 text-xs">+ Tambah rutin</Button>
@@ -157,11 +157,11 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
         </section>
       )}
 
-      <section aria-label="Daftar pengeluaran" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+      <section aria-label="Daftar pengeluaran" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-2.5">
-          <h2 className="mr-auto text-base font-semibold">Daftar pengeluaran <span className="ml-1 rounded-full bg-paper px-2 py-0.5 text-xs font-normal text-muted tabular">{data?.count ?? 0}</span></h2>
-          <Input type="search" aria-label="Cari keterangan" placeholder="Cari keterangan…" value={q} onChange={(e) => setQ(e.target.value)} className="h-11 w-52" />
-          <NativeSelect aria-label="Filter kategori" value={cat} onChange={(e) => { setCat(e.target.value as "" | ExpenseCat); setPage(0); }} className="h-11 w-44">
+          <h2 className="basis-full text-base font-semibold sm:mr-auto sm:basis-auto">Daftar pengeluaran <span className="ml-1 rounded-full bg-paper px-2 py-0.5 text-xs font-normal text-muted tabular">{data?.count ?? 0}</span></h2>
+          <Input type="search" aria-label="Cari keterangan" placeholder="Cari keterangan…" value={q} onChange={(e) => setQ(e.target.value)} className="h-11 min-w-0 flex-1 sm:w-52 sm:flex-none" />
+          <NativeSelect aria-label="Filter kategori" value={cat} onChange={(e) => { setCat(e.target.value as "" | ExpenseCat); setPage(0); }} className="h-11 min-w-0 flex-1 sm:w-44 sm:flex-none">
             <option value="">Semua kategori</option>
             {Object.entries(EXPENSE_CAT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </NativeSelect>
@@ -169,7 +169,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
         <div className="flex flex-col">
           {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>{cat || qs ? "Tidak ada pengeluaran yang cocok." : `Belum ada pengeluaran ${manager ? "di bulan ini" : "hari ini"}.`}</Empty> : data.rows.map((r) => (
             <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line py-3 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
-              <span className="flex min-w-0 flex-1 flex-col">
+              <span className="flex min-w-0 basis-full flex-col sm:basis-0 sm:flex-1">
                 <b className={`font-medium ${r.voided_at ? "line-through" : ""}`}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
                 <span className="text-[13px] text-muted">
                   {EXPENSE_CAT[r.category]} · {EXPENSE_SOURCE[r.source]} · {manager ? formatTanggal(`${r.date}T12:00:00+07:00`) : formatJam(r.created_at)}
@@ -177,24 +177,29 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
                 </span>
                 {r.voided_at && <span className="text-xs text-[#D94B42]">Dibatalkan: {r.void_reason}</span>}
               </span>
-              {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="h-10 px-2 text-xs font-medium text-muted underline">Nota</button>}
-              <b className="min-w-24 text-right font-semibold tabular">{formatRupiah(r.amount)}</b>
-              {manager && !r.voided_at && <Button onClick={() => setVoiding(r)} disabled={!online} variant="ghost" className="h-10 px-3 text-xs text-muted">Batalkan</Button>}
+              <div className="flex w-full items-center gap-1 sm:w-auto">
+                <b className="mr-auto min-w-24 font-semibold tabular sm:mr-0 sm:text-right">{formatRupiah(r.amount)}</b>
+                {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="h-10 px-2 text-xs font-medium text-muted underline">Nota</button>}
+                {manager && !r.voided_at && <Button onClick={() => setVoiding(r)} disabled={!online} variant="ghost" className="h-10 px-3 text-xs text-muted">Batalkan</Button>}
+              </div>
             </div>
           ))}
         </div>
         {!!data?.count && (
-          <nav aria-label="Halaman daftar pengeluaran" className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3 text-sm">
-            <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[14px] px-3">‹ Sebelumnya</Button>
-            <span className="tabular text-muted">
+          <nav aria-label="Halaman daftar pengeluaran" className="flex flex-col gap-3 border-t border-line pt-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+            <span className="order-first tabular text-center text-muted sm:order-2">
               Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * size + 1}–{Math.min((page + 1) * size, data.count)} dari {data.count}
             </span>
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-2 sm:order-1">
+              <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 flex-1 rounded-[14px] px-3 sm:flex-none">‹ Sebelumnya</Button>
+              <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 flex-1 rounded-[14px] px-3 sm:hidden">Berikutnya ›</Button>
+            </span>
+            <span className="flex items-center justify-center gap-2 sm:order-3">
               <label htmlFor="ex-size" className="text-muted">Per halaman</label>
               <NativeSelect id="ex-size" value={size} onChange={(e) => { setSize(Number(e.target.value)); setPage(0); }} className="h-10 w-20">
                 {[10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
               </NativeSelect>
-              <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 rounded-[14px] px-3">Berikutnya ›</Button>
+              <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="hidden h-10 rounded-[14px] px-3 sm:inline-flex">Berikutnya ›</Button>
             </span>
           </nav>
         )}

@@ -28,4 +28,5 @@ export const CASHIER_MENU: MenuItem[] = [
   { href: "/kasir/pengeluaran", label: "Pengeluaran", short: "Biaya", icon: "receipt" },
   { href: "/kasir/opname", label: "Stok opname", short: "Opname", icon: "box" },
   { href: "/kasir/libur", label: "Jadwal libur", short: "Libur", icon: "calendar" },
+  { href: "/kasir/absen", label: "Absen", icon: "badge" },
 ];

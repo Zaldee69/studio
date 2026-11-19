@@ -10,33 +10,33 @@
 @theme {
   /* aplikasi tim (redesign Nov 2026) — terang, gading hangat, kartu putih besar. Satu aksen per klien:
      ganti hanya --color-accent (NEXT_PUBLIC_ACCENT, lihat layout.tsx); varian gelap & lembut dihitung darinya. */
-  /* Premium Organic Minimalist: Forest Green × Warm Ivory × Soft Gold. Sumber tunggal token warna aplikasi tim. */
-  --color-paper: #f7f5f0;  /* latar utama */
-  --color-side: #f0eee8;   /* rel & menu samping */
-  --color-surface: #f5f3ef; /* permukaan sekunder */
-  --color-ivory: #fbf9f4;  /* bar atas & bingkai luar */
+  /* Slate: abu kebiruan netral, satu aksen gelap. Sumber tunggal token warna aplikasi tim. */
+  --color-paper: #f6f7f8;  /* latar utama */
+  --color-side: #edeef1;   /* rel & menu samping */
+  --color-surface: #f3f4f6; /* permukaan sekunder */
+  --color-ivory: #fbfbfc;  /* bar atas & bingkai luar */
   --color-card: #ffffff;
-  --color-ink: #202522;
-  --color-muted: #747b74;
-  --color-faint: #a0a39d;  /* teks redup (dekoratif/placeholder) */
-  --color-line: #e8e5de;
-  --color-accent: #174b35;
-  --color-accent-hover: #286b4a;
+  --color-ink: #16191f;
+  --color-muted: #636a75;
+  --color-faint: #9a9fa8;  /* teks redup (dekoratif/placeholder) */
+  --color-line: #e0e2e6;
+  --color-accent: #1f2937;
+  --color-accent-hover: #374151;
   --color-accent-ink: color-mix(in srgb, var(--color-accent) 80%, black);
-  --color-accent-soft: #eaf1eb;
+  --color-accent-soft: #e9ebef;
   --color-gold-accent: #c58a2b;
   --color-gold-soft: #fbf2e4;
-  --color-sage-green: #8fa895;
+  --color-sage-green: #9aa3b0;
   --color-danger: #d94b42;
   --color-success: #268052;
   --color-warning: #c58a2b;
   --color-info: #527a9a;
   /* gradien (sedikit, kontras rendah): diagonal 135deg, vertikal 180deg */
-  --grad-header: linear-gradient(135deg, #f7f5f0 0%, #eaf1eb 60%, #d9e6dc 100%);
-  --grad-primary: linear-gradient(135deg, #286b4a 0%, #174b35 100%);
-  --grad-card: linear-gradient(180deg, #ffffff 0%, #eaf1eb 100%);
-  --shadow-subtle: 0 1px 2px rgba(32, 37, 34, 0.06);
-  --shadow-card: 0 4px 16px rgba(32, 37, 34, 0.08);
+  --grad-header: linear-gradient(135deg, #f6f7f8 0%, #e9ebef 60%, #d3d7de 100%);
+  --grad-primary: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  --grad-card: linear-gradient(180deg, #ffffff 0%, #e9ebef 100%);
+  --shadow-subtle: 0 1px 2px rgba(22, 25, 31, 0.06);
+  --shadow-card: 0 4px 16px rgba(22, 25, 31, 0.08);
   /* status kunjungan (latar lembut) */
   --color-st-booked: #fbf2e4;
   --color-st-arrived: #eef3f7;
@@ -162,20 +162,20 @@ select:not([multiple]):not([size]) {
 }
 
 :root {
-  --background: #f7f5f0;          /* paper */
-  --foreground: #202522;          /* ink */
-  --card-foreground: #202522;
+  --background: #f6f7f8;          /* paper */
+  --foreground: #16191f;          /* ink */
+  --card-foreground: #16191f;
   --popover: #ffffff;
-  --popover-foreground: #202522;
+  --popover-foreground: #16191f;
   --primary: var(--color-accent); /* tombol utama */
   --primary-foreground: #ffffff;
   --secondary: #ffffff;           /* tombol outline (dulu btn-ghost) */
-  --secondary-foreground: #202522;
-  --muted-foreground: #747b74;    /* = text-muted */
-  --accent-foreground: #202522;
+  --secondary-foreground: #16191f;
+  --muted-foreground: #636a75;    /* = text-muted */
+  --accent-foreground: #16191f;
   --destructive: #d94b42;         /* = danger */
-  --border: #e8e5de;              /* = line */
-  --input: #e8e5de;
+  --border: #e0e2e6;              /* = line */
+  --input: #e0e2e6;
   --ring: var(--color-accent);
   --radius: 0.625rem;
 }

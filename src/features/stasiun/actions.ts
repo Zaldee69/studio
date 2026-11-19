@@ -30,8 +30,13 @@ export async function registerStation(_: StationState, fd: FormData): Promise<St
 export async function stationStaff() {
   const token = (await cookies()).get(STATION_COOKIE)?.value;
   if (!token) return null;
-  const { data, error } = await createAdminClient().rpc("station_staff", { p_token_hash: await hashToken(token) });
-  return error ? null : data ?? [];
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("station_staff", { p_token_hash: await hashToken(token) });
+  if (error) return null;
+  // foto tidak ada di RPC station_staff; ambil terpisah (service role) lalu gabungkan
+  const { data: ph } = await admin.from("staff").select("id, photo_path").in("id", (data ?? []).map((r) => r.staff_id));
+  const photos = new Map((ph ?? []).map((r) => [r.id, r.photo_path]));
+  return (data ?? []).map((r) => ({ ...r, photo_path: photos.get(r.staff_id) ?? null }));
 }
 
 export async function stationLogin(_: StationState, fd: FormData): Promise<StationState> {

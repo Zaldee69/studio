@@ -66,7 +66,7 @@ export function IzinStaf({ master }: { master: Master }) {
               const [l, bg, fg] = OFF_STATUS[o.status];
               const cf = data.conflicts[o.id] ?? [];
               return (
-                <div key={o.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-2.5">
+                <div key={o.id} className="flex flex-col gap-2 border-t border-[#E0E2E6] pt-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm">{name(o.staff_id)} · <span className="tabular">{offLabel(o)}</span></b>
                       <span className="text-xs text-muted">{o.reason || "—"}</span></span>

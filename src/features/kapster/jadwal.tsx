@@ -41,12 +41,12 @@ export function JadwalKapster() {
             <span className="text-[13px] text-muted">{items.length ? `${items.length} booking` : off.length ? "" : "Kosong"}</span>
           </div>
           {off.map((o) => (
-            <div key={o.id} className="mb-2 rounded-[14px] bg-[#E8E5DE] px-3 py-2.5 text-sm font-medium text-[#4D4A55]">
+            <div key={o.id} className="mb-2 rounded-[14px] bg-[#E0E2E6] px-3 py-2.5 text-sm font-medium text-[#4A505B]">
               Izin / cuti {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}{o.reason && ` · ${o.reason}`}
             </div>
           ))}
           {items.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center gap-3 border-t border-[#E8E5DE] py-2.5 tabular">
+            <div key={a.id} className="flex flex-wrap items-center gap-3 border-t border-[#E0E2E6] py-2.5 tabular">
               <b className="w-[96px] shrink-0 text-sm">{formatJam(a.start_at)}–{formatJam(a.end_at)}</b>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="text-sm">{a.customer_name ?? "Walk-in"}</b>
@@ -73,7 +73,7 @@ export function JadwalKapster() {
             </div>
             <label htmlFor="ask-msg" className="text-[13px] font-semibold">Pesan untuk kasir</label>
             <textarea id="ask-msg" rows={3} required autoFocus value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Mis. mohon geser ke jam 14:00"
-              className="rounded-[14px] border border-[#DDD7E0] px-3 py-2.5 text-base outline-none focus:border-accent" />
+              className="rounded-[14px] border border-[#D5D8DE] px-3 py-2.5 text-base outline-none focus:border-accent" />
             <button disabled={!msg.trim() || !online} className="h-[60px] rounded-[14px] bg-accent text-[17px] font-semibold text-white disabled:opacity-50">Kirim ke konter</button>
           </form>
         )}

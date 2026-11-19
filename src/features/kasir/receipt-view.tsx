@@ -47,7 +47,7 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
   );
   const dash = "border-t border-dashed border-[#9A9C95]";
   return (
-    <div className={`flex flex-col gap-3 text-[#1f2320] ${small ? "text-[10px]" : "text-[12px]"}`} style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
+    <div className={`flex flex-col gap-3 text-[#16191F] ${small ? "text-[10px]" : "text-[12px]"}`} style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}>
       {/* kepala */}
       <div className="flex flex-col items-center gap-1 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element -- logo PNG kecil; lembar cetak butuh <img> biasa */}
@@ -61,7 +61,7 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
 
       {/* status */}
       <div className="flex justify-center">
-        <span className={`rounded-full px-3 py-0.5 text-[0.85em] font-bold uppercase tracking-[0.2em] ${r.voided ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#EAF1EB] text-[#174B35]"}`}>
+        <span className={`rounded-full px-3 py-0.5 text-[0.85em] font-bold uppercase tracking-[0.2em] ${r.voided ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#E9EBEF] text-[#1F2937]"}`}>
           {r.voided ? "DIBATALKAN (void)" : "LUNAS"}
         </span>
       </div>
@@ -91,7 +91,7 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
         {r.discount > 0 && row(r.discountLabel || "Diskon", `−${formatRupiah(r.discount)}`)}
         {r.depositUsed > 0 && row("Potong saldo deposit", `−${formatRupiah(r.depositUsed)}`)}
       </div>
-      <div className="flex items-baseline justify-between gap-3 rounded-lg bg-[#1f2320] px-3 py-2 text-white">
+      <div className="flex items-baseline justify-between gap-3 rounded-lg bg-[#16191F] px-3 py-2 text-white">
         <span className="text-[0.85em] font-bold uppercase tracking-[0.15em]">Total</span>
         <span className={`${small ? "text-[15px]" : "text-[19px]"} font-bold tabular`}>{formatRupiah(r.paid + r.depositUsed)}</span>
       </div>
@@ -125,13 +125,13 @@ export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r:
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#EAF1EB] text-[#268052]">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#E9EBEF] text-[#268052]">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
         </div>
         <h2 className="font-display text-2xl font-bold">{title}</h2>
       </div>
       {/* pratinjau: kertas struk */}
-      <div className="rounded-[4px] border border-line bg-white p-4 shadow-[0_1px_0_#e5e5e0,0_8px_24px_-12px_rgba(28,27,25,0.25)]">
+      <div className="rounded-[4px] border border-line bg-white p-4 shadow-[0_1px_0_#E0E2E6,0_8px_24px_-12px_rgba(28,27,25,0.25)]">
         <ReceiptPaper r={r} />
       </div>
       <PrintSheet page={`size: ${paper}mm auto; margin: ${paper === 58 ? 2 : 4}mm`}>

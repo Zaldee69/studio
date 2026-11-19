@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: `${BRAND_INITIALS} Capster`, statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/kapster-192.png" },
 };
-export const viewport: Viewport = { themeColor: "#1F2320" };
+export const viewport: Viewport = { themeColor: "#16191F" };
 
 export default async function KapsterLayout({ children }: LayoutProps<"/kapster">) {
   const p = await requireRole("staff");

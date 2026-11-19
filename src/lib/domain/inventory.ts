@@ -12,7 +12,7 @@ export type StockStatus = "reorder" | "low" | "ok";
 export const STOCK_STATUS: Record<StockStatus, { label: string; bg: string; fg: string }> = {
   reorder: { label: "Reorder", bg: "#FFDADA", fg: "#6E1616" },
   low: { label: "Menipis", bg: "#FFF1C2", fg: "#6B4A10" },
-  ok: { label: "Aman", bg: "#D9F2E1", fg: "#174B35" },
+  ok: { label: "Aman", bg: "#D9F2E1", fg: "#1F2937" },
 };
 
 /** Stok melewati ambang reorder oleh satu mutasi (sebelumnya > ambang, sekarang ≤ ambang). */

@@ -85,7 +85,7 @@ export function localOnly(a: Adapters, testWa = ""): Adapters {
   };
 }
 
-const isLocalDb = (url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "") => /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(url);
+export const isLocalDb = (url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "") => /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(url);
 
 export const liveAdapters = (): Adapters => {
   const a = { email: sendEmailAdapter(), whatsapp: sendWhatsAppAdapter(), telegram: sendTelegramAdapter() };

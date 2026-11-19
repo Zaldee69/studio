@@ -113,7 +113,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         <div className="max-h-full overflow-y-auto">
           {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>{filtered ? "Tidak ada transaksi yang cocok dengan filter." : date === today ? "Belum ada transaksi hari ini." : "Tidak ada transaksi di tanggal ini."}</Empty> : txs.map((t) => (
             <button key={t.id} onClick={() => setOpenId(t.id)} aria-label={`Transaksi ${formatJam(t.created_at)} ${nameOf(t)} ${formatRupiah(t.total)}`}
-              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#E8E5DE] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
+              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#E0E2E6] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
               <span className="flex flex-col"><b>{formatJam(t.created_at)}</b><span className="text-[11px] text-muted">#{t.id.slice(0, 8).toUpperCase()}</span></span>
               <span className="flex min-w-0 flex-col">
                 <span className="truncate font-medium">{nameOf(t)}</span>

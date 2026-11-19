@@ -13,10 +13,10 @@ export const CAT_NAME: Record<Cat, string> = { barbershop: "Barbershop", nail: "
 export const STAFF_TITLE: Record<Cat, string> = { barbershop: "Capster", nail: "Nail artist", massage: "Terapis pijat" };
 /** Warna chip kategori (latar, teks). */
 export const CAT_TONE: Record<Cat, { bg: string; fg: string }> = {
-  barbershop: { bg: "#E9ECE3", fg: "#3F4A33" },
-  nail: { bg: "#F4E6E7", fg: "#7A3A40" },
-  massage: { bg: "#F1E8DC", fg: "#6A4826" },
+  barbershop: { bg: "#B1DDF5", fg: "#10304A" },
+  nail: { bg: "#F2A3BF", fg: "#5A0F2E" },
+  massage: { bg: "#86D4CC", fg: "#0A3B36" },
 };
 /** Staf bukan layanan (mis. kasir) tak punya CAT_TONE/CAT_NAME; pakai fallback netral. */
-export const toneOf = (c: string) => (CAT_TONE as Record<string, { bg: string; fg: string }>)[c] ?? { bg: "#ECECE8", fg: "#4A4D45" };
+export const toneOf = (c: string) => (CAT_TONE as Record<string, { bg: string; fg: string }>)[c] ?? { bg: "#E4E6EA", fg: "#454B55" };
 export const catNameOf = (c: string) => (c === "kasir" ? "Kasir" : (CAT_NAME as Record<string, string>)[c] ?? c);

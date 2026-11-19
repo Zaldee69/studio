@@ -52,7 +52,7 @@ const dm = (d: string) => `${Number(d.slice(8))}/${Number(d.slice(5, 7))}`;
 const csv = (name: string, rows: (string | number | null)[][]) => downloadText(`${name}.csv`, toCsv(rows));
 
 function Chip({ tone, icon, label }: { tone: "ok" | "warn" | "bad" | "info"; icon: string; label: string }) {
-  const c = { ok: ["#EAF1EB", "#174B35"], warn: ["#FBF2E4", "#6B4A10"], bad: ["#FBEEEC", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
+  const c = { ok: ["#E9EBEF", "#1F2937"], warn: ["#FBF2E4", "#6B4A10"], bad: ["#FBEEEC", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
   return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
 }
 function Delta({ d, unit = "%" }: { d: number | null | undefined; unit?: "%" | "poin" }) {
@@ -110,7 +110,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
       <RencanaHeader />
       <div className="flex flex-wrap items-center gap-3 print:hidden">
         <h2 className="mr-auto font-display text-lg font-semibold">Analitik KPI</h2>
-        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1 rounded-[14px] bg-[#F0EEE8] p-1">
+        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1 rounded-[14px] bg-[#EDEEF1] p-1">
           {PERIODS.map(([k, l]) => (
             <Link key={k} href={q({ periode: k, dari: "", sampai: "" })} aria-current={d.periode === k ? "true" : undefined}
               className="inline-flex h-9 items-center rounded-[10px] px-3 text-sm font-medium text-muted hover:text-ink aria-[current=true]:bg-card aria-[current=true]:text-ink aria-[current=true]:shadow-sm">{l}</Link>
@@ -206,7 +206,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
           <table className="w-full text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Rencana", "Rata-rata nyata", "Selisih"].map((h, i) => <th key={h} className={`py-1.5 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>{d.duration.map((r) => (
-              <tr key={r.service_id} className="border-t border-[#E8E5DE]">
+              <tr key={r.service_id} className="border-t border-[#E0E2E6]">
                 <td className="py-2 font-medium">{r.name}</td><td className="text-right">{r.planned_min} mnt</td><td className="text-right">{Math.round(r.actual_avg)} mnt</td>
                 <td className="text-right"><span className="mr-2">{r.diff_avg > 0 ? "+" : ""}{Math.round(r.diff_avg)} mnt (n={r.n})</span>
                   {Math.abs(r.diff_avg) >= 1 && <Chip tone={r.diff_avg > 0 ? "warn" : "info"} icon={r.diff_avg > 0 ? "▲" : "▼"} label={r.diff_avg > 0 ? "molor" : "lebih cepat"} />}</td>
@@ -230,7 +230,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
               <b className="text-sm">Top 5 produk</b>
               {!d.retail.top.length ? <p className="text-sm text-muted">Belum ada penjualan ritel.</p> : (
                 <table className="mt-1 w-full text-sm tabular"><tbody>{d.retail.top.map((p) => (
-                  <tr key={p.name} className="border-t border-[#E8E5DE]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
+                  <tr key={p.name} className="border-t border-[#E0E2E6]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
                 ))}</tbody></table>
               )}
             </div>

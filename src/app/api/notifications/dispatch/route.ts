@@ -4,6 +4,7 @@ import { processQueue, type Queued } from "@/lib/notifications/dispatch";
 import { log } from "@/lib/log";
 import { createAdminClient } from "@/lib/supabase/server";
 import { BRAND } from "@/lib/brand";
+import { SITE_URL } from "@/lib/supabase/public";
 import { calcCart, promoEligible, type Voucher } from "@/lib/domain/cart";
 import { mapsUrl } from "@/lib/domain/format";
 
@@ -36,7 +37,7 @@ export async function POST(req: Request) {
       },
       async group(id) {
         const [{ data: g }, { data: s }] = await Promise.all([
-          db.from("booking_groups").select(`code, customer:customers(name), voucher:vouchers(id, code, kind, value, category, min_spend, max_discount, active),
+          db.from("booking_groups").select(`code, confirm_token, customer:customers(name), voucher:vouchers(id, code, kind, value, category, min_spend, max_discount, active),
             appointments(start_at, created_at, source, status, staff:staff(name), appointment_services(service:services(id, name, category, price)))`).eq("id", id).single(),
           db.from("settings").select("shop_name, shop_address, shop_whatsapp, maps_url, bundle_pct, online_promo_pct, online_promo_start, online_promo_end").single(),
         ]);
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
         const cart = calcCart(lines, { bundlePct: s?.bundle_pct ?? 0, promoPct: promo.pct, method: "cash" });
         const address = s?.shop_address ?? "";
         return {
+          manageUrl: g.confirm_token ? `${SITE_URL}/b/${g.confirm_token}` : undefined,
           code: g.code, customerName: g.customer?.name ?? "", startAt: appts.map((a) => a.start_at).sort()[0],
           services: lines.map((l) => l.name), staff: [...new Set(appts.map((a) => a.staff?.name ?? "").filter(Boolean))],
           categories: [...new Set(lines.map((l) => l.category))],

@@ -24,7 +24,7 @@ const CustomerAuth = dynamic(() => import("@/components/customer-auth").then((m)
 
 export type { Cust };
 type Cat = OnlineCat;
-type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string };
+type Svc = { id: string; name: string; category: Cat; price: number; duration: number; description: string; upsell: string | null };
 type Staff = { id: string; name: string; category: Cat; photo: string | null };
 type Shop = { name: string; address: string; mapsUrl: string | null; whatsapp: string; bundlePct: number; maxDays: number; cutoffHours: number; open: boolean; review: boolean; promo: OnlinePromo };
 type View = "layanan" | "staf" | "waktu" | "konfirmasi" | "selesai" | "masuk";
@@ -93,6 +93,8 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const [cat, setCat] = useState<Cat>(init.cat);
   const bundleOpen = openCats.includes("barbershop") && openCats.includes("nail"); // diskon paket hanya barbershop + nail
   const [sel, setSel] = useState<string[]>(validIds);
+  const [upSkipped, setUpSkipped] = useState<string[]>([]); // tawaran tambahan yang ditolak
+  const [upTaken, setUpTaken] = useState<string[]>([]); // layanan yang ditambah lewat tawaran
   const [pick, setPick] = useState<Record<Cat, string>>(() => ({ barbershop: staffOk("barbershop"), nail: staffOk("nail"), massage: staffOk("massage") }));
   const [notice] = useState(() => !reschedule && (validIds.length < initIds.length || stalePick)
     ? "Sebagian pilihan dari tautan sebelumnya sudah tidak tersedia, jadi kami kosongkan. Silakan periksa pilihan Anda." : "");
@@ -238,6 +240,7 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
       ...(cust ? {} : { name: guest.name.trim(), whatsapp: guest.wa, consent, captcha_token: captcha ?? undefined }),
       ...(reschedule ? { reschedule_group: reschedule.groupId } : {}),
       ...(vOk && !reschedule ? { voucher_code: vOk.code } : {}),
+      ...(!reschedule ? { upsell_ids: upTaken.filter((id) => sel.includes(id)), upsell_offered: upTaken.length > 0 || upSkipped.length > 0 } : {}),
     });
     setSending(false);
     if (!r.ok) {
@@ -412,6 +415,19 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                     );
                   })}
                 </div>
+                {!reschedule && sel.map((id) => services.find((x) => x.id === id)).flatMap((from) => {
+                  const up = from?.upsell ? services.find((x) => x.id === from.upsell) : undefined;
+                  return from && up && !sel.includes(up.id) && !upSkipped.includes(up.id) ? [{ from, up }] : [];
+                }).map(({ from, up }) => (
+                  <div key={up.id} className="flex flex-col gap-3 border border-rule bg-lux-2 p-4 min-[520px]:flex-row min-[520px]:items-center">
+                    <span className="flex-1 text-[15px] font-light leading-snug text-sand">
+                      Banyak yang melengkapi {from.name} dengan <b className="font-medium text-cream">{up.name}</b>.
+                      <span className="block text-xs uppercase tracking-[0.14em] text-stone">+{formatRupiah(up.price)} · tambah {up.duration} menit</span>
+                    </span>
+                    <button onClick={() => { setUpTaken([...upTaken, up.id]); setSel([...sel, up.id]); setTime(""); resetReq(); }} className="btn-line">Tambahkan</button>
+                    <button onClick={() => setUpSkipped([...upSkipped, up.id])} className="h-11 px-3 text-xs font-medium uppercase tracking-[0.14em] text-stone">Tidak, terima kasih</button>
+                  </div>
+                ))}
               </div>
             </>
           )}

@@ -18,6 +18,7 @@ import { CustomerCombobox } from "../counter/customer-combobox";
 import { useDayAppointments, useDayTimeOff } from "../counter/hooks";
 import type { Cat, Customer, DayAppt, Master } from "../counter/types";
 import { apptName } from "@/lib/domain/guest";
+import { suggestFor, UpsellOffer } from "./upsell-offer";
 import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 
 export type FormInit = {
@@ -53,6 +54,8 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
   const [custSource, setCustSource] = useState<CustomerSource | "">("");
   const [guestName, setGuestName] = useState(""); // nama panggilan walk-in — hanya di booking, bukan data pelanggan
   const [sel, setSel] = useState<string[]>(edit?.appointment_services.map((s) => s.service_id) ?? []);
+  const [skipped, setSkipped] = useState<string[]>([]); // tawaran upsell yang dilewati
+  const [taken, setTaken] = useState<string[]>([]); // layanan yang ditambah lewat tawaran
   const [pair, setPair] = useState<Pair>({ sel: [], resourceId: null, staffPick: null });
   // Ubah booking: pertahankan durasi lama bila sebelumnya di-override.
   const [durOverride, setDurOverride] = useState<number | null>(() => {
@@ -216,8 +219,13 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
         p_guest_name: customer || waNorm ? undefined : guestName.trim() || undefined,
       });
     if (error) { setSaving(false); return setError(error.message); }
-    const r = data as { saved: boolean; conflicts: Conflict[]; customer_existing?: boolean; customer_id?: string | null };
+    const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[]; customer_existing?: boolean; customer_id?: string | null };
     if (!r.saved) { setSaving(false); setServerConflicts(r.conflicts); return; } // bentrok baru dari perangkat lain → minta konfirmasi
+    // tawaran upsell di awal: catat sudah ditawari + layanan yang diambil (penanda ikut ke transaksi)
+    if (!edit && r.appointment_id && (taken.length || skipped.length || suggestFor(sel, master.services, skipped).length)) {
+      const { error: upErr } = await supabase.rpc("upsell_mark", { p_appointment: r.appointment_id, p_service_ids: taken.filter((id) => sel.includes(id)), p_source: "form" });
+      if (upErr) toast(`Booking disimpan, tapi penanda upsell belum tersimpan: ${upErr.message}`, "error");
+    }
     // pelanggan baru dari form ini → simpan "tahu dari mana" (laporan campaign); pelanggan lama tidak diubah
     if (!edit && r.customer_id && !r.customer_existing && custSource) {
       const { error: srcErr } = await supabase.from("customers").update({ source: custSource }).eq("id", r.customer_id);
@@ -309,7 +317,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 </Field>
               )}
               {existingOwner && (
-                <p role="status" className="rounded-[14px] bg-[#E8E5DE] px-3 py-2 text-[13px] text-[#1D1E20] min-[520px]:col-span-2">
+                <p role="status" className="rounded-[14px] bg-[#E0E2E6] px-3 py-2 text-[13px] text-[#1D1E20] min-[520px]:col-span-2">
                   No. WA ini sudah terdaftar atas nama <b>{existingOwner}</b> — booking akan memakai pelanggan tersebut.
                 </p>
               )}
@@ -343,18 +351,21 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
             return (
               <button type="button" key={s.id} aria-pressed={on} className={chip(on)} disabled={!!edit && sel.length > 0 && s.category !== cat}
                 onClick={() => toggleService(s.id)}>
-                {s.name} <span className={`tabular ${on ? "text-white/70" : "text-muted"}`}>· {q ? `${CAT_NAME[s.category as Cat]} · ` : ""}{formatRupiah(s.price)}</span>
+                {s.name} <span className={`tabular ${on ? "text-accent/70" : "text-muted"}`}>· {q ? `${CAT_NAME[s.category as Cat]} · ` : ""}{formatRupiah(s.price)}</span>
               </button>
             );
           })}
           {!shownSvcs.length && <span className="text-[13px] text-muted">Tidak ada layanan yang cocok.</span>}
         </div>
+        {!edit && <UpsellOffer items={suggestFor(sel, master.services, skipped)} onAdd={(id) => { setTaken([...taken, id]); toggleService(id); }} onSkip={(id) => setSkipped([...skipped, id])} />}
         {[...sel, ...pair.sel].length > 0 && (
           <span className="text-xs text-muted">Dipilih: <b className="text-ink">{[...sel, ...pair.sel].map((id) => svcById.get(id)?.name).join(", ")}</b></span>
         )}
       </fieldset>
 
-      <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
+      <details className="group rounded-2xl border border-line px-4 py-1" open={durOverride != null || undefined}>
+        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-sm font-medium">Opsi lain: durasi dan sumber<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
+      <div className="grid grid-cols-1 gap-3 pb-3 min-[520px]:grid-cols-2">
         <Field label={`Durasi (menit) · otomatis ${autoDur}`} htmlFor="f-dur">
           <Input id="f-dur" type="number" inputMode="numeric" min={5} max={720} step={5} className="tabular" value={duration}
             onChange={(e) => { setDurOverride(e.target.value ? +e.target.value : null); setServerConflicts(null); }} />
@@ -371,6 +382,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
           </fieldset>
         )}
       </div>
+      </details>
 
       {pair.sel.length > 0 && (
         <section aria-label={`Booking kedua ${CAT_NAME[pairCat]}`} className="flex flex-col gap-3 rounded-[14px] border border-line bg-paper p-4">
@@ -403,7 +415,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       )}
 
       {(staffOff || pairStaffOff) && (
-        <div role="alert" className="rounded-[14px] bg-[#E8E5DE] px-3.5 py-3 text-[13px] font-medium text-[#4D4A55]">
+        <div role="alert" className="rounded-[14px] bg-[#E0E2E6] px-3.5 py-3 text-[13px] font-medium text-[#4A505B]">
           {[staffOff && `${activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti (${offLabel(staffOff)})`,
             pairStaffOff && `${activeStaff.find((s) => s.id === pairStaff)?.name} sedang izin/cuti (${offLabel(pairStaffOff)})`].filter(Boolean).join(" · ")}. Pilih staf lain.
         </div>

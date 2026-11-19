@@ -23,6 +23,8 @@ const Input = z.object({
   consent: z.boolean().optional(),
   reschedule_group: z.guid().optional(),
   voucher_code: z.string().trim().max(20).optional(),
+  upsell_ids: z.array(z.guid()).max(10).optional(),
+  upsell_offered: z.boolean().optional(),
 });
 
 export type BookedAppt = { id: string; category: OnlineCat; start_at: string; status: string; staff_name: string | null };
@@ -54,7 +56,7 @@ export async function bookOnline(raw: unknown): Promise<BookResult> {
     log("warn", "booking_invalid_input", { issue: r.error.issues[0]?.path.join(".") });
     return { ok: false, code: "invalid", message: "Data booking tidak valid." };
   }
-  const { captcha_token, consent, ...v } = r.data;
+  const { captcha_token, consent, upsell_ids, upsell_offered, ...v } = r.data;
   const h = await headers();
   const ip = (h.get("x-forwarded-for") ?? "").split(",")[0].trim() || h.get("x-real-ip") || "";
   const { data: jwt } = await (await createClient()).auth.getClaims();
@@ -83,6 +85,17 @@ export async function bookOnline(raw: unknown): Promise<BookResult> {
   }
   // slot_taken / penuh = wajar; batas percobaan & batas booking aktif = sinyal penyalahgunaan
   if (!res.ok && (res.code === "rate" || res.code === "limit")) log("warn", "booking_blocked", { reason: res.code, ip, user: user?.id ?? null });
-  else if (res.ok && !res.duplicate) log("info", "booking_created", { group: res.group_id, status: res.status, guest: !user, reschedule: !!v.reschedule_group });
+  else if (res.ok && !res.duplicate && !v.reschedule_group && (upsell_offered || upsell_ids?.length)) {
+    // tawaran tambahan di langkah pilih layanan: catat sudah ditawari + layanan yang diambil (hanya pasangan upsell yang sah)
+    try {
+      const { data: sv } = await admin.from("services").select("id, upsell_service_id").in("id", v.service_ids);
+      const targets = new Set((sv ?? []).map((x) => x.upsell_service_id).filter(Boolean));
+      const valid = (upsell_ids ?? []).filter((id) => targets.has(id) && v.service_ids.includes(id));
+      const apptIds = res.appointments.map((a) => a.id);
+      if (valid.length) await admin.from("appointment_services").update({ from_upsell: true, upsell_source: "online" }).in("appointment_id", apptIds).in("service_id", valid);
+      await admin.from("appointments").update({ upsell_offered: true }).in("id", apptIds);
+    } catch (e) { log("warn", "upsell_mark_failed", { error: e instanceof Error ? e.message : String(e) }); }
+  }
+  if (res.ok && !res.duplicate) log("info", "booking_created", { group: res.group_id, status: res.status, guest: !user, reschedule: !!v.reschedule_group });
   return res;
 }

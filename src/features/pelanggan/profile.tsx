@@ -18,7 +18,7 @@ import { CutList, daysAgo, useCatalog, useStyleHistory } from "@/features/gaya/p
 import { HAIR_LABEL, normalizeConsult } from "@/lib/domain/hair";
 
 export type CustRow = {
-  id: string; name: string; whatsapp: string | null; notes: string;
+  id: string; name: string; whatsapp: string | null; notes: string; allergies?: string | null;
   stats: { lifetime_value: number; visit_count: number; last_visit_at: string | null; deposit_balance: number; is_churn: boolean } | null;
 };
 
@@ -32,6 +32,8 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
   const [name, setName] = useState(c.name);
   const [wa, setWa] = useState(c.whatsapp ?? "");
   const [notes, setNotes] = useState(c.notes);
+  const [allergies, setAllergies] = useState(c.allergies ?? "");
+  const allergyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const [noteState, setNoteState] = useState<"" | "saving" | "saved" | "error">("");
   const [fieldErr, setFieldErr] = useState("");
   const [topup, setTopup] = useState(false);
@@ -62,6 +64,14 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
     if (error) setFieldErr(error.code === "23505" ? "No. WhatsApp sudah dipakai pelanggan lain." : error.message);
     else toast("Data pelanggan disimpan");
   }
+  function onAllergies(v: string) {
+    setAllergies(v);
+    clearTimeout(allergyTimer.current);
+    allergyTimer.current = setTimeout(async () => {
+      const { error } = await createClient().from("customers").update({ allergies: v.trim() || null }).eq("id", c.id);
+      if (error) toast(`Alergi belum tersimpan: ${error.message}`, "error");
+    }, 700);
+  }
   function onNotes(v: string) {
     setNotes(v); setNoteState("saving");
     clearTimeout(timer.current);
@@ -72,7 +82,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
   }
 
   const card = (k: string, v: string, accent = false) => (
-    <div className={`flex flex-col gap-0.5 rounded-[14px] p-3 ${accent ? "bg-[#E8E5DE]" : "bg-paper"}`}>
+    <div className={`flex flex-col gap-0.5 rounded-[14px] p-3 ${accent ? "bg-[#E0E2E6]" : "bg-paper"}`}>
       <span className={`text-xs ${accent ? "text-[#1D1E20]" : "text-muted"}`}>{k}</span>
       <b className={`text-[17px] tabular ${accent ? "text-[#1D1E20]" : ""}`}>{v}</b>
     </div>
@@ -121,6 +131,10 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         <Link href={`${master.base}/jadwal?new=1&customer=${c.id}`} className={buttonClass("default", "h-11")}>Buat booking</Link>
       </div>
 
+      <Field label="Alergi atau kondisi khusus" htmlFor="pf-allergy" hint="Muncul sebagai tanda Alergi di kartu booking. Penting untuk lashes dan gel nail.">
+        <Input id="pf-allergy" value={allergies} onChange={(e) => onAllergies(e.target.value)} placeholder="mis. lem lashes, akrilat, kulit kepala sensitif" />
+      </Field>
+
       <Field label="Catatan preferensi teknis" htmlFor="pf-notes"
         hint={noteState === "saving" ? "Menyimpan…" : noteState === "saved" ? "Tersimpan ✓" : noteState === "error" ? "Gagal menyimpan — coba lagi" : "Tersimpan otomatis"}>
         <Textarea id="pf-notes" rows={4} className="py-2.5 leading-normal" value={notes} onChange={(e) => onNotes(e.target.value)}
@@ -145,9 +159,9 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         <span className={head}>Riwayat transaksi</span>
         {!extra ? <span className="text-[13px] text-muted">Memuat…</span> : !extra.txs.length ? <span className="text-[13px] text-muted">Belum ada transaksi.</span>
           : extra.txs.map((t) => (
-            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#E8E5DE] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
+            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#E0E2E6] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
               <div className="flex justify-between text-[13px] tabular"><b>{formatTanggal(t.created_at)}</b><b className={t.voided_at ? "line-through" : ""}>{formatRupiah(t.total)}</b></div>
-              <span className="text-xs text-[#4D4A55]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
+              <span className="text-xs text-[#4A505B]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
               <span className="text-xs text-muted">
                 {t.voided_at ? `Void · ${t.void_reason}` : [METHOD_LABEL[t.payment_method], t.discount_amount ? `diskon ${formatRupiah(t.discount_amount)}` : "", t.deposit_used ? `deposit ${formatRupiah(t.deposit_used)}` : ""].filter(Boolean).join(" · ")}
               </span>

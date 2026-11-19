@@ -8,7 +8,7 @@ import { parseCsv, previewImport, TEMPLATE_CSV, type ImportRow } from "@/lib/dom
 import { createClient } from "@/lib/supabase/client";
 import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 
-const STATUS_STYLE = { valid: ["Valid", "#EAF1EB", "#174B35"], duplicate: ["Duplikat", "#FBF2E4", "#6B4A10"], error: ["Error", "#FBEEEC", "#6E1616"] } as const;
+const STATUS_STYLE = { valid: ["Valid", "#E9EBEF", "#1F2937"], duplicate: ["Duplikat", "#FBF2E4", "#6B4A10"], error: ["Error", "#FBEEEC", "#6E1616"] } as const;
 
 /** Impor pelanggan lama dari CSV/Excel: pratinjau (valid / duplikat / error) → konfirmasi → simpan. */
 export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
@@ -94,7 +94,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
               </thead>
               <tbody>
                 {rows.slice(0, 300).map((r) => (
-                  <tr key={r.row} className="border-t border-[#E8E5DE]">
+                  <tr key={r.row} className="border-t border-[#E0E2E6]">
                     <td className="px-3 py-2 text-muted">{r.row}</td>
                     <td className="px-3 py-2 font-medium">{r.name || "—"}</td>
                     <td className="px-3 py-2">{r.wa ?? r.whatsapp}</td>

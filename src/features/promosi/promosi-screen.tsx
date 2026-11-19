@@ -32,6 +32,13 @@ const ago = (iso: string) => {
   return d <= 0 ? "hari ini" : d === 1 ? "kemarin" : `${d} hari lalu`;
 };
 
+const Step = ({ n, title, hint }: { n: number; title: string; hint: string }) => (
+  <div className="flex items-start gap-3">
+    <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold text-white">{n}</span>
+    <div className="flex flex-col"><h3 className="text-base font-semibold leading-7">{title}</h3><span className="text-[13px] text-muted">{hint}</span></div>
+  </div>
+);
+
 /** CRM: campaign promosi WhatsApp yang bisa dipakai ulang — pilih penerima → tulis pesan → kirim (manajer). */
 export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waReady: boolean; bookingUrl: string }) {
   const toast = useToast();
@@ -129,75 +136,84 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     refresh();
   }
 
-  const step = "flex flex-col gap-3 rounded-3xl border border-line bg-card p-4";
+  const step = "flex flex-col gap-3 rounded-3xl border border-line bg-card p-5";
   const num = (v: string) => (v ? Math.max(0, Math.floor(+v)) || undefined : undefined);
-  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-medium ${on ? "border-accent bg-accent text-white" : "border-[#DDD7E0] bg-card"}`;
+  const chip = (on: boolean) => `h-10 rounded-full border px-4 text-[13px] font-medium ${on ? "border-accent bg-accent text-white" : "border-line bg-card text-ink hover:border-[#CBCFD6]"}`;
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-0.5">
+        <h1 className="font-display text-[28px] font-medium tracking-tight">Promosi</h1>
+        <span className="text-[13px] text-muted">Kirim promo WhatsApp ke pelanggan yang tepat</span>
+      </div>
       <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />
       {!waReady && (
-        <p role="alert" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-sm text-[#6B4A10]">
-          WhatsApp (Wablas) belum dikonfigurasi di server — pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.
+        <p role="alert" className="rounded-2xl bg-[#FBF2E4] px-4 py-3 text-sm text-[#6B4A10]">
+          WhatsApp (Wablas) belum dikonfigurasi di server, jadi pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.
         </p>
       )}
-      <div className="grid items-start gap-4 xl:grid-cols-[minmax(280px,0.8fr)_1.6fr]">
+      <div className="grid items-start gap-4 xl:grid-cols-[minmax(300px,0.75fr)_1.6fr]">
         {/* DAFTAR CAMPAIGN */}
-        <section aria-label="Daftar campaign" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
+        <section aria-label="Daftar campaign" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
           <div className="flex items-center gap-2">
             <h2 className="flex-1 text-base font-semibold">Campaign</h2>
-            <Button onClick={() => open(null)} variant="brand" className="h-10">+ Campaign baru</Button>
+            <Button onClick={() => open(null)} variant="brand" className="h-10">+ Baru</Button>
           </div>
-          <div role="tablist" aria-label="Status campaign" className="flex gap-1.5">
+          <div role="tablist" aria-label="Status campaign" className="flex w-fit gap-1 rounded-xl bg-side p-1">
             {[false, true].map((a) => (
-              <button key={String(a)} role="tab" aria-selected={showArchived === a} onClick={() => setShowArchived(a)} className={chip(showArchived === a)}>
+              <button key={String(a)} role="tab" aria-selected={showArchived === a} onClick={() => setShowArchived(a)}
+                className="h-9 rounded-lg px-4 text-[13px] font-medium text-muted aria-selected:bg-card aria-selected:font-semibold aria-selected:text-ink aria-selected:shadow-sm">
                 {a ? "Arsip" : "Aktif"}
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted">Kiriman otomatis (ajak potong lagi, minta ulasan Google) diatur di <Link href="/manajer/pengaturan?tab=pesan" className="underline">Pengaturan → Pesan otomatis</Link>; riwayat kirimnya tetap tampil di bawah.</p>
           {!data ? <Empty>Memuat…</Empty> : !campaigns.length ? (
             <Empty>{showArchived ? "Tidak ada campaign di arsip." : "Belum ada campaign. Buat yang pertama di sebelah kanan."}</Empty>
-          ) : campaigns.map((c) => {
-            const last = sendsOf(c.id)[0], on = draft.id === c.id;
-            return (
-              <article key={c.id} aria-label={`Campaign ${c.name}`} className={`flex flex-col gap-1.5 rounded-[14px] border-2 p-3 ${on ? "border-accent bg-paper" : "border-line"}`}>
-                <button onClick={() => open(c)} className="text-left">
-                  <b className="block text-sm">{c.name}</b>
-                  <span className="block text-xs text-muted">{describeSegment(c.segment)}</span>
-                  <span className="mt-1 block text-xs text-[#4D4A55]">
-                    {last ? `Terakhir dikirim ${ago(last.created_at)} · ${last.recipient_count} penerima · ${sendsOf(c.id).length}× dikirim` : "Belum pernah dikirim"}
-                  </span>
-                </button>
-                <div className="flex flex-wrap gap-1.5">
-                  <Button onClick={() => open(c)} variant="outline" className="h-9 px-3 text-xs">{last ? "Kirim lagi / ubah" : "Buka"}</Button>
-                  <Button onClick={() => open(c, true)} variant="outline" className="h-9 px-3 text-xs">Duplikat</Button>
-                  <Button onClick={() => archive(c)} variant="outline" className="h-9 px-3 text-xs text-muted">{c.archived ? "Pulihkan" : "Arsipkan"}</Button>
-                </div>
-              </article>
-            );
-          })}
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {campaigns.map((c) => {
+                const last = sendsOf(c.id)[0], on = draft.id === c.id;
+                return (
+                  <li key={c.id} aria-label={`Campaign ${c.name}`} className={`rounded-2xl border p-1 ${on ? "border-accent bg-paper" : "border-line"}`}>
+                    <button onClick={() => open(c)} aria-current={on ? "true" : undefined} className="flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left hover:bg-paper">
+                      <b className="text-sm font-medium">{c.name}</b>
+                      <span className="text-[13px] text-muted">{describeSegment(c.segment)}</span>
+                      <span className="text-xs text-muted">
+                        {last ? `Dikirim ${sendsOf(c.id).length}× · terakhir ${ago(last.created_at)} ke ${last.recipient_count} orang` : "Belum pernah dikirim"}
+                      </span>
+                    </button>
+                    <div className="flex gap-1 px-1 pb-1">
+                      <button onClick={() => open(c, true)} className="h-9 rounded-lg px-3 text-xs font-semibold text-muted hover:bg-paper hover:text-ink">Duplikat</button>
+                      <button onClick={() => archive(c)} className="h-9 rounded-lg px-3 text-xs font-semibold text-muted hover:bg-paper hover:text-ink">{c.archived ? "Pulihkan" : "Arsipkan"}</button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          <p className="border-t border-line pt-3 text-xs text-muted">Pesan otomatis (ajak potong lagi, minta ulasan Google) diatur di <Link href="/manajer/pengaturan?tab=pesan" className="underline">Pengaturan → Pesan otomatis</Link>.</p>
         </section>
 
         {/* EDITOR: 1 penerima → 2 pesan → 3 kirim */}
         <div className="flex flex-col gap-4" aria-label="Editor campaign">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold text-muted">{draft.id ? "Campaign" : "Campaign baru"} — nama (untuk Anda, tidak terlihat pelanggan)</span>
-            <Input aria-label="Nama campaign" className="text-base font-medium" maxLength={80} value={draft.name}
+          <section className="flex flex-col gap-1.5 rounded-3xl border border-line bg-card p-5">
+            <label htmlFor="promo-name" className="text-base font-semibold">{draft.id ? "Nama campaign" : "Campaign baru"}</label>
+            <Input id="promo-name" className="text-base font-medium" maxLength={80} value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="mis. Promo booking online Oktober" />
-          </label>
+            <span className="text-[13px] text-muted">Hanya untuk Anda, tidak terlihat pelanggan.</span>
+          </section>
 
           <section aria-label="1. Penerima" className={step}>
-            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">1</span>Siapa penerimanya?</h3>
+            <Step n={1} title="Siapa penerimanya?" hint="Pilih kelompok pelanggan, atau atur filter sendiri." />
             <div className="flex flex-wrap gap-1.5">
               {PRESETS.map((p) => {
                 const on = JSON.stringify(cleanSegment(p.segment)) === segKey;
                 return <button key={p.label} aria-pressed={on} onClick={() => setDraft({ ...draft, segment: p.segment })} className={chip(on)}>{p.label}</button>;
               })}
             </div>
-            <details className="group rounded-[14px] bg-paper p-3 text-sm">
-              <summary className="cursor-pointer font-medium">Atur filter sendiri</summary>
-              <div className="mt-3 flex flex-col gap-3">
+            <details className="group rounded-2xl bg-paper px-4 py-2.5 text-sm">
+              <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between font-medium">Atur filter sendiri<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
+              <div className="mt-2 flex flex-col gap-3 pb-1">
                 <label className="flex flex-wrap items-center gap-2">Terakhir datang ≥
                   <Input aria-label="Minggu tidak datang" type="number" min={1} max={104} className="h-9 w-20" value={seg.inactive_weeks ?? ""}
                     onChange={(e) => setSeg({ inactive_weeks: num(e.target.value) })} /> minggu lalu
@@ -224,16 +240,18 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                 </label>
               </div>
             </details>
-            <p className="text-sm" aria-live="polite">
-              <b>{describeSegment(seg)}</b> → {count ? <b className="text-accent-ink">{count.n} pelanggan</b> : "menghitung…"}
-              {!!count?.n && <span className="block text-xs text-muted">mis. {count.names.join(", ")}{count.n > count.names.length ? ", …" : ""}</span>}
-              <span className="block text-xs text-muted">Pelanggan tanpa WhatsApp tidak ikut dikirimi.</span>
-            </p>
+            <div className="flex items-center gap-4 rounded-2xl bg-paper px-4 py-3" aria-live="polite">
+              <b className="font-display text-[28px] font-semibold leading-none tracking-tight tabular">{count ? count.n : "…"}</b>
+              <div className="flex min-w-0 flex-col">
+                <span className="text-sm font-medium">pelanggan akan menerima · {describeSegment(seg)}</span>
+                <span className="truncate text-[13px] text-muted">{count?.n ? `mis. ${count.names.join(", ")}${count.n > count.names.length ? ", …" : ""}. ` : ""}Pelanggan tanpa WhatsApp tidak ikut.</span>
+              </div>
+            </div>
           </section>
 
           <section aria-label="2. Pesan" className={step}>
-            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">2</span>Tulis pesan</h3>
-            <div className="grid gap-3 md:grid-cols-2">
+            <Step n={2} title="Tulis pesan" hint="Pratinjau di sebelah kanan, persis seperti yang diterima pelanggan." />
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="flex flex-col gap-2">
                 <Textarea ref={msgRef} aria-label="Pesan" rows={9} className="py-2 leading-normal" value={draft.message}
                   onChange={(e) => setDraft({ ...draft, message: e.target.value })} />
@@ -242,10 +260,10 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
                   <Button type="button" onClick={() => insert(bookingUrl)} variant="outline" className="h-9 px-3 text-xs">+ Link booking</Button>
                   <span className={`ml-auto text-xs tabular ${length > MAX ? "text-danger" : "text-muted"}`}>{length}/{MAX}</span>
                 </div>
-                <span className="text-xs text-muted">*tebal*, _miring_ mengikuti format WhatsApp. Salam penutup & cara berhenti ditambahkan otomatis.</span>
+                <span className="text-xs text-muted">*tebal* dan _miring_ mengikuti format WhatsApp. Salam penutup dan cara berhenti ditambahkan otomatis.</span>
               </div>
-              <div className="flex flex-col gap-1.5 rounded-[14px] bg-[#E5DDD5] p-3">
-                <span className="text-[11px] font-medium text-[#54656F]">Pratinjau di WhatsApp {first}</span>
+              <div className="flex flex-col gap-1.5 rounded-2xl bg-[#E5DDD5] p-3">
+                <span className="text-xs font-medium text-[#54656F]">Pratinjau di WhatsApp {first}</span>
                 <div aria-label="Pratinjau pesan" className="max-w-[320px] self-start whitespace-pre-wrap rounded-[14px] rounded-tl-none bg-white px-3 py-2 text-[13px] leading-snug shadow-sm">
                   {fillNama(draft.message, sample) + footer(shop)}
                 </div>
@@ -254,26 +272,26 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
           </section>
 
           <section aria-label="3. Kirim" className={step}>
-            <h3 className="text-sm font-semibold"><span className="mr-2 rounded-full bg-accent px-2 py-0.5 text-white">3</span>Simpan &amp; kirim</h3>
+            <Step n={3} title="Simpan dan kirim" hint="Pesan masuk antrean dan dikirim bertahap, tidak bisa dibatalkan." />
             <div className="flex flex-wrap gap-2">
-              <Button onClick={async () => { if (await save()) toast("Campaign disimpan"); }} disabled={busy || !dirty} variant="outline" >
+              <Button onClick={async () => { if (await save()) toast("Campaign disimpan"); }} disabled={busy || !dirty} variant="outline" className="h-11">
                 {draft.id ? (dirty ? "Simpan perubahan" : "Tersimpan ✓") : "Simpan sebagai draf"}
               </Button>
-              <Button onClick={send} disabled={busy || !count?.n || length > MAX} variant="brand" >
+              <Button onClick={send} disabled={busy || !count?.n || length > MAX} variant="brand" className="h-11">
                 {busy ? "Mengirim…" : `${lastSend ? "Kirim lagi" : "Kirim"} ke ${count?.n ?? "…"} pelanggan`}
               </Button>
             </div>
             {draft.id && (
-              <div className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-3">
-                <span className="text-xs font-semibold text-muted">Riwayat pengiriman campaign ini</span>
+              <div className="flex flex-col gap-1 border-t border-line pt-3">
+                <b className="text-sm font-medium">Riwayat pengiriman</b>
                 {!sendsOf(draft.id).length ? <span className="text-sm text-muted">Belum pernah dikirim.</span> : sendsOf(draft.id).map((s) => (
-                  <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular">
-                    <span className="min-w-40">{formatTanggal(s.created_at)} {formatJam(s.created_at)}</span>
+                  <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line py-2 text-sm tabular last:border-0">
+                    <span className="min-w-40 font-medium">{formatTanggal(s.created_at)} {formatJam(s.created_at)}</span>
                     <span className="text-muted">{s.recipient_count} penerima</span>
-                    <span className="text-[#268052]">{s.sent} terkirim</span>
-                    {s.pending > 0 && <span className="text-[#6B4A10]">{s.pending} dalam antrean…</span>}
-                    {s.failed > 0 && <span className="text-danger">{s.failed} gagal</span>}
-                    {s.skipped > 0 && <span className="text-muted">{s.skipped} dilewati</span>}
+                    <span className="rounded-full bg-[#E3F4EA] px-2 py-0.5 text-xs font-semibold text-[#1D5A3A]">{s.sent} terkirim</span>
+                    {s.pending > 0 && <span className="rounded-full bg-[#FBF2E4] px-2 py-0.5 text-xs font-semibold text-[#6B4A10]">{s.pending} dalam antrean</span>}
+                    {s.failed > 0 && <span className="rounded-full bg-[#FBEEEC] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">{s.failed} gagal</span>}
+                    {s.skipped > 0 && <span className="rounded-full bg-side px-2 py-0.5 text-xs font-semibold text-muted">{s.skipped} dilewati</span>}
                   </div>
                 ))}
               </div>

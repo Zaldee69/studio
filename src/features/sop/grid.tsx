@@ -92,7 +92,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         </div>
         <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: st.bg, color: st.fg }}><span aria-hidden="true">{st.icon} </span>{st.label}</span>
         {data.approval ? (
-          <span className="rounded-full bg-[#EAF1EB] px-3 py-1 text-xs font-semibold text-[#174B35]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
+          <span className="rounded-full bg-[#E9EBEF] px-3 py-1 text-xs font-semibold text-[#1F2937]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
         ) : manager && (
           <Button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="h-11">Otorisasi shift</Button>
         )}

@@ -90,14 +90,14 @@ export function Closing({ master }: { master: Master }) {
 
   const body = !s ? <Empty>Memuat…</Empty> : s.blind ? (
     <>
-      <div className="divide-y divide-[#E8E5DE]">{row("Jumlah transaksi", String(s.tx_count))}</div>
+      <div className="divide-y divide-[#E0E2E6]">{row("Jumlah transaksi", String(s.tx_count))}</div>
       <p className="rounded-[14px] bg-paper px-3.5 py-3 text-sm">
         Hitung <b>seluruh uang di laci</b> (termasuk sisa kemarin) lalu isi kolom di samping. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
       </p>
     </>
   ) : (
     <>
-      <div className="divide-y divide-[#E8E5DE]">
+      <div className="divide-y divide-[#E0E2E6]">
         {row("Jumlah transaksi", String(s.tx_count))}
         {row("Omzet (setelah diskon)", s.gross_total)}
         {row("Total diskon", s.discount_total)}
@@ -203,7 +203,7 @@ export function Closing({ master }: { master: Master }) {
           </Field>
         )}
         {diff != null && (
-          <div className={`rounded-[14px] px-3 py-2.5 text-[15px] font-semibold tabular ${inTol(diff) ? "bg-[#EAF1EB] text-[#174B35]" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
+          <div className={`rounded-[14px] px-3 py-2.5 text-[15px] font-semibold tabular ${inTol(diff) ? "bg-[#E9EBEF] text-[#1F2937]" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : inTol(diff) ? `· dalam toleransi ${formatRupiah(tol)}` : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}

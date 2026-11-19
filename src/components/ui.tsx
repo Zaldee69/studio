@@ -108,7 +108,7 @@ export function StatusBadge({ status, short = false }: { status: ApptStatus; sho
 
 // chip kategori: latar abu netral + titik warna kategori (dot = warna grafik, palette.ts)
 export const CAT_STYLE = {
-  barbershop: { label: "Barbershop", short: "Barber", bg: "#F2F2EF", fg: "#2E312B", dot: "#174B35" },
+  barbershop: { label: "Barbershop", short: "Barber", bg: "#F2F2EF", fg: "#2E312B", dot: "#1F2937" },
   nail: { label: "Nail Art", short: "Nail", bg: "#F2F2EF", fg: "#2E312B", dot: "#6F8F7A" },
   massage: { label: "Pijat", short: "Pijat", bg: "#F2F2EF", fg: "#2E312B", dot: "#C58A2B" },
   retail: { label: "Ritel", short: "Ritel", bg: "#F2F2EF", fg: "#2E312B", dot: "#527A9A" },

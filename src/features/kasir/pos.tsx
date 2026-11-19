@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useConfirm } from "@/components/alert-dialog";
 import { CAT_STYLE, CatChip, Empty, Sheet, useOnline, useToast } from "@/components/ui";
 import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
-import { bundleHint, calcCart, promoEligible, quickCash, upsellSuggestions, type BaseMethod, type CartLine } from "@/lib/domain/cart";
+import { bundleHint, calcCart, promoEligible, quickCash, type BaseMethod, type CartLine } from "@/lib/domain/cart";
 import { formatJam, formatRupiah, jktDate, normalizeWhatsApp } from "@/lib/domain/format";
 import { cashChange } from "@/lib/domain/receipt";
 import { STATUS } from "@/lib/domain/status";
@@ -17,6 +17,7 @@ import { CustomerCombobox } from "../counter/customer-combobox";
 import { NewCustomer } from "../counter/new-customer";
 import { TX_SELECT, useDayAppointments } from "../counter/hooks";
 import type { Customer, DayAppt, Master, SvcCat, TxRow } from "../counter/types";
+import { StaffAvatar } from "@/components/staff-avatar";
 import { printerReady, printerSettings } from "@/lib/printer";
 import { printReceipt, ReceiptView, toReceipt } from "./receipt-view";
 import { TopupModal } from "./topup-modal";
@@ -40,7 +41,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const svc = useMemo(() => new Map(master.services.map((s) => [s.id, s])), [master.services]);
   // Dibuka dari Jadwal ("Proses bayar di Kasir"): booking langsung di keranjang.
   const [items, setItems] = useState<Item[]>(() => initialAppt
-    ? initialAppt.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: initialAppt.staff_id ?? "", appointmentId: initialAppt.id }))
+    ? initialAppt.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: initialAppt.staff_id ?? "", appointmentId: initialAppt.id, fromUpsell: !!s.from_upsell }))
     : []);
   const [customer, setCustomer] = useState<Customer | null>(initialAppt?.customer ?? null);
   const [newCust, setNewCust] = useState(false);
@@ -58,7 +59,6 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const [cashPart, setCashPart] = useState(""); // bayar campuran: sebagian tunai
   const [tip, setTip] = useState(""); // tips QRIS (titipan staf, diserahkan tunai dari laci)
   const [tipPick, setTipPick] = useState("");
-  const [dismissed, setDismissed] = useState<string[]>([]);
   const [lastStaff, setLastStaff] = useState<Partial<Record<SvcCat, string>>>({});
   const [tab, setTab] = useState<SvcCat>("barbershop");
   const [paying, setPaying] = useState(false);
@@ -70,6 +70,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const PAY_ORDER: Partial<Record<DayAppt["status"], number>> = { completed: 0, in_service: 1, arrived: 2, booked: 3 };
   const unpaid = (dayAppts ?? []).filter((a) => a.status !== "paid" && a.status !== "cancelled" && a.status !== "pending_review")
     .sort((a, b) => (PAY_ORDER[a.status] ?? 9) - (PAY_ORDER[b.status] ?? 9) || a.start_at.localeCompare(b.start_at));
+  const busyStaff = new Set((dayAppts ?? []).filter((a) => a.status === "in_service" || a.status === "arrived").map((a) => a.staff_id));
   const { data: stock } = useRealtimeTable(["stock_moves"], async () => {
     const { data } = await createClient().from("retail_stock").select("service_id, qty");
     return new Map((data ?? []).map((r) => [r.service_id!, Number(r.qty)]));
@@ -87,12 +88,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     return data;
   }, customer?.id ?? "");
   const tier = customer && visits !== undefined ? loyalty(visits?.visit_count ?? 0, visits?.last_visit_at ?? null) : null;
-  // transaksi hari ini yang tercatat dengan pelanggan (target ≥60% pada 30 Nov)
-  const { data: recorded } = useRealtimeTable(["transactions"], async () => {
-    const { data } = await createClient().from("transactions").select("customer_id")
-      .gte("created_at", `${jktDate()}T00:00:00+07:00`).is("voided_at", null);
-    return { total: data?.length ?? 0, withCust: (data ?? []).filter((t) => t.customer_id).length };
-  });
+  // produk ritel yang pernah dibeli pelanggan ini → tawarkan lagi di kasir (bukan layanan: itu ditawarkan di awal, lihat Jadwal)
+  const { data: bought } = useRealtimeTable(["transactions"], async () => {
+    if (!customer) return [] as string[];
+    const { data } = await createClient().from("transactions").select("transaction_items(service_id, category)")
+      .eq("customer_id", customer.id).is("voided_at", null).order("created_at", { ascending: false }).limit(10);
+    return [...new Set((data ?? []).flatMap((t) => t.transaction_items).filter((i) => i.category === "retail" && i.service_id).map((i) => i.service_id!))];
+  }, `retail:${customer?.id ?? ""}`);
 
   // ---------- keranjang ----------
   const inCart = new Set(items.map((i) => i.appointmentId).filter(Boolean));
@@ -121,17 +123,19 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
       if (customer && customer.id === a.customer?.id && !others.some((x) => x.customer?.id === customer.id)) setCustomer(null);
       return;
     }
-    setItems((prev) => [...prev, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id }))]);
+    setItems((prev) => [...prev, ...a.appointment_services.map((s) => ({ key: uid(), serviceId: s.service_id, staffId: a.staff_id ?? "", appointmentId: a.id, staffLocked: !!a.staff_id, fromUpsell: !!s.from_upsell }))]);
     if (!customer && a.customer) setCustomer(a.customer);
   }
-  async function addService(id: string, fromUpsell = false) {
+  async function addService(id: string) {
     const s = svc.get(id);
     if (!s) return;
     if (s.category === "retail" && (stock?.get(id) ?? 1) <= 0 && !(await confirm({ title: `Stok ${s.name} tercatat 0`, description: "Tetap jual? Stok akan tercatat minus sampai opname berikutnya.", confirmLabel: "Tetap jual" }))) return;
     setDone(null);
     const sameCat = items.find((i) => svc.get(i.serviceId)?.category === s.category && i.staffId)?.staffId;
-    const staffId = s.category === "retail" ? "" : lastStaff[s.category] ?? sameCat ?? "";
-    setItems([...items, { key: uid(), serviceId: id, staffId, appointmentId: null, fromUpsell }]);
+    const cands = master.staff.filter((t) => t.active && t.category === s.category);
+    // satu-satunya petugas di kategori itu → terisi sendiri; selain itu kasir memilih (dasar komisi)
+    const staffId = s.category === "retail" ? "" : lastStaff[s.category] ?? sameCat ?? (cands.length === 1 ? cands[0].id : "");
+    setItems([...items, { key: uid(), serviceId: id, staffId, appointmentId: null }]);
   }
   const setStaff = (key: string, staffId: string) => {
     const cat = svc.get(items.find((i) => i.key === key)!.serviceId)!.category;
@@ -156,10 +160,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     io.observe(el);
     return () => io.disconnect();
   }, []);
+  const habit = customer ? (bought ?? []).map((id) => svc.get(id)).filter((x) => !!x && x.active && !items.some((i) => i.serviceId === x.id) && (stock?.get(x.id) ?? 1) > 0).slice(0, 2) : [];
   const hint = bundleHint(lines.filter((l) => l.category !== "retail"));
-  const ups = upsellSuggestions(items.map((i) => i.serviceId), master.services.filter((s) => s.active), dismissed)
-    .map((id) => ({ id, s: svc.get(id)!, from: master.services.find((x) => x.upsell_service_id === id && items.some((i) => i.serviceId === x.id))! }))
-    .filter((u) => u.s?.active);
   const missingStaff = lines.some((l) => l.category !== "retail" && !l.staffId);
   const cashDue = method === "cash" ? k.paid : 0;
   const recv = num(received);
@@ -170,11 +172,21 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
   const tipAmt = nonCash ? num(tip) ?? 0 : 0;
   const cashAmt = nonCash ? num(cashPart) ?? 0 : 0;
   const nonCashAmt = k.paid - cashAmt;
+  // alasan tombol bayar belum menyala: satu baris jelas, bukan tombol abu-abu tanpa sebab
+  const noStaff = [...new Set(lines.filter((l) => l.category !== "retail" && !l.staffId).map((l) => l.name))];
+  const blockers = !items.length ? [] : [
+    ...(noStaff.length ? [`Pilih petugas untuk ${noStaff.join(", ")}`] : []),
+    ...(!customer && !noCustOk ? ["Isi pelanggan, atau pilih alasan jika tidak bisa"] : []),
+    ...(shortCash ? ["Uang diterima kurang dari tagihan"] : []),
+    ...(nonCash && qrisRef.replace(/[\s-]/g, "").length < 4 ? [`Isi No. referensi ${refLabel}`] : []),
+    ...(cashAmt > 0 && cashAmt >= k.paid ? ["Bagian tunai harus kurang dari tagihan"] : []),
+    ...(!online ? ["Tidak ada koneksi internet"] : []),
+  ];
   const tipStaffIds = [...new Set(lines.map((l) => l.staffId).filter(Boolean))] as string[];
   const tipStaff = tipStaffIds.includes(tipPick) ? tipPick : tipStaffIds[0] ?? "";
 
   function reset() {
-    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setDismissed([]); setError(""); setNoWaReason(""); setWaInput("");
+    setItems([]); setCustomer(null); setUseDeposit(false); setMethod("cash"); setQrisRef(""); setReceived(""); setCashPart(""); setTip(""); setTipPick(""); setError(""); setNoWaReason(""); setWaInput("");
   }
 
   async function pay() {
@@ -216,10 +228,10 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
     <div className="flex flex-col gap-4 min-[1000px]:min-h-0 min-[1000px]:flex-1 min-[1000px]:flex-row xl:gap-6">
       {/* KIRI */}
       <div className="flex min-w-0 flex-col gap-3 min-[1000px]:min-h-0 min-[1000px]:flex-1 min-[1000px]:overflow-y-auto">
-        <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Tagihan dari booking hari ini">
+        <section className="flex shrink-0 flex-col gap-2.5 rounded-[14px] border border-line bg-card px-4 py-3.5" aria-label="Booking hari ini">
           <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-sm font-semibold">Tagihan dari booking hari ini</h2>
-            <span className="hidden text-xs text-muted xl:inline">Pilih satu atau lebih (mis. pasangan datang bareng)</span>
+            <h2 className="text-base font-semibold">Booking hari ini</h2>
+            <span className="text-xs text-muted">Pilih untuk dibayar · boleh lebih dari satu (pasangan datang bareng)</span>
           </div>
           {!unpaid.length ? <span className="text-[13px] text-muted">{dayAppts ? "Semua booking hari ini sudah lunas." : "Memuat…"}</span> : (
             <div className="grid max-h-[160px] grid-cols-2 gap-2 overflow-y-auto xl:max-h-[240px] xl:grid-cols-3">
@@ -227,7 +239,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 const on = inCart.has(a.id), S = STATUS[a.status];
                 return (
                   <button key={a.id} aria-pressed={on} onClick={() => toggleAppt(a)}
-                    className={`flex min-h-16 flex-col gap-1 rounded-[14px] border-2 px-3 py-2.5 text-left ${on ? "border-accent bg-paper" : "border-line bg-card"}`}>
+                    className={`flex min-h-16 flex-col gap-1 rounded-[14px] border-2 px-3 py-2.5 text-left ${on ? "border-accent bg-paper" : a.status === "completed" ? "border-[#92D1A0] bg-card" : "border-line bg-card"}`}>
                     <span className="flex w-full items-center gap-1.5 text-[13px] font-semibold">
                       <span className="size-2 shrink-0 rounded-full" style={{ background: S.dot }} title={S.label} />
                       <span className="flex-1 truncate">{apptName(a)}</span>
@@ -235,8 +247,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                         title={`Datang bersama (${groups.get(a.id)!.ids.length} orang)`} aria-label={`Rombongan ${groups.get(a.id)!.tag}, ${groups.get(a.id)!.ids.length} orang`}>👥 {groups.get(a.id)!.tag}</span>}
                       <span className="text-xs font-medium text-muted tabular">{formatJam(a.start_at)}</span>
                     </span>
-                    <span className="w-full truncate text-xs text-[#4D4A55]">
-                      {a.status === "in_service" && a.service_started_at && nowMs > 0 && nowMs - Date.parse(a.service_started_at) > 120 * 6e4 && <b className="text-[#D94B42]">Lama ({Math.round((nowMs - Date.parse(a.service_started_at)) / 6e4)} mnt) · </b>}{S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
+                    <span className="w-full truncate text-xs text-[#4A505B]">
+                      {a.status === "in_service" && a.service_started_at && nowMs > 0 && nowMs - Date.parse(a.service_started_at) > 120 * 6e4 && <b className="text-[#D94B42]">Lama ({Math.round((nowMs - Date.parse(a.service_started_at)) / 6e4)} mnt) · </b>}{a.status === "completed" ? <b className="text-[#1D5A3A]">Siap dibayar</b> : S.short} · {a.appointment_services.map((s) => svc.get(s.service_id)?.name).join(", ")}
                     </span>
                   </button>
                 );
@@ -252,7 +264,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
         </section>
 
         <section className="flex flex-col gap-3.5 shrink-0 rounded-3xl border border-line bg-card p-4" aria-label="Katalog">
-          <div role="tablist" aria-label="Kategori layanan" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-[14px] bg-[#F0EEE8] p-1">
+          <div role="tablist" aria-label="Kategori layanan" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-[14px] bg-[#EDEEF1] p-1">
             {(["barbershop", "nail", "massage", "retail"] as const).filter((c) => master.services.some((s) => s.active && s.category === c)).map((c) => (
               <button key={c} role="tab" aria-selected={tab === c} onClick={() => setTab(c)}
                 className={`h-10 shrink-0 rounded-[10px] px-4 text-sm font-medium ${tab === c ? "bg-card text-ink shadow-sm" : "text-muted hover:text-ink"}`}>
@@ -264,13 +276,13 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
             {([["Layanan utama", catalog.filter((s) => !s.is_addon)], ["Tambahan", catalog.filter((s) => s.is_addon)]] as const).map(([title, list]) => list.length > 0 && (
               <div key={title} className="flex flex-col gap-2">
                 {tab !== "retail" && <h3 className="text-[11px] font-semibold uppercase tracking-wide text-muted">{title}</h3>}
-                <div className="grid grid-cols-2 content-start gap-2.5 xl:grid-cols-3">
+                <div className="grid grid-cols-2 content-start gap-2.5 min-[1000px]:grid-cols-3">
                   {list.map((s) => {
                     const qty = stock?.get(s.id);
                     const out = s.category === "retail" && qty != null && qty <= 0;
                     return (
                       <button key={s.id} onClick={() => addService(s.id)} aria-label={`Tambah ${s.name}${out ? " (stok habis)" : ""}`}
-                        className={`flex flex-col gap-1.5 rounded-[14px] border px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-24 ${s.is_addon ? "min-h-[64px] border-dashed border-[#DDD7E0] bg-paper" : "min-h-[88px] border-line bg-card"}`}>
+                        className={`flex flex-col gap-1.5 rounded-[14px] border px-3.5 py-3 text-left hover:bg-paper [@media(pointer:coarse)]:min-h-20 ${s.is_addon ? "min-h-[56px] border-dashed border-[#D5D8DE] bg-paper" : "min-h-[72px] border-line bg-card"}`}>
                         <span className="text-sm font-semibold">{s.is_addon && "+ "}{s.name}</span>
                         <span className="flex w-full justify-between text-[13px] tabular">
                           <b>{formatRupiah(s.price)}</b>
@@ -298,11 +310,57 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
           </div>
         ) : (
           <>
-            <div className="flex flex-col gap-2 border-b border-[#F0EEE8] px-5 py-4">
-              <label htmlFor="cart-cust" className="text-xs font-semibold text-muted">Pelanggan</label>
+            <div className="flex flex-col gap-1 px-5 py-4">
+              <h3 className="text-sm font-semibold">Item{items.length > 0 && <span className="ml-1.5 font-normal text-muted">({items.length})</span>}</h3>
+              {!items.length && <Empty>Keranjang kosong. Pilih booking di atas atau tambahkan layanan/produk dari katalog.</Empty>}
+              {items.map((i) => {
+                const s = svc.get(i.serviceId)!;
+                const del = (
+                  <button onClick={() => setItems(items.filter((x) => x.key !== i.key))} aria-label={`Hapus ${s.name}`}
+                    className="flex size-11 shrink-0 items-center justify-center rounded-[14px] text-muted hover:bg-paper">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                  </button>
+                );
+                return (
+                  <div key={i.key} className="flex flex-col gap-1 border-b border-line py-1 last:border-0">
+                    <div className="flex min-h-11 items-center gap-2.5">
+                      <span className="max-sm:hidden"><CatChip cat={s.category} /></span>
+                      <span className="min-w-0 flex-1 text-sm font-medium">{s.name}</span>
+                      <span className="shrink-0 text-sm tabular">{formatRupiah(s.price)}</span>
+                      {del}
+                    </div>
+                    {s.category === "retail" ? (
+                      <NativeSelect aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
+                        className="h-11 w-full max-w-xs self-start text-sm [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:min-h-9">
+                        <option value="">Dijual oleh — (opsional)</option>
+                        {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                      </NativeSelect>
+                    ) : (
+                      <div role="radiogroup" aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} className="flex flex-wrap gap-1.5 pb-1.5">
+                        {master.staff.filter((t) => t.active && t.category === s.category && (!i.staffLocked || t.id === i.staffId)).map((t) => {
+                          const on = i.staffId === t.id;
+                          return (
+                            <button key={t.id} role="radio" aria-checked={on} disabled={i.staffLocked} onClick={() => setStaff(i.key, t.id)}
+                              className={`flex h-11 items-center gap-2 rounded-full border py-1 pl-1 pr-3.5 text-[13px] font-medium ${on ? "border-accent bg-accent-soft ring-1 ring-accent" : i.staffId ? "border-line bg-card hover:bg-paper" : "border-[#E8C3C4] bg-card hover:bg-paper"}`}>
+                              <StaffAvatar name={t.name} category={t.category} photoPath={t.photo_path} size={32} />
+                              {t.name}
+                              {!busyStaff.has(t.id) && <span title="Sedang kosong" aria-label="kosong" className="size-2 rounded-full bg-[#268052]" />}
+                            </button>
+                          );
+                        })}
+                        {!i.staffId && <span className="self-center text-xs text-[#D94B42]">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()} (titik hijau = sedang kosong)</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-[#EDEEF1] px-5 py-4">
+              <label htmlFor="cart-cust" className="text-sm font-semibold">Pelanggan</label>
               <div className="flex gap-2">
                 <div className="min-w-0 flex-1">
-                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Cari nama / no. WA pelanggan"
+                  <CustomerCombobox id="cart-cust" value={customer} onChange={(c) => { setCustomer(c); setUseDeposit(false); }} emptyLabel="Cari nama atau no. WA"
                     onCreate={(q) => { setNewInit(q); setNewCust(true); }} />
                 </div>
                 {customer
@@ -325,69 +383,27 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 </div>
               )}
               {customer && <span className="text-xs text-muted tabular">Saldo deposit: <b className="text-ink">{formatRupiah(bal)}</b></span>}
+              {habit.map((h) => (
+                <div key={h!.id} className="flex items-center gap-2 rounded-2xl bg-paper px-3 py-2 text-[13px]">
+                  <span className="min-w-0 flex-1">Biasanya beli <b className="font-semibold">{h!.name}</b> <span className="tabular text-muted">{formatRupiah(h!.price)}</span></span>
+                  <Button type="button" variant="outline" onClick={() => addService(h!.id)} className="h-11 px-3 text-xs">Tambah</Button>
+                </div>
+              ))}
               {tier && <TierNote tier={tier} visits={visits?.visit_count ?? 0} offer={upgradeOffer(items.map((i) => svc.get(i.serviceId)!), master)} />}
               {/* nomor WA pelanggan = dasar promo, pengingat & laporan campaign; dilewati hanya bila pelanggan menolak */}
               {!customer && items.length > 0 && (
-                <div role="status" className="flex flex-col gap-2 rounded-[14px] bg-st-booked px-3 py-2 text-[13px]">
-                  <span>Belum ada pelanggan. Tanyakan nama &amp; no. WhatsApp, lalu cari atau tekan <b>+ Baru</b>.</span>
-                  <span className="font-medium">Kalau tidak bisa, pilih alasannya:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {([["menolak", "Menolak memberi"], ["tidak_bawa_hp", "Tidak bawa HP"], ["lainnya", "Lainnya"]] as const).map(([v, l]) => (
-                      <Button key={v} type="button" variant={noWaReason === v ? "default" : "outline"} className="h-11 rounded-[14px]"
-                        onClick={() => setNoWaReason(noWaReason === v ? "" : v)}>{l}</Button>
-                    ))}
-                  </div>
+                <div role="status" className="flex flex-wrap items-center gap-1.5 text-[13px]">
+                  <span className="text-muted">Tidak bisa? Alasan:</span>
+                  {([["menolak", "Menolak"], ["tidak_bawa_hp", "Tanpa HP"], ["lainnya", "Lainnya"]] as const).map(([v, l]) => (
+                    <button key={v} type="button" aria-pressed={noWaReason === v} onClick={() => setNoWaReason(noWaReason === v ? "" : v)}
+                      className={`h-11 rounded-full border px-3.5 text-[13px] font-medium ${noWaReason === v ? "border-accent bg-accent text-white" : "border-line bg-card hover:bg-paper"}`}>{l}</button>
+                  ))}
                 </div>
               )}
-              {recorded && recorded.total > 0 && (
-                <p className="text-xs text-muted tabular">Tercatat dengan pelanggan hari ini: <b className={recorded.withCust / recorded.total >= 0.8 ? "text-[#268052]" : "text-ink"}>{recorded.withCust} dari {recorded.total}</b> ({Math.round((recorded.withCust / recorded.total) * 100)}%) · target 80%</p>
-              )}
-              {/* voucher hanya lewat booking online: diskonnya ikut otomatis dari booking yang dipilih */}
-              {items.length > 0 && <p className="text-xs text-muted">Kode voucher hanya berlaku lewat booking online (dprasstudio.com).</p>}
             </div>
 
-            <div className="flex flex-col gap-2 px-5 py-3">
-              {!items.length && <Empty>Keranjang kosong. Pilih booking di atas atau tambahkan layanan/produk dari katalog.</Empty>}
-              {items.map((i) => {
-                const s = svc.get(i.serviceId)!;
-                return (
-                  <div key={i.key} className="flex min-h-11 items-center gap-2.5">
-                    <span className="max-sm:hidden"><CatChip cat={s.category} /></span>
-                    <span className="flex min-w-0 flex-1 flex-col gap-1 py-1">
-                      <span className="text-sm font-medium">{s.name}</span>
-                      {s.category === "retail" ? (
-                        <NativeSelect aria-label={`Dijual oleh (${s.name})`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)}
-                          className="h-11 w-full max-w-xs self-start text-sm [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:min-h-9">
-                          <option value="">Dijual oleh — (opsional)</option>
-                          {master.staff.filter((t) => t.active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </NativeSelect>
-                      ) : (
-                        <NativeSelect aria-label={`${STAFF_TITLE[s.category as Cat]} untuk ${s.name}`} value={i.staffId} onChange={(e) => setStaff(i.key, e.target.value)} disabled={i.staffLocked}
-                          className={`h-11 w-full max-w-xs self-start text-sm [@media(pointer:fine)]:h-9 [@media(pointer:fine)]:min-h-9 ${i.staffId ? "" : "border-danger"}`}>
-                          <option value="">Pilih {STAFF_TITLE[s.category as Cat].toLowerCase()}</option>
-                          {master.staff.filter((t) => t.active && t.category === s.category).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </NativeSelect>
-                      )}
-                    </span>
-                    <span className="shrink-0 text-sm tabular">{formatRupiah(s.price)}</span>
-                    <button onClick={() => setItems(items.filter((x) => x.key !== i.key))} aria-label={`Hapus ${s.name}`}
-                      className="flex size-11 items-center justify-center rounded-[14px] text-muted hover:bg-paper">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
-                    </button>
-                  </div>
-                );
-              })}
-              {ups.map((u) => (
-                <div key={u.id} className="flex items-center gap-2.5 rounded-[14px] border border-dashed border-[#D6D0DA] bg-paper px-3 py-2.5">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3A4137" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0"><path d="M12 3l2.4 5 5.6.8-4 3.9 1 5.5L12 15.6 7 18.2l1-5.5-4-3.9 5.6-.8z" /></svg>
-                  <span className="flex-1 text-[13px] leading-snug">Setelah {u.from?.name}, tawarkan {u.s.name}? <b className="tabular">{formatRupiah(u.s.price)}</b></span>
-                  <button onClick={() => addService(u.id, true)} className="h-11 rounded-[14px] bg-accent px-3 text-xs font-semibold text-white">Tambah</button>
-                  <button onClick={() => setDismissed([...dismissed, u.id])} className="h-11 px-2 text-xs font-medium text-muted">Abaikan</button>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-2 border-t border-[#F0EEE8] px-5 py-4 text-sm tabular">
+            <div className="flex flex-col gap-2 border-t border-[#EDEEF1] px-5 py-4 text-sm tabular">
+              <h3 className="text-sm font-semibold">Pembayaran</h3>
               <div className="flex justify-between"><span>Subtotal</span><span>{formatRupiah(k.subtotal)}</span></div>
               {k.discount > 0 && (
                 <div className="flex justify-between font-medium text-accent-ink"><span>{k.discountLabel}</span><span>−{formatRupiah(k.discount)}</span></div>
@@ -395,8 +411,8 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
               {hint && <div className="text-xs text-muted">Tambah 1 layanan {hint === "nail" ? "nail" : "barbershop"} untuk diskon paket {master.shop.bundlePct}%</div>}
               {customer && (
                 <button onClick={() => setUseDeposit(!useDeposit)} aria-pressed={useDeposit && bal > 0} disabled={bal <= 0}
-                  className={`flex min-h-11 items-center gap-2.5 rounded-[14px] border px-3 text-left text-[13px] font-medium disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#E8E5DE]" : "border-line bg-card"}`}>
-                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#DDD7E0]"}`}>
+                  className={`flex min-h-11 items-center gap-2.5 rounded-[14px] border px-3 text-left text-[13px] font-medium disabled:opacity-50 ${useDeposit && bal > 0 ? "border-accent bg-[#E0E2E6]" : "border-line bg-card"}`}>
+                  <span className={`relative h-5 w-9 shrink-0 rounded-full ${useDeposit && bal > 0 ? "bg-accent" : "bg-[#D5D8DE]"}`}>
                     <span className={`absolute top-0.5 size-4 rounded-full bg-white transition-all ${useDeposit && bal > 0 ? "left-[18px]" : "left-0.5"}`} />
                   </span>
                   <span className="flex-1">Pakai saldo deposit{bal <= 0 && " (saldo 0)"}</span>
@@ -418,7 +434,9 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                     placeholder={method === "transfer" ? "mis. No. Ref / 4 digit terakhir rekening pengirim" : "mis. 4 digit terakhir No. Ref"}
                     value={qrisRef} onChange={(e) => setQrisRef(e.target.value)} />
                   <span className="text-xs text-muted">{method === "transfer" ? "Cek dana sudah masuk di mutasi rekening toko sebelum dicatat. " : "Dari bukti bayar di HP pelanggan / notifikasi bank. "}Satu nomor hanya untuk satu transaksi.</span>
-                  <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E4DFE6] pt-2.5">
+                  <details open={!!(cashPart || tip) || undefined} className="group mt-1 border-t border-[#E0E2E6] pt-1">
+                    <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between text-[13px] font-semibold">Opsi lain: sebagian tunai, tips<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
+                  <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E0E2E6] pt-2.5">
                     <div className="flex items-center gap-2">
                       <label htmlFor="cash-part" className="flex-1 text-[13px] font-semibold">Sebagian dibayar tunai (opsional)</label>
                       <Input id="cash-part" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
@@ -429,11 +447,17 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       : <span className="text-xs text-[#D94B42]">Bagian tunai harus kurang dari tagihan — kalau lunas tunai, pilih Tunai.</span>)}
                   </div>
                   {tipStaffIds.length > 0 && (
-                    <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E4DFE6] pt-2.5">
+                    <div className="mt-2 flex flex-col gap-1.5 border-t border-[#E0E2E6] pt-2.5">
                       <div className="flex items-center gap-2">
                         <label htmlFor="tip-in" className="flex-1 text-[13px] font-semibold">Tips (opsional)</label>
                         <Input id="tip-in" inputMode="numeric" placeholder="0" className="h-11 w-32 text-right tabular"
                           value={tip ? Number(tip).toLocaleString("id-ID") : ""} onChange={(e) => setTip(e.target.value.replace(/\D/g, ""))} />
+                      </div>
+                      <div className="flex gap-1.5" role="group" aria-label="Nominal tips">
+                        {[5000, 10000, 20000].map((v) => (
+                          <button key={v} type="button" aria-pressed={num(tip) === v} onClick={() => setTip(num(tip) === v ? "" : String(v))}
+                            className={`h-11 flex-1 rounded-[14px] border text-[13px] font-semibold tabular ${num(tip) === v ? "border-accent bg-accent-soft text-accent" : "border-line bg-card"}`}>{formatRupiah(v)}</button>
+                        ))}
                       </div>
                       {tipAmt > 0 && <>
                         <div className="flex items-center gap-2">
@@ -447,6 +471,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                       </>}
                     </div>
                   )}
+                  </details>
                 </div>
               )}
               {cashDue > 0 && (
@@ -459,7 +484,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                   <div className="flex flex-wrap gap-1.5">
                     {quickCash(cashDue).map((q) => (
                       <button key={q.label} onClick={() => setReceived(String(q.value))} aria-pressed={recv === q.value}
-                        className={`h-11 flex-1 rounded-[14px] border px-2 text-[13px] font-semibold ${recv === q.value ? "border-accent bg-accent-soft text-accent" : "border-[#DDD7E0] bg-card"}`}>{q.label}</button>
+                        className={`h-11 flex-1 rounded-[14px] border px-2 text-[13px] font-semibold ${recv === q.value ? "border-accent bg-accent-soft text-accent" : "border-[#D5D8DE] bg-card"}`}>{q.label}</button>
                     ))}
                   </div>
                   <div className={`flex justify-between text-[15px] font-semibold ${shortCash ? "text-[#D94B42]" : ""}`}>
@@ -469,12 +494,16 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
                 </div>
               )}
             </div>
-            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#F0EEE8] bg-card px-5 pb-4 pt-3 tabular">
+            <div className="sticky bottom-0 mt-auto flex flex-col gap-2 border-t border-[#EDEEF1] bg-card px-5 pb-4 pt-3 tabular">
               {error && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{error}</p>}
               <div className="flex items-baseline justify-between"><span className="font-semibold">Total</span><span className="font-display text-[28px] font-semibold">{formatRupiah(k.total)}</span></div>
-              <Button onClick={pay} disabled={!items.length || paying || !online || shortCash || (!customer && !noCustOk)}
-                className="h-14 rounded-[14px] text-base">
-                {paying ? "Memproses…" : !customer && !noCustOk && items.length ? "Isi pelanggan dulu" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
+              {!error && blockers.length > 0 && (
+                <p role="status" className="rounded-xl bg-[#FBF2E4] px-3 py-2 text-[13px] font-medium text-[#6B4A10]">
+                  {blockers[0]}{blockers.length > 1 && <span className="font-normal"> (+{blockers.length - 1} lagi)</span>}
+                </p>
+              )}
+              <Button onClick={pay} disabled={!items.length || paying || blockers.length > 0} className="h-14 rounded-[14px] text-base">
+                {paying ? "Memproses…" : `Catat pembayaran · ${formatRupiah(k.paid)}`}
               </Button>
             </div>
           </>
@@ -503,7 +532,7 @@ export function Pos({ master, initialAppt }: { master: Master; initialAppt: DayA
 
 type Tier = ReturnType<typeof loyalty>;
 const TIER: Record<Tier, [string, string]> = {
-  baru: ["Pelanggan baru", "bg-[#EAF1EB] text-[#174B35]"], jarang: ["Jarang datang", "bg-[#FBF2E4] text-[#6B4A10]"],
+  baru: ["Pelanggan baru", "bg-[#E9EBEF] text-[#1F2937]"], jarang: ["Jarang datang", "bg-[#FBF2E4] text-[#6B4A10]"],
   langganan: ["Langganan", "bg-paper text-ink"], biasa: ["", ""],
 };
 

@@ -30,7 +30,7 @@ export function PrinterButton() {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} aria-label={`Printer struk: ${on ? `tersambung (${p.name})` : p.status === "connecting" ? "menyambung" : "belum tersambung"}`}
-        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[13px] font-bold ${on ? "border-[#BFE5CC] bg-[#EAF7EF] text-[#174B35]" : "border-[#DCDCD6] bg-card text-muted"}`}>
+        className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-[13px] font-bold ${on ? "border-[#BFE5CC] bg-[#EAF7EF] text-[#1F2937]" : "border-[#DCDCD6] bg-card text-muted"}`}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z" /></svg>
         <span className={`size-2 rounded-full ${on ? "bg-[#268052]" : p.status === "connecting" ? "bg-[#C58A2B]" : "bg-[#9A9C95]"}`} />
         <span className="max-[480px]:hidden">{p.status === "connecting" ? "Menyambung…" : "Printer"}</span>

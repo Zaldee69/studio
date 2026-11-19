@@ -9,6 +9,8 @@ export type GroupInfo = {
   /** total = hitungan kasir (calcCart) saat pesan dikirim; voucher = kode bila voucher yang dipakai */
   total: number; voucher: string | null;
   shop: { name: string; address: string; whatsapp: string; maps: string };
+  /** tautan satu ketuk: konfirmasi / batalkan booking (token acak per booking) */
+  manageUrl?: string;
 };
 export type Rendered = { subject: string; text: string; html: string };
 
@@ -31,6 +33,7 @@ export function render(t: Template, g: GroupInfo, via: "whatsapp" | "email" = "w
       hi, `${seat} Kakak sudah kami siapkan untuk ${day} pukul ${time}, ${svc}${staff ? ` bersama ${staff}` : ""}.`, "",
       `Saat tiba, cukup sebutkan nama atau tunjukkan kode booking ${g.code}. Totalnya ${formatRupiah(g.total)}${g.voucher ? ` setelah voucher ${g.voucher}` : ""}, dibayar di studio dengan tunai atau QRIS.`,
       ...(g.shop.address ? ["", `📍 ${g.shop.address}`, g.shop.maps] : []),
+      ...(g.manageUrl ? ["", `Berubah rencana? Kelola booking di sini: ${g.manageUrl}`] : []),
       "", "Sampai bertemu,", g.shop.name,
     ]],
     booking_pending: [`Booking ${g.code} kami terima`, [
@@ -40,6 +43,7 @@ export function render(t: Template, g: GroupInfo, via: "whatsapp" | "email" = "w
     reminder_h1: [`Pengingat: besok di ${g.shop.name}`, [
       hi, `sekadar mengingatkan, besok pukul ${time} ${staff || "kami"} sudah menunggu Kakak untuk ${svc}.`,
       ...(g.shop.maps ? ["", `📍 ${g.shop.maps}`] : []),
+      ...(g.manageUrl ? ["", `Cukup satu ketukan untuk memastikan kehadiran, atau membatalkan bila berhalangan:`, g.manageUrl] : []),
       "", `Jika besok Kakak berhalangan, kabari kami ${reply}, ya. Kami carikan waktu lain yang lebih pas.`,
     ]],
   }[t] as [string, string[]];

@@ -12,7 +12,7 @@ export const ADJUST_REASONS: [string, string][] = [
   ["rusak", "Rusak"], ["kedaluwarsa", "Kedaluwarsa"], ["tumpah", "Tumpah / tercecer"], ["keperluan_lain", "Keperluan lain"], ["koreksi", "Koreksi hitungan"],
 ];
 export const MOVE_TYPE: Record<string, { label: string; bg: string; fg: string }> = {
-  in: { label: "Masuk", bg: "#EAF1EB", fg: "#174B35" },
+  in: { label: "Masuk", bg: "#E9EBEF", fg: "#1F2937" },
   use: { label: "Pakai", bg: "#EEF3F7", fg: "#24435A" },
   sale: { label: "Jual", bg: "#ECEEE8", fg: "#262B24" },
   opname: { label: "Opname", bg: "#FBF2E4", fg: "#6B4A10" },

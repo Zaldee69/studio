@@ -23,7 +23,7 @@ begin
   return new;
 end $$;
 
-create function batalkan_refund_void(p_id uuid, p_alasan text) returns void
+create or replace function batalkan_refund_void(p_id uuid, p_alasan text) returns void
 language plpgsql security definer set search_path = public as $$
 declare old_date date;
 begin

@@ -11,7 +11,7 @@ import type { Cat } from "@/lib/domain/category";
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/client";
-import { CAT, shiftWeek, weekLabel } from "./shared";
+import { catInfo, shiftWeek, weekLabel } from "./shared";
 import { PeriodNav } from "./period-nav";
 
 export type WeekRow = {
@@ -50,7 +50,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
   function exportCsv() {
     downloadText(`komisi-mingguan-${week}.csv`, toCsv([
       ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon & potongan", "Dibayar bersih", "Tanggal bayar", "Metode"],
-      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.commission_service, r.commission_retail, r.subsidy, r.kasbon,
+      ...rows.map((r) => [r.staff_name, catInfo(r.category).label, r.service_count, r.revenue_net, r.commission_service, r.commission_retail, r.subsidy, r.kasbon,
         r.amount, r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
   }
@@ -100,8 +100,8 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
                 <tr key={r.staff_id} className="border-t border-line">
                   <td className="sticky left-0 z-[1] bg-card py-2.5 pr-3">
                     <span className="flex items-center gap-2">
-                      <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
-                      <span className="flex flex-col"><b className="font-medium">{r.staff_name}</b><span className="text-xs text-muted">{CAT[r.category].label} · {r.service_count} layanan</span></span>
+                      <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: catInfo(r.category).color }} />
+                      <span className="flex flex-col"><b className="font-medium">{r.staff_name}</b><span className="text-xs text-muted">{catInfo(r.category).label} · {r.service_count} layanan</span></span>
                     </span>
                   </td>
                   <td className="pr-3 text-right text-muted">{formatRupiah(r.revenue_net)}</td>

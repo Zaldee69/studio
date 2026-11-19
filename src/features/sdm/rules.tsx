@@ -15,7 +15,7 @@ import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatRupiah } from "@/lib/domain/format";
 import { itemCommission } from "@/lib/domain/commission";
 import { createClient } from "@/lib/supabase/client";
-import { CAT } from "./shared";
+import { CAT, catInfo } from "./shared";
 
 type StaffRule = { id: string; name: string; category: Cat; commission_pct_override: number | null; daily_min_pay: number | null; active: boolean;
   deduct_hpp: boolean | null; retail_pct_override: number | null; base_salary: number | null; pay_monthly: boolean };
@@ -119,7 +119,7 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
               {staff.filter((s) => s.active || showInactive).map((s) => { const r = rows[s.id]; return (
                 <tr key={s.id} className="border-t border-[#E0E2E6] align-top">
                   <td className="py-2 pr-2">
-                    <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
+                    <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: catInfo(s.category).color }} />
                       <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#E0E2E6] px-2 py-0.5 text-[11px] font-semibold text-[#4A505B]">nonaktif</span>}</span>
                     <span className="mt-1 block max-w-[260px] text-xs text-muted">{scheme(r)}</span>
                   </td>
@@ -165,7 +165,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
             <b className="tabular">#{r.rank}</b>
             <span className="truncate font-medium">{r.staff_name}</span>
             <span className="flex items-center gap-2">
-              <span className="h-7 rounded-md" style={{ width: `${Math.max(1, (r.revenue_net / max) * 100)}%`, background: CAT[r.category].color }} />
+              <span className="h-7 rounded-md" style={{ width: `${Math.max(1, (r.revenue_net / max) * 100)}%`, background: catInfo(r.category).color }} />
               <b className="whitespace-nowrap text-xs tabular min-[820px]:hidden">{formatRupiah(r.revenue_net)}</b>
             </span>
             <span className="hidden text-right text-xs text-muted tabular min-[820px]:block"><b className="text-sm text-ink">{formatRupiah(r.revenue_net)}</b> · {r.service_count} layanan · ⌀ {formatRupiah(r.avg_per_service)}</span>
@@ -177,7 +177,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         <table className="w-full text-sm tabular">
           <thead><tr className="text-left text-xs text-muted">{["#", "Staf", "Pendapatan", "Layanan", "Rata-rata"].map((h, i) => <th key={h} className={`py-2 font-medium ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.staff_id} className="border-t border-[#E0E2E6]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
+            <tr key={r.staff_id} className="border-t border-[#E0E2E6]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({catInfo(r.category).label})</span></td>
               <td className="text-right">{formatRupiah(r.revenue_net)}</td><td className="text-right">{r.service_count}</td><td className="text-right">{formatRupiah(r.avg_per_service)}</td></tr>
           ))}</tbody>
         </table>
@@ -216,7 +216,7 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
           <tbody>
             {rows.map((r) => (
               <tr key={r.staff_id} className="border-t border-[#E0E2E6] align-top">
-                <td className="py-2 pr-2"><b>{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></td>
+                <td className="py-2 pr-2"><b>{r.staff_name}</b><span className="block text-xs text-muted">{catInfo(r.category).label}</span></td>
                 <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td><td className="pr-2 text-right">{r.service_count}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.avg_per_service)}</td>
                 <td className="pr-2 text-right">{Number(r.upsell_rate).toLocaleString("id-ID")}%</td><td className="pr-2 text-right">{Number(r.return_rate).toLocaleString("id-ID")}%</td>

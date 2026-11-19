@@ -127,7 +127,8 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     const c = s.category as Cat;
     setDurOverride(null); setServerConflicts(null); setError("");
     if (!sel.length || c === cat) {
-      const next = sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id];
+      // satu layanan utama per booking: memilih utama baru menggantikan yang lama; tambahan bebas
+      const next = sel.includes(id) ? sel.filter((x) => x !== id) : [...(s.is_addon ? sel : sel.filter((x) => svcById.get(x)?.is_addon)), id];
       if (!next.length && pair.sel.length) {
         // layanan utama habis → booking kedua naik jadi utama
         setSel(pair.sel); setResourceId(pairResource ?? resourceId); setStaffPick(pair.staffPick);
@@ -146,7 +147,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
     if (edit) return setError(`Ubah booking hanya untuk layanan ${CAT_NAME[cat]}. Buat booking baru untuk ${CAT_NAME[c]}.`);
     // booking kedua = satu kategori lain; pilih kategori ketiga → booking kedua diganti ke kategori itu
     setPair((p) => p.sel.length && svcById.get(p.sel[0])?.category !== c ? { sel: [id], resourceId: null, staffPick: null }
-      : { ...p, sel: p.sel.includes(id) ? p.sel.filter((x) => x !== id) : [...p.sel, id] });
+      : { ...p, sel: p.sel.includes(id) ? p.sel.filter((x) => x !== id) : [...(s.is_addon ? p.sel : p.sel.filter((x) => svcById.get(x)?.is_addon)), id] });
   }
 
   // ---------- peringatan ----------

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MASSAGE_GROUPS, massageGroup } from "@/lib/domain/massage-group";
 import Image from "next/image";
 import Link from "next/link";
 import { OpenNow } from "@/components/open-now";
@@ -142,12 +143,12 @@ export default async function Landing() {
         { numeral: "II", title: "Nail Art", sub: "Manicure, pedicure & desain", cat: "nail", tone: "bg-lux-2", icon: <Polish />, text: s.bloom_text, p: photo("bloom"), soon: soon("nail") },
         { numeral: "III", title: "Lashes", sub: "Eyelash extension & lift", cat: "lashes", tone: "bg-lux", icon: <Lash />, text: LASHES_TEXT, p: photo("lashes"), soon: soon("lashes") },
       ].map((w) => (
-        <article key={w.title} className={`flex flex-col items-center gap-[22px] border-rule text-center min-[900px]:border-r min-[900px]:last:border-r-0 ${sec} ${px} ${w.tone}`}>
+        <article key={w.title} className={`flex flex-col items-center gap-3.5 border-b border-rule py-10 text-center min-[900px]:gap-[22px] min-[900px]:border-b-0 min-[900px]:border-r min-[900px]:py-[120px] min-[900px]:last:border-r-0 ${px} ${w.tone}`}>
           <span className="font-serif text-lg tracking-[0.2em] text-gold">{w.numeral}</span>
-          <div className="relative flex h-[280px] w-[220px] items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux-3 text-gold min-[900px]:h-[300px] min-[900px]:w-[220px] min-[1200px]:h-[340px] min-[1200px]:w-[260px]">
+          <div className="relative flex h-[150px] w-[120px] items-center justify-center overflow-hidden rounded-t-full border border-rule-2 bg-lux-3 text-gold min-[900px]:h-[300px] min-[900px]:w-[220px] min-[1200px]:h-[340px] min-[1200px]:w-[260px]">
             {w.p ? <Image src={photoUrl(w.p.path)!} alt={w.p.caption || `${w.title} — ${w.sub}`} fill loading={soon("nail") ? "lazy" : "eager"} quality={90} sizes={CARD_SIZES} className="object-cover" /> : w.icon}
           </div>
-          <h2 className={h2}>{w.title}</h2>
+          <h2 className={h2.replace("text-[42px]", "text-[32px]")}>{w.title}</h2>
           <span className="text-xs font-semibold uppercase tracking-[0.28em] text-dust">{w.sub}</span>
           <p className="max-w-[360px] text-base leading-[1.7] text-sand">{w.text}</p>
           {w.soon ? <Link href={`/daftar-tunggu?minat=${w.cat}`} className="btn-line h-12 px-[26px]">Segera hadir · Daftar tunggu</Link>
@@ -210,7 +211,7 @@ export default async function Landing() {
         </section>
 
         {/* TICKER */}
-        <div aria-hidden="true" className="flex h-16 items-center overflow-hidden border-y border-rule">
+        <div aria-hidden="true" className="flex h-16 items-center max-[899px]:hidden overflow-hidden border-y border-rule">
           <div className="gb-tick flex whitespace-nowrap font-serif text-[26px] italic text-gold">
             <span className="pr-3">{ticker}</span><span className="pr-3">{ticker}</span>
           </div>
@@ -222,8 +223,8 @@ export default async function Landing() {
         <section id="menu" className={`mx-auto flex max-w-[1180px] flex-col gap-12 ${sec} ${px}`}>
           <div className="flex flex-col items-center gap-3.5 text-center">
             <span className="eyebrow">Menu layanan</span>
-            <h2 className={h2}>Pilih layananmu</h2>
-            <p className="max-w-[520px] text-base leading-[1.7] text-sand">Harga dan perkiraan durasi tertulis di sini — add-on disampaikan sebelum layanan dimulai.</p>
+            <h2 className={h2.replace("text-[42px]", "text-[34px]")}>Pilih layananmu</h2>
+            <p className="max-w-[520px] text-base leading-[1.7] text-sand">Harga dan perkiraan durasi tertulis di sini.</p>
           </div>
           <div className={`grid gap-10 min-[900px]:gap-20 ${soon("nail") ? "mx-auto w-full max-w-[560px]" : "min-[900px]:grid-cols-2"}`}>
             {[["Barbershop", "barbershop"], ["Nail Art", "nail"]].filter(([, c]) => !soon(c)).map(([title, c]) => (
@@ -251,19 +252,24 @@ export default async function Landing() {
                 <h3 className="font-serif text-[28px] font-normal italic text-gold">Layanan tambahan · Pijat & refleksi</h3>
                 <span className="text-xs uppercase tracking-[0.18em] text-stone">{massageOnline ? "Bisa reservasi online" : "Reservasi lewat WhatsApp"}</span>
               </div>
-              <div className="grid gap-x-12 min-[900px]:grid-cols-2">
-                {/* seperti daftar harga cetak: nama · harga, lalu keterangan (durasi ditulis di keterangan bila ada di daftar harga) */}
-                {extra.map((x) => (
-                  <div key={x.id} className="flex flex-col gap-0.5 py-2">
-                    <div className="flex items-baseline gap-2.5 tabular-nums">
-                      <span className="font-serif text-lg font-medium">{x.name}</span>
-                      <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
-                      {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+              {/* satu baris per layanan (keterangan ada di booking & WhatsApp) — daftar tetap terbuka tapi pendek */}
+              {MASSAGE_GROUPS.map((g) => {
+                const rows = extra.filter((x) => massageGroup(x.name ?? "") === g);
+                return !!rows.length && (
+                  <div key={g} className="flex flex-col">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{g}</h4>
+                    <div className="grid gap-x-12 min-[900px]:grid-cols-2">
+                      {rows.map((x) => (
+                        <div key={x.id} className="flex items-baseline gap-2.5 py-1.5 tabular-nums">
+                          <span className="font-serif text-lg font-medium">{x.name}</span>
+                          <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
+                          {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+                        </div>
+                      ))}
                     </div>
-                    {x.public_description && <span className="text-[13px] leading-snug text-stone">{x.public_description}</span>}
                   </div>
-                ))}
-              </div>
+                );
+              })}
               {massageOnline ? <Link href={bookHref("massage")} className="btn-line self-start">Reservasi pijat</Link>
                 : wa && <a href={wa} target="_blank" rel="noopener" className="btn-line self-start">Tanya jadwal pijat</a>}
             </div>

@@ -13,7 +13,7 @@ import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui"
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/client";
-import { CAT, monthLabel, shiftMonth } from "./shared";
+import { catInfo, monthLabel, shiftMonth } from "./shared";
 
 export type PayRow = {
   staff_id: string; staff_name: string; category: Cat; commission_pct: number; service_count: number;
@@ -58,7 +58,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
     downloadText(`rekap-gaji-${month}.csv`, toCsv([
       ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "HPP", "Gaji pokok", "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", "Total gaji",
         "Dibayar mingguan", "Sisa akhir bulan", "Dibayar", "Metode"],
-      ...rows.map((r) => [r.staff_name, CAT[r.category].label, r.service_count, r.revenue_net, r.hpp_total, r.base_salary, r.commission_service, r.commission_retail,
+      ...rows.map((r) => [r.staff_name, catInfo(r.category).label, r.service_count, r.revenue_net, r.hpp_total, r.base_salary, r.commission_service, r.commission_retail,
         r.subsidy, r.adjustments, r.total_pay, wk(r), rest(r), r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
   }
@@ -101,8 +101,8 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
               <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#E0E2E6] hover:bg-paper">
                 <td className="sticky left-0 z-[1] bg-card py-2 pr-2">
                   <button className="flex min-h-11 items-center gap-2 text-left" onClick={(e) => { e.stopPropagation(); setDetail(r); }}>
-                    <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
-                    <span className="flex flex-col"><b>{r.staff_name}</b><span className="text-xs text-muted">{CAT[r.category].label}</span></span>
+                    <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: catInfo(r.category).color }} />
+                    <span className="flex flex-col"><b>{r.staff_name}</b><span className="text-xs text-muted">{catInfo(r.category).label}</span></span>
                   </button>
                 </td>
                 <td className="pr-2 text-right">{r.service_count}</td>
@@ -224,7 +224,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
             {trend.map((t) => (
               <div key={t.m} className="flex flex-1 flex-col items-center gap-1" title={`${monthLabel(t.m)}: ${formatRupiah(t.v)}`}>
                 <span className="text-[10px] text-muted tabular">{t.v ? `${Math.round(t.v / 1000)}rb` : ""}</span>
-                <div className="w-full rounded-t-md" style={{ height: `${Math.max(2, (t.v / max) * 80)}px`, background: CAT[row.category].color, opacity: t.m === month ? 1 : 0.55 }} />
+                <div className="w-full rounded-t-md" style={{ height: `${Math.max(2, (t.v / max) * 80)}px`, background: catInfo(row.category).color, opacity: t.m === month ? 1 : 0.55 }} />
                 <span className="text-[10px] text-muted">{monthLabel(t.m).slice(0, 3)}</span>
               </div>
             ))}

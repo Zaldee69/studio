@@ -13,3 +13,12 @@ describe("minggu komisi (Senin–Minggu)", () => {
     expect(weekLabel("2026-09-28")).toBe("28 Sep – 4 Okt 2026");
   });
 });
+
+import { catInfo } from "./shared";
+describe("catInfo", () => {
+  it("kategori layanan dikenal, selain itu (mis. kasir) tidak crash", () => {
+    expect(catInfo("barbershop").label).toBe("Barbershop");
+    expect(catInfo("kasir")).toEqual({ label: "Kasir", color: "#9AA3B0" });
+    expect(catInfo("entah").color).toBe("#9AA3B0");
+  });
+});

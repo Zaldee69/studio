@@ -7,7 +7,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Empty, useToast } from "@/components/ui";
+import { CloseButton, Empty, Field, Sheet, useToast } from "@/components/ui";
 import { formatRupiah } from "@/lib/domain/format";
 import { formatUnitCost, STOCK_STATUS } from "@/lib/domain/inventory";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
@@ -64,46 +64,67 @@ function RowMenu({ r }: { r: StockRow }) {
   );
 }
 
-/** Baris yang bisa diedit langsung: nama, satuan, ambang, pemasok. Harga pokok hanya lewat Stok masuk. */
-function useRowSave(r: StockRow) {
+/** Ubah nama, satuan, ambang reorder, dan pemasok. Harga pokok hanya berubah lewat Stok masuk / penyesuaian harga. */
+function EditItem({ r, onClose }: { r: StockRow; onClose: () => void }) {
+  const { suppliers } = useInv();
   const toast = useToast(); const router = useRouter();
-  return async (fd: FormData) => {
+  async function save(fd: FormData) {
     const reorder = Number(String(fd.get("reorder_at")).replace(",", "."));
-    if (!String(fd.get("name")).trim() || !(reorder >= 0)) return toast("Nama & ambang wajib diisi", "error");
+    if (!String(fd.get("name")).trim() || !(reorder >= 0)) return toast("Nama dan ambang wajib diisi", "error");
     const { error } = await createClient().from("inventory_items").update({
       name: String(fd.get("name")).trim(), unit: String(fd.get("unit")).trim() || "pcs", reorder_at: reorder,
       supplier_id: String(fd.get("supplier_id") || "") || null,
     }).eq("id", r.item_id);
     if (error) return toast(error.message, "error");
-    toast("Tersimpan"); router.refresh();
-  };
-}
-
-function EditCells({ r, form }: { r: StockRow; form: string }) {
-  const { suppliers } = useInv();
+    toast("Tersimpan"); onClose(); router.refresh();
+  }
   return (
-    <>
-      <td className="py-1.5 pr-2"><Input form={form} name="name" aria-label="Nama" defaultValue={r.name} className="min-w-40 font-medium" /></td>
-      <td className="pr-2"><Input form={form} name="unit" aria-label="Satuan" defaultValue={r.unit} className="w-20" /></td>
-      <td className="whitespace-nowrap pr-3 text-base font-semibold tabular">{qtyFmt(r.qty)}</td>
-      <td className="pr-2"><Input form={form} name="reorder_at" aria-label="Reorder di" inputMode="decimal" defaultValue={r.reorder_at} className="w-24" /></td>
-      <td className="pr-2">
-        <NativeSelect form={form} name="supplier_id" aria-label="Pemasok" defaultValue={r.supplier_id ?? ""} className="w-36">
-          <option value="">—</option>
+    <form action={save} className="flex flex-col gap-4 p-5">
+      <div className="flex items-start justify-between gap-3"><h2 className="text-lg font-semibold">Ubah {r.name}</h2><CloseButton onClick={onClose} /></div>
+      <Field label="Nama" htmlFor="ei-name"><Input id="ei-name" name="name" defaultValue={r.name} autoFocus /></Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Satuan" htmlFor="ei-unit"><Input id="ei-unit" name="unit" defaultValue={r.unit} /></Field>
+        <Field label="Reorder di" htmlFor="ei-reorder" hint="Status jadi Perlu dibeli di angka ini"><Input id="ei-reorder" name="reorder_at" inputMode="decimal" defaultValue={r.reorder_at} /></Field>
+      </div>
+      <Field label="Pemasok" htmlFor="ei-sup">
+        <NativeSelect id="ei-sup" name="supplier_id" defaultValue={r.supplier_id ?? ""}>
+          <option value="">Belum ditentukan</option>
           {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </NativeSelect>
-      </td>
-    </>
+      </Field>
+      <div className="flex gap-2"><Button type="button" variant="outline" onClick={onClose} className="h-11 flex-1">Batal</Button><Button className="h-11 flex-1">Simpan</Button></div>
+    </form>
   );
 }
 
-function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
-  const { open } = useInv();
-  const save = useRowSave(r);
-  const form = `it-${r.item_id}`;
+const ORDER: Record<StockRow["status"], number> = { reorder: 0, low: 1, ok: 2 };
+
+/** Batang stok: terisi sebanding stok terhadap 3× ambang reorder; garis menandai ambang. */
+function StockBar({ r }: { r: StockRow }) {
+  const full = Math.max(r.reorder_at * 3, r.qty, 1);
+  const color = r.status === "reorder" ? "#D94B42" : r.status === "low" ? "#C58A2B" : "#268052";
   return (
-    <tr className={`border-t border-[#E0E2E6] ${r.active ? "" : "opacity-55"}`}>
-      <EditCells r={r} form={form} />
+    <span aria-hidden="true" className="relative mt-1 block h-1.5 w-24 rounded-full bg-[#E3E5E9]">
+      <span className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.min(100, (r.qty / full) * 100)}%`, background: color }} />
+      {r.reorder_at > 0 && <span className="absolute -top-0.5 h-2.5 w-px bg-ink/50" style={{ left: `${Math.min(100, (r.reorder_at / full) * 100)}%` }} />}
+    </span>
+  );
+}
+
+function TableRow({ r, extra, onEdit }: { r: StockRow; extra?: RetailExtra; onEdit: () => void }) {
+  const { open, suppliers } = useInv();
+  const sup = suppliers.find((x) => x.id === r.supplier_id)?.name;
+  return (
+    <tr className={`border-t border-line ${r.active ? "" : "opacity-55"}`}>
+      <td className="py-3 pr-3">
+        <b className="block font-medium">{r.name}</b>
+        <span className="text-xs text-muted">{sup ? `Pemasok: ${sup}` : "Belum ada pemasok"}</span>
+      </td>
+      <td className="whitespace-nowrap pr-3 tabular">
+        <b className="text-base font-semibold">{qtyFmt(r.qty)}</b> <span className="text-muted">{r.unit}</span>
+        <StockBar r={r} />
+      </td>
+      <td className="whitespace-nowrap pr-3 text-right tabular text-muted">{qtyFmt(r.reorder_at)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatUnitCost(r.unit_cost)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatRupiah(r.stock_value)}</td>
       {extra && (
@@ -111,38 +132,35 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
           <td className="whitespace-nowrap pr-3 text-right tabular">{extra.price == null ? "—" : formatRupiah(extra.price)}</td>
           <td className="whitespace-nowrap pr-3 text-right tabular">{extra.price == null ? "—" : formatRupiah(Math.round(extra.price - r.unit_cost))}</td>
           <td className="pr-3 text-right tabular">{extra.sold30}</td>
-          <td className="pr-3">{extra.topSeller ?? "—"}</td>
         </>
       )}
-      <td className="pr-2"><StatusChip status={r.status} /></td>
-      <td className="whitespace-nowrap">
-        <form id={form} action={save} className="flex items-center gap-1.5">
-          <Button variant="outline" className="h-11 px-3">Simpan</Button>
-          <Button type="button" onClick={() => open({ kind: "in", itemId: r.item_id })} className="h-11 px-3">+ Stok masuk</Button>
+      <td className="pr-3"><StatusChip status={r.status} /></td>
+      <td className="whitespace-nowrap py-2">
+        <div className="flex items-center justify-end gap-1.5">
+          <Button type="button" variant="outline" onClick={() => open({ kind: "in", itemId: r.item_id })} className="h-10 px-3">+ Stok masuk</Button>
+          <Button type="button" variant="ghost" onClick={onEdit} className="h-10 px-3 text-muted">Ubah</Button>
           <RowMenu r={r} />
-        </form>
+        </div>
       </td>
     </tr>
   );
 }
 
-function ItemCard({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
+function ItemCard({ r, extra, onEdit }: { r: StockRow; extra?: RetailExtra; onEdit: () => void }) {
   const { open } = useInv();
   return (
-    <div className={`flex flex-col gap-2 rounded-[14px] border border-line bg-card p-3.5 ${r.active ? "" : "opacity-55"}`}>
+    <div className={`flex flex-col gap-2 rounded-2xl border border-line bg-card p-3.5 ${r.active ? "" : "opacity-55"}`}>
       <div className="flex items-center gap-2">
-        <b className="flex-1 text-[15px]">{r.name}</b><StatusChip status={r.status} />
+        <b className="flex-1 text-[15px] font-medium">{r.name}</b><StatusChip status={r.status} />
       </div>
-      <div className="grid grid-cols-3 gap-2 text-xs text-muted tabular">
-        <span>Stok<b className="block text-lg text-ink">{qtyFmt(r.qty)} {r.unit}</b></span>
-        <span>Reorder di<b className="block text-sm text-ink">{qtyFmt(r.reorder_at)}</b></span>
-        <span>Nilai<b className="block text-sm text-ink">{formatRupiah(r.stock_value)}</b></span>
-        <span>Harga pokok<b className="block text-sm text-ink">{formatUnitCost(r.unit_cost)}</b></span>
-        {extra && <span>Harga jual<b className="block text-sm text-ink">{extra.price == null ? "—" : formatRupiah(extra.price)}</b></span>}
-        {extra && <span>Terjual 30 hr<b className="block text-sm text-ink">{extra.sold30}</b></span>}
+      <div className="flex items-end justify-between gap-3 tabular">
+        <span><b className="text-xl font-semibold">{qtyFmt(r.qty)}</b> <span className="text-sm text-muted">{r.unit}</span><StockBar r={r} /></span>
+        <span className="text-right text-xs text-muted">Reorder di {qtyFmt(r.reorder_at)}<b className="block text-sm font-medium text-ink">{formatRupiah(r.stock_value)}</b></span>
       </div>
+      {extra?.price != null && <span className="text-xs text-muted tabular">Harga jual {formatRupiah(extra.price)} · terjual {extra.sold30} dalam 30 hari</span>}
       <div className="flex gap-1.5">
         <Button onClick={() => open({ kind: "in", itemId: r.item_id })} className="h-11 flex-1">+ Stok masuk</Button>
+        <Button variant="outline" onClick={onEdit} className="h-11">Ubah</Button>
         <RowMenu r={r} />
       </div>
     </div>
@@ -163,50 +181,86 @@ function NewItem({ kind }: { kind: Kind }) {
     if (error) return toast(error.message, "error");
     toast(`${name} ditambahkan — catat Stok masuk untuk mengisi stok & harga pokok`); setOpen(false); router.refresh();
   }
-  if (!open) return <Button onClick={() => setOpen(true)} variant="outline" className="h-11 self-start">+ Tambah {kind === "retail" ? "barang ritel" : "bahan"}</Button>;
   return (
-    <form action={add} className="flex flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3.5">
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Nama</span><Input name="name" className="w-52" autoFocus /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Satuan</span><Input name="unit" className="w-24" placeholder={kind === "retail" ? "pcs" : "ml"} /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Reorder di</span><Input name="reorder_at" inputMode="decimal" className="w-24" /></label>
-      <label className="flex flex-col"><span className="mb-1 block text-xs font-medium text-muted">Pemasok</span>
-        <NativeSelect name="supplier_id" className="w-40"><option value="">—</option>{suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
-      </label>
-      <Button className="h-11">Tambah</Button>
-      <Button type="button" onClick={() => setOpen(false)} variant="outline" className="h-11">Batal</Button>
-    </form>
+    <>
+      <Button onClick={() => setOpen(true)} className="h-11">+ Tambah {kind === "retail" ? "barang ritel" : "bahan"}</Button>
+      <Sheet open={open} onClose={() => setOpen(false)} label="Item baru" width={460}>
+        <form action={add} className="flex flex-col gap-4 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div><h2 className="text-lg font-semibold">{kind === "retail" ? "Barang ritel baru" : "Bahan baru"}</h2><p className="text-[13px] text-muted">Stok dan harga pokok terisi lewat Stok masuk setelah ini.</p></div>
+            <CloseButton onClick={() => setOpen(false)} />
+          </div>
+          <Field label="Nama" htmlFor="ni-name"><Input id="ni-name" name="name" autoFocus /></Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Satuan" htmlFor="ni-unit"><Input id="ni-unit" name="unit" placeholder={kind === "retail" ? "pcs" : "ml"} /></Field>
+            <Field label="Reorder di" htmlFor="ni-reorder"><Input id="ni-reorder" name="reorder_at" inputMode="decimal" placeholder="0" /></Field>
+          </div>
+          <Field label="Pemasok" htmlFor="ni-sup">
+            <NativeSelect id="ni-sup" name="supplier_id"><option value="">Belum ditentukan</option>{suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</NativeSelect>
+          </Field>
+          <div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setOpen(false)} className="h-11 flex-1">Batal</Button><Button className="h-11 flex-1">Tambah</Button></div>
+        </form>
+      </Sheet>
+    </>
   );
 }
 
 export function ItemsTable({ kind, extras }: { kind: Kind; extras?: Record<string, RetailExtra> }) {
   const { items } = useInv();
   const [showInactive, setShowInactive] = useState(false);
-  const rows = items.filter((i) => i.kind === kind && (showInactive || i.active));
-  const total = rows.filter((r) => r.active).reduce((a, r) => a + r.stock_value, 0);
-  const head = ["Nama", "Satuan", "Stok", "Reorder di", "Pemasok", "Harga pokok/satuan", "Nilai stok",
-    ...(extras ? ["Harga jual", "Margin/unit", "Terjual 30 hr", "Penjual teratas"] : []), "Status", ""];
+  const [q, setQ] = useState("");
+  const [f, setF] = useState<"all" | StockRow["status"]>("all");
+  const [editing, setEditing] = useState<StockRow | null>(null);
+  const all = items.filter((i) => i.kind === kind && (showInactive || i.active));
+  const cnt = { reorder: all.filter((r) => r.status === "reorder").length, low: all.filter((r) => r.status === "low").length };
+  const rows = all.filter((r) => (f === "all" || r.status === f) && r.name.toLowerCase().includes(q.trim().toLowerCase()))
+    .sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.name.localeCompare(b.name));
+  const total = all.filter((r) => r.active).reduce((a, r) => a + r.stock_value, 0);
+  const head = ["Nama", "Stok", "Reorder di", "Harga pokok", "Nilai stok", ...(extras ? ["Harga jual", "Margin/unit", "Terjual 30 hr"] : []), "Status", ""];
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <NewItem kind={kind} />
-        <label className="ml-auto flex min-h-11 items-center gap-2 text-sm">
-          <Checkbox className="size-5" checked={showInactive} onCheckedChange={(v) => setShowInactive(v === true)} /> Tampilkan nonaktif
-        </label>
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-3 min-[900px]:grid-cols-4">
+        {[["Jumlah item", String(all.filter((r) => r.active).length), kind === "retail" ? "barang ritel" : "bahan HPP"],
+          ["Perlu dibeli", String(cnt.reorder), "di bawah batas reorder"], ["Menipis", String(cnt.low), "mendekati batas"],
+          ["Nilai stok", formatRupiah(total), "harga pokok × stok"]].map(([k, v, sub], i) => (
+          <div key={k} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
+            <span className="text-[13px] font-medium text-muted">{k}</span>
+            <b className={`font-display text-[28px] font-semibold leading-tight tracking-tight tabular ${i === 1 && cnt.reorder ? "text-[#D94B42]" : ""}`}>{v}</b>
+            <span className="text-xs text-muted">{sub}</span>
+          </div>
+        ))}
       </div>
-      {!rows.length ? <Empty>Belum ada item.</Empty> : (
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Input type="search" aria-label="Cari item" placeholder="Cari nama…" value={q} onChange={(e) => setQ(e.target.value)} className="h-11 w-56" />
+        <div role="radiogroup" aria-label="Filter status" className="flex gap-1 rounded-xl bg-side p-1">
+          {([["all", "Semua"], ["reorder", `Perlu dibeli${cnt.reorder ? ` (${cnt.reorder})` : ""}`], ["low", `Menipis${cnt.low ? ` (${cnt.low})` : ""}`], ["ok", "Aman"]] as const).map(([v, l]) => (
+            <button key={v} role="radio" aria-checked={f === v} onClick={() => setF(v)}
+              className={`h-9 rounded-lg px-3.5 text-[13px] font-medium ${f === v ? "bg-card font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"}`}>{l}</button>
+          ))}
+        </div>
+        <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
+          <Checkbox className="size-5" checked={showInactive} onCheckedChange={(v) => setShowInactive(v === true)} /> Nonaktif
+        </label>
+        <div className="ml-auto"><NewItem kind={kind} /></div>
+      </div>
+
+      {!rows.length ? <Empty>{all.length ? "Tidak ada item yang cocok dengan pencarian atau filter." : "Belum ada item."}</Empty> : (
         <>
-          <div className="hidden overflow-x-auto rounded-[14px] border border-line bg-card px-3 min-[1000px]:block">
+          <div className="hidden overflow-x-auto rounded-3xl border border-line bg-card px-4 min-[1000px]:block">
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={i} className={`py-2.5 pr-2 font-medium ${/Harga|Nilai|Margin|Terjual/.test(h) ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-              <tbody>{rows.map((r) => <TableRow key={r.item_id} r={r} extra={extras?.[r.item_id] ?? (extras ? { price: null, sold30: 0, topSeller: null } : undefined)} />)}</tbody>
+              <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={i} className={`whitespace-nowrap py-3 pr-3 font-medium ${/Harga|Nilai|Margin|Terjual|Reorder/.test(h) ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
+              <tbody>{rows.map((r) => <TableRow key={r.item_id} r={r} onEdit={() => setEditing(r)} extra={extras?.[r.item_id] ?? (extras ? { price: null, sold30: 0, topSeller: null } : undefined)} />)}</tbody>
             </table>
           </div>
           <div className="grid gap-2.5 min-[640px]:grid-cols-2 min-[1000px]:hidden">
-            {rows.map((r) => <ItemCard key={r.item_id} r={r} extra={extras?.[r.item_id]} />)}
+            {rows.map((r) => <ItemCard key={r.item_id} r={r} extra={extras?.[r.item_id]} onEdit={() => setEditing(r)} />)}
           </div>
-          <p className="text-right text-sm tabular">Total nilai stok {kind === "retail" ? "ritel" : "bahan"}: <b>{formatRupiah(total)}</b></p>
         </>
       )}
+      <Sheet open={!!editing} onClose={() => setEditing(null)} label="Ubah item" width={460}>
+        {editing && <EditItem key={editing.item_id} r={editing} onClose={() => setEditing(null)} />}
+      </Sheet>
     </div>
   );
 }

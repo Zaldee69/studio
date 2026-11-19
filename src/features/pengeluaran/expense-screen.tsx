@@ -4,7 +4,7 @@ import { DateInput } from "@/components/date-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CloseButton, Empty, Field, Sheet, useOnline, useToast } from "@/components/ui";
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { EXPENSE_CAT, EXPENSE_SOURCE, type ExpenseCat, type ExpenseSource } from "@/lib/domain/expense";
@@ -19,6 +19,9 @@ type Row = {
 };
 type Tpl = { id: string; category: ExpenseCat; description: string; amount: number; source: ExpenseSource; day_of_month: number };
 type Prefill = Omit<Tpl, "day_of_month"> & { templateId: string };
+const PAGE = 20;
+const shiftMonth = (m: string, d: number) => { const t = new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7) - 1 + d, 1)); return t.toISOString().slice(0, 7); };
+const monthName = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 const monthEnd = (m: string) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7), 0)).toISOString().slice(0, 10);
 
 /** Pengeluaran operasional. Manajer: per bulan, semua sumber, bisa membatalkan. Kasir: hari ini; laci dibatasi kas kecil, sumber lain wajib nota. */
@@ -31,112 +34,165 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
   const [prefill, setPrefill] = useState<Prefill | null>(null); // "Catat" dari pengeluaran rutin
   const [newTpl, setNewTpl] = useState(false);
   const [voiding, setVoiding] = useState<Row | null>(null);
+  const [page, setPage] = useState(0);
+  const [cat, setCat] = useState<"" | ExpenseCat>("");
+  const [q, setQ] = useState("");
+  const [qs, setQs] = useState(""); // pencarian yang sudah ditunda 300 ms
+  useEffect(() => { const t = setTimeout(() => { setQs(q.trim()); setPage(0); }, 300); return () => clearTimeout(t); }, [q]);
 
   const { data, refresh } = useRealtimeTable(["expenses", "cash_closings"], async () => {
     const supabase = createClient();
-    let q = supabase.from("expenses")
-      .select("id, date, category, description, amount, source, receipt_path, created_at, voided_at, void_reason, template_id, profiles!expenses_created_by_fkey(full_name), staff(name)")
-      .order("date", { ascending: false }).order("created_at", { ascending: false });
-    q = manager ? q.gte("date", `${month}-01`).lte("date", monthEnd(month)) : q.eq("date", today);
-    const [rows, lim, closed, staff, tpl] = await Promise.all([
-      q, supabase.rpc("expense_limits"), supabase.from("cash_closings").select("id").eq("date", today).limit(1),
+    const [from, to] = manager ? [`${month}-01`, monthEnd(month)] : [today, today];
+    let list = supabase.from("expenses")
+      .select("id, date, category, description, amount, source, receipt_path, created_at, voided_at, void_reason, template_id, profiles!expenses_created_by_fkey(full_name), staff(name)", { count: "exact" })
+      .gte("date", from).lte("date", to);
+    if (cat) list = list.eq("category", cat);
+    if (qs) list = list.ilike("description", `%${qs.replace(/[%_]/g, "")}%`);
+    // ringkasan bulan penuh (ringan, tanpa halaman) terpisah dari daftar yang dibagi per halaman
+    const [rows, sum, lim, closed, staff, tpl] = await Promise.all([
+      list.order("date", { ascending: false }).order("created_at", { ascending: false }).range(page * PAGE, page * PAGE + PAGE - 1),
+      supabase.from("expenses").select("category, amount, template_id, date").gte("date", from).lte("date", to).is("voided_at", null),
+      supabase.rpc("expense_limits"), supabase.from("cash_closings").select("id").eq("date", today).limit(1),
       supabase.from("staff").select("id, name").eq("active", true).order("name"),
       manager ? supabase.from("expense_templates").select("id, category, description, amount, source, day_of_month").eq("active", true).order("day_of_month") : Promise.resolve({ data: [] }),
     ]);
     if (rows.error) throw rows.error;
-    return { rows: rows.data as unknown as Row[], lim: lim.data?.[0] ?? { petty_cash_limit: 0, receipt_required_above: 0 }, todayClosed: !!closed.data?.length, staff: staff.data ?? [], tpl: (tpl.data ?? []) as Tpl[] };
-  }, manager ? month : today);
+    return { rows: rows.data as unknown as Row[], count: rows.count ?? 0, all: (sum.data ?? []) as { category: ExpenseCat; amount: number; template_id: string | null; date: string }[],
+      lim: lim.data?.[0] ?? { petty_cash_limit: 0, receipt_required_above: 0 }, todayClosed: !!closed.data?.length, staff: staff.data ?? [], tpl: (tpl.data ?? []) as Tpl[] };
+  }, `${manager ? month : today}:${page}:${cat}:${qs}`);
 
-  const live = (data?.rows ?? []).filter((r) => !r.voided_at);
-  const total = live.reduce((a, r) => a + r.amount, 0);
-  const byCat = Object.entries(live.reduce<Record<string, number>>((a, r) => ({ ...a, [r.category]: (a[r.category] ?? 0) + r.amount }), {}))
-    .sort((a, b) => b[1] - a[1]);
+  const all = data?.all ?? [];
+  const total = all.reduce((a, r) => a + r.amount, 0);
+  const byCat = Object.entries(all.reduce<Record<string, number>>((a, r) => ({ ...a, [r.category]: (a[r.category] ?? 0) + r.amount }), {})).sort((a, b) => b[1] - a[1]);
+  const pages = Math.max(1, Math.ceil((data?.count ?? 0) / PAGE));
 
   async function openReceipt(path: string) {
     const { data, error } = await createClient().storage.from("receipts").createSignedUrl(path, 300);
     if (error) return toast(error.message, "error");
     window.open(data.signedUrl, "_blank", "noopener");
   }
-  function exportCsv() {
+  async function exportCsv() {
+    // semua baris bulan itu (bukan hanya halaman yang tampil)
+    const { data: full, error } = await createClient().from("expenses")
+      .select("id, date, category, description, amount, source, receipt_path, created_at, voided_at, void_reason, template_id, profiles!expenses_created_by_fkey(full_name), staff(name)")
+      .gte("date", `${month}-01`).lte("date", monthEnd(month)).order("date", { ascending: false }).order("created_at", { ascending: false });
+    if (error) return toast(error.message, "error");
     downloadText(`pengeluaran-${month}.csv`, toCsv([
       ["Tanggal", "Kategori", "Staf (kasbon)", "Keterangan", "Sumber", "Jumlah", "Dicatat oleh", "Status"],
-      ...(data?.rows ?? []).map((r) => [r.date, EXPENSE_CAT[r.category], r.staff?.name ?? "", r.description, EXPENSE_SOURCE[r.source], r.amount,
+      ...((full ?? []) as unknown as Row[]).map((r) => [r.date, EXPENSE_CAT[r.category], r.staff?.name ?? "", r.description, EXPENSE_SOURCE[r.source], r.amount,
         r.profiles?.full_name ?? "", r.voided_at ? `Dibatalkan: ${r.void_reason}` : ""]),
     ]));
   }
 
+  const arrow = "flex size-11 items-center justify-center rounded-xl text-lg text-muted hover:bg-paper hover:text-ink disabled:opacity-30";
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="flex-1 font-display text-[28px] font-medium tracking-tight">Pengeluaran</h1>
-        {manager && <>
-          <label htmlFor="ex-month" className="sr-only">Bulan</label>
-          <Input id="ex-month" type="month" value={month} max={today.slice(0, 7)} onChange={(e) => e.target.value && setMonth(e.target.value)} className="w-auto" />
-          <Button onClick={exportCsv} disabled={!data?.rows.length} variant="outline" className="h-11">Ekspor</Button>
-        </>}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <h1 className="font-display text-[28px] font-medium tracking-tight">Pengeluaran</h1>
+          <span className="text-[13px] text-muted">{manager ? "Biaya operasional di luar stok, perawatan, dan gaji" : "Pengeluaran hari ini"}</span>
+        </div>
+        {manager && (
+          <div className="flex items-center rounded-2xl border border-line bg-card p-0.5">
+            <button onClick={() => { setMonth(shiftMonth(month, -1)); setPage(0); }} aria-label="Bulan sebelumnya" className={arrow}>‹</button>
+            <b className="min-w-36 px-1 text-center font-display text-base font-semibold">{monthName(month)}</b>
+            <button onClick={() => { setMonth(shiftMonth(month, 1)); setPage(0); }} disabled={month >= today.slice(0, 7)} aria-label="Bulan berikutnya" className={arrow}>›</button>
+          </div>
+        )}
+        {manager && <Button onClick={exportCsv} disabled={!all.length} variant="outline" className="h-11">Ekspor</Button>}
         <Button onClick={() => setAdding(true)} disabled={!online || !data || (!manager && data.todayClosed)} className="h-11">+ Catat pengeluaran</Button>
       </div>
-      <p className="text-sm text-muted">
-        {manager
-          ? "Biaya operasional di luar stok, perawatan fasilitas, dan gaji. Kasbon staf otomatis menjadi potongan gaji bulan itu. Pengeluaran dari laci mengurangi kas diharapkan di tutup kasir; semuanya masuk laporan owner sampai laba bersih."
-          : `Pengeluaran hari ini. Pilih Dibayar dari sesuai sumber uangnya. Dari laci maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)} dan mengurangi kas diharapkan saat tutup kasir; sumber lain wajib foto nota.`}
-        {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
-      </p>
-      {!manager && data?.todayClosed && <p className="rounded-[14px] bg-[#FBF2E4] px-3.5 py-3 text-sm text-[#6B4A10]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
+      <details className="group rounded-2xl border border-line bg-card px-4 py-2 text-sm">
+        <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between font-medium">Aturan pencatatan<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
+        <p className="pb-2 pt-1 leading-relaxed text-muted">
+          {manager
+            ? "Kasbon staf otomatis menjadi potongan gaji bulan itu. Pengeluaran dari laci mengurangi kas diharapkan di tutup kasir. Semuanya masuk laporan owner sampai laba bersih."
+            : `Pilih Dibayar dari sesuai sumber uangnya. Dari laci maksimal ${formatRupiah(data?.lim.petty_cash_limit ?? 0)} dan mengurangi kas diharapkan saat tutup kasir; sumber lain wajib foto nota.`}
+          {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
+        </p>
+      </details>
+      {!manager && data?.todayClosed && <p className="rounded-2xl bg-[#FBF2E4] px-4 py-3 text-sm text-[#6B4A10]">Kasir hari ini sudah ditutup. Pengeluaran dari laci tidak bisa ditambah lagi.</p>}
 
-      <div className="grid grid-cols-2 gap-2.5 tabular min-[700px]:grid-cols-4">
-        <div className="flex flex-col gap-0.5 rounded-[14px] bg-accent p-3.5 text-paper"><span className="text-xs text-[#9C98A3]">Total {manager ? "bulan ini" : "hari ini"}</span><b className="text-xl">{formatRupiah(total)}</b></div>
+      <div className="grid grid-cols-2 gap-3 tabular min-[700px]:grid-cols-4">
+        <div className="flex flex-col gap-0.5 rounded-3xl bg-accent p-4 text-paper">
+          <span className="text-[13px] font-medium opacity-70">Total {manager ? "bulan ini" : "hari ini"}</span>
+          <b className="font-display text-[28px] font-semibold leading-tight tracking-tight">{formatRupiah(total)}</b>
+          <span className="text-xs opacity-70">{all.length} pengeluaran</span>
+        </div>
         {byCat.slice(0, 3).map(([c, v]) => (
-          <div key={c} className="flex flex-col gap-0.5 rounded-[14px] bg-card p-3.5"><span className="text-xs text-muted">{EXPENSE_CAT[c as ExpenseCat]}</span><b className="text-xl">{formatRupiah(v)}</b></div>
+          <div key={c} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
+            <span className="text-[13px] font-medium text-muted">{EXPENSE_CAT[c as ExpenseCat]}</span>
+            <b className="font-display text-[28px] font-semibold leading-tight tracking-tight">{formatRupiah(v)}</b>
+            <span className="text-xs text-muted">{total ? Math.round((v * 100) / total) : 0}% dari total</span>
+          </div>
         ))}
       </div>
 
       {manager && data && month === today.slice(0, 7) && (
-        <section aria-label="Pengeluaran rutin bulanan" className="flex flex-col rounded-[14px] border border-line bg-card px-3 py-2">
-          <div className="flex items-center gap-2 py-1.5">
-            <b className="flex-1">Rutin bulanan</b>
-            <Button onClick={() => setNewTpl(true)} disabled={!online} variant="outline" className="h-9 px-3 text-xs">+ Tambah rutin</Button>
+        <section aria-label="Pengeluaran rutin bulanan" className="flex flex-col gap-1 rounded-3xl border border-line bg-card p-5">
+          <div className="flex items-center gap-2">
+            <h2 className="flex-1 text-base font-semibold">Rutin bulanan</h2>
+            <Button onClick={() => setNewTpl(true)} disabled={!online} variant="outline" className="h-10 px-3 text-xs">+ Tambah rutin</Button>
           </div>
-          {!data.tpl.length && <p className="pb-2 text-sm text-muted">Belum ada. Tambahkan sewa, IPL, listrik, internet — tiap bulan diingatkan di lonceng & tinggal dicatat.</p>}
+          {!data.tpl.length && <p className="text-sm text-muted">Belum ada. Tambahkan sewa, IPL, listrik, atau internet. Tiap bulan diingatkan di lonceng dan tinggal dicatat.</p>}
           {data.tpl.map((t) => {
-            const done = live.find((r) => r.template_id === t.id);
+            const done = all.find((r) => r.template_id === t.id);
             const late = !done && Number(today.slice(8)) > t.day_of_month;
             return (
-              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E0E2E6] py-2.5 text-sm">
+              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line py-3 text-sm first:mt-2">
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <b>{t.description}</b>
-                  <span className="text-xs text-muted">{EXPENSE_CAT[t.category]} · {EXPENSE_SOURCE[t.source]} · tiap tgl {t.day_of_month}</span>
+                  <b className="font-medium">{t.description}</b>
+                  <span className="text-[13px] text-muted">{EXPENSE_CAT[t.category]} · {EXPENSE_SOURCE[t.source]} · tiap tgl {t.day_of_month}</span>
                 </span>
-                <b className="tabular">{formatRupiah(t.amount)}</b>
-                {done ? <span className="rounded-full bg-[#E9EBEF] px-2.5 py-1 text-xs font-semibold text-[#1F2937]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
+                <b className="font-semibold tabular">{formatRupiah(t.amount)}</b>
+                {done ? <span className="rounded-full bg-[#E3F4EA] px-2.5 py-1 text-xs font-semibold text-[#1D5A3A]">Sudah dicatat</span>
                   : <button onClick={() => setPrefill({ ...t, templateId: t.id })} disabled={!online}
-                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${late ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#FBF2E4] text-[#6B4A10]"}`}>
+                      className={`h-10 rounded-[10px] px-3 text-xs font-semibold ${late ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#FBF2E4] text-[#6B4A10]"}`}>
                       {late ? "Terlambat · Catat" : Number(today.slice(8)) === t.day_of_month ? "Jatuh tempo hari ini · Catat" : `Tgl ${t.day_of_month} · Catat`}</button>}
                 <Button onClick={async () => { const { error } = await createClient().from("expense_templates").update({ active: false }).eq("id", t.id); if (error) toast(error.message, "error"); else refresh(); }}
-                  disabled={!online} aria-label={`Hapus rutin ${t.description}`} variant="outline" className="h-9 px-2.5 text-xs">Hapus</Button>
+                  disabled={!online} aria-label={`Hapus rutin ${t.description}`} variant="ghost" className="h-10 px-3 text-xs text-muted">Hapus</Button>
               </div>
             );
           })}
         </section>
       )}
 
-      <div className="rounded-[14px] border border-line bg-card px-3">
-        {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>Belum ada pengeluaran {manager ? "di bulan ini" : "hari ini"}.</Empty> : data.rows.map((r) => (
-          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E0E2E6] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
-            <span className="flex min-w-0 flex-1 flex-col">
-              <b className={r.voided_at ? "line-through" : ""}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
-              <span className="text-xs text-muted">
-                {EXPENSE_CAT[r.category]} · {EXPENSE_SOURCE[r.source]} · {manager ? formatTanggal(`${r.date}T12:00:00+07:00`) : formatJam(r.created_at)}
-                {r.profiles?.full_name && ` · ${r.profiles.full_name}`}
+      <section aria-label="Daftar pengeluaran" className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h2 className="mr-auto text-base font-semibold">Daftar pengeluaran <span className="ml-1 rounded-full bg-paper px-2 py-0.5 text-xs font-normal text-muted tabular">{data?.count ?? 0}</span></h2>
+          <Input type="search" aria-label="Cari keterangan" placeholder="Cari keterangan…" value={q} onChange={(e) => setQ(e.target.value)} className="h-11 w-52" />
+          <NativeSelect aria-label="Filter kategori" value={cat} onChange={(e) => { setCat(e.target.value as "" | ExpenseCat); setPage(0); }} className="h-11 w-44">
+            <option value="">Semua kategori</option>
+            {Object.entries(EXPENSE_CAT).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </NativeSelect>
+        </div>
+        <div className="flex flex-col">
+          {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>{cat || qs ? "Tidak ada pengeluaran yang cocok." : `Belum ada pengeluaran ${manager ? "di bulan ini" : "hari ini"}.`}</Empty> : data.rows.map((r) => (
+            <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line py-3 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <b className={`font-medium ${r.voided_at ? "line-through" : ""}`}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
+                <span className="text-[13px] text-muted">
+                  {EXPENSE_CAT[r.category]} · {EXPENSE_SOURCE[r.source]} · {manager ? formatTanggal(`${r.date}T12:00:00+07:00`) : formatJam(r.created_at)}
+                  {r.profiles?.full_name && ` · ${r.profiles.full_name}`}
+                </span>
+                {r.voided_at && <span className="text-xs text-[#D94B42]">Dibatalkan: {r.void_reason}</span>}
               </span>
-              {r.voided_at && <span className="text-xs text-[#D94B42]">Dibatalkan: {r.void_reason}</span>}
+              {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="h-10 px-2 text-xs font-medium text-muted underline">Nota</button>}
+              <b className="min-w-24 text-right font-semibold tabular">{formatRupiah(r.amount)}</b>
+              {manager && !r.voided_at && <Button onClick={() => setVoiding(r)} disabled={!online} variant="ghost" className="h-10 px-3 text-xs text-muted">Batalkan</Button>}
+            </div>
+          ))}
+        </div>
+        {pages > 1 && (
+          <nav aria-label="Halaman daftar pengeluaran" className="flex items-center justify-between gap-3 border-t border-line pt-3 text-sm">
+            <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[14px] px-3">‹ Sebelumnya</Button>
+            <span className="tabular text-muted">
+              Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * PAGE + 1}–{Math.min((page + 1) * PAGE, data?.count ?? 0)} dari {data?.count}
             </span>
-            {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="text-xs font-medium underline">Nota</button>}
-            <b className="tabular">{formatRupiah(r.amount)}</b>
-            {manager && !r.voided_at && <Button onClick={() => setVoiding(r)} disabled={!online} variant="outline" className="h-9 px-3 text-xs">Batalkan</Button>}
-          </div>
-        ))}
-      </div>
+            <Button onClick={() => setPage(page + 1)} disabled={page + 1 >= pages} variant="outline" className="h-10 rounded-[14px] px-3">Berikutnya ›</Button>
+          </nav>
+        )}
+      </section>
 
       <Sheet open={adding || !!prefill} onClose={() => { setAdding(false); setPrefill(null); }} label="Catat pengeluaran" width={480}>
         {data && <AddForm key={prefill?.templateId ?? "new"} manager={manager} lim={data.lim} staff={data.staff} prefill={prefill} onDone={() => { setAdding(false); setPrefill(null); refresh(); }} />}

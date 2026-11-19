@@ -2,7 +2,7 @@ import { buttonClass } from "@/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { PayRow } from "@/features/sdm/monthly";
-import { CAT, monthLabel } from "@/features/sdm/shared";
+import { catInfo, monthLabel } from "@/features/sdm/shared";
 import { SlipActions } from "@/features/sdm/slip-actions";
 import { formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/server";
@@ -50,7 +50,7 @@ export default async function Slip({ params }: PageProps<"/manajer/sdm/slip/[bul
           <b className="font-display text-xl">{shop?.shop_name}</b>
           <span className="text-xs text-muted">{shop?.shop_address}{shop?.shop_whatsapp ? ` · WA +${shop.shop_whatsapp}` : ""}</span>
         </header>
-        <div className="flex justify-between"><span><b className="text-base">{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></span>
+        <div className="flex justify-between"><span><b className="text-base">{r.staff_name}</b><span className="block text-xs text-muted">{catInfo(r.category).label}</span></span>
           <span className="text-right">Slip gaji<b className="block">{monthLabel(bulan)}</b></span></div>
         <table className="w-full">
           <tbody>{lines.map(([k, v]) => <tr key={k} className="border-t border-[#E0E2E6]"><td className="py-1">{k}</td><td className="text-right">{v}</td></tr>)}</tbody>

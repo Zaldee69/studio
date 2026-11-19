@@ -3,14 +3,16 @@ import Link from "next/link";
 import { TabNav } from "@/components/tab-nav";
 import { MonthlyPayroll, type PayRow, type Period } from "@/features/sdm/monthly";
 import { WeeklyCommission, type WeekRow } from "@/features/sdm/weekly";
-import { mondayOf } from "@/features/sdm/shared";
+import { mondayOf, plusDays } from "@/features/sdm/shared";
+import { Kehadiran, type Wifi } from "@/features/absen/kehadiran";
+import type { KRow } from "@/features/absen/status";
 import { AnnualReview, CommissionRules, Leaderboard, type LeaderRow, type ReviewRow } from "@/features/sdm/rules";
 import { formatRupiah, jktDate } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = { title: "SDM & Komisi" };
 
-const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan upah"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi"]] as const;
+const TABS = [["mingguan", "Komisi mingguan"], ["bulanan", "Gaji bulanan"], ["aturan", "Aturan upah"], ["kehadiran", "Kehadiran"], ["peringkat", "Produktivitas"], ["evaluasi", "Evaluasi"]] as const;
 const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : "");
 
 export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
@@ -73,6 +75,15 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
       supabase.from("staff").select("id, name, category, active").order("sort"), supabase.rpc("staff_private")]);
     const staff = (base ?? []).flatMap((s) => { const p = (priv ?? []).find((x) => x.id === s.id); return p ? [{ ...s, ...p }] : []; });
     body = <CommissionRules ratio={st?.commission_pct ?? 40} retailPct={Number(st?.retail_commission_pct ?? 0)} basis={st?.commission_basis === "gross" ? "gross" : "net"} deductHpp={!!st?.commission_deduct_hpp} staff={staff ?? []} />;
+  } else if (tab === "kehadiran") {
+    const to = plusDays(week, 6);
+    const [{ data: rows }, { data: wifi }, { data: cfg }] = await Promise.all([
+      supabase.rpc("kehadiran", { p_from: week, p_to: to }),
+      supabase.from("absen_wifi").select("ip, label").order("created_at"),
+      supabase.from("settings").select("absen_masuk, absen_pulang, absen_toleransi, absen_mulai").single(),
+    ]);
+    body = <Kehadiran week={week} today={jktDate()} rows={(rows ?? []) as KRow[]} wifi={(wifi ?? []) as Wifi[]}
+      cfg={{ masuk: (cfg?.absen_masuk ?? "10:00").slice(0, 5), pulang: (cfg?.absen_pulang ?? "21:00").slice(0, 5), toleransi: cfg?.absen_toleransi ?? 10, mulai: cfg?.absen_mulai ?? "2026-11-23" }} />;
   } else if (tab === "peringkat") {
     const byYear = sp.periode === "tahun";
     const end = new Date(Date.UTC(+month.slice(0, 4), +month.slice(5, 7), 0)).toISOString().slice(0, 10);
@@ -107,7 +118,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
         <h1 className="font-display text-[28px] font-medium tracking-tight">SDM &amp; Komisi</h1>
         <span className="text-[13px] text-muted">Komisi dan gaji staf, aturan upah, serta penilaian kinerja</span>
       </div>
-      <TabNav tabs={tabs} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : tab === "mingguan" ? `&minggu=${week}` : ""} />
+      <TabNav tabs={tabs} current={tab} label="Bagian SDM" extra={tab === "bulanan" ? `&bulan=${month}` : (tab === "mingguan" || tab === "kehadiran") ? `&minggu=${week}` : ""} />
       {body}
     </div>
   );

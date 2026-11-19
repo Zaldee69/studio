@@ -9,6 +9,7 @@ import { ACTION, commissionOnDay, pickCurrent, revertRemaining, serviceTimer } f
 import { STATUS, type ApptStatus } from "@/lib/domain/status";
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { createClient } from "@/lib/supabase/client";
+import { AbsenCard } from "../absen/absen-card";
 import { MyTargets } from "../rencana/my-targets";
 import { useKapster, type MyAppt } from "./provider";
 
@@ -74,6 +75,7 @@ export function HariIni() {
 
   return (
     <>
+      {!me.station && <AbsenCard />}
       <div className="grid grid-cols-3 gap-2.5 tabular">
         {[["Antrean", String(queue.length)], ["Selesai", String(mine.filter((a) => a.status === "completed" || a.status === "paid").length)],
           ["Komisi hari ini", comm == null ? "…" : formatRupiah(comm)]].map(([k, v], i) => (

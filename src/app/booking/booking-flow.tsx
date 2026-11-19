@@ -1,6 +1,8 @@
 "use client";
 
+import { Fragment } from "react";
 import dynamic from "next/dynamic";
+import { byMassageGroup, massageGroup } from "@/lib/domain/massage-group";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -91,6 +93,9 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
   const rescheduleBlocked = !!reschedule && validIds.length < initIds.length;
   const [view, setView] = useState<View>(() => reschedule ? "waktu" : isView(init.step) && validIds.length ? init.step : "layanan");
   const [cat, setCat] = useState<Cat>(init.cat);
+  // ponytail: tambahan = layanan yang jadi target upsell (view publik belum membawa is_addon); satu utama per kategori
+  const addonIds = new Set(services.map((x) => x.upsell).filter(Boolean));
+  const isAddon = (id: string) => addonIds.has(id) || /^tambah waktu/i.test(services.find((x) => x.id === id)?.name ?? "");
   const bundleOpen = openCats.includes("barbershop") && openCats.includes("nail"); // diskon paket hanya barbershop + nail
   const [sel, setSel] = useState<string[]>(validIds);
   const [upSkipped, setUpSkipped] = useState<string[]>([]); // tawaran tambahan yang ditolak
@@ -369,10 +374,6 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-dust">
                   <OpenNow hours={hours} closures={closures} /><span aria-hidden="true">·</span><span>Bayar di tempat, tunai atau QRIS</span>
                 </p>
-                {/* hari kerja sepi: datang langsung lebih mudah daripada booking (audit 3 Nov) */}
-                <p className="text-[13px] leading-relaxed text-sand">
-                  Senin–Kamis biasanya tanpa antre, silakan datang langsung{shop.whatsapp && <>, atau <a href={`https://wa.me/${shop.whatsapp}`} target="_blank" rel="noopener" className="text-cream underline underline-offset-4">chat kami di WhatsApp</a> dan kami bookingkan</>}.
-                </p>
                 {promoNow && <div role="note" className="rounded-xl bg-rose/45 px-4 py-3 text-sm leading-relaxed text-cream">
                   <b className="font-semibold">Diskon {shop.promo.pct}% untuk booking online.</b> Berlaku untuk booking lewat website sampai {formatTanggal(`${shop.promo.end}T12:00:00+07:00`)}. Potongan langsung saat bayar di studio — tidak perlu kode promo.
                 </div>}
@@ -391,15 +392,18 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                   ))}
                 </div>
                 <div className="flex flex-col border-t border-rule">
-                  {services.filter((s) => s.category === cat).map((s) => {
+                  {(cat === "massage" ? byMassageGroup : (l: typeof services) => l)(services.filter((s) => s.category === cat)).map((s, i, arr) => {
                     const on = sel.includes(s.id);
+                    const head = cat === "massage" && massageGroup(s.name) !== (i ? massageGroup(arr[i - 1].name) : "");
                     return (
-                      <button key={s.id} aria-pressed={on}
-                        onClick={() => { if (!on) track("service_pick"); setSel(on ? sel.filter((i) => i !== s.id) : [...sel, s.id]); setTime(""); resetReq(); }}
+                      <Fragment key={s.id}>
+                      {head && <h3 className="pt-5 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{massageGroup(s.name)}</h3>}
+                      <button aria-pressed={on}
+                        onClick={() => { if (!on) track("service_pick"); setSel(on ? sel.filter((i) => i !== s.id) : [...sel.filter((i) => { const o = services.find((x) => x.id === i)!; return o.category !== s.category || isAddon(i) || isAddon(s.id); }), s.id]); setTime(""); resetReq(); }}
                         className={`flex min-h-[84px] items-center gap-4 border-b border-rule px-2 py-4 text-left transition ${on ? "bg-lux-3" : "hover:bg-lux-2"}`}>
                         <span className="flex min-w-0 flex-1 flex-col gap-1">
                           <span className="flex items-baseline gap-2.5 tabular-nums">
-                            <span className="font-serif text-[22px] font-medium">{s.name}</span>
+                            <span className="font-serif text-[20px] font-medium min-[900px]:text-[22px]">{s.name}</span>
                             <span className="flex-1 -translate-y-[5px] border-b border-dotted border-rule-2" />
                             <span className="text-base">{formatRupiah(s.price)}</span>
                           </span>
@@ -412,8 +416,15 @@ export default function BookingFlow({ services, staff, shop, hours, closures, cu
                             : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>}
                         </span>
                       </button>
+                      </Fragment>
                     );
                   })}
+                </div>
+                <div className="-mt-2">
+                {/* hari kerja sepi: datang langsung lebih mudah daripada booking (audit 3 Nov) */}
+                <p className="text-[13px] leading-relaxed text-sand">
+                  Senin–Kamis biasanya tanpa antre, silakan datang langsung{shop.whatsapp && <>, atau <a href={`https://wa.me/${shop.whatsapp}`} target="_blank" rel="noopener" className="text-cream underline underline-offset-4">chat kami di WhatsApp</a> dan kami bookingkan</>}.
+                </p>
                 </div>
                 {!reschedule && sel.map((id) => services.find((x) => x.id === id)).flatMap((from) => {
                   const up = from?.upsell ? services.find((x) => x.id === from.upsell) : undefined;

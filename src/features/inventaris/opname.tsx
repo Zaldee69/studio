@@ -64,7 +64,7 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
                 <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Cakupan", "Penghitung", "Penyetuju", "Status", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2 font-medium ${i === 5 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
                 <tbody>
                   {done.map((r) => (
-                    <tr key={r.id} className="border-t border-[#E8E5DE]">
+                    <tr key={r.id} className="border-t border-[#E0E2E6]">
                       <td className="py-2"><Link className="font-medium underline" href={`${base}/${r.id}`}>{formatTanggal(r.started_at)}</Link></td>
                       <td>{SCOPE_LABEL[r.scope]}</td><td>{r.starter}</td><td>{r.approver || "—"}</td>
                       <td>{r.status === "approved" ? "Disetujui" : "Dibatalkan"}</td>

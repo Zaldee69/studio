@@ -1,11 +1,12 @@
 "use client";
 
-import { CAT_TONE, toneOf, STAFF_TITLE, type Cat } from "@/lib/domain/category";
+import { STAFF_TITLE, type Cat } from "@/lib/domain/category";
 
+import { StaffAvatar } from "@/components/staff-avatar";
 import { useActionState, useState } from "react";
 import { stationLogin } from "./actions";
 
-type S = { staff_id: string; name: string; category: Cat; has_pin: boolean };
+type S = { staff_id: string; name: string; category: Cat; has_pin: boolean; photo_path?: string | null };
 
 /** Pilih nama → PIN pad besar (4–6 digit). Verifikasi & rate limit di server. */
 export function StationLogin({ staff }: { staff: S[] }) {
@@ -19,13 +20,12 @@ export function StationLogin({ staff }: { staff: S[] }) {
         {staff.map((s) => (
           <button key={s.staff_id} onClick={() => { setSel(s); setPin(""); }} disabled={!s.has_pin}
             className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-[14px] bg-paper p-4 text-ink disabled:opacity-40">
-            <span className="flex size-14 items-center justify-center rounded-full text-xl font-semibold"
-              style={{ background: toneOf(s.category).bg, color: toneOf(s.category).fg }}>{s.name.charAt(0)}</span>
+            <StaffAvatar name={s.name} category={s.category} photoPath={s.photo_path} size={64} />
             <b className="text-lg">{s.name}</b>
             <span className="text-xs text-muted">{s.has_pin ? STAFF_TITLE[s.category] : "PIN belum diatur"}</span>
           </button>
         ))}
-        {!staff.length && <p className="col-span-full text-[#DDD7E0]">Belum ada capster dengan akun aktif.</p>}
+        {!staff.length && <p className="col-span-full text-[#D5D8DE]">Belum ada capster dengan akun aktif.</p>}
       </div>
     );
   }
@@ -46,9 +46,9 @@ export function StationLogin({ staff }: { staff: S[] }) {
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
           <button type="button" key={d} onClick={() => press(d)} className="h-[72px] rounded-[14px] bg-[#2F332E] text-3xl font-semibold tabular">{d}</button>
         ))}
-        <button type="button" onClick={() => { setSel(null); setPin(""); }} className="h-[72px] rounded-[14px] text-base font-semibold text-[#DDD7E0]">Kembali</button>
+        <button type="button" onClick={() => { setSel(null); setPin(""); }} className="h-[72px] rounded-[14px] text-base font-semibold text-[#D5D8DE]">Kembali</button>
         <button type="button" onClick={() => press("0")} className="h-[72px] rounded-[14px] bg-[#2F332E] text-3xl font-semibold">0</button>
-        <button type="button" onClick={() => setPin((p) => p.slice(0, -1))} aria-label="Hapus digit" className="h-[72px] rounded-[14px] text-2xl font-semibold text-[#DDD7E0]">⌫</button>
+        <button type="button" onClick={() => setPin((p) => p.slice(0, -1))} aria-label="Hapus digit" className="h-[72px] rounded-[14px] text-2xl font-semibold text-[#D5D8DE]">⌫</button>
       </div>
       <button disabled={pin.length < 4 || pending} className="h-[60px] w-full rounded-[14px] bg-paper text-[17px] font-semibold text-ink disabled:opacity-40">
         {pending ? "Memeriksa…" : "Masuk"}

@@ -33,7 +33,7 @@ export function CustomerCombobox({ id, value, onChange, emptyLabel, autoFocus, o
 
   if (value) {
     return (
-      <div className="flex min-h-11 items-center gap-2 rounded-[14px] border border-[#DDD7E0] bg-card px-3">
+      <div className="flex min-h-11 items-center gap-2 rounded-[14px] border border-[#D5D8DE] bg-card px-3">
         <span className="flex min-w-0 flex-1 flex-col py-1.5">
           <b className="truncate text-sm">{value.name}</b>
           {value.whatsapp && <span className="text-xs text-muted tabular">{value.whatsapp}</span>}

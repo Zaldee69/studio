@@ -276,7 +276,7 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
                 <thead><tr className="text-left text-xs text-muted"><th className="py-1.5 font-medium">Item</th><th className="font-medium">Stok</th><th className="font-medium">Ambang</th><th className="font-medium">Saran beli</th><th className="text-right font-medium">Estimasi</th></tr></thead>
                 <tbody>
                   {g.rows.map((r) => (
-                    <tr key={r.item_id} className="border-t border-[#E8E5DE]">
+                    <tr key={r.item_id} className="border-t border-[#E0E2E6]">
                       <td className="py-1.5 font-medium">{r.name}</td>
                       <td className={r.status === "reorder" ? "font-semibold text-[#D94B42]" : ""}>{qtyFmt(r.qty)} {r.unit}</td>
                       <td>{qtyFmt(r.reorder_at)}</td>

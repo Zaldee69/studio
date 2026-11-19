@@ -80,7 +80,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                     {rows.map((r, i) => {
                       const it = items.find((x) => x.item_id === r.item_id);
                       return (
-                        <tr key={i} className="border-t border-[#E8E5DE]">
+                        <tr key={i} className="border-t border-[#E0E2E6]">
                           <td className="py-1.5 pr-2">
                             <NativeSelect aria-label={`Bahan baris ${i + 1}`} value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
                               <option value="">Pilih bahan…</option>
@@ -130,7 +130,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Harga", "HPP", "Margin", "Komisi", "Laba kontribusi"].map((h, i) => <th key={h} className={`py-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {[...margins].sort((a, b) => a.margin_pct - b.margin_pct).map((r) => (
-                <tr key={r.id} className="border-t border-[#E8E5DE]">
+                <tr key={r.id} className="border-t border-[#E0E2E6]">
                   <td className="py-2 font-medium">{r.name}</td>
                   <td className="text-right">{formatRupiah(r.price)}</td>
                   <td className="text-right">{formatRupiah(r.hpp)}</td>

@@ -46,7 +46,7 @@ export default async function Pelamar({ searchParams }: PageProps<"/manajer/peng
                 <section key={sec} className="break-inside-avoid">
                   <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{sec}</h2>
                   <table className="w-full"><tbody>{items.map((x) => (
-                    <tr key={x.key} className="border-t border-[#E8E5DE] align-top">
+                    <tr key={x.key} className="border-t border-[#E0E2E6] align-top">
                       <td className="w-[45%] py-1 pr-3 text-muted">{x.label}</td>
                       <td className="whitespace-pre-line py-1">{[ans[x.key]].flat().join(", ")}</td>
                     </tr>

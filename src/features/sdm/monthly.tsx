@@ -6,6 +6,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import type { Cat } from "@/lib/domain/category";
 
 import Link from "next/link";
+import { PeriodNav } from "./period-nav";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui";
@@ -64,20 +65,14 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href={`?bulan=${shiftMonth(month, -1)}`} aria-label="Bulan sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
-        <b className="min-w-44 text-center font-display text-xl">{monthLabel(month)}</b>
-        <Link href={`?bulan=${shiftMonth(month, 1)}`} aria-label="Bulan berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${closed ? "bg-[#EAF1EB] text-[#174B35]" : month === current ? "bg-[#FBF2E4] text-[#6B4A10]" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
-          {closed ? `Ditutup ${formatTanggal(period!.closed_at!)}` : month === current ? "Bulan berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
-        </span>
-        <div className="ml-auto flex flex-wrap gap-2">
-          <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor rekap</Button>
-          {closed
-            ? <Button onClick={() => setReopen(true)} disabled={!online} variant="outline" className="h-11">Buka ulang</Button>
-            : <Button onClick={() => setClosing(true)} disabled={!online || future} className="h-11">Tutup periode</Button>}
-        </div>
-      </div>
+      <PeriodNav prev={`?bulan=${shiftMonth(month, -1)}`} next={`?bulan=${shiftMonth(month, 1)}`} label={monthLabel(month)} prevLabel="Bulan sebelumnya" nextLabel="Bulan berikutnya"
+        tone={closed ? "ok" : month === current ? "warn" : future ? "idle" : "late"}
+        status={closed ? `Ditutup ${formatTanggal(period!.closed_at!)}` : month === current ? "Bulan berjalan" : future ? "Belum dimulai" : "Belum ditutup"}>
+        <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor rekap</Button>
+        {closed
+          ? <Button onClick={() => setReopen(true)} disabled={!online} variant="outline" className="h-11">Buka ulang</Button>
+          : <Button onClick={() => setClosing(true)} disabled={!online || future} className="h-11">Tutup periode</Button>}
+      </PeriodNav>
       {period?.reopen_reason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{period.reopen_reason}”</p>}
       <p className="text-sm text-muted">Hanya staf yang dibayar bulanan (bergaji pokok). Staf yang dibayar mingguan ada di tab <Link href="?tab=mingguan" className="underline">Komisi mingguan</Link>.</p>
 
@@ -89,7 +84,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
           ["Subsidi jaring harian", formatRupiah(sum("subsidy")), `${under} staf`],
         ].map(([k, v, s]) => (
           <div key={k} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
-            <span className="text-xs font-medium text-muted">{k}</span><b className="font-display text-2xl tabular">{v}</b><span className="text-xs text-muted">{s}</span>
+            <span className="text-[13px] font-medium text-muted">{k}</span><b className="font-display text-[28px] font-semibold leading-tight tracking-tight tabular">{v}</b><span className="text-xs text-muted">{s}</span>
           </div>
         ))}
       </div>
@@ -99,12 +94,12 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
           <thead><tr className="text-left text-xs text-muted">
             {["Staf", "Layanan", "Pendapatan", "HPP", ...(hasBase ? ["Gaji pokok"] : []), "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", hasWeekly ? "Total gaji" : "Total dibayar",
               ...(hasWeekly ? ["Dibayar mingguan", "Sisa akhir bulan"] : []), "Status bayar"].map((h, i, all) =>
-              <th key={h} className={`py-2.5 pr-2 font-medium ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
+              <th key={h} className={`py-3 pr-2 font-medium ${i === 0 ? "sticky left-0 z-[1] bg-card" : ""} ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
           </tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#E8E5DE] hover:bg-paper">
-                <td className="py-2 pr-2">
+              <tr key={r.staff_id} onClick={() => setDetail(r)} className="cursor-pointer border-t border-[#E0E2E6] hover:bg-paper">
+                <td className="sticky left-0 z-[1] bg-card py-2 pr-2">
                   <button className="flex min-h-11 items-center gap-2 text-left" onClick={(e) => { e.stopPropagation(); setDetail(r); }}>
                     <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
                     <span className="flex flex-col"><b>{r.staff_name}</b><span className="text-xs text-muted">{CAT[r.category].label}</span></span>
@@ -125,7 +120,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
                 </>}
                 <td className="pr-2">
                   {!closed ? <span className="text-xs text-muted">Belum final</span>
-                    : r.paid_at ? <span className="rounded-full bg-[#EAF1EB] px-2.5 py-0.5 text-xs font-semibold text-[#174B35]">Dibayar {formatTanggal(r.paid_at)}</span>
+                    : r.paid_at ? <span className="rounded-full bg-[#E3F4EA] px-2.5 py-0.5 text-xs font-semibold text-[#1D5A3A]">Dibayar {formatTanggal(r.paid_at)}</span>
                     : <Link onClick={(e) => e.stopPropagation()} href={`/manajer/sdm/slip/${month}/${r.staff_id}`} className="rounded-full bg-[#FBF2E4] px-2.5 py-1 text-xs font-semibold text-[#6B4A10]">Belum dibayar · Slip</Link>}
                 </td>
               </tr>
@@ -153,7 +148,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
         <div className="flex flex-col gap-3 p-5">
           <p className="text-sm text-muted">Angka dibekukan sebagai final: slip gaji terbentuk, tab Komisi capster menampilkan <b>Final</b>, dan void transaksi bulan ini dikunci sampai periode dibuka ulang.</p>
           <table className="w-full text-sm tabular">
-            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#E8E5DE]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-semibold">{formatRupiah(r.total_pay)}</td></tr>)}
+            <tbody>{rows.map((r) => <tr key={r.staff_id} className="border-t border-[#E0E2E6]"><td className="py-1.5">{r.staff_name}</td><td className="text-right font-semibold">{formatRupiah(r.total_pay)}</td></tr>)}
               <tr className="border-t-2 border-accent font-semibold"><td className="py-2">Total</td><td className="text-right">{formatRupiah(sum("total_pay"))}</td></tr></tbody>
           </table>
           <Button onClick={close} disabled={!online} className="h-12">Tutup & bekukan angka</Button>
@@ -239,7 +234,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-2">
           <b className="text-sm">Bonus & potongan</b>
           {!adj.length && <span className="text-sm text-muted">Belum ada.</span>}
-          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#E8E5DE] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
+          {adj.map((a) => <div key={a.id} className="flex justify-between gap-2 border-t border-[#E0E2E6] py-1.5 text-sm tabular"><span>{a.reason}</span><b>{signed(a.amount)}</b></div>)}
           {!closed && (
             <form onSubmit={(e) => { e.preventDefault(); addAdj(); }} className="flex flex-col gap-2 rounded-[14px] border border-line p-3">
               <div className="grid grid-cols-2 gap-2">
@@ -259,7 +254,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <section className="flex flex-col gap-1">
           <b className="text-sm">Rincian item</b>
           {items === null ? <span className="text-sm text-muted">Memuat…</span> : !items.length ? <span className="text-sm text-muted">Belum ada item bulan ini.</span> : items.map((i) => (
-            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#E8E5DE] py-1.5 text-sm tabular">
+            <div key={i.transaction_item_id} className="grid grid-cols-[1fr_auto] gap-x-2 border-t border-[#E0E2E6] py-1.5 text-sm tabular">
               <span className="font-medium">{i.name}{i.category === "retail" && " · ritel"}</span><b>{formatRupiah(i.commission)}</b>
               <span className="text-xs text-muted">{formatTanggal(i.created_at)} {formatJam(i.created_at)}</span>
               <span className="text-right text-xs text-muted">net {formatRupiah(i.net_amount)} · HPP {formatRupiah(i.hpp ?? 0)}</span>

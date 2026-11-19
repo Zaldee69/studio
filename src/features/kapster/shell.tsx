@@ -80,7 +80,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Menu capster" className="hidden gap-1 min-[900px]:flex">
           {TABS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-              className={`relative flex h-10 items-center rounded-[14px] px-3.5 text-sm font-semibold ${path === href ? "bg-[#E8E5DE] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
+              className={`relative flex h-10 items-center rounded-[14px] px-3.5 text-sm font-semibold ${path === href ? "bg-[#E0E2E6] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
               {label}{badge(href) > 0 && <span className="ml-1.5 rounded-full bg-[#D94B42] px-1.5 text-[11px] text-white tabular">{badge(href)}</span>}
             </Link>
           ))}
@@ -96,13 +96,13 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
                 Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D94B42] px-2 text-[11px] text-white tabular">{pending}</span>}
               </Link>
               <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper">
-                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${muted ? "bg-[#F0EEE8] text-muted" : "bg-[#EAF1EB] text-[#174B35]"}`}>{muted ? "Mati" : "Nyala"}</span>
+                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${muted ? "bg-[#EDEEF1] text-muted" : "bg-[#E9EBEF] text-[#1F2937]"}`}>{muted ? "Mati" : "Nyala"}</span>
               </button>
               {!me.station && (
                 <button onClick={togglePush} disabled={!pushSupported() && !push} aria-pressed={!!push}
                   className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper disabled:opacity-50">
                   Notifikasi push (walau aplikasi ditutup)
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${push ? "bg-[#EAF1EB] text-[#174B35]" : "bg-[#F0EEE8] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${push ? "bg-[#E9EBEF] text-[#1F2937]" : "bg-[#EDEEF1] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
                 </button>
               )}
             </div>

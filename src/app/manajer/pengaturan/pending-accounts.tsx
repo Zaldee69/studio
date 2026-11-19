@@ -45,12 +45,12 @@ export function PendingAccounts({ rows, staff }: { rows: Signup[]; staff: [strin
           <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Nama & email</th><th className="font-medium">Peran</th>
             <th className="font-medium">Mendaftar</th><th className="font-medium">Email</th><th /></tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.id} className="border-t border-[#E8E5DE] align-middle">
+            <tr key={r.id} className="border-t border-[#E0E2E6] align-middle">
               <td className="py-2"><b>{r.full_name}</b><span className="block text-xs text-muted">{r.email}</span></td>
               <td>{ROLE[r.role]}</td>
               <td className="text-xs">{formatTanggal(r.signed_up_at)} {formatJam(r.signed_up_at)}</td>
               <td>{r.email_confirmed_at
-                ? <span className="rounded-full bg-[#EAF1EB] px-2 py-0.5 text-xs font-semibold text-[#174B35]">Terverifikasi</span>
+                ? <span className="rounded-full bg-[#E9EBEF] px-2 py-0.5 text-xs font-semibold text-[#1F2937]">Terverifikasi</span>
                 : <span className="rounded-full bg-[#FBEEEC] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Belum diverifikasi</span>}</td>
               <td className="py-2">
                 <div className="flex items-center justify-end gap-2">

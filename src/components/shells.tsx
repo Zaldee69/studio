@@ -84,7 +84,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
                     {!slim && <span className="hidden flex-1 xl:inline">{m.label}</span>}
                     {badge > 0 && (
                       <span aria-label={badgeLabel(m, badge)}
-                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#F0EEE8] tabular ${slim ? "" : "xl:static xl:shadow-none"} ${m.badge === "ready" ? "bg-st-paid text-[#2C4A2A]" : m.badge === "online" ? "bg-[#F3E9CF] text-[#5C4A1A]" : "bg-st-completed text-[#6B2427]"}`}>
+                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#EDEEF1] tabular ${slim ? "" : "xl:static xl:shadow-none"} ${m.badge === "ready" ? "bg-st-paid text-[#2C4A2A]" : m.badge === "online" ? "bg-[#F3E9CF] text-[#5C4A1A]" : "bg-st-completed text-[#6B2427]"}`}>
                         {badge}
                       </span>
                     )}

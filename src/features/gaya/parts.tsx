@@ -163,13 +163,13 @@ export function CutList({ cuts, onRepeat }: { cuts: (CutRow & { previewUrl: stri
           <span className="text-xs font-semibold uppercase tracking-[0.06em] text-muted">Terakhir · {daysAgo(last.created_at)}{last.staff ? ` · ${last.staff.name}` : ""}</span>
           <b className="font-display text-lg">{last.style_name}</b>
           {last.notes && <p>{last.notes}</p>}
-          <span className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold ${last.reaction === "kurang" ? "bg-[#FBEEEC] text-[#6E1616]" : last.reaction === "biasa" ? "bg-[#FBF2E4] text-[#6B4A10]" : "bg-[#EAF1EB] text-[#174B35]"}`}>Pelanggan: {REACTION[last.reaction]}</span>
+          <span className={`self-start rounded-full px-2 py-0.5 text-xs font-semibold ${last.reaction === "kurang" ? "bg-[#FBEEEC] text-[#6E1616]" : last.reaction === "biasa" ? "bg-[#FBF2E4] text-[#6B4A10]" : "bg-[#E9EBEF] text-[#1F2937]"}`}>Pelanggan: {REACTION[last.reaction]}</span>
           {onRepeat && <Button variant="outline" type="button" onClick={() => onRepeat({ code: last.hairstyle?.code ?? null, name: last.style_name, notes: last.notes })}
             className="mt-1 h-10 self-start rounded-[14px] px-4 text-sm">Ulangi potongan ini</Button>}
         </div>
       </div>
       {older.map((c) => (
-        <div key={c.id} className="flex justify-between gap-3 border-t border-[#E8E5DE] pt-2 text-sm">
+        <div key={c.id} className="flex justify-between gap-3 border-t border-[#E0E2E6] pt-2 text-sm">
           <span className="min-w-0"><b>{c.style_name}</b>{c.notes && <span className="block truncate text-xs text-muted">{c.notes}</span>}</span>
           <span className="shrink-0 text-xs text-muted">{daysAgo(c.created_at)} · {REACTION[c.reaction]}</span>
         </div>

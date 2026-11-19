@@ -134,7 +134,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
           {stored?.status === "success" && !live && (
             <div className="flex flex-col gap-3 border-t border-line pt-3">
               <p className="text-sm"><b>Rekomendasi tersimpan</b> <span className="text-muted">· dianalisis {daysAgo(history!.consult!.created_at)}</span></p>
-              {stored.overall_insight && <p className="text-sm text-[#4D4A55]">{stored.overall_insight}</p>}
+              {stored.overall_insight && <p className="text-sm text-[#4A505B]">{stored.overall_insight}</p>}
               <div className="grid grid-cols-2 gap-3 min-[700px]:grid-cols-3">
                 {[...stored.primary_recommendations, ...stored.alternatives].map((x) => (
                   <StyleCard key={x.hair_style_id} rec={x} onUse={canSave ? () => use(x, null) : undefined} />
@@ -160,7 +160,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
           {/* kualitas foto paling menentukan apakah wajah di pratinjau tetap mirip */}
           <details className="rounded-[14px] border border-line p-3 text-sm" open={!stored}>
             <summary className="cursor-pointer font-medium">Tips foto agar wajah di pratinjau tetap mirip</summary>
-            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4D4A55]">
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-[#4A505B]">
               <li>Capster yang memotret dengan <b>kamera belakang</b>, jarak ±1 meter — bukan selfie dekat.</li>
               <li>Kepala & bahu terlihat, <b>ada ruang di atas kepala</b>; rambut tidak terpotong bingkai.</li>
               <li>Cahaya terang & merata dari depan; hindari ruangan gelap dan kilau minyak di wajah.</li>

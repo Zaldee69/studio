@@ -58,15 +58,15 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       {!payMonthly && <section aria-label="Komisi mingguan" className="flex flex-col rounded-[14px] bg-card px-4 py-2">
         <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Komisi mingguan · dibayar per minggu (Senin–Minggu)</span>
         {[[thisWeek, wk?.now, "Minggu ini · berjalan"], ...(wk?.prev && !wk.prev.closed ? [[lastWeek, wk.prev, "Menunggu ditutup manajer"]] : [])].map(([w, r, note]) => (
-          <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#E8E5DE] text-sm tabular">
+          <div key={String(w)} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#E0E2E6] text-sm tabular">
             <span className="flex flex-col"><b>{weekLabel(String(w))}</b><span className="text-xs text-muted">{String(note)}</span></span>
             <b>{r && typeof r === "object" ? formatRupiah(Number(r.amount)) : "Rp0"}</b>
           </div>
         ))}
         {wk?.closed.map(([w, c]) => (
-          <div key={w} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#E8E5DE] text-sm tabular">
+          <div key={w} className="flex min-h-14 items-center justify-between gap-2.5 border-t border-[#E0E2E6] text-sm tabular">
             <span className="flex flex-col"><b>{weekLabel(w)}</b>
-              <span className={`text-xs ${c.paid_at ? "text-[#174B35]" : "text-[#6B4A10]"}`}>{c.paid_at ? `Dibayar ${formatTanggal(c.paid_at)} · ${c.paid_method}` : "Final · menunggu dibayar"}</span></span>
+              <span className={`text-xs ${c.paid_at ? "text-[#1F2937]" : "text-[#6B4A10]"}`}>{c.paid_at ? `Dibayar ${formatTanggal(c.paid_at)} · ${c.paid_method}` : "Final · menunggu dibayar"}</span></span>
             <b>{formatRupiah(c.amount)}</b>
           </div>
         ))}
@@ -82,7 +82,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
       {!payMonthly ? (
         <span className="-mt-2 self-start rounded-[14px] bg-card px-2.5 py-1 text-xs font-medium text-muted">Ringkasan saja — bayaran Anda dibayar per minggu (lihat di atas)</span>
       ) : s?.closed ? (
-        <span className="-mt-2 self-start rounded-[14px] bg-[#EAF1EB] px-2.5 py-1 text-xs font-medium text-[#174B35]">
+        <span className="-mt-2 self-start rounded-[14px] bg-[#E9EBEF] px-2.5 py-1 text-xs font-medium text-[#1F2937]">
           Final{s.paid_at ? ` · dibayar ${formatTanggal(s.paid_at)} (${s.paid_method})` : " · belum dibayar"}
         </span>
       ) : (
@@ -93,7 +93,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
         <span className="text-[13px] text-[#9C98A3]">{!payMonthly ? "Total komisi" : s?.closed ? "Total dibayar" : "Perkiraan diterima"} · {monthLabel(month)}</span>
         <b className="font-display text-[40px] tracking-tight tabular">{s ? formatRupiah(s.total_pay) : "…"}</b>
         {s && (
-          <span className="text-[13px] text-[#DDD7E0] tabular">
+          <span className="text-[13px] text-[#D5D8DE] tabular">
             {s.base_salary > 0 && `Gaji pokok ${formatRupiah(s.base_salary)} + `}Komisi jasa {formatRupiah(s.commission_service)}
             {s.commission_retail > 0 && ` + ritel ${formatRupiah(s.commission_retail)}`}
             {s.subsidy > 0 && ` + subsidi jaring ${dailyMin ? "harian" : "pengaman"} ${formatRupiah(s.subsidy)}`}
@@ -101,7 +101,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
           </span>
         )}
         {s && payMonthly && paidWeekly > 0 && (
-          <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#DDD7E0] tabular">
+          <span className="mt-1 border-t border-white/15 pt-2 text-[13px] text-[#D5D8DE] tabular">
             Sudah dibayar mingguan −{formatRupiah(paidWeekly)} · <b className="text-paper">sisa akhir bulan {formatRupiah(s.total_pay - paidWeekly)}</b>
           </span>
         )}
@@ -124,7 +124,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
         <section className="flex flex-col rounded-[14px] bg-card px-4 py-2">
           <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Bonus & potongan</span>
           {data.adj.map((a) => (
-            <div key={a.id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#E8E5DE] text-sm tabular">
+            <div key={a.id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#E0E2E6] text-sm tabular">
               <span>{a.reason}</span><b className={a.amount < 0 ? "text-[#D94B42]" : ""}>{a.amount < 0 ? "−" : "+"}{formatRupiah(Math.abs(a.amount))}</b>
             </div>
           ))}
@@ -135,7 +135,7 @@ export function KomisiKapster({ ratio, retailPct, gross, dailyMin, deductHpp, pa
         <span className="py-2.5 text-xs font-semibold uppercase tracking-[0.06em] text-muted">Rincian</span>
         {data && !data.items.length && <span className="pb-3 text-sm text-muted">Belum ada layanan bulan ini.</span>}
         {data?.items.map((it) => (
-          <div key={it.transaction_item_id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#E8E5DE] text-sm tabular">
+          <div key={it.transaction_item_id} className="flex min-h-12 items-center justify-between gap-2.5 border-t border-[#E0E2E6] text-sm tabular">
             <span className="flex flex-col"><b>{it.name}{it.category === "retail" && " · ritel"}</b><span className="text-xs text-muted">{formatTanggal(it.created_at)} {formatJam(it.created_at)}</span></span>
             <b>{formatRupiah(Number(it.commission))}</b>
           </div>

@@ -102,13 +102,13 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
             const done = live.find((r) => r.template_id === t.id);
             const late = !done && Number(today.slice(8)) > t.day_of_month;
             return (
-              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E8E5DE] py-2.5 text-sm">
+              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E0E2E6] py-2.5 text-sm">
                 <span className="flex min-w-0 flex-1 flex-col">
                   <b>{t.description}</b>
                   <span className="text-xs text-muted">{EXPENSE_CAT[t.category]} · {EXPENSE_SOURCE[t.source]} · tiap tgl {t.day_of_month}</span>
                 </span>
                 <b className="tabular">{formatRupiah(t.amount)}</b>
-                {done ? <span className="rounded-full bg-[#EAF1EB] px-2.5 py-1 text-xs font-semibold text-[#174B35]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
+                {done ? <span className="rounded-full bg-[#E9EBEF] px-2.5 py-1 text-xs font-semibold text-[#1F2937]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
                   : <button onClick={() => setPrefill({ ...t, templateId: t.id })} disabled={!online}
                       className={`rounded-full px-3 py-1.5 text-xs font-semibold ${late ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#FBF2E4] text-[#6B4A10]"}`}>
                       {late ? "Terlambat · Catat" : Number(today.slice(8)) === t.day_of_month ? "Jatuh tempo hari ini · Catat" : `Tgl ${t.day_of_month} · Catat`}</button>}
@@ -122,7 +122,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
 
       <div className="rounded-[14px] border border-line bg-card px-3">
         {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>Belum ada pengeluaran {manager ? "di bulan ini" : "hari ini"}.</Empty> : data.rows.map((r) => (
-          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E8E5DE] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
+          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E0E2E6] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
             <span className="flex min-w-0 flex-1 flex-col">
               <b className={r.voided_at ? "line-through" : ""}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
               <span className="text-xs text-muted">

@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { DayAppt, Master } from "../counter/types";
 import type { PayMethod } from "@/lib/domain/cart";
 import { apptName } from "@/lib/domain/guest";
+import { CustomerBrief } from "./customer-brief";
 
 /** Laci detail booking: status satu langkah, bayar, ubah, batalkan. */
 /** Alasan pembatalan yang dihitung Analitik sebagai "pulang sebelum dilayani" (kpi_queue). */
@@ -96,13 +97,18 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
           <button onClick={onDismissRequest} className="self-start rounded-[14px] border border-[#E8D6A6] bg-white/60 px-3 py-2 text-xs font-semibold">Tandai sudah ditangani</button>
         </div>
       )}
+      {appt.customer?.allergies && (
+        <div role="note" className="rounded-[14px] border border-[#E8C3C4] bg-[#FBEEEC] p-3 text-[13px] leading-normal text-[#6B2427]"><b>Alergi / kondisi khusus:</b> {appt.customer.allergies}</div>
+      )}
+      {appt.customer && <CustomerBrief customerId={appt.customer.id} master={master} />}
+      {appt.group?.confirmed_at && <p className="text-xs font-medium text-[#1D5A3A]">✓ Pelanggan sudah konfirmasi lewat tautan pengingat ({formatTanggal(appt.group.confirmed_at)} {formatJam(appt.group.confirmed_at)}).</p>}
       {appt.customer?.notes && (
-        <div className="rounded-[14px] bg-[#E8E5DE] p-3 text-[13px] leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
+        <div className="rounded-[14px] bg-[#E0E2E6] p-3 text-[13px] leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
       )}
       {appt.notes && <div className="rounded-[14px] bg-paper p-3 text-[13px] leading-normal"><b>Catatan:</b> {appt.notes}</div>}
       {appt.source === "online" && <p className="text-xs font-medium text-muted">Masuk lewat booking online.</p>}
       {offLabel && !closed && (
-        <div role="alert" className="rounded-[14px] bg-[#E8E5DE] p-3 text-[13px] font-medium text-[#4D4A55]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
+        <div role="alert" className="rounded-[14px] bg-[#E0E2E6] p-3 text-[13px] font-medium text-[#4A505B]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
       )}
       {conflict && !closed && (
         <div role="alert" className="rounded-[14px] bg-[#FBEEEC] p-3 text-[13px] text-[#6E1616]">Bentrok dengan booking lain di kursi/meja yang sama.</div>
@@ -118,7 +124,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
                 return (
                   <button key={st} aria-pressed={on} disabled={!online || (!on && !canMove(appt.status, st))} onClick={() => !on && onStatus(st)}
                     className="flex h-11 items-center justify-center gap-1.5 rounded-[14px] border-2 text-[13px] font-semibold disabled:opacity-50"
-                    style={{ borderColor: on ? S.dot : "#E5E5E0", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#1F2320" }}>
+                    style={{ borderColor: on ? S.dot : "#E0E2E6", background: on ? S.bg : "#FFFFFF", color: on ? S.fg : "#16191F" }}>
                     <span className="size-2 rounded-full" style={{ background: S.dot }} />{st === "booked" ? "Terjadwal" : S.short}
                   </button>
                 );
@@ -131,7 +137,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       )}
 
       {appt.status === "paid" && (
-        <div className="flex flex-col gap-2 rounded-[14px] bg-[#EAF1EB] p-3.5 text-sm font-medium text-[#174B35] tabular">
+        <div className="flex flex-col gap-2 rounded-[14px] bg-[#E9EBEF] p-3.5 text-sm font-medium text-[#1F2937] tabular">
           <span>Lunas{paid && ` · ${formatRupiah(paid.total)} · ${METHOD_LABEL[paid.method]}`}</span>
           {paid && <Link href={`${master.base}/kasir?tab=riwayat&tx=${paid.id}`} className="text-[13px] underline">Lihat transaksi →</Link>}
         </div>

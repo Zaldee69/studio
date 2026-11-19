@@ -41,9 +41,9 @@ export function PriceRelease({ services }: { services: Svc[] }) {
           <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Layanan</th><th className="font-medium">Perubahan</th>
             <th className="text-right font-medium">Sekarang</th><th className="text-right font-medium">Setelah rilis</th></tr></thead>
           <tbody>{pending.sort((a, b) => a.sort - b.sort).map((s) => (
-            <tr key={s.id} className="border-t border-[#E8E5DE]">
+            <tr key={s.id} className="border-t border-[#E0E2E6]">
               <td className="py-2 font-medium">{s.name}</td>
-              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#EAF1EB] px-2 py-0.5 text-xs font-semibold text-[#174B35]">Baru</span>
+              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#E9EBEF] px-2 py-0.5 text-xs font-semibold text-[#1F2937]">Baru</span>
                 : s.release_action === "retire" ? <span className="rounded-full bg-[#FBEEEC] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Dihentikan</span>
                 : <span className="text-xs text-muted">Ganti harga</span>}</td>
               <td className="text-right">{s.release_action === "launch" ? "—" : formatRupiah(s.price)}</td>

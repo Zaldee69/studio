@@ -63,9 +63,9 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       className="flex w-[min(calc(100vw-1.5rem),1480px)] flex-col gap-3 self-center rounded-[14px] border border-line bg-[#F3F2EF] p-3 min-[700px]:p-5">
       <div className="text-center">
         <h2 className="font-display text-2xl font-semibold uppercase tracking-tight min-[700px]:text-3xl">{n} model rambut</h2>
-        <p className="text-sm uppercase tracking-[0.08em] text-[#4D4A55]">Cocok untuk wajah & gaya {first}</p>
+        <p className="text-sm uppercase tracking-[0.08em] text-[#4A505B]">Cocok untuk wajah & gaya {first}</p>
       </div>
-      {insight && <p className="text-center text-sm text-[#4D4A55]">{insight}</p>}
+      {insight && <p className="text-center text-sm text-[#4A505B]">{insight}</p>}
       {!image && !error && (
         <p aria-busy="true" className="flex items-center justify-center gap-2 text-sm font-medium">
           <span className="size-4 animate-spin rounded-full border-2 border-line border-t-ink" aria-hidden="true" />

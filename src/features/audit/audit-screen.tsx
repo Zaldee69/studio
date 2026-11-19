@@ -44,7 +44,7 @@ const Table = ({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) =>
   <div className="overflow-x-auto">
     <table className="w-full min-w-[560px] text-sm tabular">
       <thead><tr className="text-left text-xs text-muted">{head.map((h) => <th key={h} className="py-2 pr-3 font-medium">{h}</th>)}</tr></thead>
-      <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#E8E5DE] align-top">{r.map((c, j) => <td key={j} className="py-2 pr-3">{c}</td>)}</tr>)}</tbody>
+      <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#E0E2E6] align-top">{r.map((c, j) => <td key={j} className="py-2 pr-3">{c}</td>)}</tr>)}</tbody>
     </table>
   </div>
 );
@@ -78,7 +78,7 @@ export function AuditScreen() {
         <div role="radiogroup" aria-label="Periode" className="flex gap-1.5">
           {[[1, "Hari ini"], [7, "7 hari"], [30, "30 hari"]].map(([n, l]) => (
             <button key={n} role="radio" aria-checked={days === n} onClick={() => { setDays(n as number); setPage(0); }}
-              className={`h-11 rounded-full border px-4 text-[13px] font-semibold ${days === n ? "border-accent bg-accent text-white" : "border-[#DDD7E0] bg-card"}`}>{l}</button>
+              className={`h-11 rounded-full border px-4 text-[13px] font-semibold ${days === n ? "border-accent bg-accent text-white" : "border-[#D5D8DE] bg-card"}`}>{l}</button>
           ))}
         </div>
       </div>
@@ -145,12 +145,12 @@ export function AuditScreen() {
       <Section id="log" title="Jejak perubahan" count={log?.total ?? 0}>
         <Table head={["Waktu", "Oleh", "Data", "Aksi", "Perubahan"]} rows={(log?.rows ?? []).map((a) => [
           when(a.at), a.actor_name, ENTITY[a.entity] ?? a.entity, a.action === "update" ? "ubah" : a.action === "insert" ? "tambah" : "hapus",
-          <span key="c" className="text-xs text-[#4D4A55]">{a.action === "update" ? Object.entries(a.changes).map(([k, v]) => {
+          <span key="c" className="text-xs text-[#4A505B]">{a.action === "update" ? Object.entries(a.changes).map(([k, v]) => {
             const [o2, n2] = v as [unknown, unknown];
             return `${k}: ${k === "status" ? `${st(String(o2))} → ${st(String(n2))}` : `${fmt(o2)} → ${fmt(n2)}`}`;
           }).join(" · ") : summary(a)}</span>])} />
         {pages > 1 && (
-          <nav aria-label="Halaman jejak perubahan" className="flex items-center justify-between gap-3 border-t border-[#E8E5DE] pt-3 text-sm">
+          <nav aria-label="Halaman jejak perubahan" className="flex items-center justify-between gap-3 border-t border-[#E0E2E6] pt-3 text-sm">
             <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[14px] px-3">‹ Lebih baru</Button>
             <span className="tabular text-muted">
               Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * LOG_PAGE + 1}–{Math.min((page + 1) * LOG_PAGE, log?.total ?? 0)} dari {log?.total}

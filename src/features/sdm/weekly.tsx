@@ -12,6 +12,7 @@ import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/client";
 import { CAT, shiftWeek, weekLabel } from "./shared";
+import { PeriodNav } from "./period-nav";
 
 export type WeekRow = {
   staff_id: string; staff_name: string; category: Cat; service_count: number; revenue_net: number;
@@ -30,6 +31,8 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
   const total = rows.reduce((a, r) => a + r.amount, 0);
   const unpaid = rows.filter((r) => r.closed && !r.paid_at && r.amount > 0);
   const anyPaid = rows.some((r) => r.paid_at);
+  const paidSum = rows.filter((r) => r.paid_at).reduce((a, r) => a + r.amount, 0);
+  const unpaidSum = unpaid.reduce((a, r) => a + r.amount, 0);
 
   async function rpc(fn: "commission_week_close" | "commission_week_reopen" | "commission_week_mark_paid", args: Record<string, string>, ok: string) {
     setBusy(true);
@@ -54,61 +57,70 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, -1)}`} aria-label="Minggu sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
-        <b className="min-w-52 text-center font-display text-xl">{weekLabel(week)}</b>
-        <Link href={`?tab=mingguan&minggu=${shiftWeek(week, 1)}`} aria-label="Minggu berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${closed ? "bg-[#EAF1EB] text-[#174B35]" : running ? "bg-[#FBF2E4] text-[#6B4A10]" : future ? "bg-paper text-muted" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
-          {closed ? (unpaid.length ? `Ditutup · ${unpaid.length} belum dibayar` : "Ditutup · semua dibayar") : running ? "Minggu berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
-        </span>
-        <div className="ml-auto flex flex-wrap gap-2">
-          <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor</Button>
-          {closed
-            ? <Button onClick={() => setReopen(true)} disabled={!online || anyPaid || busy} title={anyPaid ? "Sudah ada yang dibayar" : undefined} variant="outline" className="h-11">Buka ulang</Button>
-            : <Button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="h-11">Tutup minggu</Button>}
-        </div>
-      </div>
+      <PeriodNav prev={`?tab=mingguan&minggu=${shiftWeek(week, -1)}`} next={`?tab=mingguan&minggu=${shiftWeek(week, 1)}`} label={weekLabel(week)}
+        prevLabel="Minggu sebelumnya" nextLabel="Minggu berikutnya" tone={closed ? "ok" : running ? "warn" : future ? "idle" : "late"}
+        status={closed ? (unpaid.length ? `Ditutup · ${unpaid.length} belum dibayar` : "Ditutup · semua dibayar") : running ? "Minggu berjalan" : future ? "Belum dimulai" : "Belum ditutup"}>
+        <Button onClick={exportCsv} disabled={!rows.length} variant="outline" className="h-11">Ekspor</Button>
+        {closed
+          ? <Button onClick={() => setReopen(true)} disabled={!online || anyPaid || busy} title={anyPaid ? "Sudah ada yang dibayar" : undefined} variant="outline" className="h-11">Buka ulang</Button>
+          : <Button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="h-11">Tutup minggu</Button>}
+      </PeriodNav>
       {!!holdMonths.length && closed && <p role="note" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[13px] text-[#6B4A10]">Minggu ini lintas bulan. Komisinya ikut payroll {holdMonths.join(", ")} yang belum ditutup, jadi pembayaran ditahan sampai payroll ditutup.</p>}
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
-      <p className="text-sm text-muted">
-        Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
-        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dan potongan (komisi transaksi yang di-void setelah minggunya dibayar) dipotong dari bayaran minggu ini; sisanya terbawa ke minggu berikutnya, juga lintas bulan. Staf yang dibayar bulanan (Pengaturan → Staf) tidak muncul di sini; semuanya masuk Gaji bulanan.
-      </p>
+      {!!rows.length && (
+        <div className="grid grid-cols-1 gap-3 min-[700px]:grid-cols-3">
+          {[
+            ["Total komisi minggu ini", formatRupiah(total), `${rows.length} staf${closed ? "" : " · belum final"}`],
+            ["Sudah dibayar", formatRupiah(paidSum), `${rows.filter((r) => r.paid_at).length} staf`],
+            [closed ? "Belum dibayar" : "Cara membayar", closed ? formatRupiah(unpaidSum) : "Tutup minggu dulu", closed ? `${unpaid.length} staf` : "angka dibekukan, lalu bayar per staf"],
+          ].map(([k, v, sub], i) => (
+            <div key={k} className="flex flex-col gap-0.5 rounded-3xl border border-line bg-card p-4">
+              <span className="text-[13px] font-medium text-muted">{k}</span>
+              <b className={`font-display font-semibold tracking-tight tabular ${i === 2 && !closed ? "text-lg leading-8 text-muted" : "text-[28px] leading-tight"} ${i === 2 && closed && unpaidSum > 0 ? "text-[#8A5A00]" : ""}`}>{v}</b>
+              <span className="text-xs text-muted">{sub}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <details className="group rounded-2xl border border-line bg-card px-4 py-2.5 text-sm">
+        <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between font-medium">Cara komisi dihitung dan dibayar<span aria-hidden="true" className="text-muted group-open:rotate-180">⌄</span></summary>
+        <p className="pb-2 pt-1 leading-relaxed text-muted">Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
+        subsidi gaji minimum &amp; penyesuaian, lalu mengurangkan yang sudah ditutup mingguan. Staf berjaring harian menerima subsidinya di sini; kasbon dan potongan (komisi transaksi yang di-void setelah minggunya dibayar) dipotong dari bayaran minggu ini; sisanya terbawa ke minggu berikutnya, juga lintas bulan. Staf yang dibayar bulanan (Pengaturan → Staf) tidak muncul di sini; semuanya masuk Gaji bulanan.</p>
+      </details>
 
       <div className="overflow-x-auto rounded-[14px] border border-line bg-card px-3">
         {!rows.length ? <Empty>{future ? "Minggu ini belum dimulai." : "Tidak ada komisi di minggu ini."}</Empty> : (
-          <table className="w-full min-w-[1080px] text-sm tabular">
+          <table className="w-full min-w-[960px] text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">
-              {["Staf", "Layanan", "Pendapatan", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon & potongan", "Dibayar", "Pembayaran", ""].map((h, i) =>
-                <th key={i} className={`py-2.5 pr-2 font-medium ${i && i < 8 ? "text-right" : ""}`}>{h}</th>)}
+              {["Staf", "Pendapatan", "Komisi jasa", "Komisi ritel", "Subsidi harian", "Kasbon & potongan", "Dibayar bersih", "Status", ""].map((h, i) =>
+                <th key={i} className={`py-3 pr-3 font-medium ${i === 0 ? "sticky left-0 z-[1] bg-card" : ""} ${i && i < 7 ? "text-right" : ""}`}>{h}</th>)}
             </tr></thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.staff_id} className="border-t border-[#E8E5DE]">
-                  <td className="py-2 pr-2">
+                <tr key={r.staff_id} className="border-t border-line">
+                  <td className="sticky left-0 z-[1] bg-card py-2.5 pr-3">
                     <span className="flex items-center gap-2">
                       <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
-                      <span className="flex flex-col"><b>{r.staff_name}</b><span className="text-xs text-muted">{CAT[r.category].label}</span></span>
+                      <span className="flex flex-col"><b className="font-medium">{r.staff_name}</b><span className="text-xs text-muted">{CAT[r.category].label} · {r.service_count} layanan</span></span>
                     </span>
                   </td>
-                  <td className="pr-2 text-right">{r.service_count}</td>
-                  <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td>
-                  <td className="pr-2 text-right">{formatRupiah(r.commission_service)}</td>
-                  <td className="pr-2 text-right">{formatRupiah(r.commission_retail)}</td>
-                  <td className="pr-2 text-right">{r.subsidy ? formatRupiah(r.subsidy) : "—"}</td>
-                  <td className="pr-2 text-right text-[#D94B42]">{r.kasbon ? `−${formatRupiah(r.kasbon)}` : "—"}</td>
-                  <td className="pr-2 text-right text-base font-semibold">{formatRupiah(r.amount)}</td>
-                  <td className="py-2 pr-2">
+                  <td className="pr-3 text-right text-muted">{formatRupiah(r.revenue_net)}</td>
+                  <td className="pr-3 text-right">{formatRupiah(r.commission_service)}</td>
+                  <td className="pr-3 text-right">{formatRupiah(r.commission_retail)}</td>
+                  <td className="pr-3 text-right">{r.subsidy ? formatRupiah(r.subsidy) : <span className="text-faint">—</span>}</td>
+                  <td className="pr-3 text-right text-[#D94B42]">{r.kasbon ? `−${formatRupiah(r.kasbon)}` : <span className="text-faint">—</span>}</td>
+                  <td className="bg-paper/60 pr-3 text-right text-base font-semibold">{formatRupiah(r.amount)}</td>
+                  <td className="py-2 pl-3 pr-3">
                     {!r.closed ? <span className="text-xs text-muted">Belum final</span>
-                      : r.paid_at ? <span className="rounded-full bg-[#EAF1EB] px-2.5 py-0.5 text-xs font-semibold text-[#174B35]">Dibayar {formatTanggal(r.paid_at)} · {r.paid_method}</span>
-                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online || !!holdMonths.length} title={holdMonths.length ? "Minggu lintas bulan: tutup payroll bulanan dulu" : undefined} className="rounded-full bg-[#FBF2E4] px-3 py-1.5 text-xs font-semibold text-[#6B4A10]">Tandai dibayar</button>
+                      : r.paid_at ? <span className="rounded-full bg-[#E3F4EA] px-2.5 py-0.5 text-xs font-semibold text-[#1D5A3A]">Dibayar {formatTanggal(r.paid_at)} · {r.paid_method}</span>
+                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online || !!holdMonths.length} title={holdMonths.length ? "Minggu lintas bulan: tutup payroll bulanan dulu" : undefined} className="h-9 rounded-[10px] bg-accent px-3 text-xs font-semibold text-white disabled:opacity-50">Bayar</button>
                       : <span className="text-xs text-muted">—</span>}
                   </td>
                   <td className="py-2"><Link href={`/manajer/sdm/slip-minggu/${week}/${r.staff_id}`} className={buttonClass("outline", "h-9 px-3 text-xs")}>Slip</Link></td>
                 </tr>
               ))}
               <tr className="border-t-2 border-accent font-semibold">
-                <td className="py-2.5 pr-2">Total</td><td className="pr-2 text-right">{rows.reduce((a, r) => a + r.service_count, 0)}</td>
+                <td className="sticky left-0 z-[1] bg-card py-3 pr-3">Total</td>
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.revenue_net, 0))}</td>
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.commission_service, 0))}</td>
                 <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + r.commission_retail, 0))}</td>

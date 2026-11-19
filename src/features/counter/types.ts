@@ -6,7 +6,7 @@ import type { Cat } from "@/lib/domain/category";
 export type { Cat };
 export type SvcCat = Cat | "retail";
 export type Svc = { id: string; name: string; category: SvcCat; price: number; duration_min: number; upsell_service_id: string | null; stock_item_id: string | null; needs_pedicure: boolean; is_addon: boolean; active: boolean; sort: number };
-export type Staff = { id: string; name: string; category: Cat; active: boolean; sort: number; home_resource_id: string | null };
+export type Staff = { id: string; name: string; category: Cat; active: boolean; sort: number; home_resource_id: string | null; photo_path?: string | null };
 export type Resource = { id: string; name: string; type: Cat; is_pedicure: boolean; active: boolean; sort: number };
 export type Pack = { id: string; name: string; amount_paid: number; amount_credited: number };
 export type Shop = { name: string; open: string; close: string; bundlePct: number; churnWeeks: number; waTemplate: string;
@@ -18,7 +18,7 @@ export type Master = {
   services: Svc[]; staff: Staff[]; resources: Resource[]; packs: Pack[]; shop: Shop;
 };
 
-export type Customer = { id: string; name: string; whatsapp: string | null; notes: string };
+export type Customer = { id: string; name: string; whatsapp: string | null; notes: string; allergies?: string | null };
 
 export type DayAppt = {
   id: string; start_at: string; end_at: string; duration_min: number; status: ApptStatus; created_at: string;
@@ -26,9 +26,10 @@ export type DayAppt = {
   resource_id: string; staff_id: string | null; customer_id: string | null;
   arrived_at: string | null; service_started_at: string | null; service_ended_at: string | null;
   change_request: string | null; change_requested_at: string | null;
-  booking_group_id: string | null; group: { code: string; voucher: Voucher | null } | null; guest_name: string | null;
+  booking_group_id: string | null; group: { code: string; confirmed_at?: string | null; voucher: Voucher | null } | null; guest_name: string | null;
   customer: Customer | null;
-  appointment_services: { service_id: string }[];
+  upsell_offered?: boolean;
+  appointment_services: { service_id: string; from_upsell?: boolean }[];
 };
 
 export type TxRow = {
@@ -40,7 +41,7 @@ export type TxRow = {
     appointment: { guest_name: string | null } | null }[];
 };
 
-export const APPT_SELECT = "id, created_at, start_at, end_at, duration_min, status, source, notes, cancel_reason, resource_id, staff_id, customer_id, arrived_at, service_started_at, service_ended_at, change_request, change_requested_at, booking_group_id, guest_name, group:booking_groups(code, voucher:vouchers(id, code, kind, value, category, min_spend, max_discount, active)), customer:customers(id, name, whatsapp, notes), appointment_services(service_id)";
+export const APPT_SELECT = "id, created_at, start_at, end_at, duration_min, status, source, notes, cancel_reason, resource_id, staff_id, customer_id, arrived_at, service_started_at, service_ended_at, change_request, change_requested_at, booking_group_id, guest_name, group:booking_groups(code, confirmed_at, voucher:vouchers(id, code, kind, value, category, min_spend, max_discount, active)), customer:customers(id, name, whatsapp, notes, allergies), upsell_offered, appointment_services(service_id, from_upsell)";
 export const TX_SELECT = "id, created_at, customer_id, subtotal, discount_amount, discount_label, total, deposit_used, paid_amount, payment_method, cash_received, cashier_id, voided_at, void_reason, tip_amount, tip_staff_id, cash_part, customer:customers(name, whatsapp), transaction_items(id, name, category, price, discount_share, net_amount, staff_id, appointment_id, appointment:appointments(guest_name))";
 
 export type TimeOffRow = { id: string; staff_id: string; start_at: string; end_at: string; all_day: boolean; reason: string; status: "pending" | "approved" | "rejected" | "cancelled" };

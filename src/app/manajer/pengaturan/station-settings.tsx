@@ -49,7 +49,7 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
           const st = data?.status.get(s.id);
           const locked = st?.locked;
           return (
-            <form key={s.id} onSubmit={(e) => { e.preventDefault(); savePin(s.id); }} className="flex flex-wrap items-center gap-2 border-t border-[#E8E5DE] pt-3">
+            <form key={s.id} onSubmit={(e) => { e.preventDefault(); savePin(s.id); }} className="flex flex-wrap items-center gap-2 border-t border-[#E0E2E6] pt-3">
               <span className="flex min-w-32 flex-1 flex-col"><b className="text-sm">{s.name}</b>
                 <span className="text-xs text-muted">{locked ? "Terkunci sementara" : st?.has_pin ? `PIN diatur ${st.updated_at ? formatTanggal(st.updated_at) : ""}` : "Belum ada PIN"}</span></span>
               <label htmlFor={`pin-${s.id}`} className="sr-only">PIN baru {s.name}</label>
@@ -73,10 +73,10 @@ export function StationSettings({ staff }: { staff: { id: string; name: string }
         </form>
         <p className="text-xs text-muted">Buka halaman ini di tablet yang akan dipakai bersama, daftarkan, lalu keluar dan buka <b>/stasiun</b>. Sesi capster di stasiun keluar otomatis setelah 5 menit tanpa aktivitas.</p>
         {data?.devices.map((d) => (
-          <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-[#E8E5DE] pt-3">
+          <div key={d.id} className="flex flex-wrap items-center gap-2 border-t border-[#E0E2E6] pt-3">
             <span className="flex flex-1 flex-col"><b className="text-sm">{d.name}</b>
               <span className="text-xs text-muted tabular">Terakhir dipakai {d.last_seen_at ? `${formatTanggal(d.last_seen_at)} ${formatJam(d.last_seen_at)}` : "—"}</span></span>
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${d.active ? "bg-[#EAF1EB] text-[#174B35]" : "bg-[#E8E5DE] text-[#4D4A55]"}`}>{d.active ? "Aktif" : "Dicabut"}</span>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${d.active ? "bg-[#E9EBEF] text-[#1F2937]" : "bg-[#E0E2E6] text-[#4A505B]"}`}>{d.active ? "Aktif" : "Dicabut"}</span>
             <Button onClick={() => setActive(d.id, !d.active)} variant="outline" className="h-11 rounded-[14px]">{d.active ? "Cabut" : "Aktifkan"}</Button>
           </div>
         ))}

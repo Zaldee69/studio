@@ -26,8 +26,8 @@ type Progress = { week: string; cuts: number; cuts_by_day: Record<string, number
   new_by_source: Record<string, number>; target: { cuts: number; returning: number; new: number } };
 
 const STATUS: Record<string, [string, string, string]> = {
-  belum: ["Belum mulai", "#EEEEEA", "#55554F"], jalan: ["Sedang berjalan", "#FBF2E4", "#6B4A10"],
-  selesai: ["Selesai", "#E3F1E8", "#268052"], batal: ["Dibatalkan", "#EEEEEA", "#8A8A84"],
+  belum: ["Belum mulai", "#EDEEF1", "#55554F"], jalan: ["Sedang berjalan", "#FBF2E4", "#6B4A10"],
+  selesai: ["Selesai", "#E3F1E8", "#268052"], batal: ["Dibatalkan", "#EDEEF1", "#8A8A84"],
 };
 const LATE: [string, string, string] = ["Lewat tenggat", "#FBE6E3", "#D94B42"];
 const SOURCE_LABEL: Record<string, string> = { ...Object.fromEntries(CUSTOMER_SOURCES), tidak_tercatat: "Belum dicatat" };

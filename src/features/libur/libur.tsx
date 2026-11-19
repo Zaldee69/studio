@@ -72,7 +72,7 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
             const [l, bg, fg] = OFF_STATUS[s.status];
             const waitPartner = s.partner && s.partner_ok === null && s.status === "pending";
             return (
-              <div key={s.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-2.5">
+              <div key={s.id} className="flex flex-col gap-2 border-t border-[#E0E2E6] pt-2.5">
                 <div className="flex flex-wrap items-center gap-2.5">
                   <span className="flex min-w-0 flex-1 flex-col text-sm">
                     <b>{s.partner ? `${s.name} tukar dengan ${s.partner}` : `${s.name} pindah libur`}</b>
@@ -108,7 +108,7 @@ export function JadwalLibur({ manager = false }: { manager?: boolean }) {
           <p className="text-xs text-muted">Capster hanya Senin–Kamis dan tidak boleh sama dengan capster lain. Kasir Selasa atau Kamis.
             Mengubah hari membuat ulang libur mendatang yang belum pernah ditukar.</p>
           {data.people.map((p) => (
-            <label key={p.staff_id ?? p.profile_id} className="flex min-h-12 items-center gap-3 border-t border-[#E8E5DE] pt-2 text-sm">
+            <label key={p.staff_id ?? p.profile_id} className="flex min-h-12 items-center gap-3 border-t border-[#E0E2E6] pt-2 text-sm">
               <span className="flex min-w-0 flex-1 flex-col"><b>{p.name}</b><span className="text-xs text-muted">{title(p.group)}</span></span>
               <NativeSelect className="w-40" disabled={!online} value={p.day_off ?? ""} aria-label={`Libur tetap ${p.name}`}
                 onChange={(e) => call("set_day_off", { p_staff_id: p.staff_id, p_profile_id: p.profile_id, p_day: e.target.value ? +e.target.value : null },
@@ -156,7 +156,7 @@ function LiburSaya({ mine, offs, today, online, call }: {
       <h2 className="text-base font-semibold">Libur saya</h2>
       {!mine.length && <span className="text-sm text-muted">Belum ada libur di bulan ini. Hari libur tetap diatur manajer.</span>}
       {mine.map((o) => (
-        <div key={o.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-2">
+        <div key={o.id} className="flex flex-col gap-2 border-t border-[#E0E2E6] pt-2">
           <div className="flex items-center gap-2 text-sm">
             <b className="flex-1">{fmt(dayOf(o))}{o.swapped && <span className="font-normal text-muted"> · hasil tukar</span>}</b>
             <Button variant="outline" className="h-11" onClick={() => { setOpen(open === o.id ? null : o.id); setTarget(""); }}>{open === o.id ? "Tutup" : "Tukar"}</Button>
@@ -243,7 +243,7 @@ function TabelLibur({ month, today, people, offs, manager }: { month: string; to
               <tbody>
                 {rows.map((p) => (
                   <tr key={who(p)} className={p.me ? "bg-[#F4F1F5]" : ""}>
-                    <th scope="row" className={`sticky left-0 z-10 max-w-20 border-t border-[#E8E5DE] py-1.5 pl-4 pr-1 text-left font-normal ${p.me ? "bg-[#F4F1F5]" : "bg-card"}`}>
+                    <th scope="row" className={`sticky left-0 z-10 max-w-20 border-t border-[#E0E2E6] py-1.5 pl-4 pr-1 text-left font-normal ${p.me ? "bg-[#F4F1F5]" : "bg-card"}`}>
                       <span className="block truncate text-[13px] font-medium">{p.me ? "Saya" : p.name}</span>
                       <span className="block truncate text-[11px] text-muted">{title(p.group)}</span>
                     </th>
@@ -252,8 +252,8 @@ function TabelLibur({ month, today, people, offs, manager }: { month: string; to
                       const dim = d.slice(0, 7) !== month.slice(0, 7) ? "opacity-40" : d < today ? "opacity-60" : "";
                       const warn = manager && o && o.bookings > 0 && d >= today;
                       return (
-                        <td key={d} className={`border-t border-[#E8E5DE] px-0.5 py-1.5 text-center ${d === today ? "bg-[#EEF1EA]" : ""} ${dim}`}>
-                          {!o ? <span aria-label="Masuk" className="mx-auto block size-1.5 rounded-full bg-[#DDD7E0]" />
+                        <td key={d} className={`border-t border-[#E0E2E6] px-0.5 py-1.5 text-center ${d === today ? "bg-[#EEF1EA]" : ""} ${dim}`}>
+                          {!o ? <span aria-label="Masuk" className="mx-auto block size-1.5 rounded-full bg-[#D5D8DE]" />
                             : (
                               <span title={warn ? `${o.bookings} booking perlu dipindah` : undefined}
                                 className={`relative mx-auto flex h-8 max-w-12 items-center justify-center rounded-[14px] px-0.5 text-[10.5px] font-medium ${
@@ -276,7 +276,7 @@ function TabelLibur({ month, today, people, offs, manager }: { month: string; to
         <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded bg-accent" />Libur</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded border-2 border-accent" />Libur hasil tukar</span>
         <span className="flex items-center gap-1.5"><span className="h-3 w-5 rounded bg-[#FBF2E4]" />Izin</span>
-        <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[#DDD7E0]" />Masuk</span>
+        <span className="flex items-center gap-1.5"><span className="size-1.5 rounded-full bg-[#D5D8DE]" />Masuk</span>
         {manager && <span className="flex items-center gap-1.5"><span className="size-2.5 rounded-full bg-[#D94B42]" />Ada booking di hari libur</span>}
       </p>
       {always.length > 0 && <p className="px-1 text-xs text-muted">Belum punya jadwal libur: {always.map((p) => p.name).join(", ")}.</p>}

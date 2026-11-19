@@ -72,7 +72,7 @@ export function PelangganScreen({ master }: { master: Master }) {
   const { data, refresh } = useRealtimeTable(["customers", "transactions", "deposit_topups"], async () => {
     const supabase = createClient();
     const [cs, st] = await Promise.all([
-      pages((a, b) => supabase.from("customers").select("id, name, whatsapp, notes, source, created_at").is("deleted_at", null).order("id").range(a, b)),
+      pages((a, b) => supabase.from("customers").select("id, name, whatsapp, notes, allergies, source, created_at").is("deleted_at", null).order("id").range(a, b)),
       pages((a, b) => supabase.from("customer_stats").select("*").order("customer_id").range(a, b)),
     ]);
     const byId = new Map(st.map((s) => [s.customer_id!, s]));
@@ -99,7 +99,7 @@ export function PelangganScreen({ master }: { master: Master }) {
   const totalBalance = all.reduce((n, r) => n + (r.stats?.deposit_balance ?? 0), 0);
   const filtered = seg !== "all" || !!source || !!term || sort !== "name";
   const reset = () => { setSeg("all"); setSource(""); setQ(""); setSort("name"); setLimit(PAGE); };
-  const status = (r: Row) => r.stats?.is_churn ? ["Follow-up", "#FBE6E3", "#D94B42"] : !r.stats?.visit_count ? ["Baru", "#E8E5DE", "#4D4A55"] : ["Aktif", "#E3F1E8", "#268052"];
+  const status = (r: Row) => r.stats?.is_churn ? ["Follow-up", "#FBE6E3", "#D94B42"] : !r.stats?.visit_count ? ["Baru", "#E0E2E6", "#4A505B"] : ["Aktif", "#E3F1E8", "#268052"];
   // HP: nama (+ kunjungan terakhir di bawahnya) | total | status
   const cols = "grid-cols-[minmax(0,1fr)_auto_auto] sm:grid-cols-[2fr_1.4fr_1.2fr_1fr] xl:grid-cols-[2fr_1.3fr_1.3fr_0.8fr_1.1fr_1.1fr_1.2fr]";
 

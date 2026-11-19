@@ -139,7 +139,7 @@ export function insights(i: InsightInput): { code: string; message: string; href
 // ---------- SOP & perawatan ----------
 export type SopStatus = "ok" | "done" | "part" | "empty" | "closed";
 export const SOP_STATUS: Record<SopStatus, { label: string; bg: string; fg: string; icon: string }> = {
-  ok: { label: "Diotorisasi", bg: "#D9F2E1", fg: "#174B35", icon: "✓" },
+  ok: { label: "Diotorisasi", bg: "#D9F2E1", fg: "#1F2937", icon: "✓" },
   done: { label: "Lengkap, belum diotorisasi", bg: "#FFF1C2", fg: "#6B4A10", icon: "●" },
   part: { label: "Belum lengkap", bg: "#FFDADA", fg: "#6E1616", icon: "!" },
   empty: { label: "Kosong", bg: "#EEEBE4", fg: "#4A463F", icon: "○" },
@@ -164,7 +164,7 @@ export const MAINT_STATUS: Record<MaintState, { bg: string; fg: string; icon: st
   overdue: { bg: "#FFDADA", fg: "#6E1616", icon: "!" },
   due: { bg: "#FFE2CC", fg: "#6B3000", icon: "●" },
   soon: { bg: "#FFF1C2", fg: "#6B4A10", icon: "◔" },
-  ok: { bg: "#D9F2E1", fg: "#174B35", icon: "✓" },
+  ok: { bg: "#D9F2E1", fg: "#1F2937", icon: "✓" },
 };
 export const maintenanceLabel = (daysLeft: number) =>
   daysLeft < 0 ? `Terlambat ${-daysLeft} hari` : daysLeft === 0 ? "Jatuh tempo hari ini" : `${daysLeft} hari lagi`;

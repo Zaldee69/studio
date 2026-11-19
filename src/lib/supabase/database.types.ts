@@ -64,13 +64,13 @@ export type Database = {
                   ]
                 },"appointment_services": {
                   Row: {
-                    "appointment_id": string,"service_id": string
+                    "appointment_id": string,"from_upsell": boolean,"service_id": string,"upsell_source": string | null
                   }
                   Insert: {
-                    "appointment_id": string,"service_id": string
+                    "appointment_id": string,"from_upsell"?: boolean,"service_id": string,"upsell_source"?: string | null
                   }
                   Update: {
-                    "appointment_id"?: string,"service_id"?: string
+                    "appointment_id"?: string,"from_upsell"?: boolean,"service_id"?: string,"upsell_source"?: string | null
                   }
                   Relationships: [
                     {
@@ -113,13 +113,13 @@ isOneToOne: false
                   ]
                 },"appointments": {
                   Row: {
-                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"requested_staff": boolean | null,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null,"occupied_until": string | null
+                    "arrived_at": string | null,"booking_group_id": string | null,"cancel_reason": string | null,"change_request": string | null,"change_requested_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"duration_min": number,"end_at": string,"guest_name": string | null,"id": string,"notes": string,"requested_staff": boolean | null,"resource_id": string,"service_ended_at": string | null,"service_started_at": string | null,"source": Database["public"]['Enums']["appt_source"],"staff_id": string | null,"start_at": string,"status": Database["public"]['Enums']["appt_status"],"status_changed_at": string | null,"status_changed_by": string | null,"upsell_offered": boolean,"occupied_until": string | null
                   }
                   Insert: {
-                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min": number,"end_at": string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id": string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
+                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min": number,"end_at": string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id": string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at": string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null,"upsell_offered"?: boolean
                   }
                   Update: {
-                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min"?: number,"end_at"?: string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id"?: string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at"?: string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null
+                    "arrived_at"?: string | null,"booking_group_id"?: string | null,"cancel_reason"?: string | null,"change_request"?: string | null,"change_requested_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"duration_min"?: number,"end_at"?: string,"guest_name"?: string | null,"id"?: string,"notes"?: string,"requested_staff"?: boolean | null,"resource_id"?: string,"service_ended_at"?: string | null,"service_started_at"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"staff_id"?: string | null,"start_at"?: string,"status"?: Database["public"]['Enums']["appt_status"],"status_changed_at"?: string | null,"status_changed_by"?: string | null,"upsell_offered"?: boolean
                   }
                   Relationships: [
                     {
@@ -200,13 +200,13 @@ isOneToOne: false
                   ]
                 },"booking_groups": {
                   Row: {
-                    "client_request_id": string | null,"code": string,"created_at": string,"created_by": string | null,"customer_id": string | null,"id": string,"rescheduled_from": string | null,"source": Database["public"]['Enums']["appt_source"],"voucher_id": string | null
+                    "client_request_id": string | null,"code": string,"confirm_token": string,"confirmed_at": string | null,"created_at": string,"created_by": string | null,"customer_id": string | null,"id": string,"rescheduled_from": string | null,"source": Database["public"]['Enums']["appt_source"],"voucher_id": string | null
                   }
                   Insert: {
-                    "client_request_id"?: string | null,"code": string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
+                    "client_request_id"?: string | null,"code": string,"confirm_token"?: string,"confirmed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
                   }
                   Update: {
-                    "client_request_id"?: string | null,"code"?: string,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
+                    "client_request_id"?: string | null,"code"?: string,"confirm_token"?: string,"confirmed_at"?: string | null,"created_at"?: string,"created_by"?: string | null,"customer_id"?: string | null,"id"?: string,"rescheduled_from"?: string | null,"source"?: Database["public"]['Enums']["appt_source"],"voucher_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -436,13 +436,13 @@ isOneToOne: false
                   ]
                 },"customers": {
                   Row: {
-                    "created_at": string,"created_by": string | null,"deleted_at": string | null,"email": string | null,"id": string,"name": string,"notes": string,"source": string | null,"whatsapp": string | null
+                    "allergies": string | null,"created_at": string,"created_by": string | null,"deleted_at": string | null,"email": string | null,"id": string,"name": string,"notes": string,"source": string | null,"whatsapp": string | null
                   }
                   Insert: {
-                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
+                    "allergies"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name": string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
+                    "allergies"?: string | null,"created_at"?: string,"created_by"?: string | null,"deleted_at"?: string | null,"email"?: string | null,"id"?: string,"name"?: string,"notes"?: string,"source"?: string | null,"whatsapp"?: string | null
                   }
                   Relationships: [
                     
@@ -1350,13 +1350,13 @@ isOneToOne: false
                   ]
                 },"services": {
                   Row: {
-                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"is_cut": boolean,"is_addon": boolean,"is_upgrade": boolean,"name": string,"needs_pedicure": boolean,"next_price": number | null,"online_bookable": boolean,"price": number,"public_description": string,"release_action": string | null,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
+                    "active": boolean,"category": Database["public"]['Enums']["service_category"],"created_at": string,"duration_min": number,"id": string,"is_addon": boolean,"is_cut": boolean,"is_upgrade": boolean,"name": string,"needs_pedicure": boolean,"next_price": number | null,"online_bookable": boolean,"price": number,"public_description": string,"release_action": string | null,"sort": number,"stock_item_id": string | null,"upsell_service_id": string | null
                   }
                   Insert: {
-                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_addon"?: boolean,"is_upgrade"?: boolean,"name": string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price": number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category": Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_addon"?: boolean,"is_cut"?: boolean,"is_upgrade"?: boolean,"name": string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price": number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Update: {
-                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_cut"?: boolean,"is_addon"?: boolean,"is_upgrade"?: boolean,"name"?: string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
+                    "active"?: boolean,"category"?: Database["public"]['Enums']["service_category"],"created_at"?: string,"duration_min"?: number,"id"?: string,"is_addon"?: boolean,"is_cut"?: boolean,"is_upgrade"?: boolean,"name"?: string,"needs_pedicure"?: boolean,"next_price"?: number | null,"online_bookable"?: boolean,"price"?: number,"public_description"?: string,"release_action"?: string | null,"sort"?: number,"stock_item_id"?: string | null,"upsell_service_id"?: string | null
                   }
                   Relationships: [
                     {
@@ -1896,6 +1896,19 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"wa_health": {
+                  Row: {
+                    "bad_checks": number,"checked_at": string | null,"detail": string | null,"expired_date": string | null,"expiry_alert_on": string | null,"id": boolean,"last_alert_at": string | null,"quota": number | null,"since": string,"status": string
+                  }
+                  Insert: {
+                    "bad_checks"?: number,"checked_at"?: string | null,"detail"?: string | null,"expired_date"?: string | null,"expiry_alert_on"?: string | null,"id"?: boolean,"last_alert_at"?: string | null,"quota"?: number | null,"since"?: string,"status"?: string
+                  }
+                  Update: {
+                    "bad_checks"?: number,"checked_at"?: string | null,"detail"?: string | null,"expired_date"?: string | null,"expiry_alert_on"?: string | null,"id"?: boolean,"last_alert_at"?: string | null,"quota"?: number | null,"since"?: string,"status"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"waitlist": {
                   Row: {
                     "created_at": string,"customer_id": string,"interest": string,"source": string | null
@@ -2275,6 +2288,15 @@ isOneToOne: false
 "booking_conflicts":
 { Args: { "p_end": string,"p_exclude"?: string,"p_resource_id": string,"p_staff_id": string,"p_start": string }; Returns: Json
                            },
+"booking_token_cancel":
+{ Args: { "p_token": string }; Returns: Json
+                           },
+"booking_token_confirm":
+{ Args: { "p_token": string }; Returns: boolean
+                           },
+"booking_token_info":
+{ Args: { "p_token": string }; Returns: Json
+                           },
 "booking_unavailable_reason":
 { Args: { "p_date": string,"p_service_ids": (string)[],"p_staff_pick"?: Json }; Returns: string
                            },
@@ -2523,6 +2545,9 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "kick_dispatch":
+{ Args: Record<PropertyKey, never>; Returns: undefined
+                           },
+"kick_wa_health":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "kirim_kode_wa":
@@ -2934,6 +2959,15 @@ isOneToOne: false
 "update_my_profile":
 { Args: { "p_name": string }; Returns: undefined
                            },
+"upsell_add_on_arrival":
+{ Args: { "p_appointment": string,"p_service_id": string }; Returns: Json
+                           },
+"upsell_decline":
+{ Args: { "p_appointment": string }; Returns: undefined
+                           },
+"upsell_mark":
+{ Args: { "p_appointment": string,"p_service_ids": (string)[],"p_source": string }; Returns: undefined
+                           },
 "usage_report":
 { Args: { "p_from_opname": string,"p_to_opname": string }; Returns: {
               "actual": number,"flagged": boolean,"item_id": string,"name": string,"theoretical": number,"unit": string,"unit_cost": number,"variance": number,"variance_pct": number,"variance_value": number
@@ -2964,6 +2998,9 @@ isOneToOne: false
                            },
 "voucher_uses":
 { Args: { "p_customer"?: string,"p_voucher": string }; Returns: number
+                           },
+"wa_health_record":
+{ Args: { "p_connected": boolean,"p_detail"?: string,"p_expired"?: string,"p_ok": boolean,"p_quota"?: number }; Returns: undefined
                            },
 "weekly_progress":
 { Args: { "p_day"?: string }; Returns: Json

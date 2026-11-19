@@ -70,7 +70,7 @@ export function MyTargets() {
         const late = k.due < today && k.status !== "selesai";
         const draft = drafts[k.id] ?? k.note;
         return (
-          <div key={k.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-3">
+          <div key={k.id} className="flex flex-col gap-2 border-t border-[#E0E2E6] pt-3">
             <div className="flex flex-col gap-0.5">
               <span className={`text-xs font-semibold tabular ${late ? "text-[#D94B42]" : "text-muted"}`}>{shortDate(k.due)}{late ? " · lewat tenggat" : ""}</span>
               <b className="text-sm">{k.title}</b>

@@ -65,7 +65,7 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
       </p>
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span role="status" className="rounded-full bg-[#EAF1EB] px-3 py-1 text-sm font-semibold text-[#174B35]">Aktif</span>
+          <span role="status" className="rounded-full bg-[#E9EBEF] px-3 py-1 text-sm font-semibold text-[#1F2937]">Aktif</span>
           {!required && <Button onClick={disable} variant="outline" className="h-11">Matikan</Button>}
         </div>
       ) : enroll ? (

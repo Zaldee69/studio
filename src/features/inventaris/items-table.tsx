@@ -102,7 +102,7 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
   const save = useRowSave(r);
   const form = `it-${r.item_id}`;
   return (
-    <tr className={`border-t border-[#E8E5DE] ${r.active ? "" : "opacity-55"}`}>
+    <tr className={`border-t border-[#E0E2E6] ${r.active ? "" : "opacity-55"}`}>
       <EditCells r={r} form={form} />
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatUnitCost(r.unit_cost)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatRupiah(r.stock_value)}</td>

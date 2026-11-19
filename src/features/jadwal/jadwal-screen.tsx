@@ -17,9 +17,13 @@ import { BookingDrawer } from "./booking-drawer";
 import { BookingForm, type FormInit } from "./booking-form";
 import { apptName } from "@/lib/domain/guest";
 import { firstName } from "@/lib/domain/customer";
+import Image from "next/image";
 import Link from "next/link";
+import { photoUrl } from "@/lib/storage";
+import { toneOf } from "@/lib/domain/category";
 import { floorStaff, staffNow } from "./now";
 import { WalkInForm } from "./walk-in";
+import { ArrivalOffer, suggestFor, type Offer } from "./upsell-offer";
 
 // Pilihan tampilan (per kursi / per capster) diingat per perangkat; server selalu "kursi" (tanpa beda hidrasi).
 const VIEW_KEY = "jadwal-view";
@@ -42,6 +46,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
   const today = jktDate();
   const [date, setDate] = useState(today);
   const [selId, setSelId] = useState<string | null>(null);
+  const [offer, setOffer] = useState<{ appt: DayAppt; items: Offer[] } | null>(null);
   const [walkIn, setWalkIn] = useState<{ staff: string | null } | null>(null); // Walk-in sekarang (staf terpilih dari panel)
   const [form, setForm] = useState<FormInit | null>(() => {
     if (params.get("new") !== "1") return null;
@@ -101,7 +106,15 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
     scroller.current.scrollTop = Math.max(0, ((date === today ? nowMin : first) - gOpen - 60) * px);
   }, [data, date]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function setStatus(a: DayAppt, status: ApptStatus) {
+  // Tombol "Datang": tawarkan naik paket sekali sebelum layanan dimulai (bila booking belum pernah ditawari & ada pasangannya)
+  function setStatus(a: DayAppt, status: ApptStatus) {
+    if (a.status === "booked" && status === "arrived" && !a.upsell_offered) {
+      const items = suggestFor(a.appointment_services.map((x) => x.service_id), master.services);
+      if (items.length) { setOffer({ appt: a, items }); return; }
+    }
+    return applyStatus(a, status);
+  }
+  async function applyStatus(a: DayAppt, status: ApptStatus) {
     setData((d) => d?.map((x) => (x.id === a.id ? { ...x, status } : x)) ?? d); // optimistis
     const { error } = await createClient().rpc("set_appointment_status", { p_id: a.id, p_status: status });
     if (error) { toast(error.message, "error"); refresh(); } else toast(`${apptName(a)} → ${STATUS[status].label}`);
@@ -161,7 +174,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
           </button>
           <button onClick={() => setDate(today)} aria-pressed={date === today} className="h-11 rounded-[14px] border border-line bg-card px-4 text-sm font-medium">Hari ini</button>
         </div>
-        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[14px] bg-[#F0EEE8] p-1">
+        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[14px] bg-[#EDEEF1] p-1">
           {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
             <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
               className={`h-9 rounded-[14px] px-3.5 text-[13px] font-semibold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
@@ -173,20 +186,19 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         </div>
         {master.role === "manager" && <Link href="/manajer/izin" className={buttonClass("outline", "h-11 px-4")}>Izin staf</Link>}
         {master.role === "manager" && <Link href="/manajer/libur" className={buttonClass("outline", "h-11 px-4")}>Jadwal libur</Link>}
-        <Button onClick={newBooking} variant={date === today ? "outline" : "default"} className="h-11 px-[18px]">
+        <Button onClick={() => (date === today ? setWalkIn({ staff: null }) : newBooking())} className="h-11 px-[18px]">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-          Booking baru
+          Booking
         </Button>
-        {date === today && <Button onClick={() => setWalkIn({ staff: null })} className="h-11 px-[18px]">Walk-in sekarang</Button>}
       </div>
 
       {date === today && (
-        <NowPanel master={master} appts={appts} offs={offs ?? []} onStatus={setStatus} onOpen={setSelId} onWalkIn={(s) => setWalkIn({ staff: s })} />
+        <NowPanel master={master} appts={appts} offs={offs ?? []} onStatus={setStatus} onWalkIn={(s) => setWalkIn({ staff: s })} />
       )}
 
       {/* hari ini: izin sudah tampil di panel Sekarang */}
       {date !== today && !!offs?.length && (
-        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#E8E5DE] px-3 py-2 text-[13px] text-[#4D4A55]">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#E0E2E6] px-3 py-2 text-[13px] text-[#4A505B]">
           <b>Izin / cuti:</b>
           {[...new Map(offs.map((o) => [o.staff_id, o])).values()].map((o) => <span key={o.id} className="rounded-full bg-card px-2.5 py-1 font-medium">{master.staff.find((s) => s.id === o.staff_id)?.name} · {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}</span>)}
         </div>
@@ -199,7 +211,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
               <div className="sticky left-0 z-[1] w-14 shrink-0 bg-card" />
               {cols.map((c) => (
-                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#F0EEE8] px-2.5 py-2">
+                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDEEF1] px-2.5 py-2">
                   <span className="truncate text-[13px] font-semibold">{c.title}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="shrink-0 rounded-md bg-paper px-1.5 py-px text-[11px] font-medium text-muted">{c.label}</span>
@@ -215,14 +227,14 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                 ))}
               </div>
               {cols.map((c) => (
-                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#F0EEE8]"
-                  style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)` }}>
+                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#EDEEF1]"
+                  style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F1F2F4 ${30 * px - 1}px, #F1F2F4 ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E3E5E9 ${60 * px - 1}px, #E3E5E9 ${60 * px}px)` }}>
                   {/* di luar jam buka: arsir abu-abu (tetap bisa melihat kartu walk-in larut) */}
                   {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F6F4F7]/70" style={{ height: (open - gOpen) * px }} />}
                   {gClose > close && <div aria-hidden="true" className="absolute inset-x-0 bg-[#F6F4F7]/70" style={{ top: (close - gOpen) * px, height: (gClose - close) * px }} />}
                   {dayOff(c) !== null && (
                     <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-start justify-center pt-6 text-[13px] font-medium text-muted"
-                      style={{ backgroundImage: "repeating-linear-gradient(135deg, #F4F2ED 0, #F4F2ED 8px, transparent 8px, transparent 16px)" }}>
+                      style={{ backgroundImage: "repeating-linear-gradient(135deg, #F1F2F4 0, #F1F2F4 8px, transparent 8px, transparent 16px)" }}>
                       <span className="sticky top-16 rounded-full bg-card px-3 py-1 shadow-sm">Tidak aktif · {dayOff(c)} libur</span>
                     </div>
                   )}
@@ -248,6 +260,11 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         </div>
       </div>
 
+      <Sheet open={!!offer} onClose={() => setOffer(null)} label="Tawaran tambahan" width={440}>
+        {offer && <ArrivalOffer appt={offer.appt} items={offer.items} name={apptName(offer.appt)} onClose={() => setOffer(null)}
+          onContinue={() => { const a = offer.appt; setOffer(null); applyStatus(a, "arrived"); }} />}
+      </Sheet>
+
       <Sheet open={!!sel} onClose={() => setSelId(null)} label="Detail booking" variant="drawer">
         {sel && (
           <BookingDrawer appt={sel} master={master} conflict={conflicts.has(sel.id)} onClose={() => setSelId(null)}
@@ -258,15 +275,32 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
         )}
       </Sheet>
 
-      <Sheet open={!!walkIn} onClose={() => setWalkIn(null)} label="Walk-in sekarang" width={640}>
-        {walkIn && <WalkInForm master={master} appts={appts} offs={offs ?? []} initialStaff={walkIn.staff}
-          onClose={() => setWalkIn(null)} onDone={() => { setWalkIn(null); refresh(); }} />}
+      {/* satu pintu: Sekarang (walk-in) atau Jam lain (booking). Mengubah booking yang ada tetap di sheet sendiri. */}
+      <Sheet open={!!walkIn || (!!form && !form.appt)} onClose={() => { setWalkIn(null); setForm(null); }} label="Booking baru" width={680}>
+        <div className="flex flex-col">
+          <div role="radiogroup" aria-label="Kapan dilayani" className="mx-6 mt-4 flex w-fit gap-1 rounded-xl bg-side p-1">
+            {([["now", "Sekarang", "walk-in, mulai dilayani"], ["later", "Jam lain", "booking terjadwal"]] as const).map(([m, l, hint]) => {
+              const on = (m === "now") === !!walkIn, off = m === "now" && date !== today;
+              return (
+                <button key={m} role="radio" aria-checked={on} disabled={off} title={off ? "Walk-in hanya untuk hari ini" : hint}
+                  onClick={() => { if (on) return; if (m === "now") { setForm(null); setWalkIn({ staff: null }); } else { setWalkIn(null); newBooking(); } }}
+                  className={`h-10 rounded-lg px-5 text-sm font-medium disabled:opacity-40 ${on ? "bg-card font-semibold text-ink shadow-sm" : "text-muted hover:text-ink"}`}>{l}</button>
+              );
+            })}
+          </div>
+          {walkIn && <WalkInForm master={master} appts={appts} offs={offs ?? []} initialStaff={walkIn.staff}
+            onClose={() => setWalkIn(null)} onDone={() => { setWalkIn(null); refresh(); }} />}
+          {form && !form.appt && (
+            <BookingForm master={master} init={form} today={today} onClose={() => setForm(null)}
+              onSaved={(d) => { setForm(null); setDate(d); refresh(); if (params.get("new")) router.replace(`${master.base}/jadwal`); }} />
+          )}
+        </div>
       </Sheet>
 
-      <Sheet open={!!form} onClose={() => setForm(null)} label={form?.appt ? "Ubah booking" : "Booking baru"}>
-        {form && (
+      <Sheet open={!!form?.appt} onClose={() => setForm(null)} label="Ubah booking">
+        {form?.appt && (
           <BookingForm master={master} init={form} today={today} onClose={() => setForm(null)}
-            onSaved={(d) => { setForm(null); setDate(d); refresh(); if (params.get("new")) router.replace(`${master.base}/jadwal`); }} />
+            onSaved={(d) => { setForm(null); setDate(d); refresh(); }} />
         )}
       </Sheet>
     </div>
@@ -298,16 +332,18 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
       onPointerDown={(e) => { if (e.pointerType !== "mouse") press.current = setTimeout(() => { long.current = true; onQuick(); }, 550); }}
       onPointerUp={() => clearTimeout(press.current)} onPointerLeave={() => clearTimeout(press.current)}
       className={`flex h-full w-full flex-col gap-px overflow-hidden rounded-[14px] border py-1 pl-2 text-left ${hasAction ? "pr-[76px]" : "pr-2"} ${a.status === "pending_review" ? "border-2 border-dashed" : ""}`}
-      style={{ background: "#FFFFFF", color: "#1F2320", borderColor: "#E5E5E0", borderLeft: `3px solid ${S.dot}`,
+      style={{ background: S.bg, color: S.fg, borderColor: S.bd, borderLeft: `3px solid ${S.dot}`,
         outline: selected ? `2px solid ${S.dot}` : undefined, outlineOffset: 1 }}>
       <span className="flex w-full items-center gap-1.5 text-xs font-semibold">
         <span className="size-[7px] shrink-0 rounded-full" style={{ background: S.dot }} />
         <span className="flex-1 truncate">{apptName(a)}</span>
         {a.source === "online" && <span className="rounded bg-accent px-1.5 text-[10px] font-semibold text-white">Online</span>}
+        {a.customer?.allergies && <span title={`Alergi: ${a.customer.allergies}`} className="rounded bg-[#6E1616] px-1.5 text-[10px] font-semibold text-white">Alergi</span>}
+        {a.group?.confirmed_at && a.status === "booked" && <span title="Pelanggan sudah konfirmasi" className="text-[11px] font-semibold text-[#1D5A3A]">✓</span>}
         {a.status === "pending_review" && <span className="rounded border border-accent px-1 text-[10px] font-semibold">Menunggu</span>}
         {conflict && <span className="rounded bg-[#6E1616] px-1.5 text-[10px] font-semibold text-white">Bentrok</span>}
-        {a.change_request && <span className="rounded bg-[#4D4A55] px-1.5 text-[10px] font-semibold text-white">Minta ubah</span>}
-        {off && <span className="rounded bg-[#4D4A55] px-1.5 text-[10px] font-semibold text-white">Izin</span>}
+        {a.change_request && <span className="rounded bg-[#4A505B] px-1.5 text-[10px] font-semibold text-white">Minta ubah</span>}
+        {off && <span className="rounded bg-[#4A505B] px-1.5 text-[10px] font-semibold text-white">Izin</span>}
       </span>
       {/* kartu pendek (≤ ±30 menit): cukup nama; jam & layanan ada di detail (audit 30 Okt) */}
       {h >= 56 && <span className="truncate text-xs tabular">{formatJam(a.start_at)}–{formatJam(new Date(occupiedEnd(a)))} · {who ?? staff}</span>}
@@ -320,33 +356,42 @@ function ApptCard({ a, master, top, h, conflict, off, selected, onOpen, onQuick,
 }
 
 /** Ringkasan hari ini per capster: sedang melayani / kosong / izin, berikutnya, dan tagihan yang belum dibayar. */
-function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
-  master: Master; appts: DayAppt[]; offs: TimeOffRow[]; onStatus: (a: DayAppt, s: ApptStatus) => void; onOpen: (id: string) => void; onWalkIn: (staffId: string) => void;
+function NowPanel({ master, appts, offs, onStatus, onWalkIn }: {
+  master: Master; appts: DayAppt[]; offs: TimeOffRow[]; onStatus: (a: DayAppt, s: ApptStatus) => void; onWalkIn: (staffId: string) => void;
 }) {
   const unpaid = appts.filter((a) => a.status === "completed");
   const staff = floorStaff(master);
   if (!staff.length) return null;
   return (
-    <section aria-label="Sekarang" className="flex gap-2 overflow-x-auto pb-1">
+    <section aria-label="Sekarang" className="flex gap-1 overflow-x-auto px-1 pb-1">
       {staff.map((s) => {
         const n = staffNow(appts, offs, s.id);
         const cur = n.current;
-        const chair = master.resources.find((r) => r.id === (cur?.resource_id ?? s.home_resource_id))?.name;
         return (
-          <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-[14px] border px-3 py-2 text-[13px] short:min-w-[230px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5 border-line bg-card`}>
-            <span className="flex items-center gap-1.5 short:min-w-0 short:flex-1"><b className="min-w-0 flex-1 truncate">{s.name}</b>
-              <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-paper px-2 py-0.5 text-[11px] font-medium text-ink">
-                <span aria-hidden="true" className={`size-1.5 rounded-full ${n.off ? "bg-[#9C98A3]" : n.free ? "bg-[#268052]" : "bg-[#C58A2B]"}`} />
-                {n.off ? "Izin" : n.free ? "Kosong" : !cur ? "Ada booking" : cur.status === "arrived" ? "Menunggu" : "Melayani"}</span></span>
-            {chair && <span className="-mt-1 truncate text-xs font-medium text-muted short:hidden">{chair}</span>}
-            {cur ? (
-              <button onClick={() => onOpen(cur.id)} className="truncate text-left text-muted short:hidden">{apptName(cur)} · s/d {formatJam(new Date(occupiedEnd(cur)))}</button>
-            ) : <span className="text-muted short:hidden">{n.off ? "Tidak bisa dipilih hari ini" : "Siap menerima pelanggan"}</span>}
-            <span className="truncate text-xs text-muted short:hidden">{n.next ? `Berikutnya ${formatJam(n.next.start_at)} · ${apptName(n.next)}` : "Tidak ada booking berikutnya"}</span>
-            <div className="mt-1 flex gap-1.5 short:mt-0 empty:hidden">
+          <div key={s.id} className={`flex w-[88px] shrink-0 flex-col gap-1 py-1 text-[13px] short:w-auto short:min-w-[150px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5`}>
+            <span className="flex flex-col items-center gap-1.5 text-center short:min-w-0 short:flex-1 short:flex-row short:gap-2 short:text-left">
+              {(() => {
+                const t = toneOf(s.category), canWalkIn = !n.off && !cur;
+                const label = n.off ? "Izin" : n.free ? "Kosong" : !cur ? "Ada booking" : cur.status === "arrived" ? "Menunggu" : "Melayani";
+                const c = n.off ? "#9C98A3" : n.free ? "#268052" : "#C58A2B"; // warna status = cincin & lencana
+                const inner = (
+                  <>
+                    <span aria-hidden="true" className="relative flex size-14 items-center justify-center overflow-hidden rounded-full text-xl font-semibold short:size-8 short:text-sm"
+                      style={{ background: t.bg, color: t.fg, boxShadow: `0 0 0 2px #fff, 0 0 0 4px ${c}` }}>
+                      {s.photo_path ? <Image src={photoUrl(s.photo_path)!} alt="" fill sizes="56px" className="object-cover" /> : s.name.trim().charAt(0).toUpperCase()}
+                    </span>
+                    <span aria-hidden="true" className="absolute -bottom-1 -right-1 flex size-5 items-center justify-center rounded-full text-sm leading-none text-white ring-2 ring-white short:size-4" style={{ background: c }}>{canWalkIn ? "+" : ""}</span>
+                  </>
+                );
+                return canWalkIn ? (
+                  <button type="button" onClick={() => onWalkIn(s.id)} aria-label={`${s.name}, ${label}. Walk-in`} title={`${label} · klik untuk walk-in`} className="relative mt-1 shrink-0 rounded-full short:mt-0">{inner}</button>
+                ) : <span role="img" aria-label={`${s.name}, ${label}`} title={label} className="relative mt-1 shrink-0 short:mt-0">{inner}</span>;
+              })()}
+              <b className="mt-1 min-w-0 max-w-full truncate short:mt-0 short:flex-1">{s.name}</b>
+            </span>
+            <div className="mt-1 flex justify-center gap-1.5 short:mt-0 empty:hidden">
               {cur?.status === "in_service" && <button onClick={() => onStatus(cur, "completed")} aria-label={`Selesai ${apptName(cur)}`} className="h-8 rounded-[14px] bg-accent-soft px-3 text-xs font-medium text-accent">Selesai</button>}
               {cur?.status === "arrived" && <button onClick={() => onStatus(cur, "in_service")} aria-label={`Mulai ${apptName(cur)}`} className="h-8 rounded-[14px] bg-accent-soft px-3 text-xs font-medium text-accent">Mulai</button>}
-              {!n.off && !cur && <button onClick={() => onWalkIn(s.id)} aria-label={`Walk-in dengan ${s.name}`} className="h-8 whitespace-nowrap rounded-[14px] border border-input px-3 text-xs font-medium text-ink hover:bg-paper">+ Walk-in</button>}
             </div>
           </div>
         );

@@ -14,6 +14,7 @@ import { NewCustomer } from "../counter/new-customer";
 import type { Cat, Customer, DayAppt, Master, TimeOffRow } from "../counter/types";
 import { floorStaff, staffNow } from "./now";
 import { queueStart, walkInTurn } from "./turn";
+import { suggestFor, UpsellOffer } from "./upsell-offer";
 
 type Conflict = { customer_name: string; start_at: string; end_at: string; resource_name: string };
 
@@ -38,6 +39,8 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     .find((id) => id && !staff.find((s) => s.id === id)?.now.off) ?? "";
   // memilih layanan mengunci capster default, agar jadwal yang dimuat ulang tidak memindahkannya ke kategori lain
   const [sel, setSel] = useState<string[]>([]);
+  const [skipped, setSkipped] = useState<string[]>([]); // tawaran upsell yang dilewati
+  const [taken, setTaken] = useState<string[]>([]); // layanan yang ditambah lewat tawaran
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [guest, setGuest] = useState("");
   const [adding, setAdding] = useState(false);
@@ -78,6 +81,10 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
     if (error) return toast(error.message, "error");
     const r = data as { saved: boolean; appointment_id?: string; conflicts: Conflict[] };
     if (!r.saved) { setQueueConflict(queue); return setConflicts(r.conflicts); }
+    if (r.appointment_id && (taken.length || skipped.length || suggestFor(sel, master.services, skipped).length)) {
+      const { error: upErr } = await supabase.rpc("upsell_mark", { p_appointment: r.appointment_id, p_service_ids: taken.filter((id) => sel.includes(id)), p_source: "walk_in" });
+      if (upErr) toast(`Walk-in tersimpan, tapi penanda upsell belum tersimpan: ${upErr.message}`, "error");
+    }
     const name = customer?.name ?? (guest.trim() || "Walk-in");
     toast(queue ? `${name} masuk antrean ${who.name} — tekan Mulai saat duduk` : `${name} mulai dilayani ${who.name}`);
     onDone();
@@ -126,6 +133,7 @@ export function WalkInForm({ master, appts, offs, initialStaff, onClose, onDone 
               );
             })}
           </div>
+          <UpsellOffer items={suggestFor(sel, master.services, skipped)} onAdd={(id) => { setTaken([...taken, id]); setSel([...sel, id]); setConflicts(null); }} onSkip={(id) => setSkipped([...skipped, id])} />
         </fieldset>
       )}
 

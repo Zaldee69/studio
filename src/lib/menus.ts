@@ -11,7 +11,7 @@ export const MANAGER_MENU: MenuItem[] = [
   { href: "/manajer", label: "Beranda", icon: "home" },
   { href: "/manajer/rencana", label: "Rencana & Target", short: "Rencana", icon: "target", also: ["/manajer/analitik"] },
   { href: "/manajer/jadwal", label: "Jadwal", icon: "calendar", badge: "online", also: ["/manajer/izin", "/manajer/libur"] },
-  { href: "/manajer/pelanggan", label: "Pelanggan", icon: "users", badge: "follow", also: ["/manajer/promosi"] },
+  { href: "/manajer/pelanggan", label: "Pelanggan", icon: "users", badge: "follow", also: ["/manajer/promosi", "/manajer/ulasan"] },
   { href: "/manajer/kasir", label: "Kasir", icon: "cash", badge: "ready" },
   { href: "/manajer/sdm", label: "SDM & Komisi", short: "SDM", icon: "badge" },
   { href: "/manajer/pengeluaran", label: "Pengeluaran", short: "Biaya", icon: "receipt" },

@@ -124,7 +124,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
         <span className="min-w-0 flex-1"><span className="text-xs text-muted">Konsultasi gaya untuk</span><b className="block truncate text-lg">{customerName}</b></span>
         <Button onClick={onChange} variant="outline" className="h-10 rounded-[14px] px-3 text-sm">Ganti</Button>
       </section>
-      {!canSave && <p className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
+      {!canSave && <p className="rounded-[14px] bg-[#FBF2E4] px-3.5 py-3 text-sm text-[#6B4A10]">Tanpa data pelanggan — hasil & catatan potongan tidak disimpan.</p>}
 
       {/* RIWAYAT: pelanggan yang kembali tidak perlu ditanya / dianalisis ulang */}
       {customerId && (
@@ -155,7 +155,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
         <section className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
           <h2 className="text-base font-semibold">{stored?.status === "success" ? "Analisis ulang dari foto" : "Konsultasi dari foto"}</h2>
           {result && result.status !== "success" && (
-            <p role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">{result.reason} {result.suggestion}</p>
+            <p role="alert" className="rounded-[14px] bg-[#FBF2E4] px-3.5 py-3 text-sm text-[#6B4A10]">{result.reason} {result.suggestion}</p>
           )}
           {/* kualitas foto paling menentukan apakah wajah di pratinjau tetap mirip */}
           <details className="rounded-[14px] border border-line p-3 text-sm" open={!stored}>
@@ -171,7 +171,7 @@ function Consult({ appointmentId, customerId, customerName, onChange }: { appoin
             <Checkbox className="mt-0.5 size-5 shrink-0" checked={consent} onCheckedChange={(v) => setConsent(v === true)} />
             <span>Pelanggan setuju fotonya dipakai untuk rekomendasi gaya. <span className="text-muted">Foto tidak disimpan.</span></span>
           </label>
-          {error && <p role="alert" className="rounded-[14px] bg-[#F9E6E6] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
+          {error && <p role="alert" className="rounded-[14px] bg-[#FBEEEC] px-3.5 py-3 text-sm text-[#6E1616]">{error}</p>}
           <input ref={camera} type="file" accept="image/*" capture="environment" className="sr-only" aria-label="Ambil foto pelanggan" onChange={(e) => analyze(e.target.files?.[0])} />
           <input ref={gallery} type="file" accept={IMAGE_ACCEPT} className="sr-only" aria-label="Pilih foto dari galeri" onChange={(e) => analyze(e.target.files?.[0])} />
           <div className="grid grid-cols-2 gap-2">

@@ -1,5 +1,5 @@
 // Dipakai komponen server (slip) & klien — jangan taruh di modul "use client".
-export const CAT = { barbershop: { label: "Barbershop", color: "#5C6B4A" }, nail: { label: "Nail Art", color: "#B05A63" }, massage: { label: "Pijat", color: "#9A6B3C" } } as const;
+export const CAT = { barbershop: { label: "Barbershop", color: "#174B35" }, nail: { label: "Nail Art", color: "#6F8F7A" }, massage: { label: "Pijat", color: "#C58A2B" } } as const;
 export const monthLabel = (m: string) => new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${m}-01T00:00:00Z`));
 export const shiftMonth = (m: string, d: number) => new Date(Date.UTC(+m.slice(0, 4), +m.slice(5, 7) - 1 + d, 1)).toISOString().slice(0, 7);
 

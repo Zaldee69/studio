@@ -137,7 +137,7 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
     <div className="flex flex-col gap-4">
       <RouteTabs tabs={PELANGGAN_TABS} label="Bagian pelanggan" />
       {!waReady && (
-        <p role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-sm text-[#5A4300]">
+        <p role="alert" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-sm text-[#6B4A10]">
           WhatsApp (Wablas) belum dikonfigurasi di server — pesan akan tercatat <b>dilewati</b>. Isi WABLAS_TOKEN &amp; WABLAS_SECRET_KEY.
         </p>
       )}
@@ -264,14 +264,14 @@ export function PromosiScreen({ shop, waReady, bookingUrl }: { shop: string; waR
               </Button>
             </div>
             {draft.id && (
-              <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-3">
+              <div className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-3">
                 <span className="text-xs font-semibold text-muted">Riwayat pengiriman campaign ini</span>
                 {!sendsOf(draft.id).length ? <span className="text-sm text-muted">Belum pernah dikirim.</span> : sendsOf(draft.id).map((s) => (
                   <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm tabular">
                     <span className="min-w-40">{formatTanggal(s.created_at)} {formatJam(s.created_at)}</span>
                     <span className="text-muted">{s.recipient_count} penerima</span>
-                    <span className="text-[#1F7A45]">{s.sent} terkirim</span>
-                    {s.pending > 0 && <span className="text-[#5A4300]">{s.pending} dalam antrean…</span>}
+                    <span className="text-[#268052]">{s.sent} terkirim</span>
+                    {s.pending > 0 && <span className="text-[#6B4A10]">{s.pending} dalam antrean…</span>}
                     {s.failed > 0 && <span className="text-danger">{s.failed} gagal</span>}
                     {s.skipped > 0 && <span className="text-muted">{s.skipped} dilewati</span>}
                   </div>

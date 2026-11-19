@@ -309,7 +309,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
                 </Field>
               )}
               {existingOwner && (
-                <p role="status" className="rounded-[14px] bg-[#EFEAEF] px-3 py-2 text-[13px] text-[#1D1E20] min-[520px]:col-span-2">
+                <p role="status" className="rounded-[14px] bg-[#E8E5DE] px-3 py-2 text-[13px] text-[#1D1E20] min-[520px]:col-span-2">
                   No. WA ini sudah terdaftar atas nama <b>{existingOwner}</b> — booking akan memakai pelanggan tersebut.
                 </p>
               )}
@@ -403,7 +403,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
       )}
 
       {(staffOff || pairStaffOff) && (
-        <div role="alert" className="rounded-[14px] bg-[#EFEAEF] px-3.5 py-3 text-[13px] font-medium text-[#4D4A55]">
+        <div role="alert" className="rounded-[14px] bg-[#E8E5DE] px-3.5 py-3 text-[13px] font-medium text-[#4D4A55]">
           {[staffOff && `${activeStaff.find((s) => s.id === staffId)?.name} sedang izin/cuti (${offLabel(staffOff)})`,
             pairStaffOff && `${activeStaff.find((s) => s.id === pairStaff)?.name} sedang izin/cuti (${offLabel(pairStaffOff)})`].filter(Boolean).join(" · ")}. Pilih staf lain.
         </div>
@@ -419,7 +419,7 @@ export function BookingForm({ master, init, today, onClose, onSaved }: {
           <span><b>Jadwal bentrok:</b> {conflictText.join("; ")}{bufferMin ? ` (termasuk jeda ${bufferMin} mnt)` : ""}. Anda tetap bisa menyimpan.</span>
         </div>
       )}
-      {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
+      {error && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{error}</p>}
 
       <div className="sticky bottom-0 z-10 -mx-6 mt-2 flex justify-end gap-2.5 border-t border-line bg-paper px-6 py-4">
         <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[14px]">Batal</Button>

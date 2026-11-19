@@ -61,7 +61,7 @@ function ReceiptPaper({ r, paper }: { r: ReceiptData; paper?: 58 | 80 }) {
 
       {/* status */}
       <div className="flex justify-center">
-        <span className={`rounded-full px-3 py-0.5 text-[0.85em] font-bold uppercase tracking-[0.2em] ${r.voided ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#E6F1E4] text-[#144D2A]"}`}>
+        <span className={`rounded-full px-3 py-0.5 text-[0.85em] font-bold uppercase tracking-[0.2em] ${r.voided ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#EAF1EB] text-[#174B35]"}`}>
           {r.voided ? "DIBATALKAN (void)" : "LUNAS"}
         </span>
       </div>
@@ -125,7 +125,7 @@ export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r:
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#E6F1E4] text-[#1F7A45]">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#EAF1EB] text-[#268052]">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7" /></svg>
         </div>
         <h2 className="font-display text-2xl font-bold">{title}</h2>
@@ -138,7 +138,7 @@ export function ReceiptView({ r, title = "Pembayaran tercatat", children }: { r:
         <ReceiptPaper r={r} paper={paper} />
       </PrintSheet>
       <div className="flex flex-col gap-2">
-        <a href={waLink(r.whatsapp, receiptText(r))} target="_blank" rel="noopener" className={buttonClass("plain", "h-12 rounded-xl bg-[#1F7A45] text-white hover:bg-[#186238]")}>
+        <a href={waLink(r.whatsapp, receiptText(r))} target="_blank" rel="noopener" className={buttonClass("plain", "h-12 rounded-xl bg-[#268052] text-white hover:bg-[#186238]")}>
           Kirim struk via WhatsApp
         </a>
         <div className="flex gap-2">

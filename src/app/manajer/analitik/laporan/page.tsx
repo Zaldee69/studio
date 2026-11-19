@@ -31,14 +31,14 @@ function Delta({ cur, prev, money, lowerBetter }: { cur: number | null; prev: nu
   const d = cur - prev;
   const good = lowerBetter ? d < 0 : d > 0;
   return (
-    <span className={d === 0 ? "text-muted" : good ? "text-[#1F7A45]" : "text-[#A12A2A]"}>
+    <span className={d === 0 ? "text-muted" : good ? "text-[#268052]" : "text-[#D94B42]"}>
       {d > 0 ? "▲ +" : d < 0 ? "▼ −" : "= "}{money ? m(Math.abs(d)) : n(Math.abs(d))}{prev ? ` (${pct1((Math.abs(d) * 100) / Math.abs(prev))}%)` : ""}
     </span>
   );
 }
 /** Status capaian target: konsisten di seluruh laporan. */
 const status = (a: number | null) => a == null ? <span className="text-muted">Baseline — target belum ditetapkan</span>
-  : a >= 100 ? <span className="text-[#1F7A45]">● Tercapai</span> : a >= 90 ? <span className="text-[#8A6100]">● Hampir</span> : <span className="text-[#A12A2A]">● Di bawah target</span>;
+  : a >= 100 ? <span className="text-[#268052]">● Tercapai</span> : a >= 90 ? <span className="text-[#8A6100]">● Hampir</span> : <span className="text-[#D94B42]">● Di bawah target</span>;
 
 function H({ id, children }: { id: string; children: React.ReactNode }) {
   return <h2 id={id} className="mb-1.5 font-display text-lg font-semibold">{children}</h2>;
@@ -171,7 +171,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
         <section aria-labelledby="h-d">
           <H id="h-d">D. Ringkasan keuangan</H>
           {!!x.hpp_items && (x.hpp_items_filled ?? 0) < x.hpp_items * 0.8 && (
-            <p className="keep mb-2 rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[12px] text-[#5A4300]">
+            <p className="keep mb-2 rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[12px] text-[#6B4A10]">
               HPP baru terisi di {x.hpp_items_filled ?? 0} dari {x.hpp_items} item jasa — margin dan laba di bawah masih terlalu tinggi sampai resep bahan & stok lengkap (target ≥80%).
             </p>
           )}
@@ -321,7 +321,7 @@ export default async function OwnerReportPage({ searchParams }: PageProps<"/mana
               ))}
             </div>
             {!!r.operations.inventory.negative_now && (
-              <p className="keep mt-1 rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[11px] text-[#5A4300]">
+              <p className="keep mt-1 rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[11px] text-[#6B4A10]">
                 Stok minus: {r.operations.inventory.negative_items}. Bahan dipakai layanan tetapi stok masuknya belum dicatat — HPP & nilai stok belum akurat sampai dicatat lewat Terima stok atau Opname.
               </p>
             )}

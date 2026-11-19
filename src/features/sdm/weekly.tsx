@@ -58,7 +58,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
         <Link href={`?tab=mingguan&minggu=${shiftWeek(week, -1)}`} aria-label="Minggu sebelumnya" className={buttonClass("outline", "size-11 p-0")}>‹</Link>
         <b className="min-w-52 text-center font-display text-xl">{weekLabel(week)}</b>
         <Link href={`?tab=mingguan&minggu=${shiftWeek(week, 1)}`} aria-label="Minggu berikutnya" className={buttonClass("outline", "size-11 p-0")}>›</Link>
-        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${closed ? "bg-[#E6F1E4] text-[#144D2A]" : running ? "bg-[#FBF3DE] text-[#5A4300]" : future ? "bg-paper text-muted" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${closed ? "bg-[#EAF1EB] text-[#174B35]" : running ? "bg-[#FBF2E4] text-[#6B4A10]" : future ? "bg-paper text-muted" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
           {closed ? (unpaid.length ? `Ditutup · ${unpaid.length} belum dibayar` : "Ditutup · semua dibayar") : running ? "Minggu berjalan" : future ? "Belum dimulai" : "Belum ditutup"}
         </span>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -68,7 +68,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
             : <Button onClick={close} disabled={!online || running || future || busy} title={running ? "Bisa ditutup setelah Minggu malam" : undefined} className="h-11">Tutup minggu</Button>}
         </div>
       </div>
-      {!!holdMonths.length && closed && <p role="note" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">Minggu ini lintas bulan. Komisinya ikut payroll {holdMonths.join(", ")} yang belum ditutup, jadi pembayaran ditahan sampai payroll ditutup.</p>}
+      {!!holdMonths.length && closed && <p role="note" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[13px] text-[#6B4A10]">Minggu ini lintas bulan. Komisinya ikut payroll {holdMonths.join(", ")} yang belum ditutup, jadi pembayaran ditahan sampai payroll ditutup.</p>}
       {reopenReason && !closed && <p className="text-sm text-muted">Dibuka ulang: “{reopenReason}”</p>}
       <p className="text-sm text-muted">
         Komisi dibayar per minggu (Senin–Minggu). Akhir bulan, <Link href="?tab=bulanan" className="underline">Gaji bulanan</Link> menghitung
@@ -84,7 +84,7 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
             </tr></thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.staff_id} className="border-t border-[#EFEAEF]">
+                <tr key={r.staff_id} className="border-t border-[#E8E5DE]">
                   <td className="py-2 pr-2">
                     <span className="flex items-center gap-2">
                       <span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[r.category].color }} />
@@ -96,12 +96,12 @@ export function WeeklyCommission({ week, thisWeek, rows, reopenReason, holdMonth
                   <td className="pr-2 text-right">{formatRupiah(r.commission_service)}</td>
                   <td className="pr-2 text-right">{formatRupiah(r.commission_retail)}</td>
                   <td className="pr-2 text-right">{r.subsidy ? formatRupiah(r.subsidy) : "—"}</td>
-                  <td className="pr-2 text-right text-[#A12A2A]">{r.kasbon ? `−${formatRupiah(r.kasbon)}` : "—"}</td>
+                  <td className="pr-2 text-right text-[#D94B42]">{r.kasbon ? `−${formatRupiah(r.kasbon)}` : "—"}</td>
                   <td className="pr-2 text-right text-base font-semibold">{formatRupiah(r.amount)}</td>
                   <td className="py-2 pr-2">
                     {!r.closed ? <span className="text-xs text-muted">Belum final</span>
-                      : r.paid_at ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-0.5 text-xs font-semibold text-[#144D2A]">Dibayar {formatTanggal(r.paid_at)} · {r.paid_method}</span>
-                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online || !!holdMonths.length} title={holdMonths.length ? "Minggu lintas bulan: tutup payroll bulanan dulu" : undefined} className="rounded-full bg-[#FBF3DE] px-3 py-1.5 text-xs font-semibold text-[#5A4300]">Tandai dibayar</button>
+                      : r.paid_at ? <span className="rounded-full bg-[#EAF1EB] px-2.5 py-0.5 text-xs font-semibold text-[#174B35]">Dibayar {formatTanggal(r.paid_at)} · {r.paid_method}</span>
+                      : r.amount > 0 ? <button onClick={() => setPaying(r)} disabled={!online || !!holdMonths.length} title={holdMonths.length ? "Minggu lintas bulan: tutup payroll bulanan dulu" : undefined} className="rounded-full bg-[#FBF2E4] px-3 py-1.5 text-xs font-semibold text-[#6B4A10]">Tandai dibayar</button>
                       : <span className="text-xs text-muted">—</span>}
                   </td>
                   <td className="py-2"><Link href={`/manajer/sdm/slip-minggu/${week}/${r.staff_id}`} className={buttonClass("outline", "h-9 px-3 text-xs")}>Slip</Link></td>

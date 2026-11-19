@@ -26,10 +26,10 @@ type Progress = { week: string; cuts: number; cuts_by_day: Record<string, number
   new_by_source: Record<string, number>; target: { cuts: number; returning: number; new: number } };
 
 const STATUS: Record<string, [string, string, string]> = {
-  belum: ["Belum mulai", "#EEEEEA", "#55554F"], jalan: ["Sedang berjalan", "#FBF3DE", "#5A4300"],
-  selesai: ["Selesai", "#E3F1E8", "#1F7A45"], batal: ["Dibatalkan", "#EEEEEA", "#8A8A84"],
+  belum: ["Belum mulai", "#EEEEEA", "#55554F"], jalan: ["Sedang berjalan", "#FBF2E4", "#6B4A10"],
+  selesai: ["Selesai", "#E3F1E8", "#268052"], batal: ["Dibatalkan", "#EEEEEA", "#8A8A84"],
 };
-const LATE: [string, string, string] = ["Lewat tenggat", "#FBE6E3", "#A12A2A"];
+const LATE: [string, string, string] = ["Lewat tenggat", "#FBE6E3", "#D94B42"];
 const SOURCE_LABEL: Record<string, string> = { ...Object.fromEntries(CUSTOMER_SOURCES), tidak_tercatat: "Belum dicatat" };
 const DAYS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 // assign: "" = manajer, "role:cashier"/"role:staff" = semua akun peran itu, selain itu id akun
@@ -135,7 +135,7 @@ export function Rencana() {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="text-sm text-muted">Potong minggu ini</span>
               {isThisWeek && (
-                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${behind <= 0 ? "bg-[#E3F1E8] text-[#1F7A45]" : "bg-[#FBE6E3] text-[#A12A2A]"}`}>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${behind <= 0 ? "bg-[#E3F1E8] text-[#268052]" : "bg-[#FBE6E3] text-[#D94B42]"}`}>
                   {behind <= 0 ? "Sesuai jalur" : `Tertinggal ${behind} potong`}
                 </span>
               )}
@@ -176,7 +176,7 @@ export function Rencana() {
             ].map(([l, v, sub, ok]) => (
               <div key={l as string} className="flex flex-col justify-between gap-3 rounded-3xl border border-line bg-card p-5">
                 <span className="text-sm text-muted">{l}</span>
-                <b className={`tabular text-[28px] font-semibold leading-none ${ok === true ? "text-[#1F7A45]" : ok === false ? "text-[#A12A2A]" : ""}`}>{v}</b>
+                <b className={`tabular text-[28px] font-semibold leading-none ${ok === true ? "text-[#268052]" : ok === false ? "text-[#D94B42]" : ""}`}>{v}</b>
                 <span className="text-xs text-muted">{sub}</span>
               </div>
             ))}
@@ -190,7 +190,7 @@ export function Rencana() {
           {([["aktif", "Aktif"], ["lewat", "Lewat tenggat"], ["selesai", "Selesai"], ["semua", "Semua"]] as const).map(([k, l]) => (
             <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}
               className={`min-h-10 rounded-full border px-4 text-sm font-medium transition ${filter === k ? "border-accent bg-accent text-white" : "border-input bg-card text-ink hover:bg-paper"}`}>
-              {l} <span className={`tabular ${filter === k ? "text-white/80" : k === "lewat" && counts.lewat ? "text-[#A12A2A]" : "text-muted"}`}>{counts[k]}</span>
+              {l} <span className={`tabular ${filter === k ? "text-white/80" : k === "lewat" && counts.lewat ? "text-[#D94B42]" : "text-muted"}`}>{counts[k]}</span>
             </button>
           ))}
           <label className="flex min-h-10 items-center gap-2 text-sm text-muted"><Checkbox checked={onlyGrow} onCheckedChange={(v) => setOnlyGrow(v === true)} /> Menambah pelanggan saja</label>
@@ -204,7 +204,7 @@ export function Rencana() {
                 <li key={t.id} className="border-b border-line last:border-0">
                   <details className="group">
                     <summary className="flex min-h-[68px] cursor-pointer list-none items-center gap-4 px-5 py-3 marker:hidden hover:bg-paper [&::-webkit-details-marker]:hidden">
-                      <span aria-hidden="true" className="h-10 w-1 shrink-0 rounded-full" style={{ background: late(t) ? "#A12A2A" : t.status === "selesai" ? "#1F7A45" : t.status === "jalan" ? "#C98A00" : "#D9D3DD" }} />
+                      <span aria-hidden="true" className="h-10 w-1 shrink-0 rounded-full" style={{ background: late(t) ? "#D94B42" : t.status === "selesai" ? "#268052" : t.status === "jalan" ? "#C58A2B" : "#D9D3DD" }} />
                       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <span className={`text-[15px] font-medium leading-snug ${t.status === "batal" ? "text-muted line-through" : ""}`}>{t.title}</span>
                         <span className="text-xs text-muted">{t.pic} · {shortDate(t.due)}{late(t) ? ` · lewat ${daysLate(t)} hari` : ""}{t.grows_customers ? " · menambah pelanggan" : ""}</span>

@@ -87,12 +87,12 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
         <div className="flex min-w-56 flex-1 flex-col gap-1.5">
           <b className="text-sm tabular" aria-live="polite">{data.done} dari {data.total} tahap selesai</b>
           <div className="h-2.5 rounded-full bg-paper" role="progressbar" aria-label="Progres checklist" aria-valuemin={0} aria-valuemax={data.total} aria-valuenow={data.done}>
-            <div className="h-full rounded-full bg-[#1F7A45] transition-all" style={{ width: `${data.total ? (data.done * 100) / data.total : 0}%` }} />
+            <div className="h-full rounded-full bg-[#268052] transition-all" style={{ width: `${data.total ? (data.done * 100) / data.total : 0}%` }} />
           </div>
         </div>
         <span className="rounded-full px-3 py-1 text-xs font-semibold" style={{ background: st.bg, color: st.fg }}><span aria-hidden="true">{st.icon} </span>{st.label}</span>
         {data.approval ? (
-          <span className="rounded-full bg-[#E6F1E4] px-3 py-1 text-xs font-semibold text-[#144D2A]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
+          <span className="rounded-full bg-[#EAF1EB] px-3 py-1 text-xs font-semibold text-[#174B35]">Sudah diotorisasi {data.approval.by} · {formatJam(data.approval.at)}</span>
         ) : manager && (
           <Button onClick={approve} disabled={!online || data.done < data.total || data.total === 0} className="h-11">Otorisasi shift</Button>
         )}
@@ -113,7 +113,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
                     aria-label={`${i + 1}. ${STAGE_LABEL[stage]} ${g.name}: ${log ? `selesai oleh ${log.by ?? "—"} ${formatJam(log.at)}` : reason}`}
                     className={`flex ${big ? "min-h-[72px]" : "min-h-16"} items-center gap-2.5 rounded-[14px] border-2 px-3 text-left transition disabled:cursor-not-allowed disabled:opacity-50
                       ${log ? "border-[#9ED7B2] bg-[#EFF9F2]" : can ? "border-accent bg-card hover:bg-paper" : "border-dashed border-line bg-paper"}`}>
-                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-semibold ${log ? "border-[#1F7A45] bg-[#1F7A45] text-white" : "border-[#9C98A3]"}`}>{log ? "✓" : ""}</span>
+                    <span aria-hidden="true" className={`flex size-7 shrink-0 items-center justify-center rounded-md border-2 text-sm font-semibold ${log ? "border-[#268052] bg-[#268052] text-white" : "border-[#9C98A3]"}`}>{log ? "✓" : ""}</span>
                     <span className="flex min-w-0 flex-col">
                       <b className="text-sm">{i + 1}. {STAGE_LABEL[stage]}</b>
                       <span className="truncate text-xs text-muted tabular">
@@ -147,7 +147,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
               <Field label={pick.stage === "autoclave" && requirePhoto ? "Foto indikator (wajib)" : "Foto (opsional)"} htmlFor="sop-photo">
                 <Input id="sop-photo" type="file" accept="image/*" capture="environment" className="py-2" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
               </Field>
-              <Button disabled={!online || busy} variant="plain" className="h-14 rounded-[14px] bg-[#1F7A45] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</Button>
+              <Button disabled={!online || busy} variant="plain" className="h-14 rounded-[14px] bg-[#268052] text-base text-white">{busy ? "Menyimpan…" : `Tandai ${STAGE_LABEL[pick.stage]} selesai`}</Button>
             </div>
           </form>
         )}
@@ -164,7 +164,7 @@ export function SopGrid({ date, shift, me, manager, staff = [], requirePhoto, bi
               <p className="text-muted">{view.log.note || "Tanpa catatan"}</p>
               {view.log.photo && <Button onClick={() => openSopPhoto(view.log.photo!)} variant="outline" className="h-11 self-start">Lihat foto</Button>}
               {!locked && canUndo(view.group.stages, view.stage) && (manager || view.log.by_id === me) ? (
-                <Button onClick={undo} disabled={!online} variant="outline" className="h-11 self-start text-[#A12A2A]">Batalkan</Button>
+                <Button onClick={undo} disabled={!online} variant="outline" className="h-11 self-start text-[#D94B42]">Batalkan</Button>
               ) : !locked && <p className="text-xs text-muted">{canUndo(view.group.stages, view.stage) ? "Hanya pengisi atau manajer yang bisa membatalkan." : "Batalkan tahap berikutnya dulu."}</p>}
             </div>
           </div>

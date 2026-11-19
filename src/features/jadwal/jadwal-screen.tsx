@@ -161,7 +161,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
           </button>
           <button onClick={() => setDate(today)} aria-pressed={date === today} className="h-11 rounded-[14px] border border-line bg-card px-4 text-sm font-medium">Hari ini</button>
         </div>
-        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[14px] bg-[#EDE8EE] p-1">
+        <div role="radiogroup" aria-label="Tampilan jadwal" className="flex rounded-[14px] bg-[#F0EEE8] p-1">
           {([["kursi", "Per kursi"], ["capster", "Per capster"]] as const).map(([v, l]) => (
             <button key={v} role="radio" aria-checked={view === v} onClick={() => pickView(v)}
               className={`h-9 rounded-[14px] px-3.5 text-[13px] font-semibold ${view === v ? "bg-card shadow-sm" : "text-muted"}`}>{l}</button>
@@ -186,7 +186,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
 
       {/* hari ini: izin sudah tampil di panel Sekarang */}
       {date !== today && !!offs?.length && (
-        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#EFEAEF] px-3 py-2 text-[13px] text-[#4D4A55]">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-[14px] bg-[#E8E5DE] px-3 py-2 text-[13px] text-[#4D4A55]">
           <b>Izin / cuti:</b>
           {[...new Map(offs.map((o) => [o.staff_id, o])).values()].map((o) => <span key={o.id} className="rounded-full bg-card px-2.5 py-1 font-medium">{master.staff.find((s) => s.id === o.staff_id)?.name} · {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}</span>)}
         </div>
@@ -199,7 +199,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
             <div className="sticky top-0 z-[3] flex h-[52px] border-b border-line bg-card">
               <div className="sticky left-0 z-[1] w-14 shrink-0 bg-card" />
               {cols.map((c) => (
-                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#EDE8EE] px-2.5 py-2">
+                <div key={c.id} className="flex min-w-[190px] flex-1 flex-col justify-center gap-0.5 border-l border-[#F0EEE8] px-2.5 py-2">
                   <span className="truncate text-[13px] font-semibold">{c.title}</span>
                   <span className="flex min-w-0 items-center gap-1.5">
                     <span className="shrink-0 rounded-md bg-paper px-1.5 py-px text-[11px] font-medium text-muted">{c.label}</span>
@@ -215,7 +215,7 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                 ))}
               </div>
               {cols.map((c) => (
-                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#EDE8EE]"
+                <div key={c.id} className="relative min-w-[190px] flex-1 border-l border-[#F0EEE8]"
                   style={{ backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent ${30 * px - 1}px, #F4F2ED ${30 * px - 1}px, #F4F2ED ${30 * px}px, transparent ${30 * px}px, transparent ${60 * px - 1}px, #E9E6DF ${60 * px - 1}px, #E9E6DF ${60 * px}px)` }}>
                   {/* di luar jam buka: arsir abu-abu (tetap bisa melihat kartu walk-in larut) */}
                   {gOpen < open && <div aria-hidden="true" className="absolute inset-x-0 top-0 bg-[#F6F4F7]/70" style={{ height: (open - gOpen) * px }} />}
@@ -239,8 +239,8 @@ export function JadwalScreen({ master, initialCustomer }: { master: Master; init
                 </div>
               ))}
               {date === today && nowMin >= gOpen && nowMin <= gClose && (
-                <div aria-hidden="true" className="pointer-events-none absolute left-[50px] right-0 z-[2] h-0.5 bg-[#D23B3B]" style={{ top: (nowMin - gOpen) * px }}>
-                  <span className="absolute -left-1 -top-1 size-2.5 rounded-full bg-[#D23B3B]" />
+                <div aria-hidden="true" className="pointer-events-none absolute left-[50px] right-0 z-[2] h-0.5 bg-[#D94B42]" style={{ top: (nowMin - gOpen) * px }}>
+                  <span className="absolute -left-1 -top-1 size-2.5 rounded-full bg-[#D94B42]" />
                 </div>
               )}
             </div>
@@ -336,7 +336,7 @@ function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
           <div key={s.id} className={`flex min-w-[190px] flex-col gap-1 rounded-[14px] border px-3 py-2 text-[13px] short:min-w-[230px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5 border-line bg-card`}>
             <span className="flex items-center gap-1.5 short:min-w-0 short:flex-1"><b className="min-w-0 flex-1 truncate">{s.name}</b>
               <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-paper px-2 py-0.5 text-[11px] font-medium text-ink">
-                <span aria-hidden="true" className={`size-1.5 rounded-full ${n.off ? "bg-[#9C98A3]" : n.free ? "bg-[#1F7A45]" : "bg-[#C98A00]"}`} />
+                <span aria-hidden="true" className={`size-1.5 rounded-full ${n.off ? "bg-[#9C98A3]" : n.free ? "bg-[#268052]" : "bg-[#C58A2B]"}`} />
                 {n.off ? "Izin" : n.free ? "Kosong" : !cur ? "Ada booking" : cur.status === "arrived" ? "Menunggu" : "Melayani"}</span></span>
             {chair && <span className="-mt-1 truncate text-xs font-medium text-muted short:hidden">{chair}</span>}
             {cur ? (
@@ -354,10 +354,10 @@ function NowPanel({ master, appts, offs, onStatus, onOpen, onWalkIn }: {
       {unpaid.length > 0 && (
         <div className="flex min-w-[190px] flex-col gap-1 rounded-[14px] border border-line bg-card px-3 py-2 text-[13px] short:min-w-[170px] short:shrink-0 short:flex-row short:items-center short:gap-2 short:py-1.5">
           <b className="text-ink">Belum bayar · {unpaid.length}</b>
-          <Link href={`${master.base}/kasir`} className="hidden rounded-md bg-[#A12A2A] px-2 text-[11px] font-semibold leading-6 text-white short:inline">Bayar ▸</Link>
+          <Link href={`${master.base}/kasir`} className="hidden rounded-md bg-[#D94B42] px-2 text-[11px] font-semibold leading-6 text-white short:inline">Bayar ▸</Link>
           {unpaid.slice(0, 3).map((a) => (
             <Link key={a.id} href={`${master.base}/kasir?booking=${a.id}`} className="flex items-center gap-2 truncate short:hidden">
-              <span className="flex-1 truncate">{apptName(a)}</span><span className="rounded-md bg-[#A12A2A] px-2 text-[11px] font-semibold leading-6 text-white">Bayar ▸</span>
+              <span className="flex-1 truncate">{apptName(a)}</span><span className="rounded-md bg-[#D94B42] px-2 text-[11px] font-semibold leading-6 text-white">Bayar ▸</span>
             </Link>
           ))}
           {unpaid.length > 3 && <span className="text-xs text-muted short:hidden">+{unpaid.length - 3} lainnya</span>}

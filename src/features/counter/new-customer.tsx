@@ -50,7 +50,7 @@ export function NewCustomer({ online, onClose, onSaved, initial = "", embedded =
         </NativeSelect>
       </Field>
       <Field label="Catatan preferensi (opsional)" htmlFor="nc-notes"><Textarea id="nc-notes" rows={embedded ? 2 : 3} className="py-2.5" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></Field>
-      {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
+      {error && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{error}</p>}
       {foot}
     </form>
   );

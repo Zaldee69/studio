@@ -23,7 +23,7 @@ export function SlipActions({ month, staffId, closed, paid, wa }: { month: strin
   return (
     <>
       <Button onClick={() => window.print()} variant="outline" className="h-11">Cetak / PDF</Button>
-      <a href={`https://wa.me/?text=${encodeURIComponent(wa)}`} target="_blank" rel="noopener" className={buttonClass("plain", "h-11 rounded-[10px] bg-[#1F7A45] text-white")}>Kirim via WhatsApp</a>
+      <a href={`https://wa.me/?text=${encodeURIComponent(wa)}`} target="_blank" rel="noopener" className={buttonClass("plain", "h-11 rounded-[10px] bg-[#268052] text-white")}>Kirim via WhatsApp</a>
       {closed && !paid && !open && <Button onClick={() => setOpen(true)} className="h-11">Tandai sudah dibayar</Button>}
       {open && (
         <form onSubmit={(e) => { e.preventDefault(); markPaid(); }} className="flex w-full flex-wrap items-end gap-2 rounded-[14px] border border-line bg-card p-3">

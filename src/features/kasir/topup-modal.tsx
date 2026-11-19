@@ -68,7 +68,7 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
               className={`flex min-h-[52px] items-center justify-between rounded-[14px] border-2 px-3.5 text-sm tabular ${pack === x.id ? "border-accent bg-paper" : "border-line bg-card"}`}>
               <span><b>{x.name}</b> · Bayar <b>{formatRupiah(x.amount_paid)}</b></span>
               <span>Saldo <b>{formatRupiah(x.amount_credited)}</b>{" "}
-                <span className="text-xs font-semibold text-[#1F7A45]">+{formatRupiah(x.amount_credited - x.amount_paid)}</span></span>
+                <span className="text-xs font-semibold text-[#268052]">+{formatRupiah(x.amount_credited - x.amount_paid)}</span></span>
             </button>
           ))}
         </div>
@@ -96,7 +96,7 @@ export function TopupModal({ customer, balance, packs, open, onClose, onDone, ca
                   <span className="text-xs text-muted">Dari bukti bayar di HP pelanggan / notifikasi bank. Satu nomor hanya untuk satu transaksi.</span>
                 </div>
         )}
-        {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
+        {error && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{error}</p>}
         <div className="flex justify-end gap-2.5">
           <Button type="button" onClick={onClose} variant="outline" className="h-12 rounded-[14px]">Batal</Button>
           <Button disabled={saving || !online} className="h-12 px-6">

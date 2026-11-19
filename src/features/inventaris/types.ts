@@ -12,10 +12,10 @@ export const ADJUST_REASONS: [string, string][] = [
   ["rusak", "Rusak"], ["kedaluwarsa", "Kedaluwarsa"], ["tumpah", "Tumpah / tercecer"], ["keperluan_lain", "Keperluan lain"], ["koreksi", "Koreksi hitungan"],
 ];
 export const MOVE_TYPE: Record<string, { label: string; bg: string; fg: string }> = {
-  in: { label: "Masuk", bg: "#E6F1E4", fg: "#144D2A" },
+  in: { label: "Masuk", bg: "#EAF1EB", fg: "#174B35" },
   use: { label: "Pakai", bg: "#EEF3F7", fg: "#24435A" },
   sale: { label: "Jual", bg: "#ECEEE8", fg: "#262B24" },
-  opname: { label: "Opname", bg: "#FBF3DE", fg: "#5A4300" },
+  opname: { label: "Opname", bg: "#FBF2E4", fg: "#6B4A10" },
   adjust: { label: "Penyesuaian", bg: "#FFE2CC", fg: "#6B3000" },
 };
 export const SCOPE_LABEL: Record<string, string> = { consumable: "Bahan HPP", retail: "Barang ritel", all: "Semua" };

@@ -117,10 +117,10 @@ export function CommissionRules({ ratio, retailPct, basis, deductHpp, staff }: {
             </tr></thead>
             <tbody>
               {staff.filter((s) => s.active || showInactive).map((s) => { const r = rows[s.id]; return (
-                <tr key={s.id} className="border-t border-[#EFEAEF] align-top">
+                <tr key={s.id} className="border-t border-[#E8E5DE] align-top">
                   <td className="py-2 pr-2">
                     <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full" style={{ background: CAT[s.category].color }} />
-                      <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#EFEAEF] px-2 py-0.5 text-[11px] font-semibold text-[#4D4A55]">nonaktif</span>}</span>
+                      <b>{s.name}</b>{!s.active && <span className="rounded-full bg-[#E8E5DE] px-2 py-0.5 text-[11px] font-semibold text-[#4D4A55]">nonaktif</span>}</span>
                     <span className="mt-1 block max-w-[260px] text-xs text-muted">{scheme(r)}</span>
                   </td>
                   <td className="py-2 pr-2"><Input aria-label={`Komisi khusus ${s.name}`} inputMode="numeric" placeholder={`${f.ratio}`} className="w-20" value={r.pct} onChange={(e) => set(s.id, { pct: e.target.value })} /></td>
@@ -177,7 +177,7 @@ export function Leaderboard({ rows }: { rows: LeaderRow[] }) {
         <table className="w-full text-sm tabular">
           <thead><tr className="text-left text-xs text-muted">{["#", "Staf", "Pendapatan", "Layanan", "Rata-rata"].map((h, i) => <th key={h} className={`py-2 font-medium ${i > 1 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.staff_id} className="border-t border-[#EFEAEF]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
+            <tr key={r.staff_id} className="border-t border-[#E8E5DE]"><td className="py-1.5">{r.rank}</td><td>{r.staff_name} <span className="text-muted">({CAT[r.category].label})</span></td>
               <td className="text-right">{formatRupiah(r.revenue_net)}</td><td className="text-right">{r.service_count}</td><td className="text-right">{formatRupiah(r.avg_per_service)}</td></tr>
           ))}</tbody>
         </table>
@@ -215,7 +215,7 @@ export function AnnualReview({ year, rows }: { year: number; rows: ReviewRow[] }
           <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-2.5 pr-2 font-medium ${i && i < 9 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.staff_id} className="border-t border-[#EFEAEF] align-top">
+              <tr key={r.staff_id} className="border-t border-[#E8E5DE] align-top">
                 <td className="py-2 pr-2"><b>{r.staff_name}</b><span className="block text-xs text-muted">{CAT[r.category].label}</span></td>
                 <td className="pr-2 text-right">{formatRupiah(r.revenue_net)}</td><td className="pr-2 text-right">{r.service_count}</td>
                 <td className="pr-2 text-right">{formatRupiah(r.avg_per_service)}</td>

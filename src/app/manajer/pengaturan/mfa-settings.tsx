@@ -55,7 +55,7 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
     <section aria-labelledby="mfa-h" className="max-w-xl space-y-4 rounded-3xl border border-line bg-card p-6">
       <h2 id="mfa-h" className="font-display text-xl font-semibold">Verifikasi 2 langkah</h2>
       {required && active === null && (
-        <p role="alert" className="rounded-[14px] bg-[#FBF3DE] p-3 text-sm text-[#5A4300]">
+        <p role="alert" className="rounded-[14px] bg-[#FBF2E4] p-3 text-sm text-[#6B4A10]">
           <b>Wajib untuk manajer.</b> Aktifkan verifikasi 2 langkah dulu — halaman manajer lain terkunci sampai ini selesai.
         </p>
       )}
@@ -65,7 +65,7 @@ export function MfaSettings({ required = false }: { required?: boolean }) {
       </p>
       {active === undefined ? <p className="text-sm text-muted">Memuat…</p> : active ? (
         <div className="flex flex-wrap items-center gap-3">
-          <span role="status" className="rounded-full bg-[#E6F1E4] px-3 py-1 text-sm font-semibold text-[#144D2A]">Aktif</span>
+          <span role="status" className="rounded-full bg-[#EAF1EB] px-3 py-1 text-sm font-semibold text-[#174B35]">Aktif</span>
           {!required && <Button onClick={disable} variant="outline" className="h-11">Matikan</Button>}
         </div>
       ) : enroll ? (

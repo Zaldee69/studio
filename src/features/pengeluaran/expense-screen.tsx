@@ -82,7 +82,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
           : `Pengeluaran hari ini. Pilih Dibayar dari sesuai sumber uangnya. Dari laci maks. ${formatRupiah(data?.lim.petty_cash_limit ?? 0)} dan mengurangi kas diharapkan saat tutup kasir; sumber lain wajib foto nota.`}
         {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
       </p>
-      {!manager && data?.todayClosed && <p className="rounded-[14px] bg-[#FBF3DE] px-3.5 py-3 text-sm text-[#5A4300]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
+      {!manager && data?.todayClosed && <p className="rounded-[14px] bg-[#FBF2E4] px-3.5 py-3 text-sm text-[#6B4A10]">Kasir hari ini sudah ditutup — pengeluaran dari laci tidak bisa ditambah lagi.</p>}
 
       <div className="grid grid-cols-2 gap-2.5 tabular min-[700px]:grid-cols-4">
         <div className="flex flex-col gap-0.5 rounded-[14px] bg-accent p-3.5 text-paper"><span className="text-xs text-[#9C98A3]">Total {manager ? "bulan ini" : "hari ini"}</span><b className="text-xl">{formatRupiah(total)}</b></div>
@@ -102,15 +102,15 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
             const done = live.find((r) => r.template_id === t.id);
             const late = !done && Number(today.slice(8)) > t.day_of_month;
             return (
-              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EFEAEF] py-2.5 text-sm">
+              <div key={t.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E8E5DE] py-2.5 text-sm">
                 <span className="flex min-w-0 flex-1 flex-col">
                   <b>{t.description}</b>
                   <span className="text-xs text-muted">{EXPENSE_CAT[t.category]} · {EXPENSE_SOURCE[t.source]} · tiap tgl {t.day_of_month}</span>
                 </span>
                 <b className="tabular">{formatRupiah(t.amount)}</b>
-                {done ? <span className="rounded-full bg-[#E6F1E4] px-2.5 py-1 text-xs font-semibold text-[#144D2A]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
+                {done ? <span className="rounded-full bg-[#EAF1EB] px-2.5 py-1 text-xs font-semibold text-[#174B35]">Dicatat {formatTanggal(`${done.date}T12:00:00+07:00`).replace(/^\S+, /, "")}</span>
                   : <button onClick={() => setPrefill({ ...t, templateId: t.id })} disabled={!online}
-                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${late ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FBF3DE] text-[#5A4300]"}`}>
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${late ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#FBF2E4] text-[#6B4A10]"}`}>
                       {late ? "Terlambat · Catat" : Number(today.slice(8)) === t.day_of_month ? "Jatuh tempo hari ini · Catat" : `Tgl ${t.day_of_month} · Catat`}</button>}
                 <Button onClick={async () => { const { error } = await createClient().from("expense_templates").update({ active: false }).eq("id", t.id); if (error) toast(error.message, "error"); else refresh(); }}
                   disabled={!online} aria-label={`Hapus rutin ${t.description}`} variant="outline" className="h-9 px-2.5 text-xs">Hapus</Button>
@@ -122,14 +122,14 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
 
       <div className="rounded-[14px] border border-line bg-card px-3">
         {!data ? <Empty>Memuat…</Empty> : !data.rows.length ? <Empty>Belum ada pengeluaran {manager ? "di bulan ini" : "hari ini"}.</Empty> : data.rows.map((r) => (
-          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#EFEAEF] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
+          <div key={r.id} className={`flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[#E8E5DE] py-2.5 text-sm first:border-t-0 ${r.voided_at ? "opacity-60" : ""}`}>
             <span className="flex min-w-0 flex-1 flex-col">
               <b className={r.voided_at ? "line-through" : ""}>{r.staff && `Kasbon ${r.staff.name} · `}{r.description}</b>
               <span className="text-xs text-muted">
                 {EXPENSE_CAT[r.category]} · {EXPENSE_SOURCE[r.source]} · {manager ? formatTanggal(`${r.date}T12:00:00+07:00`) : formatJam(r.created_at)}
                 {r.profiles?.full_name && ` · ${r.profiles.full_name}`}
               </span>
-              {r.voided_at && <span className="text-xs text-[#A12A2A]">Dibatalkan: {r.void_reason}</span>}
+              {r.voided_at && <span className="text-xs text-[#D94B42]">Dibatalkan: {r.void_reason}</span>}
             </span>
             {r.receipt_path && <button onClick={() => openReceipt(r.receipt_path!)} className="text-xs font-medium underline">Nota</button>}
             <b className="tabular">{formatRupiah(r.amount)}</b>

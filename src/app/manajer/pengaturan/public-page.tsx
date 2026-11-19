@@ -64,7 +64,7 @@ export function ClosuresForm({ closures }: { closures: { date: string; reason: s
       </form>
       {s?.error && <p role="alert" className="text-xs text-danger">{s.error}</p>}
       {closures.map((c) => (
-        <div key={c.date} className="flex items-center gap-2 border-t border-[#EFEAEF] pt-2 text-sm">
+        <div key={c.date} className="flex items-center gap-2 border-t border-[#E8E5DE] pt-2 text-sm">
           <span className="flex-1 tabular">{formatTanggal(`${c.date}T12:00:00+07:00`)}{c.reason && ` · ${c.reason}`}</span>
           <Button onClick={async () => { const r = await removeClosure(c.date); toast(r?.error ?? "Dihapus", r?.error ? "error" : "ok"); }} variant="destructive" className="h-10 px-3">Hapus</Button>
         </div>
@@ -184,7 +184,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
           </div>
         ))}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-4">
         <div className="flex items-center gap-3"><b className="flex-1 text-sm">Galeri hasil kerja</b><Pick id="gallery" busy={busy} multiple label="Tambah foto" onFile={addGallery} /></div>
         {gallery.map((p, i) => (
           <div key={p.id} className="flex flex-wrap items-center gap-2">
@@ -197,7 +197,7 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
         ))}
         {!gallery.length && <p className="text-sm text-muted">Belum ada foto galeri.</p>}
       </div>
-      <div className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-4">
+      <div className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-4">
         <b className="text-sm">Foto staf</b>
         <div className="grid gap-3 min-[1000px]:grid-cols-3">
           {people.map((s) => (
@@ -211,14 +211,14 @@ export function PhotoManager({ photos, staff }: { photos: Photo[]; staff: { id: 
 }
 
 export function OutboundLog({ rows }: { rows: Msg[] }) {
-  const tone: Record<string, string> = { sent: "bg-[#E6F1E4] text-[#144D2A]", queued: "bg-[#FBF3DE] text-[#5A4300]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#F9E6E6] text-[#6E1616]", skipped: "bg-[#EFEAEF] text-[#4D4A55]" };
+  const tone: Record<string, string> = { sent: "bg-[#EAF1EB] text-[#174B35]", queued: "bg-[#FBF2E4] text-[#6B4A10]", sending: "bg-[#EEF3F7] text-[#24435A]", failed: "bg-[#FBEEEC] text-[#6E1616]", skipped: "bg-[#E8E5DE] text-[#4D4A55]" };
   const T: Record<string, string> = { booking_confirmed: "Konfirmasi", booking_pending: "Menunggu review", reminder_h1: "Pengingat H-1", alert: "Notifikasi owner", test: "Tes WA", staff_report: "Pesan ke staf" };
   return (
     <div className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-5">
       <h2 className="font-display text-lg font-medium">Pesan keluar ke pelanggan</h2>
       <p className="-mt-1 text-xs text-muted">Email terkirim bila RESEND_API_KEY diisi; WhatsApp otomatis bila kredensial penyedia diisi (lihat README). &quot;Dilewati&quot; = kanal belum aktif.</p>
       {rows.map((m) => (
-        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#EFEAEF] pt-2 text-[13px] tabular">
+        <div key={m.id} className="flex flex-wrap items-center gap-2 border-t border-[#E8E5DE] pt-2 text-[13px] tabular">
           <span className="w-32 text-muted">{formatTanggal(m.created_at).split(",")[1]} {formatJam(m.created_at)}</span>
           <span className="w-28">{T[m.template] ?? m.template}</span>
           <span className="w-20 uppercase text-muted">{m.channel === "email" ? "Email" : m.channel === "telegram" ? "Telegram" : "WA"}</span>

@@ -32,7 +32,7 @@ const st = (s: string | null) => (s && s in STATUS ? STATUS[s as ApptStatus].lab
 const daysAgo = (n: number) => { const d = new Date(`${jktDate()}T12:00:00+07:00`); d.setDate(d.getDate() - n); return jktDate(d); };
 
 function Section({ title, count, tone = "muted", children, id }: { title: string; count: number; tone?: "danger" | "warn" | "muted"; children: React.ReactNode; id: string }) {
-  const badge = tone === "danger" ? "bg-[#F9E6E6] text-[#6E1616]" : tone === "warn" ? "bg-[#FBF3DE] text-[#5A4300]" : "bg-paper text-muted";
+  const badge = tone === "danger" ? "bg-[#FBEEEC] text-[#6E1616]" : tone === "warn" ? "bg-[#FBF2E4] text-[#6B4A10]" : "bg-paper text-muted";
   return (
     <section id={id} className="flex flex-col gap-3 rounded-3xl border border-line bg-card p-4">
       <h2 className="flex items-center gap-2 text-base font-semibold">{title}<span className={`rounded-full px-2 py-0.5 text-xs tabular ${count ? badge : "bg-paper text-muted"}`}>{count}</span></h2>
@@ -44,7 +44,7 @@ const Table = ({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) =>
   <div className="overflow-x-auto">
     <table className="w-full min-w-[560px] text-sm tabular">
       <thead><tr className="text-left text-xs text-muted">{head.map((h) => <th key={h} className="py-2 pr-3 font-medium">{h}</th>)}</tr></thead>
-      <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#EFEAEF] align-top">{r.map((c, j) => <td key={j} className="py-2 pr-3">{c}</td>)}</tr>)}</tbody>
+      <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#E8E5DE] align-top">{r.map((c, j) => <td key={j} className="py-2 pr-3">{c}</td>)}</tr>)}</tbody>
     </table>
   </div>
 );
@@ -150,7 +150,7 @@ export function AuditScreen() {
             return `${k}: ${k === "status" ? `${st(String(o2))} → ${st(String(n2))}` : `${fmt(o2)} → ${fmt(n2)}`}`;
           }).join(" · ") : summary(a)}</span>])} />
         {pages > 1 && (
-          <nav aria-label="Halaman jejak perubahan" className="flex items-center justify-between gap-3 border-t border-[#EFEAEF] pt-3 text-sm">
+          <nav aria-label="Halaman jejak perubahan" className="flex items-center justify-between gap-3 border-t border-[#E8E5DE] pt-3 text-sm">
             <Button onClick={() => setPage(page - 1)} disabled={page === 0} variant="outline" className="h-10 rounded-[14px] px-3">‹ Lebih baru</Button>
             <span className="tabular text-muted">
               Halaman <b className="text-ink">{page + 1}</b> dari {pages} · {page * LOG_PAGE + 1}–{Math.min((page + 1) * LOG_PAGE, log?.total ?? 0)} dari {log?.total}

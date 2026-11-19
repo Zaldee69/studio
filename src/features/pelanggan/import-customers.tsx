@@ -8,7 +8,7 @@ import { parseCsv, previewImport, TEMPLATE_CSV, type ImportRow } from "@/lib/dom
 import { createClient } from "@/lib/supabase/client";
 import { CUSTOMER_SOURCES, type CustomerSource } from "@/lib/domain/customer";
 
-const STATUS_STYLE = { valid: ["Valid", "#E6F1E4", "#144D2A"], duplicate: ["Duplikat", "#FBF3DE", "#5A4300"], error: ["Error", "#F9E6E6", "#6E1616"] } as const;
+const STATUS_STYLE = { valid: ["Valid", "#EAF1EB", "#174B35"], duplicate: ["Duplikat", "#FBF2E4", "#6B4A10"], error: ["Error", "#FBEEEC", "#6E1616"] } as const;
 
 /** Impor pelanggan lama dari CSV/Excel: pratinjau (valid / duplikat / error) → konfirmasi → simpan. */
 export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
@@ -79,7 +79,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
         <a href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE_CSV)}`} download="template-pelanggan.csv"
           className="ml-auto text-[13px] font-semibold text-accent underline">Unduh contoh file</a>
       </div>
-      {error && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{error}</p>}
+      {error && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{error}</p>}
       {rows && (
         <>
           <div className="flex flex-wrap gap-2 text-[13px] font-semibold">
@@ -94,7 +94,7 @@ export function ImportCustomers({ onClose, onDone }: { onClose: () => void; onDo
               </thead>
               <tbody>
                 {rows.slice(0, 300).map((r) => (
-                  <tr key={r.row} className="border-t border-[#EFEAEF]">
+                  <tr key={r.row} className="border-t border-[#E8E5DE]">
                     <td className="px-3 py-2 text-muted">{r.row}</td>
                     <td className="px-3 py-2 font-medium">{r.name || "—"}</td>
                     <td className="px-3 py-2">{r.wa ?? r.whatsapp}</td>

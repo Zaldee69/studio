@@ -66,20 +66,20 @@ export function IzinStaf({ master }: { master: Master }) {
               const [l, bg, fg] = OFF_STATUS[o.status];
               const cf = data.conflicts[o.id] ?? [];
               return (
-                <div key={o.id} className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-2.5">
+                <div key={o.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <span className="flex min-w-0 flex-1 flex-col"><b className="text-sm">{name(o.staff_id)} · <span className="tabular">{offLabel(o)}</span></b>
                       <span className="text-xs text-muted">{o.reason || "—"}</span></span>
                     <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: bg, color: fg }}>{l}</span>
                     {o.status === "pending" && (
                       <>
-                        <Button disabled={!online} onClick={() => decide(o.id, false)} variant="outline" className="h-11 rounded-[14px] text-[#A12A2A]">Tolak</Button>
-                        <Button disabled={!online} onClick={() => decide(o.id, true)} variant="plain" className="h-11 rounded-[14px] bg-[#1F7A45] text-white">Setujui</Button>
+                        <Button disabled={!online} onClick={() => decide(o.id, false)} variant="outline" className="h-11 rounded-[14px] text-[#D94B42]">Tolak</Button>
+                        <Button disabled={!online} onClick={() => decide(o.id, true)} variant="plain" className="h-11 rounded-[14px] bg-[#268052] text-white">Setujui</Button>
                       </>
                     )}
                   </div>
                   {!!cf.length && (
-                    <div role="alert" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+                    <div role="alert" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[13px] text-[#6B4A10]">
                       <b>{cf.length} booking terdampak</b> — pindahkan ke capster lain:
                       <ul className="mt-1 list-inside list-disc">
                         {cf.map((c) => <li key={c.id} className="tabular">{c.customer_name} · {formatTanggal(c.start_at)} {formatJam(c.start_at)}</li>)}

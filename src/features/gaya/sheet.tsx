@@ -98,12 +98,12 @@ export function CatalogSheet({ recs, image, error, onRetry, catalog, customerNam
       <div className="grid gap-3 rounded-[14px] bg-[#1E2230] p-4 text-white min-[700px]:grid-cols-2">
         {!!tips.length && (
           <div>
-            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-[#B08A2E]">Tips tambahan</h3>
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-[0.06em] text-[#C58A2B]">Tips tambahan</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm">{tips.map((t) => <li key={t}>{t}</li>)}</ul>
           </div>
         )}
         <div className="rounded-[14px] border border-white/25 p-3">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.06em] text-[#B08A2E]">Rekomendasi pribadi</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.06em] text-[#C58A2B]">Rekomendasi pribadi</h3>
           <p className="mt-1 font-display text-lg font-semibold text-[#E8CF8E]">★ {top.rec.hair_style_name}</p>
           <p className="text-sm">{summary || top.rec.insight}</p>
         </div>
@@ -161,7 +161,7 @@ async function renderSheetImage(grid: string, cols: Col[], name: string, tips: s
   });
   const fy = 140 + colH + G;
   x.fillStyle = "#1E2230"; x.fillRect(P, fy, W - P * 2, footH);
-  x.textAlign = "left"; x.fillStyle = "#B08A2E"; x.font = `700 22px ${font}`;
+  x.textAlign = "left"; x.fillStyle = "#C58A2B"; x.font = `700 22px ${font}`;
   if (tips.length) x.fillText("TIPS TAMBAHAN", P + 24, fy + 40);
   x.fillText("REKOMENDASI PRIBADI", W / 2 + 12, fy + 40);
   x.fillStyle = "#fff"; x.font = `400 18px ${font}`;

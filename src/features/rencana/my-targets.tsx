@@ -46,7 +46,7 @@ export function MyTargets() {
   const metric = (label: string, value: string, sub: string, ok: boolean | null) => (
     <div className="flex flex-col rounded-[14px] bg-[#F6F4F7] px-3 py-2">
       <span className="text-xs text-muted">{label}</span>
-      <b className={`tabular text-lg ${ok === true ? "text-[#1F7A45]" : ok === false ? "text-[#A12A2A]" : ""}`}>{value}</b>
+      <b className={`tabular text-lg ${ok === true ? "text-[#268052]" : ok === false ? "text-[#D94B42]" : ""}`}>{value}</b>
       <span className="text-xs text-muted">{sub}</span>
     </div>
   );
@@ -70,9 +70,9 @@ export function MyTargets() {
         const late = k.due < today && k.status !== "selesai";
         const draft = drafts[k.id] ?? k.note;
         return (
-          <div key={k.id} className="flex flex-col gap-2 border-t border-[#EFEAEF] pt-3">
+          <div key={k.id} className="flex flex-col gap-2 border-t border-[#E8E5DE] pt-3">
             <div className="flex flex-col gap-0.5">
-              <span className={`text-xs font-semibold tabular ${late ? "text-[#A12A2A]" : "text-muted"}`}>{shortDate(k.due)}{late ? " · lewat tenggat" : ""}</span>
+              <span className={`text-xs font-semibold tabular ${late ? "text-[#D94B42]" : "text-muted"}`}>{shortDate(k.due)}{late ? " · lewat tenggat" : ""}</span>
               <b className="text-sm">{k.title}</b>
               {k.measure && <span className="text-xs text-muted">Berhasil bila: {k.measure}</span>}
             </div>

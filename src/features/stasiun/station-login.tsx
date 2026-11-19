@@ -41,7 +41,7 @@ export function StationLogin({ staff }: { staff: S[] }) {
           <span key={i} className={`size-4 rounded-full border-2 border-paper ${i < pin.length ? "bg-paper" : ""}`} />
         ))}
       </div>
-      {state?.error && <p role="alert" className="rounded-[14px] bg-[#F9E6E6] px-3 py-2 text-center text-sm font-medium text-[#6E1616]">{state.error}</p>}
+      {state?.error && <p role="alert" className="rounded-[14px] bg-[#FBEEEC] px-3 py-2 text-center text-sm font-medium text-[#6E1616]">{state.error}</p>}
       <div className="grid w-full grid-cols-3 gap-3">
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
           <button type="button" key={d} onClick={() => press(d)} className="h-[72px] rounded-[14px] bg-[#2F332E] text-3xl font-semibold tabular">{d}</button>

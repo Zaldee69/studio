@@ -33,7 +33,7 @@ function Rows<T extends Record<string, string>>({ title, fields, rows, max, onCh
                 onChange={(e) => onChange(rows.map((x, j) => (j === i ? { ...x, [k]: e.target.value } : x)))} />
             </label>
           ))}
-          <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} className="self-end justify-self-start text-xs font-medium text-[#A12A2A] underline">Hapus baris</button>
+          <button type="button" onClick={() => onChange(rows.filter((_, j) => j !== i))} className="self-end justify-self-start text-xs font-medium text-[#D94B42] underline">Hapus baris</button>
         </div>
       ))}
       {rows.length < max && <Button type="button" onClick={() => onChange([...rows, blank(fields)])} variant="outline" className="h-10 self-start rounded-[14px] px-3 text-sm">+ Tambah</Button>}

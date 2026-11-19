@@ -16,7 +16,7 @@ export default async function StasiunPage() {
             <span className="text-sm text-[#9C98A3]">Ketuk nama Anda, lalu masukkan PIN</span></div>
         </div>
         {staff === null ? (
-          <div role="alert" className="rounded-[14px] bg-[#FBF3DE] p-5 text-[15px] leading-relaxed text-[#5A4300]">
+          <div role="alert" className="rounded-[14px] bg-[#FBF2E4] p-5 text-[15px] leading-relaxed text-[#6B4A10]">
             <b>Perangkat ini belum terdaftar sebagai stasiun.</b> Minta manajer masuk di perangkat ini, buka
             Pengaturan → Stasiun &amp; PIN, lalu ketuk <b>Daftarkan perangkat ini</b>.
           </div>

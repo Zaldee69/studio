@@ -90,22 +90,22 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
         </p>
       )}
       {appt.change_request && !closed && (
-        <div role="alert" className="flex flex-col gap-2 rounded-[14px] bg-[#FBF3DE] p-3 text-[13px] text-[#5A4300]">
+        <div role="alert" className="flex flex-col gap-2 rounded-[14px] bg-[#FBF2E4] p-3 text-[13px] text-[#6B4A10]">
           <span><b>{staff?.name ?? "Capster"} minta ubah jadwal:</b> “{appt.change_request}”</span>
           <span className="text-xs">Pindahkan lewat <b>Ubah booking</b> — permintaan otomatis selesai.</span>
           <button onClick={onDismissRequest} className="self-start rounded-[14px] border border-[#E8D6A6] bg-white/60 px-3 py-2 text-xs font-semibold">Tandai sudah ditangani</button>
         </div>
       )}
       {appt.customer?.notes && (
-        <div className="rounded-[14px] bg-[#EFEAEF] p-3 text-[13px] leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
+        <div className="rounded-[14px] bg-[#E8E5DE] p-3 text-[13px] leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {appt.customer.notes}</div>
       )}
       {appt.notes && <div className="rounded-[14px] bg-paper p-3 text-[13px] leading-normal"><b>Catatan:</b> {appt.notes}</div>}
       {appt.source === "online" && <p className="text-xs font-medium text-muted">Masuk lewat booking online.</p>}
       {offLabel && !closed && (
-        <div role="alert" className="rounded-[14px] bg-[#EFEAEF] p-3 text-[13px] font-medium text-[#4D4A55]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
+        <div role="alert" className="rounded-[14px] bg-[#E8E5DE] p-3 text-[13px] font-medium text-[#4D4A55]">{staff?.name} izin/cuti {offLabel} — pindahkan booking ini.</div>
       )}
       {conflict && !closed && (
-        <div role="alert" className="rounded-[14px] bg-[#F9E6E6] p-3 text-[13px] text-[#6E1616]">Bentrok dengan booking lain di kursi/meja yang sama.</div>
+        <div role="alert" className="rounded-[14px] bg-[#FBEEEC] p-3 text-[13px] text-[#6E1616]">Bentrok dengan booking lain di kursi/meja yang sama.</div>
       )}
 
       {!closed && (
@@ -131,7 +131,7 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
       )}
 
       {appt.status === "paid" && (
-        <div className="flex flex-col gap-2 rounded-[14px] bg-[#E6F1E4] p-3.5 text-sm font-medium text-[#144D2A] tabular">
+        <div className="flex flex-col gap-2 rounded-[14px] bg-[#EAF1EB] p-3.5 text-sm font-medium text-[#174B35] tabular">
           <span>Lunas{paid && ` · ${formatRupiah(paid.total)} · ${METHOD_LABEL[paid.method]}`}</span>
           {paid && <Link href={`${master.base}/kasir?tab=riwayat&tx=${paid.id}`} className="text-[13px] underline">Lihat transaksi →</Link>}
         </div>
@@ -146,13 +146,13 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
               <Input id="rej-reason" autoFocus value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Mis. capster berhalangan" />
               <div className="flex gap-2">
                 <Button type="button" onClick={() => setRejecting(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
-                <Button disabled={!online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Tolak booking</Button>
+                <Button disabled={!online} variant="plain" className="flex-1 rounded-[14px] bg-[#D94B42] text-white">Tolak booking</Button>
               </div>
             </form>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={() => setRejecting(true)} disabled={!online} variant="outline" className="h-12 rounded-[14px] text-[#A12A2A]">Tolak</Button>
-              <Button onClick={() => onReview(true)} disabled={!online} variant="plain" className="h-12 rounded-[14px] bg-[#1F7A45] text-white">Terima</Button>
+              <Button onClick={() => setRejecting(true)} disabled={!online} variant="outline" className="h-12 rounded-[14px] text-[#D94B42]">Tolak</Button>
+              <Button onClick={() => onReview(true)} disabled={!online} variant="plain" className="h-12 rounded-[14px] bg-[#268052] text-white">Terima</Button>
             </div>
           )}
         </div>
@@ -176,11 +176,11 @@ export function BookingDrawer({ appt, master, conflict, offLabel, onClose, onEdi
           <Input id="cancel-reason" autoFocus required value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Mis. pelanggan berhalangan" />
           <div className="flex gap-2">
             <Button type="button" onClick={() => setCancelling(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
-            <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Batalkan booking</Button>
+            <Button disabled={!reason.trim() || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#D94B42] text-white">Batalkan booking</Button>
           </div>
         </form>
       ) : (
-        <Button onClick={() => setCancelling(true)} variant="outline" className="h-11 rounded-[14px] text-[#A12A2A]">Batalkan booking</Button>
+        <Button onClick={() => setCancelling(true)} variant="outline" className="h-11 rounded-[14px] text-[#D94B42]">Batalkan booking</Button>
       ))}
     </div>
   );

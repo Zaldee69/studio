@@ -83,7 +83,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
           <span>Transfer <b className="text-ink">{formatRupiah(sum.transferSales)}</b></span>
           <span>Deposit <b className="text-ink">{formatRupiah(sum.depositUsed)}</b></span>
         </>}
-        {sum.voidedCount > 0 && <span className="text-[#A12A2A]">{sum.voidedCount} void</span>}
+        {sum.voidedCount > 0 && <span className="text-[#D94B42]">{sum.voidedCount} void</span>}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Input type="search" aria-label="Cari pelanggan atau No. struk" placeholder="Cari pelanggan / No. struk" className="h-9 w-56"
@@ -113,7 +113,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
         <div className="max-h-full overflow-y-auto">
           {data === null ? <Empty>Memuat…</Empty> : !txs.length ? <Empty>{filtered ? "Tidak ada transaksi yang cocok dengan filter." : date === today ? "Belum ada transaksi hari ini." : "Tidak ada transaksi di tanggal ini."}</Empty> : txs.map((t) => (
             <button key={t.id} onClick={() => setOpenId(t.id)} aria-label={`Transaksi ${formatJam(t.created_at)} ${nameOf(t)} ${formatRupiah(t.total)}`}
-              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#EFEAEF] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
+              className={`${COLS} min-h-[60px] w-full items-center border-b border-[#E8E5DE] py-2 text-left text-sm tabular hover:bg-paper ${t.voided_at ? "bg-[#FBF5F5]" : ""}`}>
               <span className="flex flex-col"><b>{formatJam(t.created_at)}</b><span className="text-[11px] text-muted">#{t.id.slice(0, 8).toUpperCase()}</span></span>
               <span className="flex min-w-0 flex-col">
                 <span className="truncate font-medium">{nameOf(t)}</span>
@@ -131,7 +131,7 @@ export function History({ master, txParam }: { master: Master; txParam: string |
               </span>
               <span className="flex min-w-0 flex-col">
                 {t.voided_at
-                  ? <><b className="text-[#A12A2A]">Void</b><span className="truncate text-[11px] text-muted" title={t.void_reason ?? ""}>{t.void_reason}</span></>
+                  ? <><b className="text-[#D94B42]">Void</b><span className="truncate text-[11px] text-muted" title={t.void_reason ?? ""}>{t.void_reason}</span></>
                   : <><span>{METHOD_LABEL[t.payment_method]}{t.cash_part > 0 && " + tunai"}</span>{t.deposit_used > 0 && <span className="text-[11px] text-muted">deposit {formatRupiah(t.deposit_used)}</span>}</>}
               </span>
               <span className="hidden truncate text-muted min-[1100px]:block">{names.get(t.cashier_id ?? "") ?? "—"}</span>
@@ -154,15 +154,15 @@ export function History({ master, txParam }: { master: Master; txParam: string |
                     <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === true} onChange={() => setRefund(true)} />Ya, kurangi kas laci</label>
                     <label className="flex items-center gap-2"><input type="radio" name="refund" checked={refund === false} onChange={() => setRefund(false)} />Tidak, kas laci tidak berubah</label>
                   </fieldset>
-                  {noRefundReason(reason) && refund !== false && <p role="alert" className="text-xs font-bold text-[#A12A2A]">Alasan menyebut salah sumber/test: biasanya tidak ada uang keluar. Pilih &quot;Tidak&quot; bila memang begitu.</p>}
+                  {noRefundReason(reason) && refund !== false && <p role="alert" className="text-xs font-bold text-[#D94B42]">Alasan menyebut salah sumber/test: biasanya tidak ada uang keluar. Pilih &quot;Tidak&quot; bila memang begitu.</p>}
                   <p className="text-xs text-muted">Booking kembali ke &quot;Selesai, belum bayar&quot;, stok & saldo deposit dikembalikan.</p>
                   <div className="flex gap-2">
                     <Button type="button" onClick={() => setVoiding(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
-                    <Button disabled={!reason.trim() || refund === null || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Void transaksi</Button>
+                    <Button disabled={!reason.trim() || refund === null || !online} variant="plain" className="flex-1 rounded-[14px] bg-[#D94B42] text-white">Void transaksi</Button>
                   </div>
                 </form>
               ) : (
-                <Button onClick={() => setVoiding(true)} variant="outline" className="h-11 rounded-[14px] text-[#A12A2A]">Batalkan transaksi (void)</Button>
+                <Button onClick={() => setVoiding(true)} variant="outline" className="h-11 rounded-[14px] text-[#D94B42]">Batalkan transaksi (void)</Button>
               ))}
             </ReceiptView>
           </div>

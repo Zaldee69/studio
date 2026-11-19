@@ -72,7 +72,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
   }
 
   const card = (k: string, v: string, accent = false) => (
-    <div className={`flex flex-col gap-0.5 rounded-[14px] p-3 ${accent ? "bg-[#EFEAEF]" : "bg-paper"}`}>
+    <div className={`flex flex-col gap-0.5 rounded-[14px] p-3 ${accent ? "bg-[#E8E5DE]" : "bg-paper"}`}>
       <span className={`text-xs ${accent ? "text-[#1D1E20]" : "text-muted"}`}>{k}</span>
       <b className={`text-[17px] tabular ${accent ? "text-[#1D1E20]" : ""}`}>{v}</b>
     </div>
@@ -92,18 +92,18 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
             if (wa.trim() && !n) return setFieldErr("No. WhatsApp belum valid.");
             if (n !== c.whatsapp) { setWa(n ?? ""); saveField({ whatsapp: n }); }
           }} />
-        {fieldErr && <p role="alert" className="text-[13px] font-medium text-[#A12A2A]">{fieldErr}</p>}
+        {fieldErr && <p role="alert" className="text-[13px] font-medium text-[#D94B42]">{fieldErr}</p>}
       </div>
 
       {s?.is_churn ? (
-        <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#F9E6E6] p-3 text-[#6E1616]">
+        <div className="flex flex-col gap-2.5 rounded-[14px] bg-[#FBEEEC] p-3 text-[#6E1616]">
           <span className="text-[13px] font-medium">Belum bertransaksi {weeks} minggu — saatnya follow-up.</span>
           {c.whatsapp && (
             <a href={followupLink(c.whatsapp, master.shop.waTemplate, c.name)} target="_blank" rel="noopener"
               onClick={() => { // efektivitas follow-up (Analitik): catat setiap pengiriman
                 createClient().auth.getUser().then(({ data }) => createClient().from("followup_events").insert({ customer_id: c.id, sent_by: data.user!.id }));
               }}
-              className={buttonClass("plain", "h-11 rounded-[14px] bg-[#1F7A45] text-white")}>Kirim WhatsApp follow-up</a>
+              className={buttonClass("plain", "h-11 rounded-[14px] bg-[#268052] text-white")}>Kirim WhatsApp follow-up</a>
           )}
         </div>
       ) : c.whatsapp && (
@@ -145,7 +145,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         <span className={head}>Riwayat transaksi</span>
         {!extra ? <span className="text-[13px] text-muted">Memuat…</span> : !extra.txs.length ? <span className="text-[13px] text-muted">Belum ada transaksi.</span>
           : extra.txs.map((t) => (
-            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#EFEAEF] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
+            <div key={t.id} className={`flex flex-col gap-0.5 border-b border-[#E8E5DE] py-2.5 ${t.voided_at ? "opacity-60" : ""}`}>
               <div className="flex justify-between text-[13px] tabular"><b>{formatTanggal(t.created_at)}</b><b className={t.voided_at ? "line-through" : ""}>{formatRupiah(t.total)}</b></div>
               <span className="text-xs text-[#4D4A55]">{t.transaction_items.map((i) => i.name).join(", ")}</span>
               <span className="text-xs text-muted">
@@ -160,7 +160,7 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
         {!ledger.length ? <span className="text-[13px] text-muted">Belum ada mutasi.</span> : ledger.map((d) => (
           <div key={d.id + d.amount} className="flex justify-between gap-2 py-1 text-[13px] tabular">
             <span>{formatTanggal(d.at)} · {d.label}</span>
-            <b className={d.amount > 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}>{d.amount > 0 ? "+" : "−"}{formatRupiah(Math.abs(d.amount))}</b>
+            <b className={d.amount > 0 ? "text-[#268052]" : "text-[#D94B42]"}>{d.amount > 0 ? "+" : "−"}{formatRupiah(Math.abs(d.amount))}</b>
           </div>
         ))}
       </div>
@@ -178,11 +178,11 @@ export function Profile({ c, master, onClose, onDeleted }: { c: CustRow; master:
           <p className="text-xs text-muted">Nama, WA & catatan dihapus. Riwayat transaksi tetap ada untuk pembukuan (tampil sebagai &quot;Pelanggan umum&quot;); booking mendatang dibatalkan. Tidak bisa dibatalkan.</p>
           <div className="flex gap-2">
             <Button type="button" onClick={() => setForgetting(false)} variant="outline" className="flex-1 rounded-[14px]">Kembali</Button>
-            <Button disabled={!forgetReason.trim()} variant="plain" className="flex-1 rounded-[14px] bg-[#A12A2A] text-white">Hapus pelanggan</Button>
+            <Button disabled={!forgetReason.trim()} variant="plain" className="flex-1 rounded-[14px] bg-[#D94B42] text-white">Hapus pelanggan</Button>
           </div>
         </form>
       ) : (
-        <Button onClick={() => setForgetting(true)} variant="outline" className="h-11 self-start rounded-[14px] text-[#A12A2A]">Hapus pelanggan…</Button>
+        <Button onClick={() => setForgetting(true)} variant="outline" className="h-11 self-start rounded-[14px] text-[#D94B42]">Hapus pelanggan…</Button>
       ))}
 
       <TopupModal customer={c} balance={s?.deposit_balance ?? 0} packs={master.packs} canBonus={master.role === "manager"} open={topup} onClose={() => setTopup(false)} onDone={() => setTopup(false)} />

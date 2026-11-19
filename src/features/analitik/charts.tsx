@@ -26,7 +26,7 @@ export function DataTable({ head, rows, caption }: { head: string[]; rows: (stri
         <table className="w-full min-w-[480px] tabular">
           <caption className="sr-only">{caption}</caption>
           <thead><tr className="text-left text-xs text-muted">{head.map((h, i) => <th key={h} className={`py-1.5 pr-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
-          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#EFEAEF]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
+          <tbody>{rows.map((r, i) => <tr key={i} className="border-t border-[#E8E5DE]">{r.map((c, j) => <td key={j} className={`py-1.5 pr-2 ${j ? "text-right" : ""}`}>{c}</td>)}</tr>)}</tbody>
         </table>
       </div>
     </details>
@@ -149,7 +149,7 @@ export function Bullet({ value, min, max, scale = 30 }: { value: number | null; 
   return (
     <div className="flex flex-col gap-1" role="img" aria-label={`Rasio ritel ${value === null ? "—" : value.toFixed(1)}%, pita target ${min}–${max}%`}>
       <div className="relative h-8 rounded-md bg-paper">
-        <div className="absolute inset-y-0 rounded" style={{ left: pos(min), width: `calc(${pos(max)} - ${pos(min)})`, background: "repeating-linear-gradient(45deg,#E6F1E4,#E6F1E4 5px,#C4E8D0 5px,#C4E8D0 10px)" }} />
+        <div className="absolute inset-y-0 rounded" style={{ left: pos(min), width: `calc(${pos(max)} - ${pos(min)})`, background: "repeating-linear-gradient(45deg,#EAF1EB,#EAF1EB 5px,#C4E8D0 5px,#C4E8D0 10px)" }} />
         {value !== null && <div className="absolute inset-y-1.5 left-0 rounded-sm" style={{ width: pos(value), background: COLOR.retail }} />}
         {value !== null && <div aria-hidden="true" className="absolute -inset-y-1 w-1 rounded bg-accent" style={{ left: `calc(${pos(value)} - 2px)` }} />}
       </div>

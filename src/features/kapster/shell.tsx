@@ -80,8 +80,8 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
         <nav aria-label="Menu capster" className="hidden gap-1 min-[900px]:flex">
           {TABS.map(([href, label]) => (
             <Link key={href} href={href} aria-current={path === href ? "page" : undefined}
-              className={`relative flex h-10 items-center rounded-[14px] px-3.5 text-sm font-semibold ${path === href ? "bg-[#EFEAEF] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
-              {label}{badge(href) > 0 && <span className="ml-1.5 rounded-full bg-[#D23B3B] px-1.5 text-[11px] text-white tabular">{badge(href)}</span>}
+              className={`relative flex h-10 items-center rounded-[14px] px-3.5 text-sm font-semibold ${path === href ? "bg-[#E8E5DE] text-accent-ink" : "text-muted hover:bg-paper hover:text-ink"}`}>
+              {label}{badge(href) > 0 && <span className="ml-1.5 rounded-full bg-[#D94B42] px-1.5 text-[11px] text-white tabular">{badge(href)}</span>}
             </Link>
           ))}
         </nav>
@@ -93,16 +93,16 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
           {menu && (
             <div className="absolute right-0 top-12 z-30 flex w-72 flex-col gap-2 rounded-[14px] bg-card p-3 text-ink shadow-[0_16px_40px_rgba(28,27,25,0.25)]">
               <Link href="/kapster/izin" onClick={() => setMenu(false)} className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-sm font-medium hover:bg-paper">
-                Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D23B3B] px-2 text-[11px] text-white tabular">{pending}</span>}
+                Izin / cuti {pending > 0 && <span className="rounded-full bg-[#D94B42] px-2 text-[11px] text-white tabular">{pending}</span>}
               </Link>
               <button onClick={() => setMuted(!muted)} aria-pressed={!muted} className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper">
-                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${muted ? "bg-[#EDE8EE] text-muted" : "bg-[#E6F1E4] text-[#144D2A]"}`}>{muted ? "Mati" : "Nyala"}</span>
+                Bunyi notifikasi <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${muted ? "bg-[#F0EEE8] text-muted" : "bg-[#EAF1EB] text-[#174B35]"}`}>{muted ? "Mati" : "Nyala"}</span>
               </button>
               {!me.station && (
                 <button onClick={togglePush} disabled={!pushSupported() && !push} aria-pressed={!!push}
                   className="flex min-h-12 items-center justify-between rounded-[14px] px-3 text-left text-sm font-medium hover:bg-paper disabled:opacity-50">
                   Notifikasi push (walau aplikasi ditutup)
-                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${push ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#EDE8EE] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
+                  <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${push ? "bg-[#EAF1EB] text-[#174B35]" : "bg-[#F0EEE8] text-muted"}`}>{push ? "Aktif" : "Mati"}</span>
                 </button>
               )}
             </div>
@@ -123,7 +123,7 @@ export function KapsterShell({ children }: { children: React.ReactNode }) {
             <span className={`h-1 w-7 rounded-sm ${path === href ? "bg-accent" : "bg-transparent"}`} />
             {label}
             {badge(href) > 0 && (
-              <span aria-label={`${badge(href)} menunggu`} className="absolute right-[22%] top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{badge(href)}</span>
+              <span aria-label={`${badge(href)} menunggu`} className="absolute right-[22%] top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D94B42] px-1 text-[11px] text-white tabular">{badge(href)}</span>
             )}
           </Link>
         ))}

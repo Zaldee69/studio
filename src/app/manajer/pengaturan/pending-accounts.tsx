@@ -37,7 +37,7 @@ export function PendingAccounts({ rows, staff }: { rows: Signup[]; staff: [strin
     toast(`Pendaftaran ${r.full_name} ditolak`); router.refresh();
   }
   return (
-    <section aria-label="Menunggu persetujuan" className="flex flex-col gap-3 rounded-[14px] border-2 border-[#E2C46B] bg-[#FBF3DE] p-4 text-[#3D2E00]">
+    <section aria-label="Menunggu persetujuan" className="flex flex-col gap-3 rounded-[14px] border-2 border-[#E2C46B] bg-[#FBF2E4] p-4 text-[#3D2E00]">
       <b>Menunggu persetujuan · {rows.length}</b>
       <p className="text-sm">Pastikan orangnya benar (tanya langsung) sebelum menyetujui. Setelah disetujui, kode undangan otomatis diganti.</p>
       <div className="overflow-x-auto rounded-[14px] bg-card px-3 text-ink">
@@ -45,13 +45,13 @@ export function PendingAccounts({ rows, staff }: { rows: Signup[]; staff: [strin
           <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Nama & email</th><th className="font-medium">Peran</th>
             <th className="font-medium">Mendaftar</th><th className="font-medium">Email</th><th /></tr></thead>
           <tbody>{rows.map((r) => (
-            <tr key={r.id} className="border-t border-[#EFEAEF] align-middle">
+            <tr key={r.id} className="border-t border-[#E8E5DE] align-middle">
               <td className="py-2"><b>{r.full_name}</b><span className="block text-xs text-muted">{r.email}</span></td>
               <td>{ROLE[r.role]}</td>
               <td className="text-xs">{formatTanggal(r.signed_up_at)} {formatJam(r.signed_up_at)}</td>
               <td>{r.email_confirmed_at
-                ? <span className="rounded-full bg-[#E6F1E4] px-2 py-0.5 text-xs font-semibold text-[#144D2A]">Terverifikasi</span>
-                : <span className="rounded-full bg-[#F9E6E6] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Belum diverifikasi</span>}</td>
+                ? <span className="rounded-full bg-[#EAF1EB] px-2 py-0.5 text-xs font-semibold text-[#174B35]">Terverifikasi</span>
+                : <span className="rounded-full bg-[#FBEEEC] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Belum diverifikasi</span>}</td>
               <td className="py-2">
                 <div className="flex items-center justify-end gap-2">
                   {r.role === "staff" && (

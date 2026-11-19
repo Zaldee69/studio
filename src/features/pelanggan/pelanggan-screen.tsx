@@ -99,7 +99,7 @@ export function PelangganScreen({ master }: { master: Master }) {
   const totalBalance = all.reduce((n, r) => n + (r.stats?.deposit_balance ?? 0), 0);
   const filtered = seg !== "all" || !!source || !!term || sort !== "name";
   const reset = () => { setSeg("all"); setSource(""); setQ(""); setSort("name"); setLimit(PAGE); };
-  const status = (r: Row) => r.stats?.is_churn ? ["Follow-up", "#FBE6E3", "#A12A2A"] : !r.stats?.visit_count ? ["Baru", "#EFEAEF", "#4D4A55"] : ["Aktif", "#E3F1E8", "#1F7A45"];
+  const status = (r: Row) => r.stats?.is_churn ? ["Follow-up", "#FBE6E3", "#D94B42"] : !r.stats?.visit_count ? ["Baru", "#E8E5DE", "#4D4A55"] : ["Aktif", "#E3F1E8", "#268052"];
   // HP: nama (+ kunjungan terakhir di bawahnya) | total | status
   const cols = "grid-cols-[minmax(0,1fr)_auto_auto] sm:grid-cols-[2fr_1.4fr_1.2fr_1fr] xl:grid-cols-[2fr_1.3fr_1.3fr_0.8fr_1.1fr_1.1fr_1.2fr]";
 
@@ -123,7 +123,7 @@ export function PelangganScreen({ master }: { master: Master }) {
             <button key={l} type="button" onClick={() => { setSeg(k); setLimit(PAGE); }} aria-pressed={seg === k}
               className={`flex flex-col items-start gap-0.5 rounded-[14px] border bg-card px-4 py-3 text-left transition hover:bg-paper ${seg === k ? "border-accent" : "border-line"}`}>
               <span className="text-sm text-muted">{l}</span>
-              <b className={`tabular text-2xl font-semibold ${k === "follow" && counts.follow ? "text-[#A12A2A]" : ""}`}>{v}</b>
+              <b className={`tabular text-2xl font-semibold ${k === "follow" && counts.follow ? "text-[#D94B42]" : ""}`}>{v}</b>
               <span className="text-xs text-muted">{sub}</span>
             </button>
           ))}

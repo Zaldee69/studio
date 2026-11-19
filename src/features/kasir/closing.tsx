@@ -90,14 +90,14 @@ export function Closing({ master }: { master: Master }) {
 
   const body = !s ? <Empty>Memuat…</Empty> : s.blind ? (
     <>
-      <div className="divide-y divide-[#EFEAEF]">{row("Jumlah transaksi", String(s.tx_count))}</div>
+      <div className="divide-y divide-[#E8E5DE]">{row("Jumlah transaksi", String(s.tx_count))}</div>
       <p className="rounded-[14px] bg-paper px-3.5 py-3 text-sm">
         Hitung <b>seluruh uang di laci</b> (termasuk sisa kemarin) lalu isi kolom di samping. Rekap penjualan, kas yang diharapkan, dan selisih tampil setelah tutup kasir disimpan.
       </p>
     </>
   ) : (
     <>
-      <div className="divide-y divide-[#EFEAEF]">
+      <div className="divide-y divide-[#E8E5DE]">
         {row("Jumlah transaksi", String(s.tx_count))}
         {row("Omzet (setelah diskon)", s.gross_total)}
         {row("Total diskon", s.discount_total)}
@@ -124,7 +124,7 @@ export function Closing({ master }: { master: Master }) {
       </div>
       {/* Angka penutupan = saat ditutup (resmi). Bila ada transaksi/void/pengeluaran sesudahnya, rekap di atas sudah berubah → beri tahu. */}
       {closings?.[0] && closings[0].expected_cash !== s.expected_cash && (
-        <p role="note" className="rounded-[14px] bg-[#FBF3DE] px-3 py-2 text-[13px] text-[#5A4300]">
+        <p role="note" className="rounded-[14px] bg-[#FBF2E4] px-3 py-2 text-[13px] text-[#6B4A10]">
           Ada perubahan setelah kasir ditutup (transaksi, void, atau pengeluaran): kas diharapkan saat ditutup {formatRupiah(closings[0].expected_cash)},
           sekarang {formatRupiah(s.expected_cash)}. Selisih di bawah dihitung saat penutupan.
         </p>
@@ -203,7 +203,7 @@ export function Closing({ master }: { master: Master }) {
           </Field>
         )}
         {diff != null && (
-          <div className={`rounded-[14px] px-3 py-2.5 text-[15px] font-semibold tabular ${inTol(diff) ? "bg-[#E6F1E4] text-[#144D2A]" : "bg-[#F9E6E6] text-[#6E1616]"}`}>
+          <div className={`rounded-[14px] px-3 py-2.5 text-[15px] font-semibold tabular ${inTol(diff) ? "bg-[#EAF1EB] text-[#174B35]" : "bg-[#FBEEEC] text-[#6E1616]"}`}>
             Selisih {diff > 0 ? "+" : ""}{formatRupiah(diff)} {diff === 0 ? "· pas" : inTol(diff) ? `· dalam toleransi ${formatRupiah(tol)}` : diff > 0 ? "· lebih" : "· kurang"}
           </div>
         )}
@@ -212,7 +212,7 @@ export function Closing({ master }: { master: Master }) {
             value={deposit ? Number(deposit).toLocaleString("id-ID") : ""} onChange={(e) => setDeposit(e.target.value.replace(/\D/g, ""))} />
         </Field>
         {phys != null && (
-          <div className={`flex justify-between rounded-[14px] bg-paper px-3 py-2 text-sm tabular ${dep > phys ? "text-[#A12A2A]" : ""}`}>
+          <div className={`flex justify-between rounded-[14px] bg-paper px-3 py-2 text-sm tabular ${dep > phys ? "text-[#D94B42]" : ""}`}>
             <span>Sisa di laci untuk besok</span><b>{formatRupiah(phys - dep)}</b>
           </div>
         )}

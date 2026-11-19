@@ -60,7 +60,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                 className={`flex min-h-12 items-center gap-2 rounded-[14px] px-3 text-left text-sm ${s.id === sel ? "bg-accent text-white" : "hover:bg-paper"} ${s.active ? "" : "opacity-55"}`}>
                 <span className="flex-1 font-medium">{s.name}</span>
                 {mg && <span className="tabular text-xs">{mg.margin_pct}%</span>}
-                {warn && <span className="rounded-full bg-[#F9E6E6] px-2 text-[11px] font-semibold text-[#6E1616]">Margin rendah</span>}
+                {warn && <span className="rounded-full bg-[#FBEEEC] px-2 text-[11px] font-semibold text-[#6E1616]">Margin rendah</span>}
               </button>
             );
           })}
@@ -80,7 +80,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                     {rows.map((r, i) => {
                       const it = items.find((x) => x.item_id === r.item_id);
                       return (
-                        <tr key={i} className="border-t border-[#EFEAEF]">
+                        <tr key={i} className="border-t border-[#E8E5DE]">
                           <td className="py-1.5 pr-2">
                             <NativeSelect aria-label={`Bahan baris ${i + 1}`} value={r.item_id} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, item_id: e.target.value } : x)))}>
                               <option value="">Pilih bahan…</option>
@@ -116,7 +116,7 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
                   <span className="text-[13px] text-[#9C98A3]">Laba kontribusi toko</span>
                   <b className="font-display text-[32px]">{formatRupiah(m.contribution)}</b>
                 </div>
-                {m.marginPct < settings.marginWarn && <span className="rounded-[14px] bg-[#F9E6E6] px-2.5 py-1.5 text-xs font-semibold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
+                {m.marginPct < settings.marginWarn && <span className="rounded-[14px] bg-[#FBEEEC] px-2.5 py-1.5 text-xs font-semibold text-[#6E1616]">Margin di bawah {settings.marginWarn}%</span>}
               </aside>
             )}
           </div>
@@ -130,11 +130,11 @@ export function RecipeTab({ services, lines, margins }: { services: RecipeServic
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Harga", "HPP", "Margin", "Komisi", "Laba kontribusi"].map((h, i) => <th key={h} className={`py-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {[...margins].sort((a, b) => a.margin_pct - b.margin_pct).map((r) => (
-                <tr key={r.id} className="border-t border-[#EFEAEF]">
+                <tr key={r.id} className="border-t border-[#E8E5DE]">
                   <td className="py-2 font-medium">{r.name}</td>
                   <td className="text-right">{formatRupiah(r.price)}</td>
                   <td className="text-right">{formatRupiah(r.hpp)}</td>
-                  <td className={`text-right font-semibold ${r.margin_pct < settings.marginWarn ? "text-[#A12A2A]" : ""}`}>{r.margin_pct.toLocaleString("id-ID")}%</td>
+                  <td className={`text-right font-semibold ${r.margin_pct < settings.marginWarn ? "text-[#D94B42]" : ""}`}>{r.margin_pct.toLocaleString("id-ID")}%</td>
                   <td className="text-right">{formatRupiah(r.commission)}</td>
                   <td className="text-right">{formatRupiah(r.contribution)}</td>
                 </tr>

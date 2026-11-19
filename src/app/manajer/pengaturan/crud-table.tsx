@@ -229,7 +229,7 @@ export function CrudList({ table, rows, options = {} }: { table: TableName; rows
                   <span className="flex flex-wrap gap-1.5 pt-0.5 text-xs">
                     {r.active === false && <span className="rounded-full bg-paper px-2 py-0.5 font-medium text-muted">Nonaktif</span>}
                     {(view.chips ?? []).filter((c) => r[c] === true).map((c) => <span key={c} className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">{field(c)?.label}</span>)}
-                    {table === "services" && r.next_price != null && <span className="rounded-full bg-st-booked px-2 py-0.5 font-medium text-[#5A4300]">Harga baru {formatRupiah(Number(r.next_price))}</span>}
+                    {table === "services" && r.next_price != null && <span className="rounded-full bg-st-booked px-2 py-0.5 font-medium text-[#6B4A10]">Harga baru {formatRupiah(Number(r.next_price))}</span>}
                   </span>
                 </div>
                 {view.cols.map((c) => <span key={c} className={`tabular hidden truncate text-sm sm:block ${field(c)?.type === "money" || c === "price" ? "font-semibold" : "text-muted"}`}>{fmtCell(field(c), r[c], options)}</span>)}

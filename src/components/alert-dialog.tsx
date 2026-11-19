@@ -51,7 +51,7 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
           <div className="flex flex-col-reverse gap-2 min-[420px]:flex-row min-[420px]:justify-end">
             <AlertDialogCancel variant="outline">{opts?.cancelLabel ?? "Batal"}</AlertDialogCancel>
             <AlertDialogAction variant="plain" onClick={() => done(true)}
-              className={`px-5 text-white ${opts?.tone === "danger" ? "bg-[#A12A2A] hover:bg-[#861F1F]" : "bg-accent hover:bg-[#353A33]"}`}>
+              className={`px-5 text-white ${opts?.tone === "danger" ? "bg-[#D94B42] hover:bg-[#861F1F]" : "bg-accent hover:bg-[#353A33]"}`}>
               {opts?.confirmLabel ?? "Lanjutkan"}
             </AlertDialogAction>
           </div>

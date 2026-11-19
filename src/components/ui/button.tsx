@@ -9,8 +9,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-accent text-white hover:bg-accent-ink disabled:bg-[#bdb8d4]",
-        brand: "bg-accent text-white hover:bg-accent-ink",
+        default: "bg-grad-primary bg-accent text-white hover:bg-none hover:bg-accent-hover disabled:bg-none disabled:bg-sage-green",
+        brand: "bg-grad-primary bg-accent text-white hover:bg-none hover:bg-accent-hover",
         // hierarki hPanel: default/brand = aksi utama (satu per konteks), outline = aksi pendukung, soft = penekanan ringan, ghost = teks (batal, tautan aksi)
         outline: "border-input bg-card text-ink hover:bg-paper aria-expanded:bg-paper",
         soft: "bg-accent-soft text-accent hover:bg-accent-soft/70",

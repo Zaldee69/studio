@@ -61,11 +61,11 @@ export function MovesTab({ rows, items, people, filter }: { rows: MoveRow[]; ite
             {rows.map((m) => {
               const t = MOVE_TYPE[m.type];
               return (
-                <tr key={m.id} className="border-t border-[#EFEAEF]">
+                <tr key={m.id} className="border-t border-[#E8E5DE]">
                   <td className="whitespace-nowrap py-2 pr-2">{formatTanggal(m.created_at)} <span className="text-muted">{formatJam(m.created_at)}</span></td>
                   <td className="pr-2 font-medium">{it(m.item_id)?.name ?? "—"}</td>
                   <td className="pr-2"><span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: t?.bg, color: t?.fg }}>{t?.label ?? m.type}</span></td>
-                  <td className={`whitespace-nowrap pr-2 text-right font-semibold ${m.qty < 0 ? "text-[#A12A2A]" : "text-[#1F7A45]"}`}>{m.qty > 0 ? "+" : "−"}{qtyFmt(Math.abs(m.qty))} {it(m.item_id)?.unit}</td>
+                  <td className={`whitespace-nowrap pr-2 text-right font-semibold ${m.qty < 0 ? "text-[#D94B42]" : "text-[#268052]"}`}>{m.qty > 0 ? "+" : "−"}{qtyFmt(Math.abs(m.qty))} {it(m.item_id)?.unit}</td>
                   <td className="whitespace-nowrap pr-2 text-right">{m.type === "in" && m.unit_cost != null ? formatUnitCost(m.unit_cost) : ""}</td>
                   <td className="pr-2">
                     {m.transaction_id ? <Link className="underline" href={`/manajer/kasir?tab=riwayat&tx=${m.transaction_id}`}>Transaksi</Link>
@@ -113,8 +113,8 @@ export function UsageTab({ opnames, from, to, rows, threshold }: {
             <thead><tr className="text-left text-xs text-muted">{["Bahan", "Teoretis", "Aktual", "Selisih", "Selisih %", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2.5 pr-2 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.item_id} className={`border-t border-[#EFEAEF] ${r.flagged ? "bg-[#FFF4F4]" : ""}`}>
-                  <td className="py-2 pr-2 font-medium">{r.name}{r.flagged && <span className="ml-2 rounded-full bg-[#F9E6E6] px-2 text-[11px] font-semibold text-[#6E1616]">Di atas {threshold}%</span>}</td>
+                <tr key={r.item_id} className={`border-t border-[#E8E5DE] ${r.flagged ? "bg-[#FFF4F4]" : ""}`}>
+                  <td className="py-2 pr-2 font-medium">{r.name}{r.flagged && <span className="ml-2 rounded-full bg-[#FBEEEC] px-2 text-[11px] font-semibold text-[#6E1616]">Di atas {threshold}%</span>}</td>
                   <td className="pr-2 text-right">{qtyFmt(r.theoretical)} {r.unit}</td>
                   <td className="pr-2 text-right">{qtyFmt(r.actual)} {r.unit}</td>
                   <td className="pr-2 text-right font-semibold">{r.variance > 0 ? "+" : ""}{qtyFmt(r.variance)}</td>

@@ -52,12 +52,12 @@ const dm = (d: string) => `${Number(d.slice(8))}/${Number(d.slice(5, 7))}`;
 const csv = (name: string, rows: (string | number | null)[][]) => downloadText(`${name}.csv`, toCsv(rows));
 
 function Chip({ tone, icon, label }: { tone: "ok" | "warn" | "bad" | "info"; icon: string; label: string }) {
-  const c = { ok: ["#E6F1E4", "#144D2A"], warn: ["#FBF3DE", "#5A4300"], bad: ["#F9E6E6", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
+  const c = { ok: ["#EAF1EB", "#174B35"], warn: ["#FBF2E4", "#6B4A10"], bad: ["#FBEEEC", "#6E1616"], info: ["#EFEFEB", "#4A4C46"] }[tone];
   return <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: c[0], color: c[1] }}><span aria-hidden="true">{icon}</span>{label}</span>;
 }
 function Delta({ d, unit = "%" }: { d: number | null | undefined; unit?: "%" | "poin" }) {
   const v = d ?? null;
-  return <span className={`text-xs font-semibold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{deltaLabel(v, unit)}</span>;
+  return <span className={`text-xs font-semibold tabular ${v === null ? "text-muted" : v >= 0 ? "text-[#268052]" : "text-[#D94B42]"}`}>{deltaLabel(v, unit)}</span>;
 }
 function Section({ id, title, children, onCsv, extra }: { id: string; title: string; children: React.ReactNode; onCsv?: () => void; extra?: React.ReactNode }) {
   return (
@@ -110,7 +110,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
       <RencanaHeader />
       <div className="flex flex-wrap items-center gap-3 print:hidden">
         <h2 className="mr-auto font-display text-lg font-semibold">Analitik KPI</h2>
-        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1 rounded-[14px] bg-[#EDE8EE] p-1">
+        <div role="group" aria-label="Periode" className="flex flex-wrap gap-1 rounded-[14px] bg-[#F0EEE8] p-1">
           {PERIODS.map(([k, l]) => (
             <Link key={k} href={q({ periode: k, dari: "", sampai: "" })} aria-current={d.periode === k ? "true" : undefined}
               className="inline-flex h-9 items-center rounded-[10px] px-3 text-sm font-medium text-muted hover:text-ink aria-[current=true]:bg-card aria-[current=true]:text-ink aria-[current=true]:shadow-sm">{l}</Link>
@@ -125,13 +125,13 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
         </form>
       </div>
       <p className="text-sm text-muted tabular">{d.label} · <b className="text-ink">{tx} transaksi</b> · dibanding {d.prevLabel}</p>
-      {tx < t.min_tx && <p role="status" className="flex items-center gap-2 rounded-2xl border border-line bg-card px-4 py-3 text-sm text-muted"><span aria-hidden="true" className="size-2 rounded-full bg-[#C98A00]" />Data masih sedikit ({tx} transaksi), jadi angka belum stabil.</p>}
+      {tx < t.min_tx && <p role="status" className="flex items-center gap-2 rounded-2xl border border-line bg-card px-4 py-3 text-sm text-muted"><span aria-hidden="true" className="size-2 rounded-full bg-[#C58A2B]" />Data masih sedikit ({tx} transaksi), jadi angka belum stabil.</p>}
 
       {!!d.insights.length && (
         <section aria-label="Insight" className="flex flex-col gap-2 rounded-3xl border border-line bg-card p-4">
           {d.insights.map((i) => (
             <p key={i.code} className="flex flex-wrap items-center gap-2 text-sm">
-              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#C98A00]" />
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-[#C58A2B]" />
               <span className="flex-1">{i.message}</span>
               <a href={i.href} className="flex min-h-11 items-center font-medium text-accent hover:underline">Lihat</a>
             </p>
@@ -206,7 +206,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
           <table className="w-full text-sm tabular">
             <thead><tr className="text-left text-xs text-muted">{["Layanan", "Rencana", "Rata-rata nyata", "Selisih"].map((h, i) => <th key={h} className={`py-1.5 font-medium ${i ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
             <tbody>{d.duration.map((r) => (
-              <tr key={r.service_id} className="border-t border-[#EFEAEF]">
+              <tr key={r.service_id} className="border-t border-[#E8E5DE]">
                 <td className="py-2 font-medium">{r.name}</td><td className="text-right">{r.planned_min} mnt</td><td className="text-right">{Math.round(r.actual_avg)} mnt</td>
                 <td className="text-right"><span className="mr-2">{r.diff_avg > 0 ? "+" : ""}{Math.round(r.diff_avg)} mnt (n={r.n})</span>
                   {Math.abs(r.diff_avg) >= 1 && <Chip tone={r.diff_avg > 0 ? "warn" : "info"} icon={r.diff_avg > 0 ? "▲" : "▼"} label={r.diff_avg > 0 ? "molor" : "lebih cepat"} />}</td>
@@ -230,7 +230,7 @@ export function AnalyticsDashboard({ d, ai }: { d: AnalyticsData; ai?: React.Rea
               <b className="text-sm">Top 5 produk</b>
               {!d.retail.top.length ? <p className="text-sm text-muted">Belum ada penjualan ritel.</p> : (
                 <table className="mt-1 w-full text-sm tabular"><tbody>{d.retail.top.map((p) => (
-                  <tr key={p.name} className="border-t border-[#EFEAEF]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
+                  <tr key={p.name} className="border-t border-[#E8E5DE]"><td className="py-1.5">{p.name}</td><td className="text-right">{p.qty}×</td><td className="text-right">{formatRupiah(p.revenue)}</td></tr>
                 ))}</tbody></table>
               )}
             </div>

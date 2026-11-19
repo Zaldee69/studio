@@ -31,7 +31,7 @@ export function PriceRelease({ services }: { services: Svc[] }) {
     toast("Harga baru berlaku"); router.refresh();
   }
   return (
-    <section aria-label="Harga baru menunggu rilis" className="flex flex-col gap-3 rounded-[14px] border-2 border-[#E2C46B] bg-[#FBF3DE] p-4 text-[#3D2E00]">
+    <section aria-label="Harga baru menunggu rilis" className="flex flex-col gap-3 rounded-[14px] border-2 border-[#E2C46B] bg-[#FBF2E4] p-4 text-[#3D2E00]">
       <div className="flex flex-wrap items-center gap-2">
         <b className="flex-1">Harga baru menunggu rilis · {pending.length} perubahan</b>
         <Button onClick={release} disabled={!online || busy} className="h-11">{busy ? "Merilis…" : "Rilis harga baru"}</Button>
@@ -41,10 +41,10 @@ export function PriceRelease({ services }: { services: Svc[] }) {
           <thead><tr className="text-left text-xs text-muted"><th className="py-2 font-medium">Layanan</th><th className="font-medium">Perubahan</th>
             <th className="text-right font-medium">Sekarang</th><th className="text-right font-medium">Setelah rilis</th></tr></thead>
           <tbody>{pending.sort((a, b) => a.sort - b.sort).map((s) => (
-            <tr key={s.id} className="border-t border-[#EFEAEF]">
+            <tr key={s.id} className="border-t border-[#E8E5DE]">
               <td className="py-2 font-medium">{s.name}</td>
-              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#E6F1E4] px-2 py-0.5 text-xs font-semibold text-[#144D2A]">Baru</span>
-                : s.release_action === "retire" ? <span className="rounded-full bg-[#F9E6E6] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Dihentikan</span>
+              <td>{s.release_action === "launch" ? <span className="rounded-full bg-[#EAF1EB] px-2 py-0.5 text-xs font-semibold text-[#174B35]">Baru</span>
+                : s.release_action === "retire" ? <span className="rounded-full bg-[#FBEEEC] px-2 py-0.5 text-xs font-semibold text-[#6E1616]">Dihentikan</span>
                 : <span className="text-xs text-muted">Ganti harga</span>}</td>
               <td className="text-right">{s.release_action === "launch" ? "—" : formatRupiah(s.price)}</td>
               <td className="text-right font-semibold">{s.release_action === "retire" ? "—" : formatRupiah(s.next_price ?? s.price)}</td>

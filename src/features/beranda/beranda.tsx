@@ -78,10 +78,10 @@ export function Beranda({ master }: { master: Master }) {
   ];
   const prevLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${prevMonth}T00:00:00Z`));
   const alerts = [
-    ...(side?.sop && !side.sop.closed && !side.sop.approval ? [{ text: `Checklist sterilisasi hari ini ${side.sop.done}/${side.sop.total}${side.sop.done >= side.sop.total ? " — siap diotorisasi" : ", belum lengkap"}`, cta: "SOP", href: `${b}/sop`, dot: "#1F7A45", bg: "#F3FAF5", border: "#9ED7B2" }] : []),
+    ...(side?.sop && !side.sop.closed && !side.sop.approval ? [{ text: `Checklist sterilisasi hari ini ${side.sop.done}/${side.sop.total}${side.sop.done >= side.sop.total ? " — siap diotorisasi" : ", belum lengkap"}`, cta: "SOP", href: `${b}/sop`, dot: "#268052", bg: "#F3FAF5", border: "#9ED7B2" }] : []),
     ...(side?.tasks ?? []).map((t) => ({ text: t.days_left < 0 ? `${t.name} terlambat ${-t.days_left} hari` : `${t.name} jatuh tempo hari ini`, cta: "Perawatan", href: `${b}/sop#perawatan`, dot: "#E06C1A", bg: "#FFF6EE", border: "#F2B488" })),
     ...(side?.insight ? [{ text: side.insight.message, cta: "Analitik lengkap", href: `${b}/analitik${side.insight.href}`, dot: "#3A4137", bg: "#F5F6F2", border: "#D6D9CF" }] : []),
-    ...(side?.reorder ? [{ text: `${side.reorder} item di bawah ambang reorder`, cta: "Daftar belanja", href: `${b}/inventaris`, dot: "#D23B3B", bg: "#FFF7F7", border: "#E8C3C4" }] : []),
+    ...(side?.reorder ? [{ text: `${side.reorder} item di bawah ambang reorder`, cta: "Daftar belanja", href: `${b}/inventaris`, dot: "#D94B42", bg: "#FFF7F7", border: "#E8C3C4" }] : []),
     ...(side?.drafts ? [{ text: `${side.drafts} stok opname draft belum disetujui`, cta: "Opname", href: `${b}/inventaris?tab=opname`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
     ...(side?.prevOpen ? [{ text: `Periode gaji ${prevLabel} belum ditutup`, cta: "SDM", href: `${b}/sdm?bulan=${prevMonth.slice(0, 7)}`, dot: "#3A4137", bg: "#F5F6F2", border: "#D6D9CF" }] : []),
     ...(side?.pendingOff ? [{ text: `${side.pendingOff} pengajuan izin staf menunggu persetujuan`, cta: "Izin staf", href: `${b}/izin`, dot: "#C99500", bg: "#FFFDF3", border: "#E8D6A6" }] : []),
@@ -162,7 +162,7 @@ export function Beranda({ master }: { master: Master }) {
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 min-[1000px]:grid-cols-2">
         <section className="flex flex-col gap-2.5 rounded-3xl border border-line bg-card p-4">
           <h2 className="text-base font-semibold">Perlu perhatian</h2>
-          {!alerts.length ? <span className="text-sm font-medium text-[#1F7A45]">Semua aman hari ini.</span> : alerts.map((a, i) => (
+          {!alerts.length ? <span className="text-sm font-medium text-[#268052]">Semua aman hari ini.</span> : alerts.map((a, i) => (
             <Link key={i} href={a.href} className="flex min-h-[52px] items-center gap-3 rounded-[14px] border px-3 py-2.5" style={{ background: a.bg, borderColor: a.border }}>
               <span className="size-2.5 shrink-0 rounded-full" style={{ background: a.dot }} />
               <span className="min-w-0 flex-1 text-sm font-medium">{a.text}</span>
@@ -189,7 +189,7 @@ export function Beranda({ master }: { master: Master }) {
         <div className="flex items-center"><h2 className="flex-1 text-base font-semibold">Berikutnya hari ini</h2>
           <Link href={`${b}/jadwal`} className="flex h-11 items-center rounded-[14px] border border-[#DDD7E0] px-3 text-xs font-semibold">Lihat jadwal</Link></div>
         {!upcoming.length ? <span className="text-sm text-muted">Tidak ada booking lagi hari ini.</span> : upcoming.slice(0, 6).map((a) => (
-          <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#EFEAEF] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
+          <div key={a.id} className="grid min-h-11 grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-x-2.5 border-b border-[#E8E5DE] py-1.5 text-sm tabular sm:grid-cols-[70px_1.2fr_1.6fr_1fr] sm:py-0">
             <b>{formatJam(a.start_at)}</b>
             <span className="flex min-w-0 items-center gap-1.5"><b className="truncate">{apptName(a)}</b>
               {a.source === "online" && <span className="rounded bg-accent px-1.5 text-[10px] font-semibold text-white">Online</span>}</span>

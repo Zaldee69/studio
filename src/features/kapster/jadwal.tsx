@@ -41,17 +41,17 @@ export function JadwalKapster() {
             <span className="text-[13px] text-muted">{items.length ? `${items.length} booking` : off.length ? "" : "Kosong"}</span>
           </div>
           {off.map((o) => (
-            <div key={o.id} className="mb-2 rounded-[14px] bg-[#EFEAEF] px-3 py-2.5 text-sm font-medium text-[#4D4A55]">
+            <div key={o.id} className="mb-2 rounded-[14px] bg-[#E8E5DE] px-3 py-2.5 text-sm font-medium text-[#4D4A55]">
               Izin / cuti {o.all_day ? "sehari penuh" : `${formatJam(o.start_at)}–${formatJam(o.end_at)}`}{o.reason && ` · ${o.reason}`}
             </div>
           ))}
           {items.map((a) => (
-            <div key={a.id} className="flex flex-wrap items-center gap-3 border-t border-[#EFEAEF] py-2.5 tabular">
+            <div key={a.id} className="flex flex-wrap items-center gap-3 border-t border-[#E8E5DE] py-2.5 tabular">
               <b className="w-[96px] shrink-0 text-sm">{formatJam(a.start_at)}–{formatJam(a.end_at)}</b>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="text-sm">{a.customer_name ?? "Walk-in"}</b>
                 <span className="text-xs text-muted">{a.service_ids.map((id) => services.get(id)?.name).join(", ")} · {a.resource_name}</span>
-                {a.change_request && <span className="text-xs font-medium text-[#5A4300]">Menunggu konter: “{a.change_request}”</span>}
+                {a.change_request && <span className="text-xs font-medium text-[#6B4A10]">Menunggu konter: “{a.change_request}”</span>}
               </span>
               {a.source === "online" && <span className="rounded bg-accent px-1.5 text-[10px] font-semibold text-white">Online</span>}
               {a.status !== "booked" && <span className="rounded-full px-2 py-0.5 text-[11px] font-semibold" style={{ background: STATUS[a.status].bg, color: STATUS[a.status].fg }}>{STATUS[a.status].label}</span>}

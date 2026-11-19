@@ -35,7 +35,7 @@ export function ReorderBanner() {
       <b className="mr-1 text-sm text-[#6E1616]">{data.length} item perlu dibeli:</b>
       {data.map((r) => (
         <button key={r.item_id} onClick={() => open({ kind: "in", itemId: r.item_id! })}
-          className="min-h-11 rounded-full border border-[#E8C3C4] bg-card px-3.5 text-[13px] font-medium text-[#6E1616] tabular hover:bg-[#F9E6E6]">
+          className="min-h-11 rounded-full border border-[#E8C3C4] bg-card px-3.5 text-[13px] font-medium text-[#6E1616] tabular hover:bg-[#FBEEEC]">
           {r.name} · {qtyFmt(Number(r.qty))} / {qtyFmt(Number(r.reorder_at))} {r.unit}
         </button>
       ))}
@@ -58,7 +58,7 @@ function RowMenu({ r }: { r: StockRow }) {
         <button onClick={() => open({ kind: "adjust", itemId: r.item_id })} className="min-h-11 px-3.5 text-left text-sm hover:bg-paper">Penyesuaian stok</button>
         <button onClick={() => open({ kind: "cost", itemId: r.item_id })} className="min-h-11 px-3.5 text-left text-sm hover:bg-paper">Penyesuaian harga pokok</button>
         <Link href={`/manajer/inventaris?tab=mutasi&item=${r.item_id}`} className="flex min-h-11 items-center px-3.5 text-sm hover:bg-paper">Riwayat mutasi</Link>
-        <button onClick={toggle} className="min-h-11 px-3.5 text-left text-sm text-[#A12A2A] hover:bg-paper">{r.active ? "Nonaktifkan" : "Aktifkan lagi"}</button>
+        <button onClick={toggle} className="min-h-11 px-3.5 text-left text-sm text-[#D94B42] hover:bg-paper">{r.active ? "Nonaktifkan" : "Aktifkan lagi"}</button>
       </div>
     </details>
   );
@@ -102,7 +102,7 @@ function TableRow({ r, extra }: { r: StockRow; extra?: RetailExtra }) {
   const save = useRowSave(r);
   const form = `it-${r.item_id}`;
   return (
-    <tr className={`border-t border-[#EFEAEF] ${r.active ? "" : "opacity-55"}`}>
+    <tr className={`border-t border-[#E8E5DE] ${r.active ? "" : "opacity-55"}`}>
       <EditCells r={r} form={form} />
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatUnitCost(r.unit_cost)}</td>
       <td className="whitespace-nowrap pr-3 text-right tabular">{formatRupiah(r.stock_value)}</td>

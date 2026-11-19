@@ -34,7 +34,7 @@ export function StartOpname({ base, drafts }: { base: string; drafts: { scope: s
         </NativeSelect>
       </Field>
       <Button disabled={!online || taken} onClick={start} className="h-11">Mulai opname</Button>
-      {taken && <span role="status" className="text-sm text-[#5A4300]">Sudah ada opname {SCOPE_LABEL[scope]} yang belum selesai — lanjutkan di bawah.</span>}
+      {taken && <span role="status" className="text-sm text-[#6B4A10]">Sudah ada opname {SCOPE_LABEL[scope]} yang belum selesai — lanjutkan di bawah.</span>}
     </div>
   );
 }
@@ -64,11 +64,11 @@ export function OpnameList({ rows, base, showValue }: { rows: OpnameRow[]; base:
                 <thead><tr className="text-left text-xs text-muted">{["Tanggal", "Cakupan", "Penghitung", "Penyetuju", "Status", "Nilai selisih"].map((h, i) => <th key={h} className={`py-2 font-medium ${i === 5 ? "text-right" : ""}`}>{h}</th>)}</tr></thead>
                 <tbody>
                   {done.map((r) => (
-                    <tr key={r.id} className="border-t border-[#EFEAEF]">
+                    <tr key={r.id} className="border-t border-[#E8E5DE]">
                       <td className="py-2"><Link className="font-medium underline" href={`${base}/${r.id}`}>{formatTanggal(r.started_at)}</Link></td>
                       <td>{SCOPE_LABEL[r.scope]}</td><td>{r.starter}</td><td>{r.approver || "—"}</td>
                       <td>{r.status === "approved" ? "Disetujui" : "Dibatalkan"}</td>
-                      <td className={`text-right font-semibold ${(r.value ?? 0) < 0 ? "text-[#A12A2A]" : ""}`}>{r.status === "approved" ? signed(r.value ?? 0) : "—"}</td>
+                      <td className={`text-right font-semibold ${(r.value ?? 0) < 0 ? "text-[#D94B42]" : ""}`}>{r.status === "approved" ? signed(r.value ?? 0) : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -145,7 +145,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
       <div className="grid gap-3 min-[820px]:grid-cols-3">
         <div className="rounded-3xl border border-line bg-card p-4"><span className="text-xs text-muted">Dihitung</span><b className="block text-2xl tabular">{counted} / {lines.length}</b></div>
         {manager && <div className="rounded-3xl border border-line bg-card p-4"><span className="text-xs text-muted">Total nilai selisih</span>
-          <b className={`block text-2xl tabular ${summary.value < 0 ? "text-[#A12A2A]" : ""}`}>{signed(summary.value)}</b></div>}
+          <b className={`block text-2xl tabular ${summary.value < 0 ? "text-[#D94B42]" : ""}`}>{signed(summary.value)}</b></div>}
         {manager && <div className="rounded-3xl border border-line bg-card p-4 text-sm"><span className="text-xs text-muted">Selisih terbesar</span>
           {!biggest.length ? <p className="text-muted">—</p> : biggest.map((b) => <div key={b.itemId} className="flex justify-between tabular"><span>{lines.find((l) => l.item_id === b.itemId)?.name}</span><b>{signed(b.value)}</b></div>)}</div>}
       </div>
@@ -159,7 +159,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
             {group.map((l) => {
               const v = val(l);
               const diff = v === null ? null : v - Number(l.system_qty);
-              const tone = diff === null ? "text-muted" : diff < 0 ? "text-[#A12A2A]" : diff > 0 ? "text-[#1F7A45]" : "text-muted";
+              const tone = diff === null ? "text-muted" : diff < 0 ? "text-[#D94B42]" : diff > 0 ? "text-[#268052]" : "text-muted";
               return (
                 <div key={l.item_id} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-[14px] border border-line bg-card p-3 min-[820px]:grid-cols-[1fr_120px_auto_120px]">
                   <span className="flex flex-col"><b className="text-[15px]">{l.name}</b><span className="text-xs text-muted">{l.unit}</span></span>
@@ -185,7 +185,7 @@ export function OpnameCount({ opname, manager, back }: { opname: { id: string; s
       {!locked && (
         <div className="fixed inset-x-0 bottom-0 z-20 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-card/95 px-4 py-3 backdrop-blur left-[84px] xl:left-56">
           <span className="mr-auto text-sm text-muted">{dirty.length ? `${dirty.length} perubahan belum disimpan` : "Semua hitungan tersimpan"}</span>
-          {manager && <Button onClick={cancel} disabled={!online} variant="outline" className="h-12 text-[#A12A2A]">Batalkan opname</Button>}
+          {manager && <Button onClick={cancel} disabled={!online} variant="outline" className="h-12 text-[#D94B42]">Batalkan opname</Button>}
           <Button onClick={saveCounts} disabled={!online || busy || !dirty.length} variant="outline" className="h-12">Simpan sebagian</Button>
           {manager && <Button onClick={approve} disabled={!online || busy || !counted} className="h-12">Setujui opname</Button>}
         </div>

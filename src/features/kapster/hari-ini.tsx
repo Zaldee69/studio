@@ -95,7 +95,7 @@ export function HariIni() {
           const S = STATUS[a.status], on = cur?.id === a.id;
           return (
             <button key={a.id} onClick={() => setSelId(a.id)} aria-pressed={on}
-              className={`flex min-h-[60px] items-center gap-3 border-t border-[#EFEAEF] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
+              className={`flex min-h-[60px] items-center gap-3 border-t border-[#E8E5DE] px-1 py-2 text-left tabular ${on ? "bg-paper" : ""}`}>
               <b className="w-[52px] shrink-0 text-[15px]">{formatJam(a.start_at)}</b>
               <span className="flex min-w-0 flex-1 flex-col">
                 <b className="truncate text-[15px]">{a.customer_name ?? "Walk-in"}</b>
@@ -144,13 +144,13 @@ function CurrentCard({ a, busy, now, onAct, onRevert, services, category }: {
         ))}
       </div>
       {timer && (
-        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-[14px] px-3.5 py-2.5 text-[15px] font-semibold tabular ${timer.over ? "bg-[#F9E6E6] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
+        <div role="timer" aria-live="off" className={`flex items-center justify-between rounded-[14px] px-3.5 py-2.5 text-[15px] font-semibold tabular ${timer.over ? "bg-[#FBEEEC] text-[#6E1616]" : "bg-[#FFE2CC] text-[#6B3000]"}`}>
           <span>⏱ {timer.elapsedMin} / {a.duration_min} menit</span>
           {timer.over && <span>Lewat {timer.overBy} mnt</span>}
         </div>
       )}
       {a.customer_notes && (
-        <div className="rounded-[14px] bg-[#EFEAEF] px-3.5 py-3 text-sm leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
+        <div className="rounded-[14px] bg-[#E8E5DE] px-3.5 py-3 text-sm leading-normal text-[#1D1E20]"><b>Preferensi pelanggan:</b> {a.customer_notes}</div>
       )}
       {a.notes && <div className="rounded-[14px] bg-paper px-3.5 py-3 text-sm leading-normal"><b>Catatan booking:</b> {a.notes}</div>}
       {a.customer_id && <History customerId={a.customer_id} />}

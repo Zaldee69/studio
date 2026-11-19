@@ -53,12 +53,13 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
       {/* bar atas di atas gradien (pola hPanel): merek di kiri, lonceng & akun di kanan */}
       <header className="sticky top-0 z-30 flex h-14 items-center gap-3 bg-hpanel px-4 print:hidden md:h-16 md:px-5">
         <span aria-hidden="true" className={EAR_TOP_L} /><span aria-hidden="true" className={EAR_TOP_R} />
-        <LogoMark className="h-9 w-auto shrink-0 text-white" />
-        <span className="truncate font-display text-lg font-semibold text-white">{BRAND}</span>
-        <span className="hidden rounded-full bg-white/25 px-3 py-1 text-xs font-semibold text-white sm:inline">{area}</span>
+        <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"><span className="absolute -top-10 right-24 size-28 rounded-full bg-sage-green/20" /><span className="absolute -top-6 right-6 size-16 rounded-[60%_40%_55%_45%] bg-sage-green/15" /><span className="absolute -bottom-12 left-1/3 size-24 rounded-[45%_55%_40%_60%] bg-sage-green/10" /></span>
+        <LogoMark className="h-9 w-auto shrink-0 text-accent" />
+        <span className="truncate font-display text-lg font-semibold text-ink">{BRAND}</span>
+        <span className="hidden rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent sm:inline">{area}</span>
         <span className="flex-1" />
         <NotificationBell base={base} />
-        <span className="flex items-center gap-2 rounded-full bg-white/90 py-1 pl-1 pr-3 text-sm text-ink">
+        <span className="flex items-center gap-2 rounded-full border border-line bg-card py-1 pl-1 pr-3 text-sm text-ink">
           <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-full bg-accent text-xs font-semibold text-white">{initial}</span>
           <b className="hidden max-w-40 truncate text-[13px] min-[820px]:block">{user}</b>
         </span>
@@ -77,13 +78,13 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
               return (
                 <li key={m.href}>
                   <Link href={m.href} aria-current={cur ? "page" : undefined}
-                    className={`relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-[14px] px-3 text-[11px] font-medium ${slim ? "" : "xl:min-h-12 xl:flex-row xl:justify-start xl:gap-3 xl:text-sm"} ${cur ? "bg-card font-semibold text-ink shadow-sm" : "text-ink/70 hover:bg-card/60 hover:text-ink"}`}>
+                    className={`relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-[14px] px-3 text-[11px] font-medium ${slim ? "" : "xl:min-h-12 xl:flex-row xl:justify-start xl:gap-3 xl:text-sm"} ${cur ? "bg-accent font-semibold text-white shadow-sm" : "text-muted hover:bg-card/70 hover:text-ink"}`}>
                     <Icon name={m.icon} className="size-6 xl:size-[22px]" />
                     <span className={slim ? "" : "xl:hidden"}>{m.short ?? m.label}</span>
                     {!slim && <span className="hidden flex-1 xl:inline">{m.label}</span>}
                     {badge > 0 && (
                       <span aria-label={badgeLabel(m, badge)}
-                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#FFFFFF] tabular ${slim ? "" : "xl:static xl:shadow-none"} ${m.badge === "ready" ? "bg-st-paid text-[#2C4A2A]" : m.badge === "online" ? "bg-[#F3E9CF] text-[#5C4A1A]" : "bg-st-completed text-[#6B2427]"}`}>
+                        className={`absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs shadow-[0_0_0_2px_#F0EEE8] tabular ${slim ? "" : "xl:static xl:shadow-none"} ${m.badge === "ready" ? "bg-st-paid text-[#2C4A2A]" : m.badge === "online" ? "bg-[#F3E9CF] text-[#5C4A1A]" : "bg-st-completed text-[#6B2427]"}`}>
                         {badge}
                       </span>
                     )}
@@ -118,7 +119,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
                 <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${cur ? "bg-accent" : ""}`} />
                 <Icon name={m.icon} className="size-5" />
                 {m.short ?? m.label}
-                {n > 0 && <span aria-label={badgeLabel(m, n)} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{n}</span>}
+                {n > 0 && <span aria-label={badgeLabel(m, n)} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D94B42] px-1 text-[11px] text-white tabular">{n}</span>}
               </Link>
             );
           })}
@@ -127,7 +128,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
             <span className={`absolute inset-x-4 top-0 h-[3px] rounded-b ${restActive ? "bg-accent" : ""}`} />
             <Icon name="more" className="size-5" />
             Lainnya
-            {restBadge > 0 && <span aria-label={`${restBadge} perlu perhatian`} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D23B3B] px-1 text-[11px] text-white tabular">{restBadge}</span>}
+            {restBadge > 0 && <span aria-label={`${restBadge} perlu perhatian`} className="absolute left-1/2 top-1.5 ml-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#D94B42] px-1 text-[11px] text-white tabular">{restBadge}</span>}
           </button>
         </nav>
         <Sheet open={more} onClose={() => setMore(false)} label="Menu lainnya">
@@ -143,7 +144,7 @@ function AdminShellInner({ menu, area, user, followCount = 0, children }: ShellP
                   className={`flex min-h-12 items-center gap-3 rounded-[14px] px-3 text-sm font-medium ${cur ? "bg-card text-ink shadow-sm" : "hover:bg-paper"}`}>
                   <Icon name={m.icon} className="size-[18px]" />
                   <span className="flex-1">{m.label}</span>
-                  {n > 0 && <span aria-label={badgeLabel(m, n)} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F9E6E6] px-1.5 text-xs text-[#6E1616] tabular">{n}</span>}
+                  {n > 0 && <span aria-label={badgeLabel(m, n)} className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FBEEEC] px-1.5 text-xs text-[#6E1616] tabular">{n}</span>}
                 </Link>
               );
             })}

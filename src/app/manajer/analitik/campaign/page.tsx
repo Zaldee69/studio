@@ -30,7 +30,7 @@ function Card({ label, value, note, ok }: { label: string; value: string; note: 
   return (
     <div className="flex flex-col gap-1.5 rounded-3xl border border-line bg-card p-5">
       <span className="text-sm text-muted">{label}</span>
-      <b className={`font-display text-[28px] font-semibold leading-none tabular ${ok == null ? "" : ok ? "text-[#1F7A45]" : "text-[#A12A2A]"}`}>{value}</b>
+      <b className={`font-display text-[28px] font-semibold leading-none tabular ${ok == null ? "" : ok ? "text-[#268052]" : "text-[#D94B42]"}`}>{value}</b>
       <span className="text-xs text-muted">{note}</span>
     </div>
   );
@@ -83,7 +83,7 @@ export default async function CampaignReport({ searchParams }: PageProps<"/manaj
           <Button variant="outline" className="h-11 px-5">Tampilkan</Button>
         </form>
       </div>
-      {error || !r || !c ? <p role="alert" className="text-sm text-[#A12A2A]">{error?.message ?? "Laporan tidak tersedia."}</p> : (
+      {error || !r || !c ? <p role="alert" className="text-sm text-[#D94B42]">{error?.message ?? "Laporan tidak tersedia."}</p> : (
         <>
           <p className="text-sm text-muted">{formatTanggal(from)} – {formatTanggal(to)} · target (ubah di <Link href="/manajer/analitik#target" className="underline">Target KPI</Link>): Sen–Kam ≥{num(t.senkam)} potong/hari, Jum–Min ≤{num(t.weekend)}, naik paket ≥{t.upgrade}%, transaksi dengan pelanggan ≥{t.customer}%.</p>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

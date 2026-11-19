@@ -8,26 +8,41 @@
 @custom-variant dark (&:where(.tema-gelap-tidak-ada, .tema-gelap-tidak-ada *));
 
 @theme {
-  /* aplikasi tim (redesign Nov 2026) — terang, lavender lembut, kartu putih besar. Satu aksen per klien:
+  /* aplikasi tim (redesign Nov 2026) — terang, gading hangat, kartu putih besar. Satu aksen per klien:
      ganti hanya --color-accent (NEXT_PUBLIC_ACCENT, lihat layout.tsx); varian gelap & lembut dihitung darinya. */
-  --color-paper: #f6f4f7;  /* latar area konten (diukur dari hPanel) */
-  --color-side: #f2ebf1;   /* rel & menu samping */
+  /* Premium Organic Minimalist: Forest Green × Warm Ivory × Soft Gold. Sumber tunggal token warna aplikasi tim. */
+  --color-paper: #f7f5f0;  /* latar utama */
+  --color-side: #f0eee8;   /* rel & menu samping */
+  --color-surface: #f5f3ef; /* permukaan sekunder */
+  --color-ivory: #fbf9f4;  /* bar atas & bingkai luar */
   --color-card: #ffffff;
-  --color-ink: #1d1e20;
-  --color-muted: #6e6b78;
-  --color-line: #e8e3ea;
-  /* gradien latar luar (diukur dari hPanel), kiri → kanan */
-  --grad-1: #9a74d8; --grad-2: #c97cc2; --grad-3: #f0829f; --grad-4: #ff9a7a; --grad-5: #ffb35a;
-  --color-accent: #5e45d8;
+  --color-ink: #202522;
+  --color-muted: #747b74;
+  --color-faint: #a0a39d;  /* teks redup (dekoratif/placeholder) */
+  --color-line: #e8e5de;
+  --color-accent: #174b35;
+  --color-accent-hover: #286b4a;
   --color-accent-ink: color-mix(in srgb, var(--color-accent) 80%, black);
-  --color-accent-soft: color-mix(in srgb, var(--color-accent) 12%, white);
-  --color-danger: #b3202f;
+  --color-accent-soft: #eaf1eb;
+  --color-gold-accent: #c58a2b;
+  --color-gold-soft: #fbf2e4;
+  --color-sage-green: #8fa895;
+  --color-danger: #d94b42;
+  --color-success: #268052;
+  --color-warning: #c58a2b;
+  --color-info: #527a9a;
+  /* gradien (sedikit, kontras rendah): diagonal 135deg, vertikal 180deg */
+  --grad-header: linear-gradient(135deg, #f7f5f0 0%, #eaf1eb 60%, #d9e6dc 100%);
+  --grad-primary: linear-gradient(135deg, #286b4a 0%, #174b35 100%);
+  --grad-card: linear-gradient(180deg, #ffffff 0%, #eaf1eb 100%);
+  --shadow-subtle: 0 1px 2px rgba(32, 37, 34, 0.06);
+  --shadow-card: 0 4px 16px rgba(32, 37, 34, 0.08);
   /* status kunjungan (latar lembut) */
-  --color-st-booked: #fbf6e8;
+  --color-st-booked: #fbf2e4;
   --color-st-arrived: #eef3f7;
-  --color-st-service: #fbefe8;
-  --color-st-completed: #faeeee;
-  --color-st-paid: #eef4ed;
+  --color-st-service: #fbf2e4;
+  --color-st-completed: #fbeeec;
+  --color-st-paid: #eaf1eb;
   /* publik — monokrom ala Fresha (pilihan pemilik 14/10/2026: terang, maskulin, tanpa pastel): putih, hitam, abu dingin.
      Nama token warisan desain gelap lama: lux = latar, cream = teks utama, gold = aksen (di palet ini = hitam).
      Teks sekunder ≥ 4.5:1 di atas putih & #F5F5F5. */
@@ -46,8 +61,8 @@
   --color-sage: #a4adba;
   --color-rose: #dee3e7;
 
-  --font-display: var(--font-dm), system-ui, sans-serif;
-  --font-sans: var(--font-dm), system-ui, sans-serif;
+  --font-display: var(--font-jakarta), system-ui, sans-serif;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
   --font-serif: var(--font-cormorant), Georgia, serif;
   --font-jost: var(--font-jost-v), system-ui, sans-serif;
 }
@@ -147,34 +162,29 @@ select:not([multiple]):not([size]) {
 }
 
 :root {
-  --background: #f6f4f7;          /* paper */
-  --foreground: #1d1e20;          /* ink */
-  --card-foreground: #1d1e20;
+  --background: #f7f5f0;          /* paper */
+  --foreground: #202522;          /* ink */
+  --card-foreground: #202522;
   --popover: #ffffff;
-  --popover-foreground: #1d1e20;
+  --popover-foreground: #202522;
   --primary: var(--color-accent); /* tombol utama */
   --primary-foreground: #ffffff;
   --secondary: #ffffff;           /* tombol outline (dulu btn-ghost) */
-  --secondary-foreground: #1d1e20;
-  --muted-foreground: #6e6b78;    /* = text-muted */
-  --accent-foreground: #1d1e20;
-  --destructive: #b3202f;         /* = danger */
-  --border: #e8e3ea;              /* = line */
-  --input: #c9c2cf;
+  --secondary-foreground: #202522;
+  --muted-foreground: #747b74;    /* = text-muted */
+  --accent-foreground: #202522;
+  --destructive: #d94b42;         /* = danger */
+  --border: #e8e5de;              /* = line */
+  --input: #e8e5de;
   --ring: var(--color-accent);
   --radius: 0.625rem;
 }
 
-/* Latar luar aplikasi tim: matahari terbenam yang lembut. Dasar linear ungu → magenta → koral → jingga (token --grad-*),
-   ditimpa tiga cahaya radial (ungu dalam kiri-atas, emas kanan-atas, merah muda tengah-bawah) supaya tidak datar. Tetap (tidak ikut bergulir). */
-@utility bg-hpanel {
-  background:
-    radial-gradient(55% 140% at 0% 0%, rgb(112 84 214 / 0.55), transparent 62%),
-    radial-gradient(45% 130% at 100% 0%, rgb(255 213 110 / 0.60), transparent 62%),
-    radial-gradient(60% 120% at 52% 110%, rgb(255 110 150 / 0.40), transparent 70%),
-    linear-gradient(100deg, var(--grad-1), var(--grad-2) 28%, var(--grad-3) 54%, var(--grad-4) 78%, var(--grad-5));
-  background-attachment: fixed;
-}
+/* Bar atas & bingkai luar: gradien gading → hijau lembut. Tetap (fixed) agar "telinga" sudut memakai warna yang sama. Nama utilitas dipertahankan. */
+@utility bg-hpanel { background: var(--grad-header); background-attachment: fixed; }
+/* Tombol utama & kartu opsional (pakai hemat). */
+@utility bg-grad-primary { background-image: var(--grad-primary); }
+@utility bg-grad-card { background-image: var(--grad-card); }
 
 /* Scrollbar disembunyikan di seluruh aplikasi (permintaan pemilik); area tetap bisa digulir dengan roda/sentuh/keyboard. */
 * { scrollbar-width: none !important; -ms-overflow-style: none; }

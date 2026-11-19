@@ -268,7 +268,7 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
           <section key={g.id || "lain"} className="flex flex-col gap-2 rounded-[14px] border border-line p-3.5">
             <div className="flex flex-wrap items-center gap-2">
               <h3 className="flex-1 text-base font-semibold">{g.name}</h3>
-              <a className={buttonClass("plain", `h-11 rounded-[14px] bg-[#1F7A45] text-white ${!g.rows.some((r) => q(r) > 0) ? "pointer-events-none opacity-50" : ""}`)} target="_blank" rel="noopener"
+              <a className={buttonClass("plain", `h-11 rounded-[14px] bg-[#268052] text-white ${!g.rows.some((r) => q(r) > 0) ? "pointer-events-none opacity-50" : ""}`)} target="_blank" rel="noopener"
                 href={`https://wa.me/${g.wa ?? ""}?text=${encodeURIComponent(text(g))}`}>Kirim via WhatsApp</a>
             </div>
             <div className="overflow-x-auto">
@@ -276,9 +276,9 @@ function ShoppingList({ onDone }: { onDone: () => void }) {
                 <thead><tr className="text-left text-xs text-muted"><th className="py-1.5 font-medium">Item</th><th className="font-medium">Stok</th><th className="font-medium">Ambang</th><th className="font-medium">Saran beli</th><th className="text-right font-medium">Estimasi</th></tr></thead>
                 <tbody>
                   {g.rows.map((r) => (
-                    <tr key={r.item_id} className="border-t border-[#EFEAEF]">
+                    <tr key={r.item_id} className="border-t border-[#E8E5DE]">
                       <td className="py-1.5 font-medium">{r.name}</td>
-                      <td className={r.status === "reorder" ? "font-semibold text-[#A12A2A]" : ""}>{qtyFmt(r.qty)} {r.unit}</td>
+                      <td className={r.status === "reorder" ? "font-semibold text-[#D94B42]" : ""}>{qtyFmt(r.qty)} {r.unit}</td>
                       <td>{qtyFmt(r.reorder_at)}</td>
                       <td>
                         <label className="sr-only" htmlFor={`sl-${r.item_id}`}>Jumlah beli {r.name}</label>

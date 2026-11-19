@@ -252,32 +252,24 @@ export default async function Landing() {
                 <h3 className="font-serif text-[28px] font-normal italic text-gold">Layanan tambahan · Pijat & refleksi</h3>
                 <span className="text-xs uppercase tracking-[0.18em] text-stone">{massageOnline ? "Bisa reservasi online" : "Reservasi lewat WhatsApp"}</span>
               </div>
-              <details className="group">
-                <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-[13px] font-medium uppercase tracking-[0.18em] text-cream [&::-webkit-details-marker]:hidden">
-                  <span className="group-open:hidden">Lihat daftar pijat ({extra.length})</span><span className="hidden group-open:inline">Tutup daftar pijat</span>
-                </summary>
-                {MASSAGE_GROUPS.map((g) => {
-                  const rows = extra.filter((x) => massageGroup(x.name ?? "") === g);
-                  return !!rows.length && (
-                    <div key={g} className="mt-3 flex flex-col">
-                      <h4 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{g}</h4>
-                      <div className="grid gap-x-12 min-[900px]:grid-cols-2">
-                        {/* seperti daftar harga cetak: nama · harga, lalu keterangan (durasi ditulis di keterangan bila ada di daftar harga) */}
-                        {rows.map((x) => (
-                          <div key={x.id} className="flex flex-col gap-0.5 py-2">
-                            <div className="flex items-baseline gap-2.5 tabular-nums">
-                              <span className="font-serif text-lg font-medium">{x.name}</span>
-                              <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
-                              {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
-                            </div>
-                            {x.public_description && <span className="text-[13px] leading-snug text-stone">{x.public_description}</span>}
-                          </div>
-                        ))}
-                      </div>
+              {/* satu baris per layanan (keterangan ada di booking & WhatsApp) — daftar tetap terbuka tapi pendek */}
+              {MASSAGE_GROUPS.map((g) => {
+                const rows = extra.filter((x) => massageGroup(x.name ?? "") === g);
+                return !!rows.length && (
+                  <div key={g} className="flex flex-col">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-dust">{g}</h4>
+                    <div className="grid gap-x-12 min-[900px]:grid-cols-2">
+                      {rows.map((x) => (
+                        <div key={x.id} className="flex items-baseline gap-2.5 py-1.5 tabular-nums">
+                          <span className="font-serif text-lg font-medium">{x.name}</span>
+                          <span className="flex-1 -translate-y-[4px] border-b border-dotted border-rule-2" />
+                          {s.show_prices && <span className="text-[15px]">{rk(x.price ?? 0)}</span>}
+                        </div>
+                      ))}
                     </div>
-                  );
-                })}
-              </details>
+                  </div>
+                );
+              })}
               {massageOnline ? <Link href={bookHref("massage")} className="btn-line self-start">Reservasi pijat</Link>
                 : wa && <a href={wa} target="_blank" rel="noopener" className="btn-line self-start">Tanya jadwal pijat</a>}
             </div>

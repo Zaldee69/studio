@@ -4,4 +4,4 @@
 export const BRAND = process.env.NEXT_PUBLIC_BRAND || "D'Pras Studio";
 export const BRAND_INITIALS = process.env.NEXT_PUBLIC_BRAND_INITIALS || "DP";
 export const BRAND_TAGLINE = process.env.NEXT_PUBLIC_BRAND_TAGLINE || "For Every You.";
-export const BRAND_LINES = process.env.NEXT_PUBLIC_BRAND_LINES || "Barbershop • Nail Art • Lashes";
+export const BRAND_LINES = process.env.NEXT_PUBLIC_BRAND_LINES || "Barbershop • Pijat • Refleksi";

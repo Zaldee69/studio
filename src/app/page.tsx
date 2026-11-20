@@ -123,7 +123,7 @@ export default async function Landing() {
 
   const DAY_URL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const jsonLd = {
-    "@context": "https://schema.org", "@type": ["HairSalon", "NailSalon", "BeautySalon"], name: s.shop_name, description: s.tagline, url: SITE_URL,
+    "@context": "https://schema.org", "@type": ["HairSalon", "BeautySalon"], name: s.shop_name, description: s.tagline, url: SITE_URL,
     ...(hero ? { image: photoUrl(hero.path) } : {}),
     ...(s.shop_whatsapp ? { telephone: `+${s.shop_whatsapp}` } : {}),
     ...(s.shop_address ? { address: { "@type": "PostalAddress", streetAddress: s.shop_address, addressLocality: cityOf(s.shop_address), addressCountry: "ID" } } : {}),

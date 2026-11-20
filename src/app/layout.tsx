@@ -14,7 +14,7 @@ const manrope = Manrope({ variable: "--font-jost-v", subsets: ["latin"] });
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: BRAND, template: `%s · ${BRAND}` },
-  description: "For Every You. Barbershop, nail art, dan lashes dalam satu studio — harga jelas, proses nyaman, reservasi online.",
+  description: "For Every You. Barbershop dan pijat di Cimanggis, Depok — harga jelas, proses nyaman, reservasi online. Buka setiap hari 10.00-21.00.",
   openGraph: { siteName: BRAND, locale: "id_ID", type: "website" },
   appleWebApp: { capable: true, title: BRAND },
 };

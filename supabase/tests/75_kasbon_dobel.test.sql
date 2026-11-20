@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(21);
+select plan(23);
 
 -- T-01900551 (Opsi A): kasbon staf non-bulanan hanya dipotong lewat komisi mingguan (dibawa lintas bulan);
 -- commission_live (gaji bulanan) tak lagi memuat adjustment kasbon mereka. pay_monthly tetap lewat adjustments.
@@ -119,6 +119,14 @@ select results_eq($$ select adjustments, total_pay from payroll_snapshots where 
   'AC8: snapshot A = commission_live (adj 25rb, total 75rb)');
 select results_eq($$ select adjustments, total_pay from payroll_snapshots where staff_name = 'Uji Dobel C' $$, $$ values (-70000::bigint, 980000::bigint) $$,
   'AC8: snapshot C pay_monthly tetap memuat kasbon');
+
+-- Review PR #17 M1: owner_report_extra.payroll_paid selaras dengan sisa dibayar (restPay): B non-bulanan total 1.040.000 − kasbon terpotong mingguan 50rb = 990rb; C pay_monthly 980rb utuh
+select tests.login(tests.mgr());
+select owner_report_extra(jkt_today(), jkt_today()) ->> 'payroll_paid' as pp0 \gset
+select payroll_mark_paid('2026-08-01', '00000000-0000-0000-00dd-000000000002', 'transfer');
+select is((owner_report_extra(jkt_today(), jkt_today()) ->> 'payroll_paid')::bigint - :pp0::bigint, 990000::bigint, 'M1: payroll_paid B = 990rb (kasbon terpotong mingguan ikut dikurangi)');
+select payroll_mark_paid('2026-08-01', '00000000-0000-0000-00dd-000000000003', 'tunai');
+select is((owner_report_extra(jkt_today(), jkt_today()) ->> 'payroll_paid')::bigint - :pp0::bigint, 990000::bigint + 980000, 'M1: payroll_paid C pay_monthly = 980rb (tak dikurangi dua kali)');
 
 select * from finish();
 rollback;

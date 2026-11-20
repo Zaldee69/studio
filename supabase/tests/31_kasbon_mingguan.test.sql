@@ -29,8 +29,11 @@ select results_eq($$ select kasbon, amount from commission_week('2026-08-10') wh
 select ok(commission_week_close('2026-08-10') > 0, 'minggu 2 ditutup');
 
 select tests.su();
+-- T-01900551 (Opsi A): non-bulanan → adjustment kasbon tak ikut total_pay; kasbon dipotong HANYA lewat komisi mingguan.
+-- total_pay (komisi 100rb) − bayaran mingguan (30rb) = kasbon yang sudah dipotong mingguan (70rb) → sisa akhir bulan 0 tanpa dikurangkan dua kali.
 select is((select total_pay from commission_live('2026-08-01') where staff_id = '00000000-0000-0000-00cc-000000000001')
-          - (select sum(amount) from commission_week_pays where staff_id = '00000000-0000-0000-00cc-000000000001')::bigint,
+          - (select sum(amount) from commission_week_pays where staff_id = '00000000-0000-0000-00cc-000000000001')::bigint
+          - (select sum(kasbon) from commission_week_pays where staff_id = '00000000-0000-0000-00cc-000000000001')::bigint,
           0::bigint, 'akhir bulan: kasbon tidak terpotong dua kali (sisa 0)');
 -- reopen minggu 2 → potongannya kembali dihitung ulang
 select tests.login(tests.mgr());

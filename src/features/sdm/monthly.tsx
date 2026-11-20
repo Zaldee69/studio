@@ -13,7 +13,7 @@ import { CloseButton, Field, Sheet, useOnline, useToast } from "@/components/ui"
 import { downloadText, toCsv } from "@/lib/domain/csv";
 import { formatJam, formatRupiah, formatTanggal } from "@/lib/domain/format";
 import { createClient } from "@/lib/supabase/client";
-import { catInfo, monthLabel, shiftMonth } from "./shared";
+import { catInfo, kasbonDebt, monthLabel, NO_KASBON, restPay, shiftMonth, type KasbonInfo } from "./shared";
 
 export type PayRow = {
   staff_id: string; staff_name: string; category: Cat; commission_pct: number; service_count: number;
@@ -24,10 +24,12 @@ export type Period = { status: "open" | "closed"; closed_at: string | null; reop
 
 const signed = (v: number) => (v < 0 ? "−" : v > 0 ? "+" : "") + formatRupiah(Math.abs(v));
 
-export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {} }: {
+export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {}, kasbon = {} }: {
   month: string; current: string; rows: PayRow[]; period: Period; ratio: number;
   /** komisi yang sudah ditutup mingguan untuk bulan ini, per staf → dikurangkan dari total gaji */
   weekly?: Record<string, number>;
+  /** info kasbon per staf: sisa utang dibawa komisi mingguan (info, tidak mengurangi gaji bulan ini) */
+  kasbon?: Record<string, KasbonInfo>;
 }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
   const [detail, setDetail] = useState<PayRow | null>(null);
@@ -40,9 +42,13 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
   const under = rows.filter((r) => r.subsidy > 0).length;
   const future = month > current;
   const wk = (r: PayRow) => weekly[r.staff_id] ?? 0;
-  const hasWeekly = rows.some((r) => wk(r) !== 0);
+  const kb = (r: PayRow) => kasbon[r.staff_id] ?? NO_KASBON;
+  const debt = (r: PayRow) => kasbonDebt(kb(r));
+  const hasDebt = rows.some((r) => debt(r) > 0);
+  const hasWeekly = rows.some((r) => wk(r) !== 0 || kb(r).cutMonth !== 0);
   const hasBase = rows.some((r) => r.base_salary > 0);
-  const rest = (r: PayRow) => r.total_pay - wk(r);   // sisa dibayar akhir bulan (negatif = kelebihan bayar mingguan → dipotong)
+  // sisa dibayar akhir bulan; kasbon yang sudah dipotong dari komisi mingguan tidak dikurangkan lagi (lihat restPay)
+  const rest = (r: PayRow) => restPay(r.total_pay, r.adjustments, wk(r), kb(r));
 
   async function close() {
     const { error } = await createClient().rpc("payroll_close", { p_month: `${month}-01` });
@@ -57,9 +63,9 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
   function exportCsv() {
     downloadText(`rekap-gaji-${month}.csv`, toCsv([
       ["Staf", "Bidang", "Layanan", "Pendapatan jasa", "HPP", "Gaji pokok", "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", "Total gaji",
-        "Dibayar mingguan", "Sisa akhir bulan", "Dibayar", "Metode"],
+        "Dibayar mingguan", "Sisa akhir bulan", "Sisa utang kasbon", "Dibayar", "Metode"],
       ...rows.map((r) => [r.staff_name, catInfo(r.category).label, r.service_count, r.revenue_net, r.hpp_total, r.base_salary, r.commission_service, r.commission_retail,
-        r.subsidy, r.adjustments, r.total_pay, wk(r), rest(r), r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
+        r.subsidy, r.adjustments, r.total_pay, wk(r), rest(r), debt(r), r.paid_at ? formatTanggal(r.paid_at) : "", r.paid_method ?? ""]),
     ]));
   }
 
@@ -93,7 +99,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
         <table className="w-full min-w-[1100px] text-sm tabular">
           <thead><tr className="text-left text-xs text-muted">
             {["Staf", "Layanan", "Pendapatan", "HPP", ...(hasBase ? ["Gaji pokok"] : []), "Komisi jasa", "Komisi ritel", "Subsidi", "Penyesuaian", hasWeekly ? "Total gaji" : "Total dibayar",
-              ...(hasWeekly ? ["Dibayar mingguan", "Sisa akhir bulan"] : []), "Status bayar"].map((h, i, all) =>
+              ...(hasWeekly ? ["Dibayar mingguan", "Sisa akhir bulan"] : []), ...(hasDebt ? ["Sisa utang kasbon"] : []), "Status bayar"].map((h, i, all) =>
               <th key={h} className={`py-3 pr-2 font-medium ${i === 0 ? "sticky left-0 z-[1] bg-card" : ""} ${i && i < all.length - 1 ? "text-right" : ""}`}>{h}</th>)}
           </tr></thead>
           <tbody>
@@ -118,6 +124,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
                   <td className="pr-2 text-right text-muted">{wk(r) ? `−${formatRupiah(wk(r))}` : "—"}</td>
                   <td className={`pr-2 text-right text-base font-semibold ${rest(r) < 0 ? "text-danger" : ""}`}>{rest(r) < 0 ? `−${formatRupiah(-rest(r))}` : formatRupiah(rest(r))}</td>
                 </>}
+                {hasDebt && <td className="pr-2 text-right text-muted" title="Dipotong dari komisi mingguan berikutnya, tidak dari gaji bulan ini">{debt(r) ? formatRupiah(debt(r)) : "—"}</td>}
                 <td className="pr-2">
                   {!closed ? <span className="text-xs text-muted">Belum final</span>
                     : r.paid_at ? <span className="rounded-full bg-[#E3F4EA] px-2.5 py-0.5 text-xs font-semibold text-[#1D5A3A]">Dibayar {formatTanggal(r.paid_at)}</span>
@@ -131,14 +138,15 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
               <td className="pr-2 text-right">{formatRupiah(sum("commission_retail"))}</td><td className="pr-2 text-right">{formatRupiah(sum("subsidy"))}</td>
               <td className="pr-2 text-right">{signed(sum("adjustments"))}</td><td className="pr-2 text-right text-base">{formatRupiah(sum("total_pay"))}</td>
               {hasWeekly && <><td className="pr-2 text-right">−{formatRupiah(rows.reduce((a, r) => a + wk(r), 0))}</td>
-                <td className="pr-2 text-right text-base">{formatRupiah(rows.reduce((a, r) => a + rest(r), 0))}</td></>}<td />
+                <td className="pr-2 text-right text-base">{formatRupiah(rows.reduce((a, r) => a + rest(r), 0))}</td></>}
+              {hasDebt && <td className="pr-2 text-right">{formatRupiah(rows.reduce((a, r) => a + debt(r), 0))}</td>}<td />
             </tr>
           </tbody>
         </table>
       </div>
 
       <Sheet open={!!detail} onClose={() => setDetail(null)} label="Detail staf" variant="drawer">
-        {detail && <StaffDetail row={detail} month={month} closed={closed} onClose={() => setDetail(null)} />}
+        {detail && <StaffDetail row={detail} month={month} closed={closed} debt={debt(detail)} onClose={() => setDetail(null)} />}
       </Sheet>
 
       <Sheet open={closing} onClose={() => setClosing(false)} label="Tutup periode" width={640}>
@@ -174,7 +182,7 @@ export function MonthlyPayroll({ month, current, rows, period, ratio, weekly = {
 type Item = { transaction_item_id: string; created_at: string; name: string; category: string; net_amount: number; hpp: number | null; commission: number };
 type Adj = { id: string; kind: string; amount: number; reason: string; created_at: string };
 
-function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: string; closed: boolean; onClose: () => void }) {
+function StaffDetail({ row, month, closed, debt, onClose }: { row: PayRow; month: string; closed: boolean; debt: number; onClose: () => void }) {
   const toast = useToast(); const router = useRouter(); const online = useOnline();
   const [items, setItems] = useState<Item[] | null>(null);
   const [adj, setAdj] = useState<Adj[]>([]);
@@ -214,6 +222,7 @@ function StaffDetail({ row, month, closed, onClose }: { row: PayRow; month: stri
         <div className="flex items-baseline justify-between rounded-[14px] bg-accent p-4 text-paper tabular">
           <span className="text-sm text-[#9C98A3]">Total dibayar</span><b className="font-display text-3xl">{formatRupiah(row.total_pay)}</b>
         </div>
+        {debt > 0 && <p className="rounded-[12px] bg-[#FBF2E4] px-4 py-3 text-sm text-[#6B4A10]">Sisa utang kasbon {formatRupiah(debt)} — dipotong dari komisi mingguan berikutnya, tidak mengurangi gaji bulan ini.</p>}
         <Link href={`/manajer/sdm/slip/${month}/${row.staff_id}`} className={buttonClass("outline", `h-11 ${closed ? "" : "pointer-events-none opacity-50"}`)} aria-disabled={!closed}>
           Slip gaji{closed ? "" : " (tutup periode dulu)"}
         </Link>

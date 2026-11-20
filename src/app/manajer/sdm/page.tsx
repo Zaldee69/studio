@@ -4,6 +4,7 @@ import { TabNav } from "@/components/tab-nav";
 import { MonthlyPayroll, type PayRow, type Period } from "@/features/sdm/monthly";
 import { WeeklyCommission, type WeekRow } from "@/features/sdm/weekly";
 import { mondayOf, plusDays } from "@/features/sdm/shared";
+import { loadKasbon } from "@/features/sdm/kasbon";
 import { Kehadiran, type Wifi } from "@/features/absen/kehadiran";
 import type { KRow } from "@/features/absen/status";
 import { AnnualReview, CommissionRules, Leaderboard, type LeaderRow, type ReviewRow } from "@/features/sdm/rules";
@@ -44,12 +45,13 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
       reopenReason={wk?.status === "open" ? wk.reopen_reason : null} holdMonths={openMonths} />;
   } else if (tab === "bulanan") {
     // gaji bulanan untuk staf yang dibayar bulanan (keputusan owner 1 Nov); staf mingguan tanpa gaji pokok cukup di Komisi mingguan
-    const [{ data: all }, { data: period }, { data: weekly }, { data: priv }, { data: cb }] = await Promise.all([
+    const [{ data: all }, { data: period }, { data: weekly }, { data: priv }, { data: cb }, kasbon] = await Promise.all([
       supabase.rpc("commission_for_period", { p_month: `${month}-01` }),
       supabase.from("payroll_periods").select("status, closed_at, reopen_reason").eq("month", `${month}-01`).maybeSingle(),
       supabase.rpc("commission_weekly_for_month", { p_month: `${month}-01` }),
       supabase.rpc("staff_private"),
       supabase.rpc("cashier_bonus", { p_month: `${month}-01` }),
+      loadKasbon(supabase, month),
     ]);
     const bonus = cb as { revenue: number; min: number; pct: number; bonus: number } | null;
     // + staf bergaji pokok yang komisinya mingguan: gaji pokok tetap dibayar di sini (sisa = total − dibayar mingguan)
@@ -66,7 +68,7 @@ export default async function Sdm({ searchParams }: PageProps<"/manajer/sdm">) {
         </section>
       )}
       <MonthlyPayroll key={month} month={month} current={current} rows={(rows ?? []) as PayRow[]} period={period as Period}
-      weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))}
+      weekly={Object.fromEntries((weekly ?? []).map((w) => [w.staff_id, Number(w.closed_amount)]))} kasbon={kasbon}
       ratio={st?.commission_pct ?? 40} />
     </>;
   } else if (tab === "aturan") {

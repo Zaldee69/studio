@@ -16,3 +16,29 @@ export const weekLabel = (monday: string) => {
   const f = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("id-ID", { ...o, timeZone: "UTC" }).format(day(d));
   return `${f(monday, { day: "numeric", month: "short" })} – ${f(plusDays(monday, 6), { day: "numeric", month: "short", year: "numeric" })}`;
 };
+
+// ---- Kasbon di gaji bulanan (T-01900551, Opsi A) ----
+// Staf non-bulanan: kasbon dipotong HANYA lewat komisi mingguan (dibawa lintas bulan); commission_live tak lagi memuat adjustment kasbon mereka.
+// pay_monthly: kasbon tetap lewat adjustments. Snapshot lama (sebelum perbaikan) masih memuat adjustment kasbon.
+export type KasbonInfo = {
+  /** Σ kasbon non-void s/d akhir bulan */ expenses: number;
+  /** Σ commission_week_pays.kasbon s/d bulan ini (terpotong dari komisi) */ cut: number;
+  /** Σ kasbon bulan ini yang ditautkan payroll_adjustments (non-void), positif */ adjKasbon: number;
+  /** Σ SEMUA payroll_adjustments bulan ini */ adjAll: number;
+  /** Σ kasbon yang dipotong di minggu-minggu bulan ini */ cutMonth: number;
+};
+export const NO_KASBON: KasbonInfo = { expenses: 0, cut: 0, adjKasbon: 0, adjAll: 0, cutMonth: 0 };
+
+/** Sisa utang kasbon yang belum terpotong komisi (info; ditunggu dari komisi minggu berikut). Tak pernah negatif. */
+export const kasbonDebt = (k: KasbonInfo) => Math.max(0, k.expenses - k.cut);
+
+/**
+ * Sisa dibayar akhir bulan. total_pay − bayaran mingguan (net) − kasbon yang sudah dipotong mingguan.
+ * Bila total_pay sudah memuat adjustment kasbon (pay_monthly, atau snapshot lama), potongan mingguan sudah tertutup oleh adjustment → jangan kurangi dua kali.
+ * Deteksi: adjustments (di total_pay) == semua adjustment bulan itu & ada adjustment kasbon.
+ * ponytail: void transaksi dari minggu terbayar (commission_deductions) ikut di kolom kasbon mingguan → bisa menggeser sisa sebesar potongan itu; kasus langka, tak dikoreksi.
+ */
+export const restPay = (totalPay: number, adjustments: number, weeklyNet: number, k: KasbonInfo) => {
+  const kasbonInTotal = k.adjKasbon !== 0 && adjustments === k.adjAll;
+  return totalPay - weeklyNet - (kasbonInTotal ? 0 : k.cutMonth);
+};

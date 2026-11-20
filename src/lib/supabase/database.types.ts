@@ -894,6 +894,97 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"kasbon_requests": {
+                  Row: {
+                    "amount": number,"cancel_reason": string | null,"cancelled_at": string | null,"cancelled_by": string | null,"decided_at": string | null,"decided_by": string | null,"decision_note": string | null,"expense_id": string | null,"id": string,"limit_override": boolean,"over_limit": boolean,"override_by": string | null,"paid_at": string | null,"paid_by": string | null,"proof_path": string | null,"reason": string,"requested_at": string,"requested_by": string | null,"staff_id": string,"status": string,"week_start": string
+                  }
+                  Insert: {
+                    "amount": number,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"expense_id"?: string | null,"id"?: string,"limit_override"?: boolean,"over_limit"?: boolean,"override_by"?: string | null,"paid_at"?: string | null,"paid_by"?: string | null,"proof_path"?: string | null,"reason": string,"requested_at"?: string,"requested_by"?: string | null,"staff_id": string,"status"?: string,"week_start": string
+                  }
+                  Update: {
+                    "amount"?: number,"cancel_reason"?: string | null,"cancelled_at"?: string | null,"cancelled_by"?: string | null,"decided_at"?: string | null,"decided_by"?: string | null,"decision_note"?: string | null,"expense_id"?: string | null,"id"?: string,"limit_override"?: boolean,"over_limit"?: boolean,"override_by"?: string | null,"paid_at"?: string | null,"paid_by"?: string | null,"proof_path"?: string | null,"reason"?: string,"requested_at"?: string,"requested_by"?: string | null,"staff_id"?: string,"status"?: string,"week_start"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "kasbon_requests_cancelled_by_fkey"
+      columns: ["cancelled_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_cancelled_by_fkey"
+      columns: ["cancelled_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_decided_by_fkey"
+      columns: ["decided_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_decided_by_fkey"
+      columns: ["decided_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_expense_id_fkey"
+      columns: ["expense_id"]
+isOneToOne: false
+      referencedRelation: "expenses"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_override_by_fkey"
+      columns: ["override_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_override_by_fkey"
+      columns: ["override_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_paid_by_fkey"
+      columns: ["paid_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_paid_by_fkey"
+      columns: ["paid_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_requested_by_fkey"
+      columns: ["requested_by"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "public_staff"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "kasbon_requests_staff_id_fkey"
+      columns: ["staff_id"]
+isOneToOne: false
+      referencedRelation: "staff"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"maintenance_logs": {
                   Row: {
                     "cost": number | null,"created_at": string,"done_by": string | null,"id": string,"note": string,"photo_path": string | null,"task_id": string,"vendor": string | null
@@ -1443,16 +1534,28 @@ isOneToOne: false
                   ]
                 },"settings": {
                   Row: {
-                    "absen_masuk": string,"absen_mulai": string,"absen_pulang": string,"absen_toleransi": number,"alert_cash_diff": number,"alert_expense_min": number,"aov_target_barbershop": number,"aov_target_massage": number,"aov_target_nail": number,"auto_followup_on": boolean,"blast_daily_limit": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"cash_tolerance": number,"cashier_bonus_min": number,"cashier_bonus_pct": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"google_review_url": string | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"hidden_features": (string)[],"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"manager_mfa_required": boolean,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"target_customer_pct": number,"target_cuts_senkam": number,"target_cuts_weekend_max": number,"target_cuts_weekly": number,"target_new_weekly": number,"target_rebook_pct": number,"target_returning_weekly": number,"target_upgrade_pct": number,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
+                    "absen_masuk": string,"absen_mulai": string,"absen_pulang": string,"absen_toleransi": number,"alert_cash_diff": number,"alert_expense_min": number,"aov_target_barbershop": number,"aov_target_massage": number,"aov_target_nail": number,"auto_followup_on": boolean,"blast_daily_limit": number,"bloom_text": string,"booking_buffer_minutes": number,"booking_lead_minutes": number,"booking_max_days_ahead": number,"bundle_pct": number,"cancel_cutoff_hours": number,"cash_tolerance": number,"cashier_bonus_min": number,"cashier_bonus_pct": number,"churn_weeks": number,"close_time": string,"commission_basis": string,"commission_deduct_hpp": boolean,"commission_pct": number,"drawer_start_balance": number,"drawer_start_date": string | null,"followup_window_days": number,"founded_year": number | null,"google_review_url": string | null,"groom_text": string,"hero_text": string,"hero_title": string,"hero_title_accent": string,"hidden_features": (string)[],"id": boolean,"insight_aov_gap_pct": number,"insight_low_util_pct": number,"inventory_cost_method": string,"invite_code": string,"kasbon_approver": string | null,"kasbon_flow_on": boolean,"kasbon_weekly_limit": number,"kpi_min_tx_for_stable": number,"maint_default_interval_days": number,"manager_mfa_required": boolean,"maps_embed_url": string,"maps_url": string | null,"margin_warning_pct": number,"min_monthly_pay": number,"online_booking_mode": string,"online_booking_open": boolean,"online_promo_end": string | null,"online_promo_pct": number,"online_promo_start": string | null,"open_time": string,"petty_cash_limit": number,"privacy_policy": string,"receipt_required_above": number,"reorder_suggest_multiplier": number,"retail_commission_pct": number,"retail_ratio_max": number,"retail_ratio_min": number,"return_window_days": number,"revenue_target_monthly": number,"shop_address": string,"shop_instagram": string,"shop_name": string,"shop_whatsapp": string,"show_prices": boolean,"show_staff": boolean,"sop_reminder_time": string,"sop_require_photo_autoclave": boolean,"sop_shift_names": (string)[],"sop_shifts": number,"standards": NonNullable<Json>,"tagline": string,"target_customer_pct": number,"target_cuts_senkam": number,"target_cuts_weekend_max": number,"target_cuts_weekly": number,"target_new_weekly": number,"target_rebook_pct": number,"target_returning_weekly": number,"target_upgrade_pct": number,"updated_at": string,"usage_variance_threshold_pct": number,"utilization_target": number,"wa_followup_template": string
                   }
                   Insert: {
-                    "absen_masuk"?: string,"absen_mulai"?: string,"absen_pulang"?: string,"absen_toleransi"?: number,"alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "absen_masuk"?: string,"absen_mulai"?: string,"absen_pulang"?: string,"absen_toleransi"?: number,"alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kasbon_approver"?: string | null,"kasbon_flow_on"?: boolean,"kasbon_weekly_limit"?: number,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Update: {
-                    "absen_masuk"?: string,"absen_mulai"?: string,"absen_pulang"?: string,"absen_toleransi"?: number,"alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
+                    "absen_masuk"?: string,"absen_mulai"?: string,"absen_pulang"?: string,"absen_toleransi"?: number,"alert_cash_diff"?: number,"alert_expense_min"?: number,"aov_target_barbershop"?: number,"aov_target_massage"?: number,"aov_target_nail"?: number,"auto_followup_on"?: boolean,"blast_daily_limit"?: number,"bloom_text"?: string,"booking_buffer_minutes"?: number,"booking_lead_minutes"?: number,"booking_max_days_ahead"?: number,"bundle_pct"?: number,"cancel_cutoff_hours"?: number,"cash_tolerance"?: number,"cashier_bonus_min"?: number,"cashier_bonus_pct"?: number,"churn_weeks"?: number,"close_time"?: string,"commission_basis"?: string,"commission_deduct_hpp"?: boolean,"commission_pct"?: number,"drawer_start_balance"?: number,"drawer_start_date"?: string | null,"followup_window_days"?: number,"founded_year"?: number | null,"google_review_url"?: string | null,"groom_text"?: string,"hero_text"?: string,"hero_title"?: string,"hero_title_accent"?: string,"hidden_features"?: (string)[],"id"?: boolean,"insight_aov_gap_pct"?: number,"insight_low_util_pct"?: number,"inventory_cost_method"?: string,"invite_code"?: string,"kasbon_approver"?: string | null,"kasbon_flow_on"?: boolean,"kasbon_weekly_limit"?: number,"kpi_min_tx_for_stable"?: number,"maint_default_interval_days"?: number,"manager_mfa_required"?: boolean,"maps_embed_url"?: string,"maps_url"?: string | null,"margin_warning_pct"?: number,"min_monthly_pay"?: number,"online_booking_mode"?: string,"online_booking_open"?: boolean,"online_promo_end"?: string | null,"online_promo_pct"?: number,"online_promo_start"?: string | null,"open_time"?: string,"petty_cash_limit"?: number,"privacy_policy"?: string,"receipt_required_above"?: number,"reorder_suggest_multiplier"?: number,"retail_commission_pct"?: number,"retail_ratio_max"?: number,"retail_ratio_min"?: number,"return_window_days"?: number,"revenue_target_monthly"?: number,"shop_address"?: string,"shop_instagram"?: string,"shop_name"?: string,"shop_whatsapp"?: string,"show_prices"?: boolean,"show_staff"?: boolean,"sop_reminder_time"?: string,"sop_require_photo_autoclave"?: boolean,"sop_shift_names"?: (string)[],"sop_shifts"?: number,"standards"?: NonNullable<Json>,"tagline"?: string,"target_customer_pct"?: number,"target_cuts_senkam"?: number,"target_cuts_weekend_max"?: number,"target_cuts_weekly"?: number,"target_new_weekly"?: number,"target_rebook_pct"?: number,"target_returning_weekly"?: number,"target_upgrade_pct"?: number,"updated_at"?: string,"usage_variance_threshold_pct"?: number,"utilization_target"?: number,"wa_followup_template"?: string
                   }
                   Relationships: [
-                    
+                    {
+      foreignKeyName: "settings_kasbon_approver_fkey"
+      columns: ["kasbon_approver"]
+isOneToOne: false
+      referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "settings_kasbon_approver_fkey"
+      columns: ["kasbon_approver"]
+isOneToOne: false
+      referencedRelation: "team_names"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"site_photos": {
                   Row: {
@@ -2596,6 +2699,29 @@ isOneToOne: false
                            },
 "join_waitlist":
 { Args: { "p": Json }; Returns: (string)[]
+                           },
+"kasbon_cancel":
+{ Args: { "p_id": string,"p_reason": string }; Returns: undefined
+                           },
+"kasbon_decide":
+{ Args: { "p_approve": boolean,"p_id": string,"p_note"?: string,"p_override"?: boolean }; Returns: undefined
+                           },
+"kasbon_info":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "flow_on": boolean,"is_approver": boolean,"weekly_limit": number
+            }[]
+                           },
+"kasbon_is_approver":
+{ Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"kasbon_pay":
+{ Args: { "p_id": string,"p_proof_path": string }; Returns: string
+                           },
+"kasbon_request":
+{ Args: { "p_amount": number,"p_reason": string,"p_staff": string }; Returns: string
+                           },
+"kasbon_week_used":
+{ Args: { "p_committed"?: boolean,"p_except"?: string,"p_staff": string,"p_week": string }; Returns: number
                            },
 "kehadiran":
 { Args: { "p_from": string,"p_to": string }; Returns: {

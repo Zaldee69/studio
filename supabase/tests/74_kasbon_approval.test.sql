@@ -1,6 +1,6 @@
 begin;
 \ir helpers.psql
-select plan(29);
+select plan(34);
 
 -- Kasbon lewat pengajuan (T-8c19ecda). Owner (approver) = tests.mgr(); manajer lain = tests.sari() (dijadikan manajer); kasir = tests.kasir().
 select tests.su();
@@ -29,6 +29,9 @@ select set_config('t.r1', :'r1', false);
 select is((select status from kasbon_requests where id = :'r1'), 'diajukan', 'AC1: status diajukan');
 select tests.su();
 select is((select count(*) from expenses where category = 'kasbon')::bigint + 0, :k0::bigint + 1, 'AC1: pengajuan tidak membuat expenses (hanya 1 baris dari tes flag-off)');
+-- AC12: migrasi tidak mengubah expenses kasbon lama (k0/s0 diambil setelah migrasi; migrasi tanpa DML expenses). Hanya baris flag-off 10rb yang menambah.
+select is((select count(*) from expenses where category = 'kasbon')::bigint, :k0::bigint + 1, 'AC12: jumlah expenses kasbon = awal + 1 (flag-off)');
+select is((select coalesce(sum(amount), 0) from expenses where category = 'kasbon')::bigint, :s0::bigint + 10000, 'AC12: total expenses kasbon = awal + 10rb (flag-off)');
 -- AC15: kasir hanya melihat miliknya
 select tests.login(tests.mgr());
 select kasbon_request('00000000-0000-0000-00ee-000000000001', 100000, 'uji dua (lewat limit)') as r2 \gset
@@ -47,6 +50,8 @@ select tests.login(tests.kasir());
 select throws_ok($$ select kasbon_decide(current_setting('t.r1')::uuid, true) $$, '42501', null, 'AC3: kasir tak bisa setuju');
 -- AC13: manajer lain tak bisa ubah pengaturan kasbon
 select tests.login(tests.sari());
+select throws_ok($$ delete from settings $$, '42501', null, 'AC13b: manajer lain tak bisa DELETE settings');
+select throws_ok($$ insert into settings (kasbon_approver, kasbon_flow_on) values (tests.sari(), true) $$, '42501', null, 'AC13b: manajer lain tak bisa INSERT settings');
 select throws_like($$ update settings set kasbon_approver = tests.sari() $$, '%hanya bisa diubah owner%', 'AC13: manajer lain tak bisa ganti approver');
 select throws_like($$ update settings set kasbon_weekly_limit = 99999999 $$, '%hanya bisa diubah owner%', 'AC13: manajer lain tak bisa ubah limit');
 
@@ -67,6 +72,11 @@ select throws_like($$ select kasbon_pay(current_setting('t.r1')::uuid, 'kasbon/'
 select tests.su();
 insert into storage.objects (bucket_id, name) values ('receipts', 'kasbon/' || :'r1' || '/bukti.jpg');
 select tests.login(tests.mgr());
+-- cash_summary_full tertutup untuk authenticated: panggil sebagai postgres dengan klaim JWT manajer
+select tests.su();
+select set_config('request.jwt.claims', json_build_object('sub', tests.mgr(), 'role', 'authenticated')::text, true);
+select (cash_summary_full(jkt_today()) ->> 'expected_cash')::bigint as exp0 \gset
+select tests.login(tests.mgr());
 select kasbon_pay(:'r1'::uuid, 'kasbon/' || :'r1' || '/bukti.jpg') as e1 \gset
 select set_config('t.e1', :'e1', false);
 select throws_like($$ select kasbon_pay(current_setting('t.r1')::uuid, 'kasbon/' || current_setting('t.r1') || '/bukti.jpg') $$, '%belum disetujui / sudah dibayar%', 'AC18: klik ganda ditolak');
@@ -76,6 +86,10 @@ select is((select count(*) from expenses where id = :'e1' and source = 'transfer
 
 -- AC7: kas laci tidak berubah oleh kasbon transfer (net0 diambil sebelum; add_expense lama 10rb laci dikecualikan)
 select is((select cash_day_net(jkt_today())), :net0::bigint - 10000, 'AC7: cash_day_net hanya turun oleh kasbon laci lama (10rb), bukan kasbon transfer');
+select tests.su();
+select set_config('request.jwt.claims', json_build_object('sub', tests.mgr(), 'role', 'authenticated')::text, true);
+select is((cash_summary_full(jkt_today()) ->> 'expected_cash')::bigint, :exp0::bigint, 'AC7: expected_cash identik sebelum dan sesudah kasbon_pay (transfer)');
+select tests.su();
 
 -- AC8: komisi mingguan memotong kasbon baru (komisi 50rb, utang 160rb = 150rb baru + 10rb uji flag-off) → dipotong 50rb, bayaran 0
 insert into transactions (id, subtotal, total, paid_amount, payment_method, created_at) values

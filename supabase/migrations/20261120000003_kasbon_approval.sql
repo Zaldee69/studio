@@ -22,6 +22,9 @@ begin
   return new;
 end $$;
 create trigger settings_kasbon_guard before update on settings for each row execute function settings_kasbon_guard();
+-- Review B1: policy manager_all = FOR ALL + grant default Supabase → manajer bisa DELETE+INSERT settings dan melewati trigger UPDATE.
+-- settings satu baris, UI hanya UPDATE; insert/delete/truncate hanya lewat service role/migrasi.
+revoke insert, delete, truncate on settings from authenticated, anon;
 
 -- ---------- kasbon_requests ----------
 create table kasbon_requests (
@@ -192,7 +195,11 @@ end $$;
 revoke execute on function kasbon_request(uuid, bigint, text), kasbon_decide(uuid, boolean, text, boolean), kasbon_pay(uuid, text), kasbon_cancel(uuid, text) from public, anon;
 grant execute on function kasbon_request(uuid, bigint, text), kasbon_decide(uuid, boolean, text, boolean), kasbon_pay(uuid, text), kasbon_cancel(uuid, text) to authenticated;
 
--- ---------- patch fungsi lama (backup definisi lama: lihat riwayat migrasi 20261011000003 / 20261014000002 / 20261101000008) ----------
+-- ---------- patch fungsi lama ----------
+-- Backup definisi (pg_get_functiondef, DB lokal, 20261120T115606Z) di supabase/backup/:
+--   *_sebelum_kasbon_*.sql = definisi lama untuk rollback; *_aktual_*.sql = definisi hasil patch ini.
+-- Rollback fungsi: jalankan berkas *_sebelum_kasbon_*. Sebelum apply di prod, ambil ulang pg_get_functiondef prod dan simpan bertimestamp.
+-- Migrasi ini dijalankan sekali (tidak idempoten).
 do $$
 declare def text; old text;
 begin

@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { OpenNow } from "@/components/open-now";
 import { PublicFooter, PublicHeader } from "@/components/public-header";
+import { Analytics } from "@/components/analytics";
 import { TrackView } from "@/components/track-view";
 import { bundleDiscount, promoActive } from "@/lib/domain/cart";
 import { formatRupiah, formatTanggal, mapsUrl } from "@/lib/domain/format";
@@ -165,6 +166,7 @@ export default async function Landing() {
     <div data-landing className="min-h-screen bg-lux font-jost text-cream">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <TrackView step="landing" />
+      <Analytics />
       <PublicHeader nav right={<Link href={bookHref()} className="btn-line max-[459px]:hidden">{online ? "Reservasi" : "WhatsApp"}</Link>} />
 
       <main>

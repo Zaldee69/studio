@@ -4,6 +4,7 @@ import { getProfile } from "@/lib/auth";
 import { jktDate } from "@/lib/domain/format";
 import { photoUrl } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
+import { Analytics } from "@/components/analytics";
 import BookingFlow, { type Cust, type Init, type Reschedule } from "./booking-flow";
 import { BRAND } from "@/lib/brand";
 
@@ -63,6 +64,8 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
   if (cats.length && !cats.includes(init.cat)) init.cat = cats[0];
 
   return (
+    <>
+    <Analytics />
     <BookingFlow
       customer={customer} init={init} reschedule={reschedule}
       team={profile && profile.role !== "customer"
@@ -81,5 +84,6 @@ export default async function BookingPage({ searchParams }: PageProps<"/booking"
         open: (shop?.online_booking_open ?? true) && cats.length > 0, review: shop?.online_booking_mode === "review",
       }}
     />
+    </>
   );
 }

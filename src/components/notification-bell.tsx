@@ -18,6 +18,8 @@ function describe(n: N, base: string): { text: string; href: string } {
   if (n.kind === "payroll_ready") return { text: p.week ? `Komisi minggu ${formatTanggal(String(p.week)).replace(/^\S+, /, "")} sudah final` : "Slip gaji sudah final", href: "/kapster/komisi" };
   if (n.kind === "sop_reminder") return { text: "Checklist sterilisasi hari ini belum dimulai", href: base === "/manajer" ? "/manajer/sop" : "/kapster/sop" };
   if (n.kind === "maintenance_overdue") return { text: `${p.name} terlambat ${-Number(p.days_left)} hari`, href: "/manajer/sop#perawatan" };
+  if (n.kind === "kasbon_request") return { text: `Pengajuan kasbon ${p.staff} ${formatRupiah(Number(p.amount))}${p.over_limit ? " (melebihi limit)" : ""} menunggu persetujuan`, href: `${base}/pengeluaran` };
+  if (n.kind === "kasbon_decision") return { text: `Kasbon ${formatRupiah(Number(p.amount))} ${p.approved ? "disetujui owner" : "ditolak owner"}`, href: `${base}/pengeluaran` };
   if (n.kind === "expense_due") return { text: `Pengeluaran rutin ${p.name} (${formatRupiah(Number(p.amount))}) jatuh tempo tgl ${p.day} — belum dicatat`, href: `${base}/pengeluaran` };
   if (n.kind === "maintenance_due") return { text: Number(p.days_left) === 0 ? `${p.name} jatuh tempo hari ini` : `${p.name} jatuh tempo besok`, href: "/manajer/sop#perawatan" };
   return { text: n.kind, href: base };

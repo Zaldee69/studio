@@ -12,6 +12,7 @@ import { formatJam, formatRupiah, formatTanggal, jktDate } from "@/lib/domain/fo
 import { useRealtimeTable } from "@/lib/hooks/useRealtimeTable";
 import { IMAGE_ACCEPT, toUploadable } from "@/lib/image";
 import { createClient } from "@/lib/supabase/client";
+import { KasbonPanel } from "./kasbon-panel";
 
 type Row = {
   id: string; date: string; category: ExpenseCat; description: string; amount: number; source: ExpenseSource; receipt_path: string | null;
@@ -111,6 +112,7 @@ export function ExpenseScreen({ role }: { role: "manager" | "cashier" }) {
           {data && ` Foto nota wajib di atas ${formatRupiah(data.lim.receipt_required_above)}.`}
         </p>
       </details>
+      {data && <KasbonPanel staff={data.staff} />}
       {!manager && data?.todayClosed && <p className="rounded-2xl bg-[#FBF2E4] px-4 py-3 text-sm text-[#6B4A10]">Kasir hari ini sudah ditutup. Pengeluaran dari laci tidak bisa ditambah lagi.</p>}
 
       <div className="grid grid-cols-2 gap-3 tabular min-[700px]:grid-cols-4">

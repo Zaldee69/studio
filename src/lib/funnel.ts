@@ -1,5 +1,7 @@
 "use client";
 
+import { sendGAEvent } from "@next/third-parties/google";
+
 // Analitik ringan tanpa cookie: id sesi acak di sessionStorage, satu event per langkah per sesi.
 type Step = "landing" | "booking_open" | "service_pick" | "service" | "slots" | "time" | "booked";
 
@@ -36,6 +38,7 @@ export function track(step: Step) {
   if (navigator.webdriver) return; // browser otomatis (tangkapan layar saat deploy, uji e2e) bukan pengunjung — audit 3 Nov: 12 dari 36 landing
   const id = sessionId();
   if (!id) return;
+  if (step === "booked") sendGAEvent("event", "generate_lead"); // key event GA4
   const source = step === "landing" ? landingSource(location.search, document.referrer) : null;
   // fetch biasa (anon), bukan supabase-js — landing tidak perlu memuat ~250 KB klien hanya untuk satu event
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
